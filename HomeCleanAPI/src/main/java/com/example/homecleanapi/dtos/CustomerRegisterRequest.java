@@ -1,8 +1,17 @@
-package com.example.homecleanapi.DTOs;
+package com.example.homecleanapi.dtos;
 
-public class RegisterRequest {
+public class CustomerRegisterRequest {
     private String phone;
     private String password;
+    private String name;
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
 
     public String getPhone() {
         return phone;

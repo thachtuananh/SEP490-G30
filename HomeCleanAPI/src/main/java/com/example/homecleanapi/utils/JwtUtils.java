@@ -1,4 +1,4 @@
-package com.example.homecleanapi.Utils;
+package com.example.homecleanapi.utils;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -11,9 +11,11 @@ import java.util.Date;
 public class JwtUtils {
     private final String SECRET_KEY = "4b4a5e888ae16a09f0ba97fc4ed5396121292015cb53db43adc0c9f88d5a9f24"; // Đổi thành khóa bảo mật mạnh hơn
 
-    public String generateToken(String phone) {
+    public String generateToken(String phone, String name, String id) {
         return Jwts.builder()
                 .setSubject(phone)
+                .setSubject(name)
+                .setSubject(id)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + 86400000)) // 1 ngày
                 .signWith(SignatureAlgorithm.HS256, SECRET_KEY)
