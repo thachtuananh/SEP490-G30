@@ -1,4 +1,4 @@
-package com.example.homecleanapi.Services;
+package com.example.homecleanapi.services;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;

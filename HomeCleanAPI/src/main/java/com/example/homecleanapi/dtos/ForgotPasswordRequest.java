@@ -1,4 +1,4 @@
-package com.example.homecleanapi.DTOs;
+package com.example.homecleanapi.dtos;
 
 public class ForgotPasswordRequest {
     private String phone;
