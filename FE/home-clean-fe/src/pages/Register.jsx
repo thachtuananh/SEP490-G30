@@ -33,10 +33,21 @@ function Register() {
                                 <label>Số điện thoại</label>
                                 <input type="tel" placeholder="Nhập số điện thoại" />
                             </div>
-
+                            <div className="form-group">
+                                <label>Họ và tên</label>
+                                <input type="text" placeholder="Nhập họ và tên" />
+                            </div>
+                            <div className="form-group">
+                                <label>Địa chỉ</label>
+                                <input type="text" placeholder="Nhập địa chỉ" />
+                            </div>
                             <div className="form-group">
                                 <label>Mật khẩu</label>
                                 <input type="password" placeholder="Nhập mật khẩu" />
+                            </div>
+                            <div className="form-group">
+                                <label>Nhập lại mật khẩu</label>
+                                <input type="password" placeholder="Nhập lại mật khẩu" />
                             </div>
 
                             {/* <div className="form-checkbox">

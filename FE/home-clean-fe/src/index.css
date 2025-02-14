@@ -124,8 +124,8 @@ body {
 }
 
 /* Service section styles */
-.service-section {
-  padding: 3rem 2rem;
+.service-section, .testimonial-section,.news-section {
+  padding: 2rem 2rem;
   max-width: 1200px;
   margin: 0 auto;
 }
@@ -216,17 +216,16 @@ body {
 }
 
 /* Testimonial section styles */
-.testimonial-section {
+/* .testimonial-section {
   padding: 3rem 2rem;
   max-width: 1200px;
   margin: 0 auto;
-}
+} */
 
 .testimonial-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 1.5rem;
-  margin-top: 2rem;
 }
 
 .testimonial-card {
@@ -276,17 +275,16 @@ body {
 }
 
 /* News section styles */
-.news-section {
+/* .news-section {
   padding: 3rem 2rem;
   max-width: 1200px;
   margin: 0 auto;
-}
+} */
 
 .news-grid {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
   gap: 1.5rem;
-  margin-top: 2rem;
   overflow-x: auto;
   padding: 1rem 0 1rem 0;
 }
