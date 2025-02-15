@@ -7,6 +7,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import ImgLeft from '../assets/deep-cleaning-list-hero.jpg';
 import { AuthContext } from '../context/AuthContext';
 import { BASE_URL } from '../utils/config';
+import { validatePhone, validatePassword } from "../utils/validate";
 
 function Login() {
   const { dispatch } = useContext(AuthContext);
@@ -19,7 +20,13 @@ function Login() {
   const handleLogin = async (e) => {
     e.preventDefault();
     dispatch({ type: 'LOGIN_START' });
+    const phoneError = validatePhone(phone);
+    const passwordError = validatePassword(password);
 
+    if (phoneError || passwordError) {
+      setErrorMessage(phoneError || passwordError);
+      return;
+    }
     try {
       const response = await fetch(`${BASE_URL}/customer/login`, {
         method: 'POST',

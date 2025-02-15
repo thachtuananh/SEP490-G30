@@ -559,12 +559,12 @@ body {
 
 .login-button {
   width: 100%;
-  padding: 10px;
+  padding: 12px;
   background-color: #0D8A4E;
   color: white;
   border: none;
   border-radius: 4px;
-  font-size: 14px;
+  font-size: 15px;
   cursor: pointer;
   margin-bottom: 16px;
 }
@@ -830,6 +830,10 @@ body {
 
   .news-grid {
     grid-template-columns: repeat(2, 1fr);
+  }
+
+  .footer {
+    max-height: none;
   }
 }
 
