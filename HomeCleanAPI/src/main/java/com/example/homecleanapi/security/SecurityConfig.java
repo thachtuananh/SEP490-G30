@@ -6,6 +6,7 @@ import com.example.homecleanapi.services.CustomCustomerUserDetailsService;
 import com.example.homecleanapi.services.CustomEmployeeUserDetailsService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -51,7 +52,10 @@ public class SecurityConfig {
                         .requestMatchers("/api/employee/login").permitAll()
                         .requestMatchers("/api/employee/register").permitAll()
                         .requestMatchers("/api/employee/forgot-password").permitAll()
-                        .requestMatchers("/api/employee/login").permitAll() // Endpoint login cho Employee
+                        .requestMatchers("/api/employee/login").permitAll()
+                        .requestMatchers("/api/services/all").permitAll()
+                        .requestMatchers("/api/customer/profile").permitAll()
+                        .requestMatchers(HttpMethod.PUT, "/api/customer/profile").permitAll()// Endpoint login cho Employee
 //                        .requestMatchers("/api/customer/**").hasRole("CUSTOMER") // Các API của Customer
 //                        .requestMatchers("/api/employee/**").hasRole("EMPLOYEE") // Các API của Employee
                         .anyRequest().authenticated()
