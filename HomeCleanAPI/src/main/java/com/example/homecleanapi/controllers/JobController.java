@@ -19,7 +19,7 @@ public class JobController {
 
     @Autowired
     private JwtUtils jwtUtils;  
-
+    //new job
     
     // customer tạo job
     @PostMapping("/book-job")
