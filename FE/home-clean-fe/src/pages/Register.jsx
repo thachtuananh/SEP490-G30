@@ -5,6 +5,7 @@ import logo from '../assets/HouseClean_logo.png';
 import { Link, useNavigate } from 'react-router-dom';
 import ImgLeft from '../assets/deep-cleaning-list-hero.jpg';
 import { BASE_URL } from '../utils/config';
+import { validatePhone, validateName, validatePassword, validateConfirmPassword } from "../utils/validate";
 
 function Register() {
     const [formData, setFormData] = useState({
@@ -32,8 +33,13 @@ function Register() {
         e.preventDefault();
         const { phone, name, password, confirmPassword } = formData;
 
-        if (password !== confirmPassword) {
-            setError('Mật khẩu không khớp!');
+        const phoneError = validatePhone(phone);
+        const nameError = validateName(name);
+        const passwordError = validatePassword(password);
+        const confirmPasswordError = validateConfirmPassword(password, confirmPassword);
+
+        if (phoneError || nameError || passwordError || confirmPasswordError) {
+            setError(phoneError || nameError || passwordError || confirmPasswordError);
             return;
         }
 
@@ -75,7 +81,6 @@ function Register() {
                     <div className="login-box">
                         <h2>Đăng Ký</h2>
 
-                        {/* Container giữ không gian tránh bị co giãn */}
                         <div className="error-message-container">
                             <div className={`error-message ${error ? 'show' : ''}`}>
                                 {error}
