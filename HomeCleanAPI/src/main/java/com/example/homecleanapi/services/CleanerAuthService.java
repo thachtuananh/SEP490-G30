@@ -78,7 +78,9 @@ public class CleanerAuthService {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
         }
 
-        String token = jwtUtils.generateToken(employee.getPhone(), employee.getName(), employee.getId().toString());
+//        String token = jwtUtils.generateToken(employee.getPhone(), employee.getName(), employee.getId().toString());
+        String token = jwtUtils.generateToken(employee.getPhone(), employee.getName(), employee.getId().toString(), "cleaner");
+
 
         response.put("message", "Đăng nhập thành công!");
         response.put("token", token);

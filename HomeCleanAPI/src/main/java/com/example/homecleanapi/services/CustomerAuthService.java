@@ -73,7 +73,9 @@ public class CustomerAuthService {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
         }
 
-        String token = jwtUtils.generateToken(customer.getPhone(), customer.getFull_name(), customer.getId().toString());
+//        String token = jwtUtils.generateToken(customer.getPhone(), customer.getFull_name(), customer.getId().toString());
+        String token = jwtUtils.generateToken(customer.getPhone(), customer.getFull_name(), customer.getId().toString(), "customer");
+
 
         response.put("message", "Đăng nhập thành công!");
         response.put("token", token);

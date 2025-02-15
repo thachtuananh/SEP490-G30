@@ -9,18 +9,21 @@ import java.util.Date;
 
 @Component
 public class JwtUtils {
-    private final String SECRET_KEY = "4b4a5e888ae16a09f0ba97fc4ed5396121292015cb53db43adc0c9f88d5a9f24"; // Đổi thành khóa bảo mật mạnh hơn
+    private final String SECRET_KEY = "4b4a5e888ae16a09f0ba97fc4ed5396121292015cb53db43adc0c9f88d5a9f24"; 
 
-    public String generateToken(String phone, String name, String id) {
+    // Cập nhật để thêm thông tin phone, name, id vào claims
+    public String generateToken(String phone, String name, String id, String userType) {
         return Jwts.builder()
-                .setSubject(phone)
-                .setSubject(name)
-                .setSubject(id)
+                .setSubject(phone)  
+                .claim("name", name)  
+                .claim("id", id)
+                .claim("userType", userType)  
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + 86400000)) // 1 ngày
                 .signWith(SignatureAlgorithm.HS256, SECRET_KEY)
                 .compact();
     }
+
 
     public String getUsernameFromToken(String token) {
         Claims claims = Jwts.parser()
@@ -28,7 +31,17 @@ public class JwtUtils {
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
-        return claims.getSubject();
+        return claims.getSubject(); 
+    }
+
+    // Lấy thông tin từ các claims khác trong token (name, id, phone)
+    public String getClaimFromToken(String token, String claimKey) {
+        Claims claims = Jwts.parser()
+                .setSigningKey(SECRET_KEY)
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+        return claims.get(claimKey, String.class); 
     }
 
     public boolean validateToken(String token) {
