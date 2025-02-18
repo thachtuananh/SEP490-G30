@@ -20,6 +20,13 @@ public class Job {
     @ManyToOne
     @JoinColumn(name = "service_id", nullable = false)
     private Services service;
+    
+    @OneToOne(mappedBy = "job", fetch = FetchType.LAZY)
+    private JobDetails jobDetails;
+    
+    @ManyToOne
+    @JoinColumn(name = "cleaner_id")
+    private Cleaner cleaner;
 
     @ManyToOne
     @JoinColumn(name = "service_detail_id", nullable = false)
@@ -38,7 +45,7 @@ public class Job {
     private Double totalPrice;
 
     @Enumerated(EnumType.STRING)
-    private JobStatus status;  // Import JobStatus ở đây
+    private JobStatus status;  // Import JobStatus ở đây 
 
     // Getters and Setters
     public Long getId() {
@@ -144,4 +151,22 @@ public class Job {
     public void setStatus(JobStatus status) {
         this.status = status;
     }
+
+	public JobDetails getJobDetails() {
+		return jobDetails;
+	}
+
+	public void setJobDetails(JobDetails jobDetails) {
+		this.jobDetails = jobDetails;
+	}
+
+	public Cleaner getCleaner() {
+		return cleaner;
+	}
+
+	public void setCleaner(Cleaner cleaner) {
+		this.cleaner = cleaner;
+	}
+	
+    
 }

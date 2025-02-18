@@ -57,10 +57,10 @@ public class SecurityConfig {
                         .requestMatchers("/api/customer/profile").permitAll()
                         .requestMatchers(HttpMethod.PUT, "/api/customer/profile").permitAll()
                         .requestMatchers("/api/customer/book-job").permitAll()
-                        
-// Endpoint login cho Employee
-//                        .requestMatchers("/api/customer/**").hasRole("CUSTOMER") // Các API của Customer
-//                        .requestMatchers("/api/employee/**").hasRole("EMPLOYEE") // Các API của Employee
+                        .requestMatchers("/api/cleaner/jobs").permitAll()
+                        .requestMatchers("/api/cleaner/job/**").permitAll()
+//                        .requestMatchers("/api/cleaner/job/**/accept").permitAll()
+                      
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

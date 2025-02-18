@@ -12,13 +12,13 @@ public class JobDetails {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
+    @OneToOne
     @JoinColumn(name = "job_id", nullable = false)
     private Job job; // Liên kết với bảng jobs
 
-    private Integer roomSize;      
-    private String imageUrl;       
-    private LocalDateTime scheduledTime; 
+    private Integer roomSize;
+    private String imageUrl;
+    private LocalDateTime scheduledTime;
 
     // Getters and Setters
     public Long getId() {
@@ -61,3 +61,4 @@ public class JobDetails {
         this.scheduledTime = scheduledTime;
     }
 }
+
