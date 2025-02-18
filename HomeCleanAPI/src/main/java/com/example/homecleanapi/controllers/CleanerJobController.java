@@ -45,26 +45,26 @@ public class CleanerJobController {
             @RequestHeader("Authorization") String authorizationHeader, 
             @PathVariable("jobId") Long jobId) {
 
-        String token = authorizationHeader.substring(7);  // Lấy token từ header
+        String token = authorizationHeader.substring(7);  
 
-        // Kiểm tra tính hợp lệ của token
+        
         if (!jwtUtils.validateToken(token)) {
-            return ResponseEntity.status(403).body(null); // Trả về 403 nếu token không hợp lệ
+            return ResponseEntity.status(403).body(null); 
         }
 
         String userType = jwtUtils.getClaimFromToken(token, "userType");
-        // Kiểm tra xem người dùng có phải là 'cleaner' không
+        
         if (!userType.equals("cleaner")) {
-            return ResponseEntity.status(403).body(null); // Trả về 403 nếu người dùng không phải là cleaner
+            return ResponseEntity.status(403).body(null);
         }
 
-        // Lấy thông tin chi tiết của job từ service
+        
         Map<String, Object> jobDetails = cleanerJobService.getJobDetails(jobId);
         if (jobDetails == null) {
-            return ResponseEntity.status(404).body(null); // Trả về 404 nếu job không tồn tại
+            return ResponseEntity.status(404).body(null); 
         }
 
-        // Trả về thông tin chi tiết job nếu có
+        
         return ResponseEntity.ok(jobDetails);
     }
 

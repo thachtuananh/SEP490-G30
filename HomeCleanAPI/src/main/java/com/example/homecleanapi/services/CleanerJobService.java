@@ -55,26 +55,26 @@ public class CleanerJobService {
 
     // Lấy chi tiết công việc
     public Map<String, Object> getJobDetails(Long jobId) {
-        // Lấy chi tiết job từ các bảng Job, JobDetails và Customer
+        
         Map<String, Object> jobDetails = new HashMap<>();
         
-        // Lấy thông tin Job từ JobRepository
+        
         Job job = jobRepository.findById(jobId).orElse(null);
         
         if (job != null) {
-            // Thêm thông tin job vào map
+            
             jobDetails.put("jobId", job.getId());
             jobDetails.put("status", job.getStatus());
             jobDetails.put("address", job.getAddress());
             jobDetails.put("totalPrice", job.getTotalPrice());
             jobDetails.put("scheduledTime", job.getScheduledTime());
 
-            // Lấy thông tin Customer từ Job (customer có mối quan hệ với Job)
+            
             jobDetails.put("customer", job.getCustomer().getFull_name());
             jobDetails.put("customerPhone", job.getCustomer().getPhone());
             
-            // Lấy thông tin chi tiết công việc từ bảng JobDetails
-            JobDetails jobDetailsInfo = job.getJobDetails();  // Giả sử mỗi Job có 1 JobDetails
+           
+            JobDetails jobDetailsInfo = job.getJobDetails();  
             if (jobDetailsInfo != null) {
                 jobDetails.put("roomSize", jobDetailsInfo.getRoomSize());
                 jobDetails.put("imageUrl", jobDetailsInfo.getImageUrl());
