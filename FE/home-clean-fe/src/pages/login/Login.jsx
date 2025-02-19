@@ -1,13 +1,13 @@
 import React, { useState, useContext, useEffect } from 'react';
 import { message } from 'antd';
 
-import Footer from '../components/Footer';
-import logo from '../assets/HouseClean_logo.png';
+import Footer from '../../components/Footer';
+import logo from '../../assets/HouseClean_logo.png';
 import { Link, useNavigate } from 'react-router-dom';
-import ImgLeft from '../assets/deep-cleaning-list-hero.jpg';
-import { AuthContext } from '../context/AuthContext';
-import { BASE_URL } from '../utils/config';
-import { validatePhone, validatePassword } from "../utils/validate";
+import ImgLeft from '../../assets/image-left.png';
+import { AuthContext } from '../../context/AuthContext';
+import { BASE_URL } from '../../utils/config';
+import { validatePhone, validatePassword } from "../../utils/validate";
 
 function Login() {
   const { dispatch } = useContext(AuthContext);
@@ -16,17 +16,39 @@ function Login() {
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
+  const [phoneError, setPhoneError] = useState(false);
+  const [passwordError, setPasswordError] = useState(false);
+
+  const validateForm = () => {
+    let isValid = true;
+
+    if (!phone) {
+      setPhoneError(true);
+      isValid = false;
+    } else {
+      setPhoneError(false);
+    }
+
+    if (!password) {
+      setPasswordError(true);
+      isValid = false;
+    } else {
+      setPasswordError(false);
+    }
+
+    return isValid;
+  };
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    dispatch({ type: 'LOGIN_START' });
-    const phoneError = validatePhone(phone);
-    const passwordError = validatePassword(password);
 
-    if (phoneError || passwordError) {
-      setErrorMessage(phoneError || passwordError);
+    if (!validateForm()) {
+      setErrorMessage('Vui lòng điền đầy đủ thông tin');
       return;
     }
+
+    dispatch({ type: 'LOGIN_START' });
+
     try {
       const response = await fetch(`${BASE_URL}/customer/login`, {
         method: 'POST',
@@ -38,12 +60,12 @@ function Login() {
 
       if (response.ok) {
         dispatch({ type: 'LOGIN_SUCCESS', payload: result });
-        setErrorMessage(''); // Xóa lỗi khi đăng nhập thành công
-        message.success(result.message || 'Đăng ký thành công!');
+        setErrorMessage('');
+        message.success(result.message || 'Đăng nhập thành công!');
         navigate('/');
       } else {
         dispatch({ type: 'LOGIN_FAILURE', payload: result.message || 'Đăng nhập thất bại' });
-        setErrorMessage(result.message || 'Số điện thoại hoặc mật khẩu không đúng');
+        setErrorMessage('Thông tin đăng nhập hoặc mật khẩu không chính xác !!!');
       }
     } catch (error) {
       dispatch({ type: 'LOGIN_FAILURE', payload: 'Lỗi máy chủ, vui lòng thử lại' });
@@ -51,7 +73,6 @@ function Login() {
     }
   };
 
-  // Tự động ẩn thông báo lỗi sau 3 giây
   useEffect(() => {
     if (errorMessage) {
       const timer = setTimeout(() => {
@@ -77,35 +98,39 @@ function Login() {
           <div className="login-box">
             <h2>Đăng nhập</h2>
 
-            {/* Container giữ không gian tránh bị co giãn */}
-            <div className="error-message-container">
-              <div className={`error-message ${errorMessage ? 'show' : ''}`}>
-                {errorMessage}
-              </div>
-            </div>
-
             <form className="login-form" onSubmit={handleLogin}>
-              <div className="form-group">
+              <div className={`form-group ${phoneError ? 'error' : ''}`}>
                 <label>Số điện thoại</label>
                 <input
                   type="tel"
                   placeholder="Nhập số điện thoại"
                   value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  rules={[{ required: true, message: "Vui lòng nhập số điện thoại!" }]}
-
+                  onChange={(e) => {
+                    setPhone(e.target.value);
+                    setPhoneError(false);
+                  }}
+                  className={phoneError ? 'error' : ''}
                 />
               </div>
 
-              <div className="form-group">
+              <div className={`form-group ${passwordError ? 'error' : ''}`}>
                 <label>Mật khẩu</label>
                 <input
                   type="password"
                   placeholder="Nhập mật khẩu"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  rules={[{ required: true, message: "Vui lòng nhập mật khẩu!" }]}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    setPasswordError(false);
+                  }}
+                  className={passwordError ? 'error' : ''}
                 />
+              </div>
+
+              <div className="error-message-container">
+                <div className={`error-message ${errorMessage ? 'show' : ''}`}>
+                  {errorMessage}
+                </div>
               </div>
 
               <div className="form-checkbox">
