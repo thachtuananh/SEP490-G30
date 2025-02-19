@@ -6,7 +6,8 @@ public class CustomerProfileRequest {
     private String email;
     private String address;
 
-    // Getters and Setters
+
+    // Getters and Setters   
     public String getPhone() {
         return phone;
     }

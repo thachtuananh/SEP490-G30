@@ -2,6 +2,7 @@ package com.example.homecleanapi.services;
 
 import com.example.homecleanapi.dtos.ServiceDTO;
 import com.example.homecleanapi.models.Services;
+import com.example.homecleanapi.models.Service;
 import com.example.homecleanapi.models.ServiceDetail;
 import com.example.homecleanapi.repositories.ServiceRepository;
 import com.example.homecleanapi.repositories.ServiceDetailRepository;
@@ -22,13 +23,19 @@ public class ServiceDisplayService {
 
     public List<ServiceDTO> getAllServices() {
         // Lấy tất cả dịch vụ từ repository
+
         List<Services> services = serviceRepository.findAll();
+
         
         // Chuyển các Service thành ServiceDTO
         return services.stream().map(this::convertToServiceDTO).collect(Collectors.toList());
     }
 
+
     private ServiceDTO convertToServiceDTO(Services service) {
+
+
+
         // Chuyển đổi Service thành ServiceDTO
         ServiceDTO serviceDTO = new ServiceDTO();
         serviceDTO.setServiceId(service.getId());

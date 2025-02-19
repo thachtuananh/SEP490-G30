@@ -10,4 +10,11 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ServiceDetailRepository extends JpaRepository<ServiceDetail, Long> {
     List<ServiceDetail> findByServiceId(Long serviceId);
+<<<<<<< HEAD
 }
+=======
+}
+
+
+
+>>>>>>> 9a0130a (new commit with new API)

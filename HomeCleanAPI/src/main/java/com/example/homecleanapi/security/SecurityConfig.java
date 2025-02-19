@@ -42,6 +42,7 @@ public class SecurityConfig {
 	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 		http.csrf(csrf -> csrf.disable()).cors(Customizer.withDefaults()).authorizeHttpRequests(auth -> auth
 
+<<<<<<< HEAD
 				.requestMatchers("/api/customer/login").permitAll() // Endpoint login cho Customer
 				.requestMatchers("/api/customer/register").permitAll().requestMatchers("/api/customer/forgot-password")
 				.permitAll().requestMatchers("/api/employee/login").permitAll()
@@ -51,6 +52,31 @@ public class SecurityConfig {
 				.requestMatchers(HttpMethod.PUT, "/api/customer/profile").permitAll()
 				.requestMatchers("/api/customer/book-job").permitAll().requestMatchers("/api/cleaner/jobs").permitAll()
 				.requestMatchers("/api/cleaner/job/**").permitAll()
+=======
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http
+                .csrf(csrf -> csrf.disable())
+                .cors(Customizer.withDefaults())
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/api/customer/login").permitAll() // Endpoint login cho Customer
+                        .requestMatchers("/api/customer/register").permitAll()
+                        .requestMatchers("/api/customer/forgot-password").permitAll()
+                        .requestMatchers("/api/employee/login").permitAll()
+                        .requestMatchers("/api/employee/register").permitAll()
+                        .requestMatchers("/api/employee/forgot-password").permitAll()
+                        .requestMatchers("/api/employee/login").permitAll()
+                        .requestMatchers("/api/services/all").permitAll()
+                        .requestMatchers("/api/customer/profile").permitAll()
+                        .requestMatchers(HttpMethod.PUT, "/api/customer/profile").permitAll()// Endpoint login cho Employee
+//                        .requestMatchers("/api/customer/**").hasRole("CUSTOMER") // Các API của Customer
+//                        .requestMatchers("/api/employee/**").hasRole("EMPLOYEE") // Các API của Employee
+                        .anyRequest().authenticated()
+                )
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authenticationProvider(customerAuthenticationProvider())  // Sử dụng AuthenticationProvider riêng
+                .authenticationProvider(employeeAuthenticationProvider()); // Sử dụng AuthenticationProvider riêng
+>>>>>>> 9a0130a (new commit with new API)
 
 				.requestMatchers("/api/employee/**").permitAll() 
 				.requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()

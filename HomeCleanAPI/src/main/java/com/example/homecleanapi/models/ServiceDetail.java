@@ -20,7 +20,11 @@ public class ServiceDetail {
 
     @ManyToOne
     @JoinColumn(name = "service_id", nullable = false)
+<<<<<<< HEAD
     private Services service; // Quan hệ với bảng Service
+=======
+    private Service service; // Quan hệ với bảng Service
+>>>>>>> 9a0130a (new commit with new API)
 
     private String name;
     private Double additionalPrice;
@@ -34,11 +38,19 @@ public class ServiceDetail {
         this.id = id;
     }
 
+<<<<<<< HEAD
     public Services getService() {
         return service;
     }
 
     public void setService(Services service) {
+=======
+    public Service getService() {
+        return service;
+    }
+
+    public void setService(Service service) {
+>>>>>>> 9a0130a (new commit with new API)
         this.service = service;
     }
 
@@ -57,4 +69,8 @@ public class ServiceDetail {
     public void setAdditionalPrice(Double additionalPrice) {
         this.additionalPrice = additionalPrice;
     }
+<<<<<<< HEAD
 }  
+=======
+}
+>>>>>>> 9a0130a (new commit with new API)
