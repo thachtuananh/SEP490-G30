@@ -59,6 +59,7 @@ function Login() {
       const result = await response.json();
 
       if (response.ok) {
+<<<<<<<< HEAD:FE/home-clean-fe/src/pages/login/LoginUser.jsx
         // Lưu thông tin đăng nhập
         dispatch({ type: 'LOGIN_SUCCESS', payload: result.user });
 
@@ -79,13 +80,25 @@ function Login() {
       } else {
         dispatch({ type: 'LOGIN_FAILURE', payload: result.message });
         setErrorMessage('Thông tin đăng nhập không chính xác!');
+========
+        dispatch({ type: 'LOGIN_SUCCESS', payload: result });
+        setErrorMessage('');
+        message.success(result.message || 'Đăng nhập thành công!');
+        navigate('/');
+      } else {
+        dispatch({ type: 'LOGIN_FAILURE', payload: result.message || 'Đăng nhập thất bại' });
+        setErrorMessage('Thông tin đăng nhập hoặc mật khẩu không chính xác !!!');
+>>>>>>>> cb9a1f2 (Update UI profile):FE/home-clean-fe/src/pages/login/Login.jsx
       }
     } catch (error) {
       dispatch({ type: 'LOGIN_FAILURE', payload: 'Lỗi máy chủ, vui lòng thử lại.' });
     }
   };
 
+<<<<<<<< HEAD:FE/home-clean-fe/src/pages/login/LoginUser.jsx
 
+========
+>>>>>>>> cb9a1f2 (Update UI profile):FE/home-clean-fe/src/pages/login/Login.jsx
   useEffect(() => {
     if (errorMessage) {
       const timer = setTimeout(() => {
@@ -109,7 +122,11 @@ function Login() {
             </Link>
           </div>
           <div className="login-box">
+<<<<<<<< HEAD:FE/home-clean-fe/src/pages/login/LoginUser.jsx
             <h2>Đăng nhập người sử dụng dịch vụ</h2>
+========
+            <h2>Đăng nhập</h2>
+>>>>>>>> cb9a1f2 (Update UI profile):FE/home-clean-fe/src/pages/login/Login.jsx
 
             <form className="login-form" onSubmit={handleLogin}>
               <div className={`form-group ${phoneError ? 'error' : ''}`}>
