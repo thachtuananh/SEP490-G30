@@ -7,7 +7,9 @@ public class CustomerProfileRequest {
     private String address;
 
 
+
     // Getters and Setters   
+
     public String getPhone() {
         return phone;
     }

@@ -6,6 +6,7 @@ import com.example.homecleanapi.repositories.CustomerRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.example.homecleanapi.repositories.CustomerRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -16,7 +17,6 @@ import java.util.Map;
 @Service
 public class CustomerProfileService {
 
-
 	@Autowired
     private CustomerRepository customerRepository;
 
@@ -24,7 +24,6 @@ public class CustomerProfileService {
     public CustomerProfileService(CustomerRepository customerRepository) {
         this.customerRepository = customerRepository;
     }
-
 
     // Xem thông tin profile của khách hàng
     public ResponseEntity<Map<String, Object>> getProfile(String phone) {
@@ -43,6 +42,10 @@ public class CustomerProfileService {
         response.put("phone", customer.getPhone());
         response.put("name", customer.getFull_name());
 
+
+        
+        response.put("phone", customer.getPhone());
+        response.put("name", customer.getFull_name());
         response.put("created_at", customer.getCreated_at());
         return ResponseEntity.ok(response);
     }

@@ -1,5 +1,6 @@
 package com.example.homecleanapi.services;
 
+
 import com.example.homecleanapi.dtos.ServiceDTO;
 import com.example.homecleanapi.models.Services;
 import com.example.homecleanapi.models.Service;
@@ -24,7 +25,8 @@ public class ServiceDisplayService {
     public List<ServiceDTO> getAllServices() {
         // Lấy tất cả dịch vụ từ repository
 
-        List<Services> services = serviceRepository.findAll();
+
+    	List<Service> services = serviceRepository.findAll();
 
         
         // Chuyển các Service thành ServiceDTO
@@ -32,9 +34,10 @@ public class ServiceDisplayService {
     }
 
 
-    private ServiceDTO convertToServiceDTO(Services service) {
 
 
+
+    private ServiceDTO convertToServiceDTO(Service service) {
 
         // Chuyển đổi Service thành ServiceDTO
         ServiceDTO serviceDTO = new ServiceDTO();
