@@ -16,12 +16,12 @@ import java.util.Map;
 import java.util.UUID;
 
 @Service
-public class CleanerAuthService {
+public class EmployeeAuthService {
     private final EmployeeRepository employeeRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtils jwtUtils;
 
-    public CleanerAuthService(EmployeeRepository employeeRepository, PasswordEncoder passwordEncoder, JwtUtils jwtUtils) {
+    public EmployeeAuthService(EmployeeRepository employeeRepository, PasswordEncoder passwordEncoder, JwtUtils jwtUtils) {
         this.employeeRepository = employeeRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtUtils = jwtUtils;
@@ -55,7 +55,7 @@ public class CleanerAuthService {
         employeeRepository.save(employee);
 
         response.put("message", "Đăng ký thành công!");
-        response.put("customerId", employee.getId());
+        response.put("EmployeeID", employee.getId());
         response.put("phone", employee.getPhone());
         response.put("name", employee.getName());
         response.put("created_at", employee.getCreated_at());
