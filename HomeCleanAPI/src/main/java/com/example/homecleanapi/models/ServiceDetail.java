@@ -20,7 +20,7 @@ public class ServiceDetail {
 
     @ManyToOne
     @JoinColumn(name = "service_id", nullable = false)
-    private Services service; // Quan hệ với bảng Service
+    private Services service; // Quan hệ với bảng HomeCleanService
 
 
     private String name;

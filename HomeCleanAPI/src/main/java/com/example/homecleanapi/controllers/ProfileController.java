@@ -61,6 +61,8 @@ public class ProfileController {
         if (!phone.equals(request.getPhone())) {
             return ResponseEntity.status(403).body(Map.of("message", "Unauthorized"));
         }
+
+        return ResponseEntity.ok(Map.of("message", "Profile updated successfully"));
     }
         
 

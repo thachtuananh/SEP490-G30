@@ -50,14 +50,14 @@ public class JobService {
         
         Services service = servicesRepository.findById(request.getServiceId()).orElse(null);
         if (service == null) {
-            response.put("message", "Service not found.");
+            response.put("message", "HomeCleanService not found.");
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         }
 
         
         ServiceDetail serviceDetail = serviceDetailRepository.findById(request.getServiceDetailId()).orElse(null);
         if (serviceDetail == null) {
-            response.put("message", "Service detail not found.");
+            response.put("message", "HomeCleanService detail not found.");
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         }
 

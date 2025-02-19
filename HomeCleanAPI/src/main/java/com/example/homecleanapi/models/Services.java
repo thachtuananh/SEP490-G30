@@ -7,7 +7,7 @@ import com.example.homecleanapi.enums.ServiceType;
 
 @Entity
 @Table(name = "services")
-public class Services {  // Đổi tên từ Service thành Services
+public class Services {  // Đổi tên từ HomeCleanService thành Services
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
