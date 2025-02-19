@@ -6,7 +6,7 @@ import com.example.homecleanapi.repositories.CustomerRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.example.homecleanapi.repositories.CustomerRepository;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -17,13 +17,8 @@ import java.util.Map;
 @Service
 public class CustomerProfileService {
 
-	@Autowired
+    @Autowired
     private CustomerRepository customerRepository;
-
-
-    public CustomerProfileService(CustomerRepository customerRepository) {
-        this.customerRepository = customerRepository;
-    }
 
     // Xem thông tin profile của khách hàng
     public ResponseEntity<Map<String, Object>> getProfile(String phone) {
@@ -37,35 +32,22 @@ public class CustomerProfileService {
 
         response.put("phone", customer.getPhone());
         response.put("name", customer.getFull_name());
-
-        
-        response.put("phone", customer.getPhone());
-        response.put("name", customer.getFull_name());
-
-
-        
-        response.put("phone", customer.getPhone());
-        response.put("name", customer.getFull_name());
         response.put("created_at", customer.getCreated_at());
         return ResponseEntity.ok(response);
     }
 
     // Cập nhật thông tin profile của khách hàng
-    public ResponseEntity<Map<String, Object>> updateProfile(CustomerProfileRequest request) {
+    public ResponseEntity<Map<String, Object>> updateProfile(String phone, CustomerProfileRequest request) {
         Map<String, Object> response = new HashMap<>();
 
-
-        if (request.getPhone() == null || request.getPhone().isEmpty()) {
-            response.put("message", "Số điện thoại không được để trống!");
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
-        }
-
+        
         if (request.getFullName() == null || request.getFullName().isEmpty()) {
             response.put("message", "Tên đầy đủ không được để trống!");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
 
-        Customers customer = customerRepository.findByPhone(request.getPhone());
+        
+        Customers customer = customerRepository.findByPhone(phone);
         if (customer == null) {
             response.put("message", "Khách hàng không tồn tại!");
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
@@ -74,7 +56,6 @@ public class CustomerProfileService {
         
         customer.setFull_name(request.getFullName());
 
-        
         customerRepository.save(customer);  
 
         response.put("message", "Cập nhật thông tin profile thành công!");
@@ -83,3 +64,4 @@ public class CustomerProfileService {
         return ResponseEntity.ok(response);
     }
 }
+

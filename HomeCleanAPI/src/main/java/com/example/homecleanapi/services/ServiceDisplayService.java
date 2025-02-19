@@ -4,6 +4,8 @@ import com.example.homecleanapi.models.ServiceDetail;
 import com.example.homecleanapi.models.Services;
 import com.example.homecleanapi.repositories.ServiceRepository;
 import com.example.homecleanapi.repositories.ServiceDetailRepository;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -13,13 +15,15 @@ import java.util.stream.Collectors;
 @Service
 public class ServiceDisplayService {
 
+	@Autowired
     private ServiceRepository serviceRepository;
 
+	@Autowired
     private ServiceDetailRepository serviceDetailRepository;
 
     public List<ServiceDTO> getAllServices() {
 
-    	List<Services> homeCleanServices = serviceRepository.findAllList();
+    	List<Services> homeCleanServices = serviceRepository.findAll();
 
         // Chuyển các HomeCleanService thành ServiceDTO
         return homeCleanServices.stream().map(this::convertToServiceDTO).collect(Collectors.toList());

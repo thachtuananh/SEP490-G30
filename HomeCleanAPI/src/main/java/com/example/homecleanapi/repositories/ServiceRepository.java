@@ -11,7 +11,7 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface ServiceRepository extends JpaRepository<Services, Long> {
-    List<Services> findAllList();
+    List<Services> findAll();
 }
 
 

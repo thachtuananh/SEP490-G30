@@ -14,7 +14,7 @@ public class Message {
     @JoinColumn(name = "conversation_id")
     private Conversation conversation;
 
-    private String senderId;
+    private Integer senderId;
     private String content;
 
     // Getters and Setters
@@ -34,11 +34,11 @@ public class Message {
         this.conversation = conversation;
     }
 
-    public String getSenderId() {
+    public Integer getSenderId() {
         return senderId;
     }
 
-    public void setSenderId(String senderId) {
+    public void setSenderId(Integer senderId) {
         this.senderId = senderId;
     }
 

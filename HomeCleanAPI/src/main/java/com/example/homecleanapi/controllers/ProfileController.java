@@ -43,26 +43,16 @@ public class ProfileController {
 
 
     @PutMapping("/profile")
-    public ResponseEntity<Map<String, Object>> updateProfile(@RequestBody CustomerProfileRequest request, @RequestHeader("Authorization") String authorizationHeader) {
-        
+    public ResponseEntity<Map<String, Object>> updateProfile(@RequestHeader("Authorization") String authorizationHeader, 
+                                                              @RequestBody CustomerProfileRequest request) {
         String token = authorizationHeader.substring(7);  
 
         if (!jwtUtils.validateToken(token)) {
             return ResponseEntity.status(403).body(Map.of("message", "Unauthorized"));
         }
 
-        String userType = jwtUtils.getClaimFromToken(token, "userType");
-        if (!userType.equals("customer")) {
-            return ResponseEntity.status(403).body(Map.of("message", "Unauthorized"));
-        }
-
-        String phone = jwtUtils.getUsernameFromToken(token);
-
-        if (!phone.equals(request.getPhone())) {
-            return ResponseEntity.status(403).body(Map.of("message", "Unauthorized"));
-        }
-
-        return ResponseEntity.ok(Map.of("message", "Profile updated successfully"));
+        String phone = jwtUtils.getUsernameFromToken(token); 
+        return customerProfileService.updateProfile(phone, request);
     }
         
 
