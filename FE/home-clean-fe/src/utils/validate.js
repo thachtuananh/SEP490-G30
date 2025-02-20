@@ -25,3 +25,24 @@ export const validateConfirmPassword = (password, confirmPassword) => {
     if (password !== confirmPassword) return "Mật khẩu không khớp!";
     return "";
 };
+
+export const validateEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email) return "Vui lòng nhập email!";
+    if (!emailRegex.test(email)) return "Email không hợp lệ!";
+    return "";
+};
+
+export const validateAge = (age) => {
+    if (!age) return "Vui lòng nhập tuổi!";
+    const ageNum = parseInt(age);
+    if (isNaN(ageNum) || ageNum < 18 || ageNum > 65) return "Tuổi phải từ 18 đến 65!";
+    return "";
+};
+
+export const validateIdentityNumber = (idNumber) => {
+    const idRegex = /^[0-9]{9}$|^[0-9]{12}$/;
+    if (!idNumber) return "Vui lòng nhập số CMND/CCCD!";
+    if (!idRegex.test(idNumber)) return "Số CMND/CCCD không hợp lệ!";
+    return "";
+};

@@ -59,19 +59,32 @@ function Login() {
       const result = await response.json();
 
       if (response.ok) {
-        dispatch({ type: 'LOGIN_SUCCESS', payload: result });
-        setErrorMessage('');
-        message.success(result.message || 'Đăng nhập thành công!');
-        navigate('/');
+        // Lưu thông tin đăng nhập
+        dispatch({ type: 'LOGIN_SUCCESS', payload: result.user });
+
+        // Gọi API lấy chi tiết người dùng (nếu cần)
+        const userInfoResponse = await fetch(`${BASE_URL}/customer/profile`, {
+          method: 'GET',
+          headers: { 'Authorization': `Bearer ${result.token}` }
+        });
+
+        const userInfo = await userInfoResponse.json();
+        if (userInfoResponse.ok) {
+          dispatch({ type: 'LOGIN_SUCCESS', payload: userInfo });
+          message.success('Đăng nhập thành công!');
+          navigate('/');
+        } else {
+          message.error('Không thể lấy thông tin người dùng!');
+        }
       } else {
-        dispatch({ type: 'LOGIN_FAILURE', payload: result.message || 'Đăng nhập thất bại' });
-        setErrorMessage('Thông tin đăng nhập hoặc mật khẩu không chính xác !!!');
+        dispatch({ type: 'LOGIN_FAILURE', payload: result.message });
+        setErrorMessage('Thông tin đăng nhập không chính xác!');
       }
     } catch (error) {
-      dispatch({ type: 'LOGIN_FAILURE', payload: 'Lỗi máy chủ, vui lòng thử lại' });
-      setErrorMessage('Lỗi máy chủ, vui lòng thử lại sau');
+      dispatch({ type: 'LOGIN_FAILURE', payload: 'Lỗi máy chủ, vui lòng thử lại.' });
     }
   };
+
 
   useEffect(() => {
     if (errorMessage) {
@@ -96,7 +109,7 @@ function Login() {
             </Link>
           </div>
           <div className="login-box">
-            <h2>Đăng nhập</h2>
+            <h2>Đăng nhập người sử dụng dịch vụ</h2>
 
             <form className="login-form" onSubmit={handleLogin}>
               <div className={`form-group ${phoneError ? 'error' : ''}`}>
@@ -148,7 +161,6 @@ function Login() {
           </div>
         </div>
       </main>
-      <Footer />
     </div>
   );
 }

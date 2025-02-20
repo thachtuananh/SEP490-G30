@@ -8,7 +8,16 @@ const Layout = () => {
     const location = useLocation()
 
     // Danh sách các trang không cần Navbar và Footer
-    const hideNavbarFooter = ["/login", "/register", "/forgot-password"].includes(location.pathname)
+    const hideNavbarFooter = [
+        "/login",
+        "/register",
+        "/forgot-password",
+        "/register/user",
+        "/register/cleaner",
+        "/login",
+        "/login/user",
+        "/login/cleaner"
+    ].includes(location.pathname)
 
     return (
         <>

@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useContext } from "react";
+import { AuthContext } from "../../../context/AuthContext";
 import { Link } from "react-router-dom";
 import infoImg from "../../../assets/imgProfile/info.svg";
 import addressImg from "../../../assets/imgProfile/address.svg";
@@ -9,8 +10,9 @@ import helpImg from "../../../assets/imgProfile/help.svg";
 import profileImg from "../../../assets/imgProfile/imgProfile.svg";
 import "../owner/profile.css";
 
-
 const MenuInfomation = ({ selectedMenu, setSelectedMenu }) => {
+  const { user } = useContext(AuthContext); // Lấy thông tin người dùng
+
   const handleClick = (menuName) => {
     setSelectedMenu(menuName);
   };
@@ -20,8 +22,8 @@ const MenuInfomation = ({ selectedMenu, setSelectedMenu }) => {
       <div className="menu-profile">
         <img className="profile-avatar" src={profileImg} alt="icon" />
         <div className="profile-details">
-          <p className="profile-name"><strong>ManhMoi_8386</strong></p>
-          <p className="profile-email">abcxyz@gmail.com</p>
+          <p className="profile-name"><strong>{user?.name || "Người dùng"}</strong></p>
+          <p className="profile-email">{user?.email || "Chưa có email"}</p>
         </div>
       </div>
       <hr className="menu-separator" />

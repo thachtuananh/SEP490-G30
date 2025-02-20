@@ -206,7 +206,7 @@
 .add-address-button {
     padding: 10px 15px;
     color: white;
-    background: green;
+    background: #00a651;
     border: none;
     border-radius: 5px;
     cursor: pointer;
@@ -219,8 +219,7 @@
 .address-item {
     display: flex;
     justify-content: space-between;
-    padding-bottom: 25px;
-    border-bottom: 1px solid #ddd;
+    padding-bottom: 30px;
 }
 
 .address-info {
@@ -352,4 +351,8 @@
     .save-button {
         width: 100%;
     }
+}
+
+.logout-button {
+    margin-left: 10px;
 }
