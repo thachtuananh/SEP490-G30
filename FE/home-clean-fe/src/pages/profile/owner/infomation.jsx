@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import MenuInfomation from "../../../components/profile/owner/menu_Infomation";
 import { PersonaInformation } from "../../../components/profile/owner/personal_information";
 import { Address } from "../../../components/profile/owner/address";
-import "../../../pages/profile/owner/infor.css"; // Import CSS riêng
+import "./infor.css"; // Import CSS riêng
 
 const Infomation = () => {
     const [selectedMenu, setSelectedMenu] = useState("1");

@@ -1,8 +1,40 @@
-import React from "react";
+import React, { useContext, useState } from "react";
+import { useNavigate } from "react-router-dom"; // Thêm useNavigate
+import { AuthContext } from "../../../context/AuthContext";
 import "../owner/profile.css";
 import profileImg from "../../../assets/imgProfile/imgProfile.svg";
+import { message } from "antd";
 
 export const PersonaInformation = () => {
+    const { user, dispatch } = useContext(AuthContext);  // Lấy user từ AuthContext
+    const navigate = useNavigate(); // Hook điều hướng
+    const [formData, setFormData] = useState({
+        name: user?.name || "",
+        phone: user?.phone || "",
+        email: user?.email || "",
+        gender: user?.gender || "",
+        dob: user?.dob || "",
+    });
+
+    // Xử lý thay đổi dữ liệu khi người dùng nhập
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setFormData({ ...formData, [name]: value });
+    };
+
+    // Xử lý khi nhấn nút Lưu
+    const handleSave = () => {
+        dispatch({ type: "UPDATE_USER", payload: formData });  // Cập nhật thông tin
+        message.success("Cập nhật thông tin thành công!");
+    };
+
+    // Xử lý khi nhấn nút Đăng xuất
+    const handleLogout = () => {
+        dispatch({ type: "LOGOUT" });  // Đăng xuất
+        message.success("Đăng xuất thành công!");
+        navigate("/");
+    };
+
     return (
         <div className="persona-container">
             <div className="persona-header">
@@ -13,64 +45,80 @@ export const PersonaInformation = () => {
             <div className="avatar-section">
                 <b>Ảnh đại diện</b>
                 <img className="avatar-image" src={profileImg} alt="icon" />
-                <b>
-                    <u className="avatar-select">Chọn ảnh</u>
-                </b>
+                <b><u className="avatar-select">Chọn ảnh</u></b>
             </div>
 
             <div className="form-group">
                 <b className="input-label">Họ và tên</b>
-                <input className="input-field" type="text" />
+                <input
+                    className="input-field"
+                    type="text"
+                    name="name"
+                    value={formData.name}
+                    onChange={handleChange}
+                />
             </div>
 
-            <div className="info-section">
+            <div className="form-group">
                 <b>Số điện thoại</b>
-                <div className="info-text">
-                    <p>0377648322</p>
-                    <b>
-                        <u className="info-change">Thay đổi</u>
-                    </b>
-                </div>
+                <input
+                    className="input-field"
+                    type="text"
+                    name="phone"
+                    value={formData.phone}
+                    onChange={handleChange}
+                />
             </div>
 
-            <div className="info-section">
+            <div className="form-group">
                 <b>Email</b>
-                <div className="info-text">
-                    <p>abcxyz@gmail.com</p>
-                    <b>
-                        <u className="info-change">Thay đổi</u>
-                    </b>
-                </div>
+                <input
+                    className="input-field"
+                    type="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                />
             </div>
 
             <div className="gender-section">
                 <b>Giới tính</b>
                 <div className="gender-options">
-                    <label className="gender-option">
-                        <input name="gender" type="radio" />
-                        <p>Nam</p>
-                    </label>
-                    <label className="gender-option">
-                        <input name="gender" type="radio" />
-                        <p>Nữ</p>
-                    </label>
-                    <label className="gender-option">
-                        <input name="gender" type="radio" />
-                        <p>Khác</p>
-                    </label>
+                    {["Nam", "Nữ", "Khác"].map((option) => (
+                        <label key={option} className="gender-option">
+                            <input
+                                type="radio"
+                                name="gender"
+                                value={option}
+                                checked={formData.gender === option}
+                                onChange={handleChange}
+                            />
+                            <p>{option}</p>
+                        </label>
+                    ))}
                 </div>
             </div>
 
             <div className="form-group">
                 <b>Ngày sinh</b>
-                <div className="dob-inputs">
-                    <input type="number" id="day" className="dob-field" />
-                    <input type="text" id="month" className="dob-field" />
-                    <input type="number" id="year" className="dob-field" />
-                </div>
+                <input
+                    className="input-field"
+                    type="date"
+                    name="dob"
+                    value={formData.dob}
+                    onChange={handleChange}
+                />
             </div>
 
-            <button className="save-button" type="submit">Lưu</button>
+            {/* Nút Lưu và Đăng xuất */}
+            <div className="button-group">
+                <button className="save-button" type="button" onClick={handleSave}>
+                    Lưu
+                </button>
+                <button className="save-button logout-button" type="button" onClick={handleLogout}>
+                    Đăng xuất
+                </button>
+            </div>
         </div>
     );
 };

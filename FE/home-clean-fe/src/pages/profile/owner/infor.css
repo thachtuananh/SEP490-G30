@@ -61,3 +61,34 @@
         border-radius: 3px;
     }
 }
+
+.user-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.logout-btn {
+    padding: 5px 10px;
+    background-color: #f44336;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.logout-btn:hover {
+    background-color: #d32f2f;
+}
+
+.user-name {
+    font-size: 16px;
+    font-weight: 600;
+    text-decoration: none;
+    color: #29322E;
+    border: 1px solid #29322E;
+    padding: 10px 30px 10px 30px;
+    border-radius: 30px;
+    text-align: center;
+}

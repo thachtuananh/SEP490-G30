@@ -8,7 +8,7 @@ import { BASE_URL } from '../../utils/config';
 import { validatePhone, validateName, validatePassword, validateConfirmPassword } from "../../utils/validate";
 import { AiFillEye, AiFillEyeInvisible } from 'react-icons/ai'; // Import icon con mắt
 
-function Register() {
+function RegisterUser() {
     const [formData, setFormData] = useState({
         phone: '',
         name: '',
@@ -174,9 +174,8 @@ function Register() {
                     </div>
                 </div>
             </main>
-            <Footer />
         </div>
     );
 }
 
-export default Register;
+export default RegisterUser;
