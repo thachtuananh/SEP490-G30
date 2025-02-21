@@ -13,6 +13,7 @@ import ForgotPassword from "../pages/ForgotPass"
 import Infomation from "../pages/profile/owner/infomation"
 import About from "../pages/About"
 
+import { ActivityList } from "../pages/ActivityList"
 
 
 const Routers = () => {
@@ -28,6 +29,8 @@ const Routers = () => {
             <Route path="/register" element={<RegisterSelection />} />
             <Route path="/register/user" element={<RegisterUser />} />
             <Route path="/register/cleaner" element={<RegisterCleaner />} />
+
+            <Route path="/activitylist" element={<ActivityList />} />
 
             <Route path="/infomation" element={<Infomation />} />
             <Route path="/about" element={<About />} />

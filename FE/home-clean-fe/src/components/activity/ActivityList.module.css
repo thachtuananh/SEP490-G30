@@ -1,0 +1,56 @@
+.container {
+    display: flex;
+    flex-direction: column;
+    row-gap: 10px;
+    border-radius: 5px;
+    border: 1px solid rgb(231, 225, 225);
+    width: 100%;
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 20px 15px;
+    box-sizing: border-box;
+    background: #fff;
+}
+
+.actlist {
+    margin: 70px;
+}
+
+/* Tiêu đề */
+.title {
+    margin: 0;
+    font-size: 22px;
+    font-weight: bold;
+}
+
+/* Mô tả */
+.subtitle {
+    padding-bottom: 20px;
+    color: rgb(100, 100, 100);
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .container {
+        width: 95%;
+    }
+}
+
+@media (max-width: 768px) {
+    .container {
+        width: 100%;
+        padding: 20px;
+        border-radius: 0;
+        border: none;
+    }
+
+    .title {
+        font-size: 20px;
+        text-align: center;
+    }
+
+    .subtitle {
+        font-size: 14px;
+        text-align: center;
+    }
+}
