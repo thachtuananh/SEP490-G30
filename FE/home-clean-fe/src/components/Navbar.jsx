@@ -29,7 +29,7 @@ function Navbar() {
         <div className={`nav-content ${isMenuOpen ? 'active' : ''}`}>
           <ul className="menu">
             <li><Link to="/about" className="nav-link">Giới thiệu</Link></li>
-            <li><Link to="/" className="nav-link">Theo dõi dịch vụ</Link></li>
+            <li><Link to="/activitylist" className="nav-link">Theo dõi dịch vụ</Link></li>
             <li><Link to="/" className="nav-link">Tin tức</Link></li>
             <li><Link to="/" className="nav-link">Liên hệ</Link></li>
             <li><Link to="/" className="nav-link">Thông báo</Link></li>
