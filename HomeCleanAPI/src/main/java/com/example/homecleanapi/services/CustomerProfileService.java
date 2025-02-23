@@ -21,10 +21,10 @@ public class CustomerProfileService {
     private CustomerRepository customerRepository;
 
     // Xem thông tin profile của khách hàng
-    public ResponseEntity<Map<String, Object>> getProfile(String phone) {
+    public ResponseEntity<Map<String, Object>> getProfile(Integer customer_id) {
         Map<String, Object> response = new HashMap<>();
 
-        Customers customer = customerRepository.findByPhone(phone);
+        Customers customer = customerRepository.findById(customer_id);
         if (customer == null) {
             response.put("message", "Khách hàng không tồn tại!");
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
@@ -37,7 +37,7 @@ public class CustomerProfileService {
     }
 
     // Cập nhật thông tin profile của khách hàng
-    public ResponseEntity<Map<String, Object>> updateProfile(String phone, CustomerProfileRequest request) {
+    public ResponseEntity<Map<String, Object>> updateProfile(int customer_id, CustomerProfileRequest request) {
         Map<String, Object> response = new HashMap<>();
 
         
@@ -47,7 +47,7 @@ public class CustomerProfileService {
         }
 
         
-        Customers customer = customerRepository.findByPhone(phone);
+        Customers customer = customerRepository.findById(customer_id);
         if (customer == null) {
             response.put("message", "Khách hàng không tồn tại!");
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);

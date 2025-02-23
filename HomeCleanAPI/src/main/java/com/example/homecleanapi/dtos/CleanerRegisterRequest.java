@@ -7,7 +7,7 @@ public class CleanerRegisterRequest {
     private String email;
     private Integer age;
     private String address;
-    private Integer identity_number;
+    private String identity_number;
     private String experience;
 
     public CleanerRegisterRequest() {
@@ -61,11 +61,11 @@ public class CleanerRegisterRequest {
         this.address = address;
     }
 
-    public Integer getIdentity_number() {
+    public String getIdentity_number() {
         return identity_number;
     }
 
-    public void setIdentity_number(Integer identity_number) {
+    public void setIdentity_number(String identity_number) {
         this.identity_number = identity_number;
     }
 

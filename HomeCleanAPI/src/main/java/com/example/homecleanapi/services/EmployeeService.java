@@ -8,29 +8,31 @@ import com.example.homecleanapi.repositories.EmployeeRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
-public class EmployeeAddressService {
+public class EmployeeService {
 
     private EmployeeAddressRepository employeeAddressRepository;
 
     private EmployeeRepository employeeRepository;
 
-    public EmployeeAddressService(EmployeeAddressRepository employeeAddressRepository, EmployeeRepository employeeRepository) {
+    public EmployeeService(EmployeeAddressRepository employeeAddressRepository, EmployeeRepository employeeRepository) {
         this.employeeAddressRepository = employeeAddressRepository;
         this.employeeRepository = employeeRepository;
     }
 
-    public ResponseEntity<Map<String, Object>> employeeCreateAddress(EmployeeLocationsDTO request) {
+    public ResponseEntity<Map<String, Object>> employeeCreateAddress(EmployeeLocationsDTO request, @PathVariable int employeeId) {
         Map<String, Object> response = new HashMap<>();
 
-        Employee employee = employeeRepository.findById(request.getEmployeeId())
-                .orElseThrow(() -> new RuntimeException("Employee not found"));
+        Employee employee = employeeRepository.findById(employeeId).orElseThrow(() -> new RuntimeException("Employee not found"));
 
         List<EmployeeLocations> employeeLocations = employeeAddressRepository.findEmployeeLocationsByEmployee_Id(employee.getId());
 
@@ -53,11 +55,11 @@ public class EmployeeAddressService {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    public ResponseEntity<Map<String, Object>> updateEmployeeAddress(EmployeeLocationsDTO request) {
+    public ResponseEntity<Map<String, Object>> updateEmployeeAddress(EmployeeLocationsDTO request, @PathVariable int employeeId) {
         Map<String, Object> response = new HashMap<>();
 
         // Tìm employee từ database theo ID
-        Employee employee = employeeRepository.findById(request.getEmployeeId())
+        Employee employee = employeeRepository.findById(employeeId)
                 .orElseThrow(() -> new RuntimeException("Employee not found"));
 
         // Tìm địa chỉ hiện tại của employee
@@ -109,27 +111,51 @@ public class EmployeeAddressService {
     }
 
     // Lấy tất cả địa chỉ của employee theo employeeId
-    public ResponseEntity<Map<String, Object>> getAllEmployeeAddresses(int employeeId) {
+    public ResponseEntity<Map<String, Object>> getAllEmployeeAddresses(@PathVariable int employeeId) {
         Map<String, Object> response = new HashMap<>();
 
         // Kiểm tra xem employee có tồn tại không
         if (!employeeRepository.existsById(employeeId)) {
-            throw new RuntimeException("Employee not found");
+            response.put("message", "Employee not found");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         }
 
-        // Lấy danh sách địa chỉ của employee và ánh xạ thêm thuộc tính is_current
+        // Lấy danh sách địa chỉ của employee
         List<Map<String, Object>> addresses = employeeAddressRepository.findEmployeeLocationsByEmployee_Id(employeeId)
                 .stream()
                 .map(location -> {
                     Map<String, Object> addressMap = new HashMap<>();
                     addressMap.put("address", location.getAddress());
-                    addressMap.put("is_current", location.isIs_current()); // Thêm trường is_current
+                    addressMap.put("is_current", location.isIs_current());
                     return addressMap;
                 })
                 .collect(Collectors.toList());
 
         response.put("data", addresses);
-        return ResponseEntity.status(HttpStatus.OK).body(response);
+        return ResponseEntity.ok(response);
     }
 
+    // Lấy profile của employee employeeID
+    public ResponseEntity<Map<String, Object>> getEmployeeInformation(@PathVariable int employeeId) {
+        Map<String, Object> response = new HashMap<>();
+
+        // Tìm employee theo ID
+        Optional<Employee> employeeOpt = employeeRepository.findById(employeeId);
+
+        if (employeeOpt.isEmpty()) {
+            response.put("message", "Employee not found");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        }
+
+        response.put("data", employeeOpt.get());
+        return ResponseEntity.ok(response);
+    }
+
+    // Update Employee Profile
+//    public ResponseEntity<Map<String, Object>> updateEmployeeInfomation(@RequestBody ) {
+//        Map<String, Object> response = new HashMap<>();
+//
+//
+//        return ResponseEntity.status(HttpStatus.OK).body(response);
+//    }
 }
