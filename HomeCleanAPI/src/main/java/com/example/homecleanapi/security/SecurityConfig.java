@@ -4,10 +4,9 @@ import com.example.homecleanapi.repositories.CustomerRepository;
 import com.example.homecleanapi.repositories.EmployeeRepository;
 import com.example.homecleanapi.services.CustomCustomerUserDetailsService;
 import com.example.homecleanapi.services.CustomEmployeeUserDetailsService;
+import com.example.homecleanapi.utils.JwtUtils;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -15,19 +14,27 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import java.util.List;
+import java.util.Arrays;
 
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
+    private final JwtUtils jwtUtils;
     private CustomerRepository customerRepository; // Inject CustomerRepository
     private EmployeeRepository employeeRepository; // Inject EmployeeRepository
+
+    public SecurityConfig(JwtUtils jwtUtils, CustomerRepository customerRepository, EmployeeRepository employeeRepository) {
+        this.jwtUtils = jwtUtils;
+        this.customerRepository = customerRepository;
+        this.employeeRepository = employeeRepository;
+    }
 
     @Bean
     public UserDetailsService customerUserDetailsService() {
@@ -44,27 +51,23 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
-                .cors(Customizer.withDefaults())
+                .cors(cors -> cors.configurationSource(corsConfigurationSource())) // 🔥 Sửa lỗi cú pháp CORS
                 .authorizeHttpRequests(auth -> auth
-//                                .requestMatchers("/api/customer/login").permitAll() // Endpoint login cho Customer
-//                                .requestMatchers("/api/customer/register").permitAll()
-//                                .requestMatchers("/api/customer/forgot-password").permitAll()
-//                                .requestMatchers("/api/employee/login").permitAll()
-//                                .requestMatchers("/api/employee/register").permitAll()
-//                                .requestMatchers("/api/employee/forgot-password").permitAll()
-//                                .requestMatchers("/api/employee/**").permitAll() // Endpoint login cho Employee
-                                .requestMatchers("/api/**").permitAll()
-                                .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
-                                .requestMatchers("/api-docs").permitAll()
-//                        .requestMatchers("/api/customer/**").hasRole("CUSTOMER") // Các API của Customer
-//                        .requestMatchers("/api/employee/**").hasRole("EMPLOYEE") // Các API của Employee
-                                .anyRequest().authenticated()
+                        .requestMatchers("/api/customer/login").permitAll()
+                        .requestMatchers("/api/customer/register").permitAll()
+                        .requestMatchers("/api/customer/forgot-password").permitAll()
+                        .requestMatchers("/api/employee/login").permitAll()
+                        .requestMatchers("/api/employee/register").permitAll()
+                        .requestMatchers("/api/employee/forgot-password").permitAll()
+                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
+                        .requestMatchers("/api-docs").permitAll()
+                        .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authenticationProvider(customerAuthenticationProvider())  // Sử dụng AuthenticationProvider riêng
-                .authenticationProvider(employeeAuthenticationProvider()); // Sử dụng AuthenticationProvider riêng
-
-
+                .authenticationProvider(customerAuthenticationProvider())
+                .authenticationProvider(employeeAuthenticationProvider())
+                .addFilterBefore(new JwtAuthenticationFilter(jwtUtils, customerUserDetailsService(), employeeUserDetailsService()),
+                        UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 
@@ -83,15 +86,16 @@ public class SecurityConfig {
         return new EmployeeAuthenticationProvider(employeeRepository, passwordEncoder());
     }
 
-
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("*")); // Cho phép tất cả các origin
-        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS")); // Cho phép các phương thức
-        configuration.setAllowedHeaders(List.of("*")); // Cho phép tất cả các headers
+        configuration.setAllowedOrigins(Arrays.asList("http://localhost:8080", "http://localhost:5173")); // 🔥 Thêm domain frontend của bạn
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type"));
+        configuration.setAllowCredentials(true);
+
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration); // Áp dụng cho tất cả các đường dẫn
+        source.registerCorsConfiguration("/**", configuration);
         return source;
     }
 }

@@ -7,7 +7,8 @@ import com.example.homecleanapi.dtos.ForgotPasswordRequest;
 import com.example.homecleanapi.dtos.LoginRequest;
 import com.example.homecleanapi.services.EmployeeService;
 import com.example.homecleanapi.services.EmployeeAuthService;
-import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,6 +16,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 
 @RestController
+@Tag(name = "Employee API")
+@SecurityRequirement(name = "BearerAuth")
 @RequestMapping("/api/employee")
 public class EmployeeController {
     private final EmployeeAuthService cleanerAuthService;

@@ -20,11 +20,13 @@ public class EmployeeAuthService {
     private final EmployeeRepository employeeRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtils jwtUtils;
+    private final AvatarService avatarService;
 
-    public EmployeeAuthService(EmployeeRepository employeeRepository, PasswordEncoder passwordEncoder, JwtUtils jwtUtils) {
+    public EmployeeAuthService(EmployeeRepository employeeRepository, PasswordEncoder passwordEncoder, JwtUtils jwtUtils, AvatarService avatarService) {
         this.employeeRepository = employeeRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtUtils = jwtUtils;
+        this.avatarService = avatarService;
     }
 
     public ResponseEntity<Map<String, Object>> cleanerRegister(CleanerRegisterRequest request) {
@@ -50,11 +52,11 @@ public class EmployeeAuthService {
         employee.setAddress(request.getAddress());
         employee.setExperience(request.getExperience());
         employee.setIdentity_number(request.getIdentity_number().toString());
+        employee.setProfile_image(avatarService.generateIdenticon(request.getName()));
 //    customer.setRole("USER"); // Kiểm tra lại nếu role là enum hoặc bảng riêng
 
         employeeRepository.save(employee);
 
-        response.put("message", "Đăng ký thành công!");
         response.put("EmployeeID", employee.getId());
         response.put("phone", employee.getPhone());
         response.put("name", employee.getName());
