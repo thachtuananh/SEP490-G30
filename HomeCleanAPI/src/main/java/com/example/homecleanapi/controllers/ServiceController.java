@@ -24,12 +24,9 @@ public class ServiceController {
     
     // api lấy ra hết dịch vụ ở trang homepage
 
-    @GetMapping("/all")
+    @GetMapping("/service/all")
     public ResponseEntity<List<ServiceDTO>> getAllServices() {
         List<ServiceDTO> services = serviceDisplayService.getAllServices();
         return ResponseEntity.ok(services);
     }
-
-    
-   
 }

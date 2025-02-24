@@ -25,8 +25,10 @@ public class CustomerController {
 
     private CustomerProfileService customerProfileService;
 
-    public CustomerController(CustomerAuthService customerAuthService) {
+    public CustomerController(CustomerAuthService customerAuthService, JwtUtils jwtUtils, CustomerProfileService customerProfileService) {
         this.customerAuthService = customerAuthService;
+        this.jwtUtils = jwtUtils;
+        this.customerProfileService = customerProfileService;
     }
 
     @PostMapping("/register")
