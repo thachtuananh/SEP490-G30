@@ -6,31 +6,26 @@ import profileImg from "../../../assets/imgProfile/imgProfile.svg";
 import { message } from "antd";
 
 export const PersonaInformation = () => {
-    const { user, dispatch } = useContext(AuthContext);  // Lấy user từ AuthContext
-    const navigate = useNavigate(); // Hook điều hướng
-    const [formData, setFormData] = useState({
-        name: user?.name || "",
-        phone: user?.phone || "",
-        email: user?.email || "",
-        gender: user?.gender || "",
-        dob: user?.dob || "",
-    });
+    const { user, dispatch } = useContext(AuthContext);
+    const navigate = useNavigate();
 
-    // Xử lý thay đổi dữ liệu khi người dùng nhập
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        setFormData({ ...formData, [name]: value });
+    // State cho từng trường thông tin
+    const [name, setName] = useState(user?.name || "");
+    const [phone, setPhone] = useState(user?.phone || "");
+    const [email, setEmail] = useState(user?.email || "");
+    const [gender, setGender] = useState(user?.gender || "");
+    const [dob, setDob] = useState(user?.dob || "");
+
+    // Hàm xử lý lưu thông tin từng trường
+    const handleSave = (field, value) => {
+        const updatedData = { ...user, [field]: value };
+        dispatch({ type: "UPDATE_USER", payload: updatedData });
+        message.success(`${field} đã được cập nhật!`);
     };
 
-    // Xử lý khi nhấn nút Lưu
-    const handleSave = () => {
-        dispatch({ type: "UPDATE_USER", payload: formData });  // Cập nhật thông tin
-        message.success("Cập nhật thông tin thành công!");
-    };
-
-    // Xử lý khi nhấn nút Đăng xuất
+    // Đăng xuất
     const handleLogout = () => {
-        dispatch({ type: "LOGOUT" });  // Đăng xuất
+        dispatch({ type: "LOGOUT" });
         message.success("Đăng xuất thành công!");
         navigate("/");
     };
@@ -54,8 +49,9 @@ export const PersonaInformation = () => {
                     className="input-field"
                     type="text"
                     name="name"
-                    value={formData.name}
-                    onChange={handleChange}
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    onBlur={() => handleSave("name", name)}
                 />
             </div>
 
@@ -65,8 +61,9 @@ export const PersonaInformation = () => {
                     className="input-field"
                     type="text"
                     name="phone"
-                    value={formData.phone}
-                    onChange={handleChange}
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    onBlur={() => handleSave("phone", phone)}
                 />
             </div>
 
@@ -76,12 +73,13 @@ export const PersonaInformation = () => {
                     className="input-field"
                     type="email"
                     name="email"
-                    value={formData.email}
-                    onChange={handleChange}
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    onBlur={() => handleSave("email", email)}
                 />
             </div>
 
-            <div className="gender-section">
+            {/* <div className="gender-section">
                 <b>Giới tính</b>
                 <div className="gender-options">
                     {["Nam", "Nữ", "Khác"].map((option) => (
@@ -97,7 +95,27 @@ export const PersonaInformation = () => {
                         </label>
                     ))}
                 </div>
+            </div> */}
+            <div className="gender-section">
+                <b>Giới tính</b>
+                <div className="gender-options">
+                    {["Nam", "Nữ", "Khác"].map((option) => (
+                        <label key={option} className={`gender-option ${gender === option ? 'checked' : ''}`}>
+                            <input
+                                type="radio"
+                                name="gender"
+                                value={option}
+                                checked={gender === option}
+                                onChange={(e) => setGender(e.target.value)}
+                                onBlur={() => handleSave("gender", option)}
+                            />
+                            {option}
+                        </label>
+                    ))}
+                </div>
             </div>
+
+
 
             <div className="form-group">
                 <b>Ngày sinh</b>
@@ -105,8 +123,9 @@ export const PersonaInformation = () => {
                     className="input-field"
                     type="date"
                     name="dob"
-                    value={formData.dob}
-                    onChange={handleChange}
+                    value={dob}
+                    onChange={(e) => setDob(e.target.value)}
+                    onBlur={() => handleSave("dob", dob)}
                 />
             </div>
 

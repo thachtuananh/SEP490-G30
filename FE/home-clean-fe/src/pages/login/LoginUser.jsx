@@ -53,25 +53,28 @@ function Login() {
       const response = await fetch(`${BASE_URL}/customer/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify({ phone, password }),
       });
 
       const result = await response.json();
 
       if (response.ok) {
-        dispatch({ type: 'LOGIN_SUCCESS', payload: result });
-        message.success(result.message || 'Đăng nhập thành công!');
+        const { token, customerId, phone } = result;
+        dispatch({
+          type: 'LOGIN_SUCCESS',
+          payload: { user: { phone }, token, customerId }
+        });
+
+        message.success('Đăng nhập thành công!');
         navigate('/');
       } else {
-        dispatch({ type: 'LOGIN_FAILURE', payload: result.message || 'Đăng nhập thất bại.' });
-        setErrorMessage(result.message || 'Số điện thoại hoặc mật khẩu không đúng.');
+        setErrorMessage(result.message || 'Đăng nhập thất bại.');
       }
     } catch (error) {
-      dispatch({ type: 'LOGIN_FAILURE', payload: 'Lỗi máy chủ, vui lòng thử lại.' });
       setErrorMessage('Lỗi máy chủ, vui lòng thử lại sau.');
     }
   };
+
 
   useEffect(() => {
     if (errorMessage) {
