@@ -113,12 +113,14 @@ function RegisterCleaner() {
                 console.log("✅ Đăng ký thành công.");
                 navigate('/login');
             } else {
-                setErrorMessage(result.message || 'Đăng ký thất bại!');
-                console.error("❌ Lỗi từ server:", result);
+                message.error(result.message || 'Đăng ký thất bại!');
+                // setErrorMessage(result.message || 'Đăng ký thất bại!');
+
             }
         } catch (error) {
-            console.error("🚫 Lỗi kết nối hoặc xử lý:", error);
-            setErrorMessage('Lỗi kết nối đến server!');
+            // console.error("🚫 Lỗi kết nối hoặc xử lý:", error);
+            // setErrorMessage('Lỗi kết nối đến server!');
+            message.error('Lỗi kết nối đến server!');
         }
     };
 

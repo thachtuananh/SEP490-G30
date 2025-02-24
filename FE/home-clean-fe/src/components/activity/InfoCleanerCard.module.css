@@ -92,13 +92,18 @@
 
 .rejectButton,
 .acceptButton {
-    width: 100px;
+    width: 150px;
     padding: 10px 20px;
     text-align: center;
     color: white;
     border-radius: 5px;
     cursor: pointer;
     font-weight: bold;
+}
+
+.rejectButton:hover,
+.acceptButton:hover {
+    transform: scale(1.05);
 }
 
 .rejectButton {

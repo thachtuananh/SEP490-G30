@@ -129,12 +129,12 @@ export const ActivityCard = () => {
                         <div className={styles.popup}>
                             <InfoCleanerCard />
 
-                            <button
+                            <p
                                 className={styles.exitButton}
                                 onClick={() => setIsView(false)}
                             >
-                                Đóng
-                            </button>
+                               Đóng
+                            </p>
                         </div>
                     </div>
                 )}

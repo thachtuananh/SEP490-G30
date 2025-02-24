@@ -1,35 +1,36 @@
-import React, { useState, useContext, useEffect } from 'react';
+import React, { useState, useContext, useEffect, useCallback } from 'react';
 import { message } from 'antd';
 
-import Footer from '../../components/Footer';
 import logo from '../../assets/HouseClean_logo.png';
 import { Link, useNavigate } from 'react-router-dom';
 import ImgLeft from '../../assets/image-left.png';
 import { AuthContext } from '../../context/AuthContext';
 import { BASE_URL } from '../../utils/config';
 import { validatePhone, validatePassword } from "../../utils/validate";
+import { AiFillEye, AiFillEyeInvisible } from 'react-icons/ai'; // Import icon con mắt
+
 
 function Login() {
   const { dispatch } = useContext(AuthContext);
   const navigate = useNavigate();
 
+  const [showPassword, setShowPassword] = useState(false);
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [phoneError, setPhoneError] = useState(false);
   const [passwordError, setPasswordError] = useState(false);
 
-  const validateForm = () => {
+  const validateForm = useCallback(() => {
     let isValid = true;
-
-    if (!phone) {
+    if (!phone.trim()) {
       setPhoneError(true);
       isValid = false;
     } else {
       setPhoneError(false);
     }
 
-    if (!password) {
+    if (!password.trim()) {
       setPasswordError(true);
       isValid = false;
     } else {
@@ -37,13 +38,12 @@ function Login() {
     }
 
     return isValid;
-  };
+  }, [phone, password]);
 
   const handleLogin = async (e) => {
     e.preventDefault();
-
     if (!validateForm()) {
-      setErrorMessage('Vui lòng điền đầy đủ thông tin');
+      setErrorMessage('Vui lòng điền đầy đủ thông tin.');
       return;
     }
 
@@ -53,44 +53,29 @@ function Login() {
       const response = await fetch(`${BASE_URL}/customer/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({ phone, password }),
       });
 
       const result = await response.json();
 
       if (response.ok) {
-        // Lưu thông tin đăng nhập
-        dispatch({ type: 'LOGIN_SUCCESS', payload: result.user });
-
-        // Gọi API lấy chi tiết người dùng (nếu cần)
-        const userInfoResponse = await fetch(`${BASE_URL}/customer/profile`, {
-          method: 'GET',
-          headers: { 'Authorization': `Bearer ${result.token}` }
-        });
-
-        const userInfo = await userInfoResponse.json();
-        if (userInfoResponse.ok) {
-          dispatch({ type: 'LOGIN_SUCCESS', payload: userInfo });
-          message.success('Đăng nhập thành công!');
-          navigate('/');
-        } else {
-          message.error('Không thể lấy thông tin người dùng!');
-        }
+        dispatch({ type: 'LOGIN_SUCCESS', payload: result });
+        message.success(result.message || 'Đăng nhập thành công!');
+        navigate('/');
       } else {
-        dispatch({ type: 'LOGIN_FAILURE', payload: result.message });
-        setErrorMessage('Thông tin đăng nhập không chính xác!');
+        dispatch({ type: 'LOGIN_FAILURE', payload: result.message || 'Đăng nhập thất bại.' });
+        setErrorMessage(result.message || 'Số điện thoại hoặc mật khẩu không đúng.');
       }
     } catch (error) {
       dispatch({ type: 'LOGIN_FAILURE', payload: 'Lỗi máy chủ, vui lòng thử lại.' });
+      setErrorMessage('Lỗi máy chủ, vui lòng thử lại sau.');
     }
   };
 
-
   useEffect(() => {
     if (errorMessage) {
-      const timer = setTimeout(() => {
-        setErrorMessage('');
-      }, 3000);
+      const timer = setTimeout(() => setErrorMessage(''), 3000);
       return () => clearTimeout(timer);
     }
   }, [errorMessage]);
@@ -112,6 +97,8 @@ function Login() {
             <h2>Đăng nhập người sử dụng dịch vụ</h2>
 
             <form className="login-form" onSubmit={handleLogin}>
+
+
               <div className={`form-group ${phoneError ? 'error' : ''}`}>
                 <label>Số điện thoại</label>
                 <input
@@ -128,16 +115,24 @@ function Login() {
 
               <div className={`form-group ${passwordError ? 'error' : ''}`}>
                 <label>Mật khẩu</label>
-                <input
-                  type="password"
-                  placeholder="Nhập mật khẩu"
-                  value={password}
-                  onChange={(e) => {
-                    setPassword(e.target.value);
-                    setPasswordError(false);
-                  }}
-                  className={passwordError ? 'error' : ''}
-                />
+                <div className="password-input-container">
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    placeholder="Nhập mật khẩu"
+                    value={password}
+                    onChange={(e) => {
+                      setPassword(e.target.value);
+                      setPasswordError(false);
+                    }}
+                    className={passwordError ? 'error' : ''}
+                  />
+                  <span
+                    className="password-toggle"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? <AiFillEyeInvisible /> : <AiFillEye />}
+                  </span>
+                </div>
               </div>
 
               <div className="error-message-container">
