@@ -38,7 +38,7 @@ public class EmployeeController {
         return employeeService.employeeCreateAddress(request, employeeId);
     }
 
-    @PutMapping(value = "/{employeeId}/update_address", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping(value = "/{employeeId}/update-address", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Map<String, Object>> updateEmployeeAddress(@RequestBody EmployeeLocationsDTO request, @RequestParam int employeeId) {
         // Gọi service để xử lý update địa chỉ
         return employeeService.updateEmployeeAddress(request, employeeId);

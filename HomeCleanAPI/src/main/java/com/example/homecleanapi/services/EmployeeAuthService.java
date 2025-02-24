@@ -82,10 +82,10 @@ public class EmployeeAuthService {
 
         String token = jwtUtils.generateToken(employee.getPhone(), employee.getName(), employee.getId().toString());
 
-        response.put("message", "Đăng nhập thành công!");
         response.put("token", token);
         response.put("phone", employee.getPhone());
         response.put("cleanerId", employee.getId());
+        response.put("name", employee.getName());
 
         return ResponseEntity.ok(response);
     }
