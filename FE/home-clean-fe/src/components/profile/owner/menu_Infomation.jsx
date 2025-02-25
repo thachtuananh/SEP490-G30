@@ -23,7 +23,7 @@ const MenuInfomation = ({ selectedMenu, setSelectedMenu }) => {
         <img className="profile-avatar" src={profileImg} alt="icon" />
         <div className="profile-details">
           <p className="profile-name"><strong>{user?.name || "Người dùng"}</strong></p>
-          <p className="profile-email">{user?.email || "Chưa có email"}</p>
+          {/* <p className="profile-email">{user?.email || "Chưa có email"}</p> */}
         </div>
       </div>
       <hr className="menu-separator" />

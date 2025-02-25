@@ -69,7 +69,7 @@ function Navbar() {
             <li className="mobile-login">
               {user ? (
                 <Link to="/infomation" className="user-name">
-                  Xin chào, {user.name || user.phone}!
+                  {user.name}
                 </Link>
               ) : (
                 <Link to="/login" className="login-btn">Đăng nhập</Link>
@@ -81,7 +81,7 @@ function Navbar() {
         <div className="desktop-login">
           {user ? (
             <Link to="/infomation" className="user-name">
-              {user.name || user.phone}
+              {user.name}
             </Link>
           ) : (
             <Link to="/login" className="login-btn">Đăng nhập</Link>

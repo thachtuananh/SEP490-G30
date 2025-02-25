@@ -51,7 +51,7 @@ export const PersonaInformation = () => {
                     name="name"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    onBlur={() => handleSave("name", name)}
+                // onBlur={() => handleSave("name", name)}
                 />
             </div>
 
@@ -63,11 +63,11 @@ export const PersonaInformation = () => {
                     name="phone"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
-                    onBlur={() => handleSave("phone", phone)}
+                // onBlur={() => handleSave("phone", phone)}
                 />
             </div>
 
-            <div className="form-group">
+            {/* <div className="form-group">
                 <b>Email</b>
                 <input
                     className="input-field"
@@ -77,7 +77,7 @@ export const PersonaInformation = () => {
                     onChange={(e) => setEmail(e.target.value)}
                     onBlur={() => handleSave("email", email)}
                 />
-            </div>
+            </div> */}
 
             {/* <div className="gender-section">
                 <b>Giới tính</b>
@@ -96,7 +96,7 @@ export const PersonaInformation = () => {
                     ))}
                 </div>
             </div> */}
-            <div className="gender-section">
+            {/* <div className="gender-section">
                 <b>Giới tính</b>
                 <div className="gender-options">
                     {["Nam", "Nữ", "Khác"].map((option) => (
@@ -113,11 +113,11 @@ export const PersonaInformation = () => {
                         </label>
                     ))}
                 </div>
-            </div>
+            </div> */}
 
 
 
-            <div className="form-group">
+            {/* <div className="form-group">
                 <b>Ngày sinh</b>
                 <input
                     className="input-field"
@@ -127,7 +127,7 @@ export const PersonaInformation = () => {
                     onChange={(e) => setDob(e.target.value)}
                     onBlur={() => handleSave("dob", dob)}
                 />
-            </div>
+            </div> */}
 
             {/* Nút Lưu và Đăng xuất */}
             <div className="button-group">
