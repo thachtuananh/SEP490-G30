@@ -22,39 +22,44 @@ public class JobController {
     private CleanerJobService cleanerJobService;
 
     // API cho customer tạo job
-    @PostMapping("/create-job")
-    public ResponseEntity<Map<String, Object>> createJob(@RequestBody BookJobRequest request) {
-        Map<String, Object> response = jobService.bookJob(request); 
+    @PostMapping("/create-job/{customerId}")
+    public ResponseEntity<Map<String, Object>> createJob(@PathVariable Long customerId, @RequestBody BookJobRequest request) {
+        Map<String, Object> response = jobService.bookJob(customerId, request); 
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
 
+
     // Xem danh sách cleaner đã apply cho job
-    @GetMapping("/applications/{jobId}")
-    public ResponseEntity<List<Map<String, Object>>> getJobApplications(@PathVariable Long jobId) {
-        List<Map<String, Object>> jobApplications = cleanerJobService.getApplicationsForJob(jobId);
+    @GetMapping("/applications/{jobId}/{customerId}")
+    public ResponseEntity<List<Map<String, Object>>> getJobApplications(@PathVariable Long jobId, @PathVariable Long customerId) {
+        List<Map<String, Object>> jobApplications = cleanerJobService.getApplicationsForJob(jobId, customerId);
         if (jobApplications.isEmpty()) {
             return ResponseEntity.status(404).body(List.of(Map.of("message", "No applications found")));
         }
         return ResponseEntity.ok(jobApplications);
     }
 
-    @PostMapping("/accept-job/{jobId}/cleaner/{cleanerId}")
-    public ResponseEntity<Map<String, Object>> acceptCleanerForJob(@PathVariable Long jobId, @PathVariable Long cleanerId) {
-        Map<String, Object> response = cleanerJobService.acceptOrRejectApplication(jobId, cleanerId, "accept");
+
+
+    @PostMapping("/accept-job/{customerId}/{jobId}/cleaner/{cleanerId}")
+    public ResponseEntity<Map<String, Object>> acceptCleanerForJob(@PathVariable Long customerId, @PathVariable Long jobId, @PathVariable Long cleanerId) {
+        Map<String, Object> response = cleanerJobService.acceptOrRejectApplication(customerId, jobId, cleanerId, "accept");
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping("/reject-job/{jobId}/cleaner/{cleanerId}")
-    public ResponseEntity<Map<String, Object>> rejectCleanerForJob(@PathVariable Long jobId, @PathVariable Long cleanerId) {
-        Map<String, Object> response = cleanerJobService.acceptOrRejectApplication(jobId, cleanerId, "reject");
+    @PostMapping("/reject-job/{customerId}/{jobId}/cleaner/{cleanerId}")
+    public ResponseEntity<Map<String, Object>> rejectCleanerForJob(@PathVariable Long customerId, @PathVariable Long jobId, @PathVariable Long cleanerId) {
+        Map<String, Object> response = cleanerJobService.acceptOrRejectApplication(customerId, jobId, cleanerId, "reject");
         return ResponseEntity.ok(response);
     }
+
 
     // Chuyển trạng thái job sang STARTED
-    @PostMapping("/job/start/{jobId}")
-    public ResponseEntity<Map<String, Object>> startJob(@PathVariable("jobId") Long jobId) {
-        Map<String, Object> response = jobService.updateJobStatusToStarted(jobId);
+    @PostMapping("/job/start/{jobId}/customer/{customerId}")
+    public ResponseEntity<Map<String, Object>> startJob(@PathVariable("jobId") Long jobId, @PathVariable("customerId") Long customerId) {
+        Map<String, Object> response = jobService.updateJobStatusToStarted(jobId, customerId);
         return ResponseEntity.ok(response);
     }
+
 }

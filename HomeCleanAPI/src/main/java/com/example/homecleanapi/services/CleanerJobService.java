@@ -65,12 +65,11 @@ public class CleanerJobService {
     }
 
     // Apply job
-    public Map<String, Object> applyForJob(Long jobId) {
+    public Map<String, Object> applyForJob(Long jobId, Long cleanerId) {
         Map<String, Object> response = new HashMap<>();
-        String phoneNumber = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
-        // Tìm cleaner theo phone_number thay vì cleanerId
-        Optional<Cleaner> cleanerOpt = cleanerRepository.findByPhoneNumber(phoneNumber);
+        // Tìm cleaner theo cleanerId từ database
+        Optional<Cleaner> cleanerOpt = cleanerRepository.findById(cleanerId);
         if (!cleanerOpt.isPresent()) {
             response.put("message", "Cleaner not found");
             return response;
@@ -109,23 +108,28 @@ public class CleanerJobService {
         return response;
     }
 
+
     // Get applications for job
-    public List<Map<String, Object>> getApplicationsForJob(Long jobId) {
+    public List<Map<String, Object>> getApplicationsForJob(Long jobId, Long customerId) {
+        // Tìm công việc theo jobId
         Job job = jobRepository.findById(jobId).orElse(null);
         if (job == null) {
             return List.of(Map.of("message", "Job not found"));
         }
 
-        String customerPhoneFromContext = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        if (!job.getCustomer().getPhone().equals(customerPhoneFromContext)) {
+        // Kiểm tra xem customer có quyền xem danh sách ứng viên không
+        if (job.getCustomer().getId().longValue() != customerId.longValue()) {
             return List.of(Map.of("message", "You are not authorized to view applications for this job"));
         }
 
+
+        // Lấy danh sách các ứng viên đã apply cho job này với trạng thái "Pending"
         List<JobApplication> jobApplications = jobApplicationRepository.findByJobAndStatus(job, "Pending");
         if (jobApplications.isEmpty()) {
             return List.of(Map.of("message", "No applications found for this job"));
         }
 
+        // Chuyển các ứng viên thành thông tin cần thiết
         return jobApplications.stream().map(application -> {
             Cleaner cleaner = application.getCleaner();
             Map<String, Object> cleanerInfo = new HashMap<>();
@@ -136,10 +140,13 @@ public class CleanerJobService {
         }).collect(Collectors.toList());
     }
 
+
+
     // accept hoặc reject cleaner
-    public Map<String, Object> acceptOrRejectApplication(Long jobId, Long cleanerId, String action) {
+    public Map<String, Object> acceptOrRejectApplication(Long customerId, Long jobId, Long cleanerId, String action) {
         Map<String, Object> response = new HashMap<>();
 
+        // Tìm công việc theo jobId
         Optional<Job> jobOpt = jobRepository.findById(jobId);
         if (!jobOpt.isPresent()) {
             response.put("message", "Job not found");
@@ -148,12 +155,12 @@ public class CleanerJobService {
 
         Job job = jobOpt.get();
 
-        // Kiểm tra quyền của customer
-        String customerIdStr = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        if (!job.getCustomer().getPhone().equals(customerIdStr)) {
+        // Kiểm tra quyền của customer (sử dụng customerId từ @PathVariable)
+        if (job.getCustomer().getId().longValue() != customerId) {
             response.put("message", "You are not authorized to accept or reject this job");
             return response;
         }
+
 
         // Tìm cleaner theo ID
         Optional<Cleaner> cleanerOpt = cleanerRepository.findById(cleanerId);
@@ -207,15 +214,14 @@ public class CleanerJobService {
 
         return response;
     }
+
     
  // Cập nhật trạng thái công việc sang "ARRIVED"
-    public Map<String, Object> updateJobStatusToArrived(Long jobId) {
+    public Map<String, Object> updateJobStatusToArrived(Long jobId, Long cleanerId) {
         Map<String, Object> response = new HashMap<>();
 
-        // Lấy userId từ context
-        String cleanerIdStr = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        // Tìm công việc theo jobId
         Optional<Job> jobOpt = jobRepository.findById(jobId);
-        
         if (!jobOpt.isPresent()) {
             response.put("message", "Job not found");
             return response;
@@ -225,7 +231,7 @@ public class CleanerJobService {
 
         // Kiểm tra xem cleaner có quyền cập nhật trạng thái không
         JobApplication jobApplication = jobApplicationRepository.findByJobIdAndStatus(jobId, "Accepted");
-        if (jobApplication == null || !jobApplication.getCleaner().getPhoneNumber().equals(cleanerIdStr)) {
+        if (jobApplication == null || !jobApplication.getCleaner().getId().equals(cleanerId)) {
             response.put("message", "You are not authorized to update this job status");
             return response;
         }
@@ -243,14 +249,14 @@ public class CleanerJobService {
         return response;
     }
 
+
     // Cập nhật trạng thái công việc sang "COMPLETED"
-    public Map<String, Object> updateJobStatusToCompleted(Long jobId) {
+    public Map<String, Object> updateJobStatusToCompleted(Long jobId, Long cleanerId) {
         Map<String, Object> response = new HashMap<>();
 
-        // Lấy userId từ context
-        String cleanerIdStr = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        // Tìm công việc theo jobId
         Optional<Job> jobOpt = jobRepository.findById(jobId);
-        
+
         if (!jobOpt.isPresent()) {
             response.put("message", "Job not found");
             return response;
@@ -258,13 +264,14 @@ public class CleanerJobService {
 
         Job job = jobOpt.get();
 
-        // Kiểm tra xem cleaner có quyền cập nhật trạng thái không
-        JobApplication jobApplication = jobApplicationRepository.findByJobIdAndStatus(jobId, "Accepted");
-        if (jobApplication == null || !jobApplication.getCleaner().getPhoneNumber().equals(cleanerIdStr)) {
+        // Kiểm tra quyền của cleaner (sử dụng cleanerId từ @PathVariable)
+        Optional<JobApplication> jobApplicationOpt = jobApplicationRepository.findByJobIdAndCleanerId(jobId, cleanerId);
+        if (!jobApplicationOpt.isPresent() || !jobApplicationOpt.get().getStatus().equals("Accepted")) {
             response.put("message", "You are not authorized to update this job status");
             return response;
         }
 
+        // Kiểm tra trạng thái của công việc
         if (!job.getStatus().equals(JobStatus.STARTED)) {
             response.put("message", "Job is not in 'STARTED' state");
             return response;
@@ -277,6 +284,7 @@ public class CleanerJobService {
         response.put("message", "Job status updated to COMPLETED");
         return response;
     }
+
 
 }
 

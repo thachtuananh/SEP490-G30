@@ -43,27 +43,19 @@ public class JobService {
     @Autowired JobDetailsRepository jobDetailsRepository;
 
     // Tạo job mới cho customer
-    public Map<String, Object> bookJob(BookJobRequest request) {
+    public Map<String, Object> bookJob(Long customerId, BookJobRequest request) {
         Map<String, Object> response = new HashMap<>();
 
-        // Lấy userType từ context
-        String userType = (String) SecurityContextHolder.getContext().getAuthentication().getDetails();
-        if (userType == null || !userType.equals("customer")) {
-            response.put("message", "Unauthorized - Only customers can book jobs");
-            return response;
-        }
-
-        // Lấy phone từ SecurityContext
-        String phone = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
-        // Tìm customer theo phone number từ SecurityContext
-        Customers customer = customerRepository.findByPhone(phone);
-        if (customer == null) {
+        // Tìm customer theo customerId
+        Optional<Customers> customerOpt = customerRepository.findById(customerId);
+        if (!customerOpt.isPresent()) {
             response.put("message", "Customer not found");
             return response;
         }
 
-        // Lấy địa chỉ của customer từ customerAddressId
+        Customers customer = customerOpt.get();
+
+        // Tìm địa chỉ của customer
         Optional<CustomerAddress> customerAddressOpt = customerAddressRepository.findById(request.getCustomerAddressId());
         if (!customerAddressOpt.isPresent()) {
             response.put("message", "Customer address not found");
@@ -71,10 +63,10 @@ public class JobService {
         }
         CustomerAddress customerAddress = customerAddressOpt.get();
 
-        // Tạo một Job mới
+        // Tạo mới Job
         Job job = new Job();
 
-        // Kiểm tra và lấy đối tượng Service
+        // Kiểm tra Service
         Optional<Services> serviceOpt = serviceRepository.findById(request.getServiceId());
         if (!serviceOpt.isPresent()) {
             response.put("message", "Service not found");
@@ -82,7 +74,7 @@ public class JobService {
         }
         Services service = serviceOpt.get();
 
-        // Kiểm tra và lấy đối tượng ServiceDetail
+        // Kiểm tra Service Detail
         Optional<ServiceDetail> serviceDetailOpt = serviceDetailRepository.findById(request.getServiceDetailId());
         if (!serviceDetailOpt.isPresent()) {
             response.put("message", "Service Detail not found");
@@ -90,41 +82,40 @@ public class JobService {
         }
         ServiceDetail serviceDetail = serviceDetailOpt.get();
 
-        // Gán thông tin cho job
-        job.setService(service);  // Gán Service cho Job
-        job.setServiceDetail(serviceDetail);  // Gán ServiceDetail cho Job
+        // Gán thông tin cho Job
+        job.setService(service);  
+        job.setServiceDetail(serviceDetail);  
 
         // Chuyển jobTime từ String sang LocalDateTime
         try {
             DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
             LocalDateTime jobTime = LocalDateTime.parse(request.getJobTime(), formatter);
-            job.setScheduledTime(jobTime);  // Gán thời gian cho job
+            job.setScheduledTime(jobTime);  
         } catch (Exception e) {
             response.put("message", "Invalid job time format");
             return response;
         }
 
-        job.setCustomerAddress(customerAddress);  // Địa chỉ khách hàng
-        job.setStatus(JobStatus.OPEN);  // Trạng thái ban đầu của job
-        job.setCustomer(customer);  // Gán Customer cho Job
+        job.setCustomerAddress(customerAddress);  
+        job.setStatus(JobStatus.OPEN);  
+        job.setCustomer(customer);  
 
-        // Tạo một JobDetails mới
+        // Tạo JobDetails mới và liên kết với Job
         JobDetails jobDetails = new JobDetails();
-        jobDetails.setRoomSize(request.getRoomSize());  // Kích thước phòng
-        jobDetails.setImageUrl(request.getImageUrl());  // URL hình ảnh
+        jobDetails.setRoomSize(request.getRoomSize());  
+        jobDetails.setImageUrl(request.getImageUrl());  
 
-        // Gán JobDetails cho Job trước khi lưu Job vào cơ sở dữ liệu
-        job.setJobDetails(jobDetails);
+        // Gán Job cho JobDetails trước khi lưu
+        jobDetails.setJob(job); // Liên kết Job với JobDetails
+
+        // Lưu Job vào cơ sở dữ liệu trước
+        jobRepository.save(job);
 
         // Lưu JobDetails vào cơ sở dữ liệu
         jobDetailsRepository.save(jobDetails);
 
-        // Lưu Job vào cơ sở dữ liệu
-        jobRepository.save(job);
-
-        // Trả về thông tin công việc vừa được tạo
         response.put("message", "Job booked successfully");
-        response.put("jobId", job.getId());  // jobId sẽ được tự động sinh ra bởi cơ sở dữ liệu
+        response.put("jobId", job.getId()); 
         response.put("status", job.getStatus());
 
         return response;
@@ -136,17 +127,13 @@ public class JobService {
 
 
 
+
+
     // Chuyển trạng thái job sang started
-    public Map<String, Object> updateJobStatusToStarted(Long jobId) {
+    public Map<String, Object> updateJobStatusToStarted(Long jobId, Long customerId) {
         Map<String, Object> response = new HashMap<>();
 
-        // Lấy userType từ context
-        String userType = (String) SecurityContextHolder.getContext().getAuthentication().getDetails();
-        if (userType == null || !userType.equals("cleaner")) {
-            response.put("message", "Unauthorized - Only cleaners can start jobs");
-            return response;
-        }
-
+        // Tìm công việc theo jobId
         Optional<Job> jobOpt = jobRepository.findById(jobId);
         if (!jobOpt.isPresent()) {
             response.put("message", "Job not found");
@@ -154,6 +141,13 @@ public class JobService {
         }
 
         Job job = jobOpt.get();
+
+        // Kiểm tra quyền của customer (sử dụng customerId từ @PathVariable)
+        if (job.getCustomer().getId().longValue() != customerId) {
+            response.put("message", "You are not authorized to start this job");
+            return response;
+        }
+
 
         // Kiểm tra trạng thái công việc và sự tồn tại của job application
         JobApplication jobApplication = jobApplicationRepository.findByJobIdAndStatus(jobId, "Accepted");
@@ -174,6 +168,7 @@ public class JobService {
         response.put("message", "Job status updated to STARTED");
         return response;
     }
+
 
 }
 
