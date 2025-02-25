@@ -21,6 +21,8 @@ public class ServiceDisplayService {
 	@Autowired
     private ServiceDetailRepository serviceDetailRepository;
 
+	
+	// customer xem tất cả dịch vụ
     public List<ServiceDTO> getAllServices() {
 
     	List<Services> homeCleanServices = serviceRepository.findAll();

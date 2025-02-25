@@ -6,14 +6,12 @@ public class JobSummaryDTO {
 
 	private Long jobId;  // Thêm trường jobId
     private String serviceName;
-    private String location;
     private Double price;
     private LocalDateTime scheduledTime;
 
-    public JobSummaryDTO(Long jobId, String serviceName, String location, Double price, LocalDateTime scheduledTime) {
+    public JobSummaryDTO(Long jobId, String serviceName, Double price, LocalDateTime scheduledTime) {
         this.jobId = jobId;  // Gán giá trị jobId
         this.serviceName = serviceName;
-        this.location = location;
         this.price = price;
         this.scheduledTime = scheduledTime;
     }
@@ -26,13 +24,6 @@ public class JobSummaryDTO {
 		this.serviceName = serviceName;
 	}
 
-	public String getLocation() {
-		return location;
-	}
-
-	public void setLocation(String location) {
-		this.location = location;
-	}
 
 	public Double getPrice() {
 		return price;

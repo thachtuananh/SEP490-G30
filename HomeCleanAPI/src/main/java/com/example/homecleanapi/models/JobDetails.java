@@ -13,7 +13,7 @@ public class JobDetails {
     private Long id;
 
     @OneToOne
-    @JoinColumn(name = "job_id", nullable = false)
+    @JoinColumn(name = "job_id")
     private Job job; // Liên kết với bảng jobs
 
     private Integer roomSize;

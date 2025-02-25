@@ -32,15 +32,14 @@ public class Job {
     @JoinColumn(name = "service_detail_id", nullable = false)
     private ServiceDetail serviceDetail;
 
-    private String address;
-    private Double latitude;
-    private Double longitude;
-    private String requestedAddress;
-    private Double requestedLatitude;
-    private Double requestedLongitude;
     
+    @ManyToOne
+    @JoinColumn(name = "customer_address_id", referencedColumnName = "id")
+    private CustomerAddress customerAddress; // Mối quan hệ với CustomerAddress
+
     @Column(name = "scheduled_time")
-    private LocalDateTime scheduledTime;
+    private LocalDateTime scheduledTime; 
+
 
     private Double totalPrice;
 
@@ -80,52 +79,12 @@ public class Job {
         this.serviceDetail = serviceDetail;
     }
 
-    public String getAddress() {
-        return address;
+    public CustomerAddress getCustomerAddress() {
+        return customerAddress;
     }
 
-    public void setAddress(String address) {
-        this.address = address;
-    }
-
-    public Double getLatitude() {
-        return latitude;
-    }
-
-    public void setLatitude(Double latitude) {
-        this.latitude = latitude;
-    }
-
-    public Double getLongitude() {
-        return longitude;
-    }
-
-    public void setLongitude(Double longitude) {
-        this.longitude = longitude;
-    }
-
-    public String getRequestedAddress() {
-        return requestedAddress;
-    }
-
-    public void setRequestedAddress(String requestedAddress) {
-        this.requestedAddress = requestedAddress;
-    }
-
-    public Double getRequestedLatitude() {
-        return requestedLatitude;
-    }
-
-    public void setRequestedLatitude(Double requestedLatitude) {
-        this.requestedLatitude = requestedLatitude;
-    }
-
-    public Double getRequestedLongitude() {
-        return requestedLongitude;
-    }
-
-    public void setRequestedLongitude(Double requestedLongitude) {
-        this.requestedLongitude = requestedLongitude;
+    public void setCustomerAddress(CustomerAddress customerAddress) {
+        this.customerAddress = customerAddress;
     }
 
     public LocalDateTime getScheduledTime() {
@@ -152,21 +111,19 @@ public class Job {
         this.status = status;
     }
 
-	public JobDetails getJobDetails() {
-		return jobDetails;
-	}
+    public JobDetails getJobDetails() {
+        return jobDetails;
+    }
 
-	public void setJobDetails(JobDetails jobDetails) {
-		this.jobDetails = jobDetails;
-	}
+    public void setJobDetails(JobDetails jobDetails) {
+        this.jobDetails = jobDetails;
+    }
 
-	public Cleaner getCleaner() {
-		return cleaner;
-	}
+    public Cleaner getCleaner() {
+        return cleaner;
+    }
 
-	public void setCleaner(Cleaner cleaner) {
-		this.cleaner = cleaner;
-	}
-	
-    
+    public void setCleaner(Cleaner cleaner) {
+        this.cleaner = cleaner;
+    }
 }
