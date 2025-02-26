@@ -138,6 +138,7 @@ body {
     transform: translateY(0);
     opacity: 1;
     visibility: visible;
+    z-index: 1000;
   }
 
   .menu {
@@ -220,10 +221,15 @@ body {
 /* Service section styles */
 .service-section,
 .testimonial-section,
-.news-section {
+.news-section,
+.job-list-section {
   padding: 2rem 2rem;
   max-width: 1200px;
   margin: 0 auto;
+}
+
+.section-title.job-title::after {
+  content: none;
 }
 
 .section-title {
@@ -243,6 +249,11 @@ body {
   width: 60px;
   height: 3px;
   background: #00a651;
+}
+
+.service-grid.job-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
 }
 
 .service-grid {
@@ -453,13 +464,27 @@ body {
   transition: transform 0.3s ease;
 }
 
+.service-card.job-card {
+  background: #E8E8E8;
+}
+
 .service-card:hover {
   transform: translateY(-5px);
 }
 
 .card-image {
   position: relative;
-  height: 200px;
+  height: 100px;
+}
+
+.card-image.job-image {
+  text-align: center;
+}
+
+.card-image.job-image img {
+  width: 60px;
+  height: 60px;
+  margin: 30px;
 }
 
 .card-image img {
@@ -486,8 +511,16 @@ body {
   color: #ff4081;
 }
 
+.card-content.job-content {
+  text-align: center;
+}
+
 .card-content {
   padding: 1rem;
+}
+
+.service-title.job-count {
+  color: #039855;
 }
 
 .service-title {

@@ -26,18 +26,31 @@ const AuthReducer = (state, action) => {
         case "LOGIN_START":
             return { ...state, user: null, loading: true, error: null };
 
-        case "LOGIN_SUCCESS":
+        case "LOGIN_SUCCESS_CUSTOMER":
             const { user, token, customerId } = action.payload;
             localStorage.setItem("user", JSON.stringify(user));
             localStorage.setItem("token", token);
             localStorage.setItem("customerId", customerId);
             return { ...state, user, token, customerId, loading: false, error: null };
 
-        case "FETCH_PROFILE_SUCCESS":
-            const { name, phone, email, gender, dob, addresses } = action.payload;
-            const userProfile = { name, phone, email, gender, dob, addresses };
+        case "LOGIN_SUCCESS_CLEANER":
+            const { emp, tokenC, cleanerId } = action.payload;
+            localStorage.setItem("user", JSON.stringify(emp));
+            localStorage.setItem("tokenC", tokenC);
+            localStorage.setItem("cleanerId", cleanerId);
+            return { ...state, emp, tokenC, cleanerId, loading: false, error: null };
+
+        case "FETCH_PROFILE_SUCCESS_CUSTOMER":
+            const { name, phone } = action.payload;
+            const userProfile = { name, phone };
             localStorage.setItem("user", JSON.stringify(userProfile));
             return { ...state, user: userProfile };
+
+        case "FETCH_PROFILE_SUCCESS_CLEANER":
+            const { nameC, phoneC, email, gender, dob, addresses } = action.payload;
+            const empProfile = { nameC, phoneC, email, gender, dob, addresses };
+            localStorage.setItem("user", JSON.stringify(userProfile));
+            return { ...state, user: empProfile };
 
 
         case "LOGIN_FAILURE":

@@ -1,31 +1,31 @@
 import React, { useEffect, useState, useContext } from "react";
-import MenuInfomation from "../../../components/profile/owner/menu_Infomation";
-import { PersonaInformation } from "../../../components/profile/owner/personal_information";
-import { Address } from "../../../components/profile/owner/address";
+import MenuInfomation from "../../../components/profile/cleanner/menu_Infomation";
+import { PersonaInformation } from "../../../components/profile/cleanner/personal_information";
+import { Address } from "../../../components/profile/cleanner/address";
 import { AuthContext } from "../../../context/AuthContext";
 import { BASE_URL } from "../../../utils/config";
 import { message } from "antd";
-import "./infor.css"; // Import CSS riêng
+import "../../profile/owner/infor.css"; // Import CSS riêng
 
-const Infomation = () => {
+const InfomationCleaner = () => {
     const { dispatch } = useContext(AuthContext);
     const [selectedMenu, setSelectedMenu] = useState("1");
 
     useEffect(() => {
         const fetchProfile = async () => {
             const token = localStorage.getItem("token");
-            const customerId = localStorage.getItem("customerId");
+            const cleanerId = localStorage.getItem("cleanerId"); // Đảm bảo lấy đúng ID của nhân viên
 
-            if (token && customerId) {
+            if (token && cleanerId) {
                 try {
-                    const response = await fetch(`${BASE_URL}/customer/${customerId}/profile?customer_id=${customerId}`, {
+                    const response = await fetch(`${BASE_URL}/employee/${cleanerId}/get-employee-profile`, {
                         method: 'GET',
                         headers: { 'Authorization': `Bearer ${token}` },
                     });
 
                     const data = await response.json();
                     if (response.ok) {
-                        dispatch({ type: 'FETCH_PROFILE_SUCCESS_CUSTOMER', payload: data });
+                        dispatch({ type: 'FETCH_PROFILE_SUCCESS_CLEANER', payload: data });
                     } else {
                         message.error(data.message || "Không thể lấy thông tin người dùng.");
                     }
@@ -37,7 +37,7 @@ const Infomation = () => {
 
         fetchProfile();
     }, [dispatch]);
-    // Dùng object thay vì switch-case để tối ưu code
+
     const menuComponents = {
         "1": <PersonaInformation />,
         "2": <Address />
@@ -56,4 +56,4 @@ const Infomation = () => {
     );
 };
 
-export default Infomation;
+export default InfomationCleaner;

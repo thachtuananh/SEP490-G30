@@ -1,23 +1,22 @@
 import React from 'react';
-import '../index.css';
-import logo from '../assets/HouseClean_logo.png';
+import logo from '../../../assets/HouseClean_logo.png';
 import { Link } from 'react-router-dom';
 function Footer() {
     return (
         <footer className="footer">
             <div className="footer-content">
                 <div className="footer-section">
-                    
+
                     <div className="logo">
-                    <Link to="/">
-                        <img
-                            src={logo}
-                            alt="House Clean Logo"
-                            className="logo-img"
-                        />
-                    </Link>
+                        <Link to="/homecleaner">
+                            <img
+                                src={logo}
+                                alt="House Clean Logo"
+                                className="logo-img"
+                            />
+                        </Link>
                     </div>
-                    
+
                     <h2 className="footer-title">House Clean</h2>
                     <p className="footer-description">
                         HouseCleaners Network Platform là một nền tảng trung gian kết nối giữa người thuê
