@@ -16,7 +16,7 @@ public class Transaction {
 
     @ManyToOne
     @JoinColumn(name = "cleaner_id")
-    private Cleaner cleaner; // Liên kết với bảng cleaners
+    private Employee cleaner; // Liên kết với bảng cleaners
 
     private Double amount;
     private String transactionType;  // "Credit" hoặc "Debit"
@@ -40,11 +40,11 @@ public class Transaction {
         this.customer = customer;
     }
 
-    public Cleaner getCleaner() {
+    public Employee getCleaner() {
         return cleaner;
     }
 
-    public void setCleaner(Cleaner cleaner) {
+    public void setCleaner(Employee cleaner) {
         this.cleaner = cleaner;
     }
 

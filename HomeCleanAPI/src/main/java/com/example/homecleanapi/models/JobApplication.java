@@ -24,7 +24,7 @@ public class JobApplication {
 
     @ManyToOne
     @JoinColumn(name = "cleaner_id", referencedColumnName = "id", nullable = false)
-    private Cleaner cleaner;
+    private Employee cleaner;
 
     @Column(nullable = false)
     private String status; // 'Pending', 'Accepted', 'Rejected'
@@ -53,11 +53,11 @@ public class JobApplication {
         this.job = job;
     }
 
-    public Cleaner getCleaner() {
+    public Employee getCleaner() {
         return cleaner;
     }
 
-    public void setCleaner(Cleaner cleaner) {
+    public void setCleaner(Employee cleaner) {
         this.cleaner = cleaner;
     }
 

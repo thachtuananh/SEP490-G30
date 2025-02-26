@@ -12,7 +12,7 @@ public class CleanerReward {
 
     @ManyToOne
     @JoinColumn(name = "cleaner_id", nullable = false)
-    private Cleaner cleaner; // Liên kết với bảng cleaner
+    private Employee cleaner; // Liên kết với bảng cleaner
 
     private Integer jobsCompleted;
     private Double rewardAmount;
@@ -26,11 +26,11 @@ public class CleanerReward {
         this.id = id;
     }
 
-    public Cleaner getCleaner() {
+    public Employee getCleaner() {
         return cleaner;
     }
 
-    public void setCleaner(Cleaner cleaner) {
+    public void setCleaner(Employee cleaner) {
         this.cleaner = cleaner;
     }
 

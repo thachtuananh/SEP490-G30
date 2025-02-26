@@ -26,7 +26,7 @@ public class Job {
     
     @ManyToOne
     @JoinColumn(name = "cleaner_id")
-    private Cleaner cleaner;
+    private Employee cleaner;
 
     @ManyToOne
     @JoinColumn(name = "service_detail_id", nullable = false)
@@ -35,7 +35,7 @@ public class Job {
     
     @ManyToOne
     @JoinColumn(name = "customer_address_id", referencedColumnName = "id")
-    private CustomerAddress customerAddress; // Mối quan hệ với CustomerAddress
+    private CustomerAddresses customerAddress; // Mối quan hệ với CustomerAddress
 
     @Column(name = "scheduled_time")
     private LocalDateTime scheduledTime; 
@@ -79,11 +79,11 @@ public class Job {
         this.serviceDetail = serviceDetail;
     }
 
-    public CustomerAddress getCustomerAddress() {
+    public CustomerAddresses getCustomerAddress() {
         return customerAddress;
     }
 
-    public void setCustomerAddress(CustomerAddress customerAddress) {
+    public void setCustomerAddress(CustomerAddresses customerAddress) {
         this.customerAddress = customerAddress;
     }
 
@@ -119,11 +119,11 @@ public class Job {
         this.jobDetails = jobDetails;
     }
 
-    public Cleaner getCleaner() {
+    public Employee getCleaner() {
         return cleaner;
     }
 
-    public void setCleaner(Cleaner cleaner) {
+    public void setCleaner(Employee cleaner) {
         this.cleaner = cleaner;
     }
 }

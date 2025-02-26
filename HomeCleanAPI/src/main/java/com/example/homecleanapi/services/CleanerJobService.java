@@ -2,7 +2,7 @@ package com.example.homecleanapi.services;
 
 import com.example.homecleanapi.dtos.JobSummaryDTO;
 import com.example.homecleanapi.enums.JobStatus;
-import com.example.homecleanapi.models.Cleaner;
+import com.example.homecleanapi.models.Employee;
 import com.example.homecleanapi.models.Job;
 import com.example.homecleanapi.models.JobApplication;
 
@@ -66,13 +66,13 @@ public class CleanerJobService {
         Map<String, Object> response = new HashMap<>();
 
         // Tìm cleaner theo cleanerId từ database
-        Optional<Cleaner> cleanerOpt = cleanerRepository.findById(cleanerId);
+        Optional<Employee> cleanerOpt = cleanerRepository.findById(cleanerId);
         if (!cleanerOpt.isPresent()) {
             response.put("message", "Cleaner not found");
             return response;
         }
 
-        Cleaner cleaner = cleanerOpt.get();
+        Employee cleaner = cleanerOpt.get();
 
         // Tìm công việc theo jobId
         Optional<Job> jobOpt = jobRepository.findById(jobId);
@@ -129,11 +129,11 @@ public class CleanerJobService {
 
         // Chuyển các ứng viên thành thông tin cần thiết
         return jobApplications.stream().map(application -> {
-            Cleaner cleaner = application.getCleaner();
+        	Employee cleaner = application.getCleaner();
             Map<String, Object> cleanerInfo = new HashMap<>();
             cleanerInfo.put("cleanerId", cleaner.getId());
-            cleanerInfo.put("cleanerName", cleaner.getFullName());
-            cleanerInfo.put("profileImage", cleaner.getProfileImage());
+            cleanerInfo.put("cleanerName", cleaner.getName());
+            cleanerInfo.put("profileImage", cleaner.getProfile_image());
             return cleanerInfo;
         }).collect(Collectors.toList());
     }
@@ -160,13 +160,13 @@ public class CleanerJobService {
 //        }
 
         // Tìm cleaner theo ID
-        Optional<Cleaner> cleanerOpt = cleanerRepository.findById(cleanerId);
+        Optional<Employee> cleanerOpt = cleanerRepository.findById(cleanerId);
         if (!cleanerOpt.isPresent()) {
             response.put("message", "Cleaner not found");
             return response;
         }
 
-        Cleaner cleaner = cleanerOpt.get();
+        Employee cleaner = cleanerOpt.get();
         Optional<JobApplication> jobApplicationOpt = jobApplicationRepository.findByJobAndCleaner(job, cleaner);
 
         if (!jobApplicationOpt.isPresent()) {

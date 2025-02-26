@@ -7,7 +7,6 @@ import com.example.homecleanapi.services.CustomEmployeeUserDetailsService;
 import com.example.homecleanapi.utils.JwtUtils;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -54,10 +53,6 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .cors(cors -> cors.configurationSource(corsConfigurationSource())) // 🔥 Sửa lỗi cú pháp CORS
                 .authorizeHttpRequests(auth -> auth
-
-
-                		.requestMatchers("/api/customer/login").permitAll()
-
                         .requestMatchers("/api/customer/login").permitAll()
                         .requestMatchers("/api/customer/register").permitAll()
                         .requestMatchers("/api/customer/forgot-password").permitAll()
@@ -68,11 +63,6 @@ public class SecurityConfig {
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
                         .requestMatchers("/api-docs").permitAll()
                         .anyRequest().authenticated()
-
-
-
-				
-
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(customerAuthenticationProvider())

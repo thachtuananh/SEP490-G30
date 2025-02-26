@@ -10,6 +10,8 @@ import com.example.homecleanapi.repositories.*;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
@@ -56,12 +58,12 @@ public class JobService {
         Customers customer = customerOpt.get();
 
         // Tìm địa chỉ của customer
-        Optional<CustomerAddress> customerAddressOpt = customerAddressRepository.findById(request.getCustomerAddressId());
+        Optional<CustomerAddresses> customerAddressOpt = customerAddressRepository.findById(request.getCustomerAddressId());
         if (!customerAddressOpt.isPresent()) {
             response.put("message", "Customer address not found");
             return response;
         }
-        CustomerAddress customerAddress = customerAddressOpt.get();
+        CustomerAddresses customerAddress = customerAddressOpt.get();
 
         // Tạo mới Job
         Job job = new Job();

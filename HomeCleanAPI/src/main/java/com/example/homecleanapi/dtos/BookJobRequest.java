@@ -7,7 +7,7 @@ public class BookJobRequest {
 	private Long serviceId;          
     private Long serviceDetailId;    
     private String jobTime;          
-    private Long customerAddressId; 
+    private Integer customerAddressId; 
     private Integer roomSize;         
     private String imageUrl;
     
@@ -31,10 +31,10 @@ public class BookJobRequest {
 	public void setJobTime(String jobTime) {
 		this.jobTime = jobTime;
 	}
-	public Long getCustomerAddressId() {
+	public Integer getCustomerAddressId() {
 		return customerAddressId;
 	}
-	public void setCustomerAddressId(Long customerAddressId) {
+	public void setCustomerAddressId(Integer customerAddressId) {
 		this.customerAddressId = customerAddressId;
 	}
 	public Integer getRoomSize() {

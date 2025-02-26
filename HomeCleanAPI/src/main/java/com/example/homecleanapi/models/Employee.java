@@ -22,10 +22,13 @@ public class Employee {
     private String name;
     @Column(name = "phone_number")
     private String phone;
+    
     private String email;
     private Integer age;
     private String address;
+    
     private String identity_number;
+    
     @Column(name = "identity_verified")
     private Boolean is_verified;
     private String experience;
