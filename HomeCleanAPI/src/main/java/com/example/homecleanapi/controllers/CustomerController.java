@@ -49,11 +49,8 @@ public class CustomerController {
         return customerService.updateProfile(customer_id, request);
     }
 
-    
-    
-    
     @GetMapping(value = "/profile", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Map<String, Object>> getProfile(@RequestParam int customer_id) {
+    public ResponseEntity<Map<String, Object>> getProfile(@PathVariable int customer_id) {
         return customerService.getProfile(customer_id);
     }
 

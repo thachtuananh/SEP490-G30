@@ -13,7 +13,7 @@ public class Customers {
     private Integer id;
     private String password_hash;
     private String full_name;
-    @Column(name = "phone_number", unique = true, nullable = false)
+    @Column(name = "phone_number")
     private String phone;
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime created_at;

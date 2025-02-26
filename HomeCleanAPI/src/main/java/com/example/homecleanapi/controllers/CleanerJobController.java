@@ -23,14 +23,14 @@ public class CleanerJobController {
     private CleanerJobService cleanerJobService;
 
     // Xem danh sách các công việc "Open"
-    @GetMapping("/jobs")
+    @GetMapping(value = "/jobs")
     public ResponseEntity<List<JobSummaryDTO>> getOpenJobs() {
         List<JobSummaryDTO> openJobs = cleanerJobService.getOpenJobs();
         return ResponseEntity.ok(openJobs);
     }
 
     // Xem chi tiết công việc
-    @GetMapping("/job/{jobId}")
+    @GetMapping(value = "/job/{jobId}")
     public ResponseEntity<Map<String, Object>> getJobDetails(@PathVariable("jobId") Long jobId) {
         Map<String, Object> jobDetails = cleanerJobService.getJobDetails(jobId);
         if (jobDetails == null) {
@@ -40,7 +40,7 @@ public class CleanerJobController {
     }
 
     // Cleaner apply vào job
-    @PostMapping("/apply-job/{jobId}")
+    @PostMapping(value = "/apply-job/{jobId}")
     public ResponseEntity<Map<String, Object>> applyForJob(@PathVariable("jobId") Long jobId) {
         Map<String, Object> response = cleanerJobService.applyForJob(jobId);
         return ResponseEntity.ok(response);
@@ -48,7 +48,7 @@ public class CleanerJobController {
 
 
     // Chuyển trạng thái công việc sang ARRIVED
-    @PostMapping("/job/arrived/cleaner/{jobId}")
+    @PostMapping(value = "/job/arrived/{jobId}")
     public ResponseEntity<Map<String, Object>> setJobArrived(@PathVariable("jobId") Long jobId) {
         Map<String, Object> response = cleanerJobService.updateJobStatusToArrived(jobId);
         return ResponseEntity.ok(response);
@@ -56,7 +56,7 @@ public class CleanerJobController {
 
 
     // Chuyển trạng thái công việc sang COMPLETED
-    @PostMapping("/job/completed/cleaner/{jobId}")
+    @PostMapping(value = "/job/completed/cleaner/{jobId}")
     public ResponseEntity<Map<String, Object>> completeJob(@PathVariable("jobId") Long jobId) {
         Map<String, Object> response = cleanerJobService.updateJobStatusToCompleted(jobId);
         return ResponseEntity.ok(response);

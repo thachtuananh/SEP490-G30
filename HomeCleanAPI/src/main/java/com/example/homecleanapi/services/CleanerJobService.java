@@ -41,7 +41,7 @@ public class CleanerJobService {
 
     // Lấy danh sách các công việc đang mở
     public List<JobSummaryDTO> getOpenJobs() {
-        List<Job> openJobs = jobRepository.findByStatus(JobStatus.OPEN);
+        List<Job> openJobs = jobRepository.findByStatus(JobStatus.OPEN); 
 
         return openJobs.stream()
                 .map(job -> new JobSummaryDTO(
@@ -120,28 +120,43 @@ public class CleanerJobService {
 
     // Get applications for job
     public List<Map<String, Object>> getApplicationsForJob(Long jobId) {
+        Map<String, Object> response = new HashMap<>();
+        // Lấy phoneNumber của customer từ SecurityContext
+        String phoneNumber = SecurityContextHolder.getContext().getAuthentication().getName();
+        System.out.println("phone.. = " + phoneNumber);
+
+        // Tìm customer theo phone number
+        Optional<Customers> customerOpt = customerRepo.findByPhone(phoneNumber);
+        if (!customerOpt.isPresent()) {
+            response.put("message", "Customer not found with phone number: " + phoneNumber);
+            return List.of(response); 
+        }
+
+        Customers customer = customerOpt.get();
+
         // Tìm công việc theo jobId
         Job job = jobRepository.findById(jobId).orElse(null);
         if (job == null) {
-            return List.of(Map.of("message", "Job not found"));
+            response.put("message", "Job not found");
+            return List.of(response);
         }
-        
 
-        // Kiểm tra xem customer có quyền xem danh sách ứng viên không
-//        if (job.getCustomer().getId().longValue() != customerId.longValue()) {
-//            return List.of(Map.of("message", "You are not authorized to view applications for this job"));
-//        }
+        // Kiểm tra xem customer có phải là người đã tạo job này hay không
+        if (!job.getCustomer().getId().equals(customer.getId())) {
+            response.put("message", "You are not authorized to view applications for this job");
+            return List.of(response);
+        }
 
-
-        // Lấy danh sách các ứng viên đã apply cho job này với trạng thái "Pending"
+        // Lấy danh sách các ứng viên có trạng thái "Pending"
         List<JobApplication> jobApplications = jobApplicationRepository.findByJobAndStatus(job, "Pending");
         if (jobApplications.isEmpty()) {
-            return List.of(Map.of("message", "No applications found for this job"));
+            response.put("message", "No applications found for this job");
+            return List.of(response);
         }
 
         // Chuyển các ứng viên thành thông tin cần thiết
         return jobApplications.stream().map(application -> {
-        	Employee cleaner = application.getCleaner();
+            Employee cleaner = application.getCleaner();
             Map<String, Object> cleanerInfo = new HashMap<>();
             cleanerInfo.put("cleanerId", cleaner.getId());
             cleanerInfo.put("cleanerName", cleaner.getName());
@@ -149,6 +164,7 @@ public class CleanerJobService {
             return cleanerInfo;
         }).collect(Collectors.toList());
     }
+
 
 
 
