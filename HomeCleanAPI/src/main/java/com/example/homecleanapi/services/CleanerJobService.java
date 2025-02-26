@@ -110,7 +110,7 @@ public class CleanerJobService {
 
 
     // Get applications for job
-    public List<Map<String, Object>> getApplicationsForJob(Long jobId, Long customerId) {
+    public List<Map<String, Object>> getApplicationsForJob(Long jobId) {
         // Tìm công việc theo jobId
         Job job = jobRepository.findById(jobId).orElse(null);
         if (job == null) {
@@ -118,9 +118,9 @@ public class CleanerJobService {
         }
 
         // Kiểm tra xem customer có quyền xem danh sách ứng viên không
-        if (job.getCustomer().getId().longValue() != customerId.longValue()) {
-            return List.of(Map.of("message", "You are not authorized to view applications for this job"));
-        }
+//        if (job.getCustomer().getId().longValue() != customerId.longValue()) {
+//            return List.of(Map.of("message", "You are not authorized to view applications for this job"));
+//        }
 
 
         // Lấy danh sách các ứng viên đã apply cho job này với trạng thái "Pending"
@@ -156,11 +156,10 @@ public class CleanerJobService {
         Job job = jobOpt.get();
 
         // Kiểm tra quyền của customer (sử dụng customerId từ @PathVariable)
-        if (job.getCustomer().getId().longValue() != customerId) {
+        if (!job.getCustomer().getId().equals(customerId)) {
             response.put("message", "You are not authorized to accept or reject this job");
             return response;
         }
-
 
         // Tìm cleaner theo ID
         Optional<Cleaner> cleanerOpt = cleanerRepository.findById(cleanerId);

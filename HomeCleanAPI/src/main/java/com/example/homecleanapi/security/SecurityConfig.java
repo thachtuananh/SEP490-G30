@@ -53,26 +53,17 @@ public class SecurityConfig {
                         .requestMatchers("/api/employee/register").permitAll()
                         .requestMatchers("/api/employee/forgot-password").permitAll()
                         .requestMatchers("/api/employee/login").permitAll()
-                        .requestMatchers("/api/services/all").permitAll()
-                        .requestMatchers("/api/customer/profile").permitAll()
+                        
+                       
                         .requestMatchers(HttpMethod.PUT, "/api/customer/profile").permitAll()// Endpoint login cho Employee
 
 				.requestMatchers("/api/employee/**").permitAll() 
 				.requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
 				.requestMatchers("/api-docs").permitAll()
-				.requestMatchers("/api/services/**").permitAll()
-//				.requestMatchers("/api/cleaner/jobs").permitAll()
-				.requestMatchers("/api/cleaner/**").permitAll()
+//				.requestMatchers("/api/services/**").permitAll()
+//				.requestMatchers("/api/cleaner/**").permitAll()
 				.requestMatchers("/api/customer/**").permitAll()
-//				.requestMatchers("/api/cleaner/job/**").permitAll()
-//				.requestMatchers("/api/customer/book-job").permitAll()
-//				.requestMatchers("/api/cleaner/apply-job/**").permitAll()
-//				.requestMatchers("/api/customer/accept-job/**").permitAll()
-//				.requestMatchers("/api/customer/reject-job/**").permitAll()
-//				.requestMatchers("/api/customer/applications/*").permitAll()
-//				.requestMatchers("/api/cleaner/job/arrived/**").permitAll()
-//				.requestMatchers("/api/customer/job/start/**").permitAll()
-//				.requestMatchers("/api/cleaner/job/completed/**").permitAll()
+
 
 				.anyRequest().authenticated()
 
