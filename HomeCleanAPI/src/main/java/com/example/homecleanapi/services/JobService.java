@@ -33,6 +33,11 @@ public class JobService {
     private CustomerRepository customerRepository;
     
     @Autowired
+    private CustomerRepo customerRepo;
+    
+    
+    
+    @Autowired
     private CustomerAddressRepository customerAddressRepository; 
     
     @Autowired
@@ -44,17 +49,16 @@ public class JobService {
     @Autowired JobDetailsRepository jobDetailsRepository;
 
     // Tạo job mới cho customer
-    public Map<String, Object> bookJob(BookJobRequest request) {
+    public Map<String, Object> bookJob(Long customerId, BookJobRequest request) {
         Map<String, Object> response = new HashMap<>();
 
-        // Lấy customerId từ SecurityContext
-        String customerIdStr = SecurityContextHolder.getContext().getAuthentication().getName(); // Lấy username (customerId) từ SecurityContext
-        Long customerId = Long.parseLong(customerIdStr); // Chuyển từ String sang Long
+        // Lấy customerId từ tham số trực tiếp
+        System.out.println("customerId = " + customerId);
 
         // Tìm customer theo customerId
-        Optional<Customers> customerOpt = customerRepository.findById(customerId);
+        Optional<Customers> customerOpt = customerRepo.findById(customerId);
         if (!customerOpt.isPresent()) {
-            response.put("message", "Customer not found");
+            response.put("message", "Customer not found with customerId: " + customerId);
             return response;
         }
 
@@ -88,27 +92,27 @@ public class JobService {
         ServiceDetail serviceDetail = serviceDetailOpt.get();
 
         // Gán thông tin cho Job
-        job.setService(service);  
-        job.setServiceDetail(serviceDetail);  
+        job.setService(service);
+        job.setServiceDetail(serviceDetail);
 
         // Chuyển jobTime từ String sang LocalDateTime
         try {
             DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
             LocalDateTime jobTime = LocalDateTime.parse(request.getJobTime(), formatter);
-            job.setScheduledTime(jobTime);  
+            job.setScheduledTime(jobTime);
         } catch (Exception e) {
             response.put("message", "Invalid job time format");
             return response;
         }
 
-        job.setCustomerAddress(customerAddress);  
-        job.setStatus(JobStatus.OPEN);  
-        job.setCustomer(customer);  
+        job.setCustomerAddress(customerAddress);
+        job.setStatus(JobStatus.OPEN);
+        job.setCustomer(customer);
 
         // Tạo JobDetails mới và liên kết với Job
         JobDetails jobDetails = new JobDetails();
-        jobDetails.setRoomSize(request.getRoomSize());  
-        jobDetails.setImageUrl(request.getImageUrl());  
+        jobDetails.setRoomSize(request.getRoomSize());
+        jobDetails.setImageUrl(request.getImageUrl());
 
         // Gán Job cho JobDetails trước khi lưu
         jobDetails.setJob(job); // Liên kết Job với JobDetails
@@ -120,11 +124,14 @@ public class JobService {
         jobDetailsRepository.save(jobDetails);
 
         response.put("message", "Job booked successfully");
-        response.put("jobId", job.getId()); 
+        response.put("jobId", job.getId());
         response.put("status", job.getStatus());
 
         return response;
     }
+
+
+
 
 
 

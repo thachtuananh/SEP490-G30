@@ -28,11 +28,12 @@ public class JobController {
     private CleanerJobService cleanerJobService;
 
     // API cho customer tạo job
-    @PostMapping("/create-job")
-    public ResponseEntity<Map<String, Object>> createJob(@RequestBody BookJobRequest request) {
-        Map<String, Object> response = jobService.bookJob(request); 
+    @PostMapping("/create-job/{customerId}")
+    public ResponseEntity<Map<String, Object>> createJob(@PathVariable("customerId") Long customerId, @RequestBody BookJobRequest request) {
+        Map<String, Object> response = jobService.bookJob(customerId, request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
+
 
 
 

@@ -71,8 +71,8 @@ public class CleanerJobService {
     public Map<String, Object> applyForJob(Long jobId) {
         Map<String, Object> response = new HashMap<>();
 
-        // Lấy phone từ JWT hoặc SecurityContext (sử dụng phone_number từ token nếu bạn đang lưu phone vào token)
-        String phoneNumber = SecurityContextHolder.getContext().getAuthentication().getName(); // Lấy username (phone number) từ SecurityContext
+        
+        String phoneNumber = SecurityContextHolder.getContext().getAuthentication().getName(); 
         System.out.println("phone = " + phoneNumber);
 
 
