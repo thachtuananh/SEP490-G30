@@ -5,16 +5,13 @@ import com.example.homecleanapi.enums.JobStatus;
 import com.example.homecleanapi.models.Cleaner;
 import com.example.homecleanapi.models.Job;
 import com.example.homecleanapi.models.JobApplication;
-import com.example.homecleanapi.models.JobDetails;
+
 import com.example.homecleanapi.repositories.CleanerRepository;
 import com.example.homecleanapi.repositories.JobApplicationRepository;
 import com.example.homecleanapi.repositories.JobRepository;
-import com.example.homecleanapi.utils.JwtUtils;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
+
 import org.springframework.stereotype.Service;
 
 
@@ -116,6 +113,7 @@ public class CleanerJobService {
         if (job == null) {
             return List.of(Map.of("message", "Job not found"));
         }
+        
 
         // Kiểm tra xem customer có quyền xem danh sách ứng viên không
 //        if (job.getCustomer().getId().longValue() != customerId.longValue()) {
@@ -143,7 +141,7 @@ public class CleanerJobService {
 
 
     // accept hoặc reject cleaner
-    public Map<String, Object> acceptOrRejectApplication(Long customerId, Long jobId, Long cleanerId, String action) {
+    public Map<String, Object> acceptOrRejectApplication( Long jobId, Long cleanerId, String action) {
         Map<String, Object> response = new HashMap<>();
 
         // Tìm công việc theo jobId
@@ -155,11 +153,11 @@ public class CleanerJobService {
 
         Job job = jobOpt.get();
 
-        // Kiểm tra quyền của customer (sử dụng customerId từ @PathVariable)
-        if (!job.getCustomer().getId().equals(customerId)) {
-            response.put("message", "You are not authorized to accept or reject this job");
-            return response;
-        }
+//        // Kiểm tra quyền của customer (sử dụng customerId từ @PathVariable)
+//        if (!job.getCustomer().getId().equals(customerId)) {
+//            response.put("message", "You are not authorized to accept or reject this job");
+//            return response;
+//        }
 
         // Tìm cleaner theo ID
         Optional<Cleaner> cleanerOpt = cleanerRepository.findById(cleanerId);

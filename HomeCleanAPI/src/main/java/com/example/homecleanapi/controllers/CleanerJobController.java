@@ -40,7 +40,7 @@ public class CleanerJobController {
     }
 
     // Cleaner apply vào job
-    @PostMapping("/apply-job/{jobId}/{cleanerId}")
+    @PostMapping("/apply-job/{jobId}")
     public ResponseEntity<Map<String, Object>> applyForJob(@PathVariable("jobId") Long jobId, @PathVariable("cleanerId") Long cleanerId) {
         Map<String, Object> response = cleanerJobService.applyForJob(jobId, cleanerId);
         return ResponseEntity.ok(response);

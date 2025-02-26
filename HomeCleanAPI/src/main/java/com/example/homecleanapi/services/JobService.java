@@ -9,7 +9,6 @@ import com.example.homecleanapi.repositories.*;
 
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 
@@ -130,7 +129,7 @@ public class JobService {
 
 
     // Chuyển trạng thái job sang started
-    public Map<String, Object> updateJobStatusToStarted(Long jobId, Long customerId) {
+    public Map<String, Object> updateJobStatusToStarted(Long jobId) {
         Map<String, Object> response = new HashMap<>();
 
         // Tìm công việc theo jobId
@@ -142,11 +141,11 @@ public class JobService {
 
         Job job = jobOpt.get();
 
-        // Kiểm tra quyền của customer (sử dụng customerId từ @PathVariable)
-        if (job.getCustomer().getId().longValue() != customerId) {
-            response.put("message", "You are not authorized to start this job");
-            return response;
-        }
+//        // Kiểm tra quyền của customer (sử dụng customerId từ @PathVariable)
+//        if (job.getCustomer().getId().longValue() != customerId) {
+//            response.put("message", "You are not authorized to start this job");
+//            return response;
+//        }
 
 
         // Kiểm tra trạng thái công việc và sự tồn tại của job application
