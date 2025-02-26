@@ -8,6 +8,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -31,6 +32,17 @@ public class ServiceController {
         List<ServiceDTO> services = serviceDisplayService.getAllServices();
         return ResponseEntity.ok(services);
     }
+    
+ // API lấy chi tiết của một dịch vụ theo serviceId
+    @GetMapping("/details/{serviceDetailId}")
+    public ResponseEntity<ServiceDTO.ServiceDetailDTO> getServiceDetailById(@PathVariable("serviceDetailId") Long serviceDetailId) {
+        ServiceDTO.ServiceDetailDTO serviceDetailDTO = serviceDisplayService.getServiceDetailById(serviceDetailId);
+        if (serviceDetailDTO == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(serviceDetailDTO);
+    }
+
 
     
    

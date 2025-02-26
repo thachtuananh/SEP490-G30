@@ -15,26 +15,34 @@ import java.util.stream.Collectors;
 @Service
 public class ServiceDisplayService {
 
-	@Autowired
+    @Autowired
     private ServiceRepository serviceRepository;
 
-	@Autowired
+    @Autowired
     private ServiceDetailRepository serviceDetailRepository;
 
-	
-	// customer xem tất cả dịch vụ
+    // customer xem tất cả dịch vụ
     public List<ServiceDTO> getAllServices() {
-
-    	List<Services> homeCleanServices = serviceRepository.findAll();
+        List<Services> homeCleanServices = serviceRepository.findAll();
 
         // Chuyển các HomeCleanService thành ServiceDTO
-        return homeCleanServices.stream().map(this::convertToServiceDTO).collect(Collectors.toList());
+        return homeCleanServices.stream()
+                .map(this::convertToServiceDTO)
+                .collect(Collectors.toList());
+    }
+
+    // Lấy chi tiết dịch vụ từ service_id
+    public ServiceDTO.ServiceDetailDTO getServiceDetailById(Long serviceDetailId) {
+        ServiceDetail serviceDetail = serviceDetailRepository.findById(serviceDetailId).orElse(null);
+        if (serviceDetail == null) {
+            return null;  // Trả về null nếu không tìm thấy ServiceDetail
+        }
+
+        return convertToServiceDetailDTO(serviceDetail);
     }
 
 
     private ServiceDTO convertToServiceDTO(Services homeCleanService) {
-
-        // Chuyển đổi HomeCleanService thành ServiceDTO
         ServiceDTO serviceDTO = new ServiceDTO();
         serviceDTO.setServiceId(homeCleanService.getId());
         serviceDTO.setServiceName(homeCleanService.getName());
@@ -42,22 +50,16 @@ public class ServiceDisplayService {
         serviceDTO.setBasePrice(homeCleanService.getBasePrice());
         serviceDTO.setServiceType(homeCleanService.getServiceType().name());
 
-        // Lấy chi tiết dịch vụ liên quan
-        List<ServiceDTO.ServiceDetailDTO> serviceDetailDTOs = serviceDetailRepository
-                .findByServiceId(homeCleanService.getId()).stream()
-                .map(this::convertToServiceDetailDTO)
-                .collect(Collectors.toList());
-
-        serviceDTO.setServiceDetails(serviceDetailDTOs);
         return serviceDTO;
     }
 
     private ServiceDTO.ServiceDetailDTO convertToServiceDetailDTO(ServiceDetail serviceDetail) {
-        // Chuyển đổi ServiceDetail thành ServiceDetailDTO
         ServiceDTO.ServiceDetailDTO serviceDetailDTO = new ServiceDTO.ServiceDetailDTO();
         serviceDetailDTO.setServiceDetailId(serviceDetail.getId());
         serviceDetailDTO.setName(serviceDetail.getName());
         serviceDetailDTO.setAdditionalPrice(serviceDetail.getAdditionalPrice());
         return serviceDetailDTO;
     }
+
 }
+

@@ -3,6 +3,10 @@ package com.example.homecleanapi.controllers;
 import com.example.homecleanapi.dtos.BookJobRequest;
 import com.example.homecleanapi.services.CleanerJobService;
 import com.example.homecleanapi.services.JobService;
+
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,6 +16,8 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
+@Tag(name = "Employee API")
+@SecurityRequirement(name = "BearerAuth")
 @RequestMapping("/api/customer")
 public class JobController {
 
