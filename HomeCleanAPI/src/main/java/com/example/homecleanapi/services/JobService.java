@@ -10,10 +10,9 @@ import com.example.homecleanapi.repositories.*;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -45,11 +44,13 @@ public class JobService {
     public Map<String, Object> bookJob(Long customerId, BookJobRequest request) {
         Map<String, Object> response = new HashMap<>();
 
+
         // Tìm customer theo customerId
         Optional<Customers> customerOpt = customerRepository.findById(customerId);
         if (!customerOpt.isPresent()) {
             response.put("message", "Customer not found");
             return response;
+
         }
 
         Customers customer = customerOpt.get();

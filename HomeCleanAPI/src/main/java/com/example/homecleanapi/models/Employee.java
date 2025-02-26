@@ -2,15 +2,6 @@ package com.example.homecleanapi.models;
 
 
 import jakarta.persistence.*;
-import org.hibernate.annotations.Type;
-import org.springframework.core.io.ClassPathResource;
-
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -49,15 +40,15 @@ public class Employee {
         this.is_verified = Boolean.FALSE;
         this.created_at = LocalDateTime.now();
         this.updated_at = LocalDateTime.now();
-        byte[] image = getRandomProfileImage();
-
-        if (image == null || image.length == 0) {
-            System.out.println("Không có ảnh, gán null cho profile_image");
-            this.profile_image = null;
-        } else {
-            System.out.println("Lưu ảnh có kích thước: " + image.length + " bytes");
-            this.profile_image = image;
-        }
+//        byte[] image = getRandomProfileImage();
+//
+//        if (image == null || image.length == 0) {
+//            System.out.println("Không có ảnh, gán null cho profile_image");
+//            this.profile_image = null;
+//        } else {
+//            System.out.println("Lưu ảnh có kích thước: " + image.length + " bytes");
+//            this.profile_image = image;
+//        }
     }
 
     public Integer getAge() {

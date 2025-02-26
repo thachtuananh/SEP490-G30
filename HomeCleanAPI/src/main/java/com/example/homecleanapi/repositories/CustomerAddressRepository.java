@@ -1,11 +1,15 @@
+
 package com.example.homecleanapi.repositories;
 
-import com.example.homecleanapi.models.CustomerAddress;
-
-import java.util.Optional;
-
+import com.example.homecleanapi.models.CustomerAddresses;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
-public interface CustomerAddressRepository extends JpaRepository<CustomerAddress, Long> {
-	Optional<CustomerAddress> findByCustomerIdAndIsDefaultTrue(Integer customerId);
+import java.util.List;
+
+@Repository
+public interface CustomerAddressRepository extends JpaRepository<CustomerAddresses, Integer> {
+    List<CustomerAddresses> findCustomerAddressesByCustomer_Id(Integer id);
+    CustomerAddresses findCustomerAddressesById(Integer id);
 }
+

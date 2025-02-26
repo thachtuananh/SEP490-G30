@@ -4,7 +4,6 @@ public class CustomerProfileRequest {
     private String phone;
     private String fullName;
     private String email;
-    private String address;
 
 
 
@@ -32,13 +31,5 @@ public class CustomerProfileRequest {
 
     public void setEmail(String email) {
         this.email = email;
-    }
-
-    public String getAddress() {
-        return address;
-    }
-
-    public void setAddress(String address) {
-        this.address = address;
     }
 }

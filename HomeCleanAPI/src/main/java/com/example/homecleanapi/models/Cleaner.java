@@ -29,9 +29,8 @@ public class Cleaner {
     @Column(name = "address")
     private String address;
 
-
-    @Column(name = "profile_image")
-    private byte[] profileImage;  
+    @Column(name = "profile_image", columnDefinition = "BYTEA")
+    private byte[] profileImage;  // Byte array for storing image as BYTEA in the database
 
     @Column(name = "identity_number", unique = true)
     private String identityNumber;

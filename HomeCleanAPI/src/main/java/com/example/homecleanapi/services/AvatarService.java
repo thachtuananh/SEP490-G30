@@ -1,3 +1,4 @@
+
 package com.example.homecleanapi.services;
 
 import org.springframework.stereotype.Service;
@@ -69,3 +70,5 @@ public class AvatarService {
         }
     }
 }
+
+
