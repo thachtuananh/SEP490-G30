@@ -12,6 +12,7 @@ public interface CleanerRepository extends JpaRepository<Employee, Long> {
     Optional<Employee> findByPhone(String phone); 
 
     Employee findByEmail(String email); 
+    
 }
 
 

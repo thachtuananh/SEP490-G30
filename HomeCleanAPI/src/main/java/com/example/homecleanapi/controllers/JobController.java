@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@Tag(name = "Employee API")
+@Tag(name = "Customer API")
 @SecurityRequirement(name = "BearerAuth")
 @RequestMapping("/api/customer")
 public class JobController {
@@ -28,11 +28,13 @@ public class JobController {
     private CleanerJobService cleanerJobService;
 
     // API cho customer tạo job
-    @PostMapping("/create-job/{customerId}")
-    public ResponseEntity<Map<String, Object>> createJob(@PathVariable Long customerId, @RequestBody BookJobRequest request) {
-        Map<String, Object> response = jobService.bookJob(customerId, request); 
+    @PostMapping("/create-job")
+    public ResponseEntity<Map<String, Object>> createJob(@RequestBody BookJobRequest request) {
+        Map<String, Object> response = jobService.bookJob(request); 
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
+
+
 
 
 
@@ -50,15 +52,18 @@ public class JobController {
 
     @PostMapping("/accept-job/{jobId}/cleaner/{cleanerId}")
     public ResponseEntity<Map<String, Object>> acceptCleanerForJob(@PathVariable Long jobId, @PathVariable Long cleanerId) {
+        // Gọi service để accept cleaner cho job
         Map<String, Object> response = cleanerJobService.acceptOrRejectApplication(jobId, cleanerId, "accept");
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(response);  // Trả về kết quả cho client
     }
 
     @PostMapping("/reject-job/{jobId}/cleaner/{cleanerId}")
-    public ResponseEntity<Map<String, Object>> rejectCleanerForJob( @PathVariable Long jobId, @PathVariable Long cleanerId) {
-        Map<String, Object> response = cleanerJobService.acceptOrRejectApplication( jobId, cleanerId, "reject");
-        return ResponseEntity.ok(response);
+    public ResponseEntity<Map<String, Object>> rejectCleanerForJob(@PathVariable Long jobId, @PathVariable Long cleanerId) {
+        // Gọi service để reject cleaner cho job
+        Map<String, Object> response = cleanerJobService.acceptOrRejectApplication(jobId, cleanerId, "reject");
+        return ResponseEntity.ok(response);  // Trả về kết quả cho client
     }
+
 
 
     // Chuyển trạng thái job sang STARTED

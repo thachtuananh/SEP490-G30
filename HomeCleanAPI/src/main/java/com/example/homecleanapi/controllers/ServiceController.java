@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-@Tag(name = "Home Service API")
+@Tag(name = "Customer API")
 @RestController
 @RequestMapping("/api/services")
 public class ServiceController {

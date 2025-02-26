@@ -9,6 +9,7 @@ import com.example.homecleanapi.repositories.*;
 
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 
@@ -43,16 +44,18 @@ public class JobService {
     @Autowired JobDetailsRepository jobDetailsRepository;
 
     // Tạo job mới cho customer
-    public Map<String, Object> bookJob(Long customerId, BookJobRequest request) {
+    public Map<String, Object> bookJob(BookJobRequest request) {
         Map<String, Object> response = new HashMap<>();
 
+        // Lấy customerId từ SecurityContext
+        String customerIdStr = SecurityContextHolder.getContext().getAuthentication().getName(); // Lấy username (customerId) từ SecurityContext
+        Long customerId = Long.parseLong(customerIdStr); // Chuyển từ String sang Long
 
         // Tìm customer theo customerId
         Optional<Customers> customerOpt = customerRepository.findById(customerId);
         if (!customerOpt.isPresent()) {
             response.put("message", "Customer not found");
             return response;
-
         }
 
         Customers customer = customerOpt.get();
@@ -122,6 +125,7 @@ public class JobService {
 
         return response;
     }
+
 
 
 
