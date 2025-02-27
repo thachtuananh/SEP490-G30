@@ -5,16 +5,17 @@ import { Address } from "../../../components/profile/cleanner/address";
 import { AuthContext } from "../../../context/AuthContext";
 import { BASE_URL } from "../../../utils/config";
 import { message } from "antd";
-import "../../profile/owner/infor.css"; // Import CSS riêng
+import Navbar from "../../../components/Home/Cleaner/Navbar";
+import Footer from "../../../components/Home/Cleaner/Footer";
 
 const InfomationCleaner = () => {
-    const { dispatch } = useContext(AuthContext);
+    const { dispatch } = useContext(AuthContext); // Lấy thông tin user từ AuthContext
     const [selectedMenu, setSelectedMenu] = useState("1");
 
     useEffect(() => {
         const fetchProfile = async () => {
             const token = localStorage.getItem("token");
-            const cleanerId = localStorage.getItem("cleanerId"); // Đảm bảo lấy đúng ID của nhân viên
+            const cleanerId = localStorage.getItem("cleanerId");
 
             if (token && cleanerId) {
                 try {
@@ -23,11 +24,12 @@ const InfomationCleaner = () => {
                         headers: { 'Authorization': `Bearer ${token}` },
                     });
 
-                    const data = await response.json();
+                    const { data } = await response.json();
                     if (response.ok) {
                         dispatch({ type: 'FETCH_PROFILE_SUCCESS_CLEANER', payload: data });
+                        // localStorage.setItem("cleaner", JSON.stringify(data)); // Lưu lại thông tin cleaner vào localStorage
                     } else {
-                        message.error(data.message || "Không thể lấy thông tin người dùng.");
+                        message.error("Không thể lấy thông tin người dùng.");
                     }
                 } catch (error) {
                     message.error("Lỗi máy chủ, vui lòng thử lại sau.");
@@ -44,15 +46,19 @@ const InfomationCleaner = () => {
     };
 
     return (
-        <div className="infomation-container">
-            <div className="menu-container">
-                <MenuInfomation selectedMenu={selectedMenu} setSelectedMenu={setSelectedMenu} />
+        <>
+            <Navbar />
+            <div className="infomation-container">
+                <div className="menu-container">
+                    <MenuInfomation selectedMenu={selectedMenu} setSelectedMenu={setSelectedMenu} />
+                </div>
+                <div className="content-container">
+                    {/* Hiển thị component theo lựa chọn menu */}
+                    {menuComponents[selectedMenu] || <p>Chưa có nội dung</p>}
+                </div>
             </div>
-
-            <div className="content-container">
-                {menuComponents[selectedMenu] || <p>Chưa có nội dung</p>}
-            </div>
-        </div>
+            <Footer />
+        </>
     );
 };
 

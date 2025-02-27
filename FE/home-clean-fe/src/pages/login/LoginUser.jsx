@@ -59,14 +59,20 @@ function Login() {
       const result = await response.json();
 
       if (response.ok) {
-        const { token, customerId, phone } = result;
+        const { token, customerId, name } = result;
+
+        localStorage.setItem("name", name);
+        localStorage.setItem("token", token);
+        localStorage.setItem("customerId", customerId);
+
         dispatch({
-          type: 'LOGIN_SUCCESS',
-          payload: { user: { phone }, token, customerId }
+          type: 'LOGIN_SUCCESS_CUSTOMER',
+          payload: { name, token, customerId }
         });
 
         message.success('Đăng nhập thành công!');
-        navigate('/');
+        navigate('/'); // Điều hướng đến trang Home của Customer
+
       } else {
         setErrorMessage(result.message || 'Đăng nhập thất bại.');
       }
@@ -74,6 +80,7 @@ function Login() {
       setErrorMessage('Lỗi máy chủ, vui lòng thử lại sau.');
     }
   };
+
 
 
   useEffect(() => {

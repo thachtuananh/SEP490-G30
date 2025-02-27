@@ -15,6 +15,7 @@ const initial_state = {
     user: getUserFromLocalStorage(),
     token: localStorage.getItem("token") || null,
     customerId: localStorage.getItem("customerId") || null,
+    cleanerId: localStorage.getItem("cleanerId") || null,
     loading: false,
     error: null,
 };
@@ -27,31 +28,48 @@ const AuthReducer = (state, action) => {
             return { ...state, user: null, loading: true, error: null };
 
         case "LOGIN_SUCCESS_CUSTOMER":
-            const { user, token, customerId } = action.payload;
-            localStorage.setItem("user", JSON.stringify(user));
+            const { name, token, customerId, phone } = action.payload;
+            localStorage.setItem("user", JSON.stringify({ name, phone }));
             localStorage.setItem("token", token);
             localStorage.setItem("customerId", customerId);
-            return { ...state, user, token, customerId, loading: false, error: null };
+            return {
+                ...state,
+                user: { name, phone },
+                token,
+                customerId,
+                loading: false,
+                error: null
+            };
 
         case "LOGIN_SUCCESS_CLEANER":
-            const { emp, tokenC, cleanerId } = action.payload;
-            localStorage.setItem("user", JSON.stringify(emp));
-            localStorage.setItem("tokenC", tokenC);
+            const { name: empName, token: tokenC, cleanerId, phone: empPhone } = action.payload;
+
+            // Lưu thông tin của cleaner vào localStorage
+            localStorage.setItem("name", empName);
             localStorage.setItem("cleanerId", cleanerId);
-            return { ...state, emp, tokenC, cleanerId, loading: false, error: null };
+            localStorage.setItem("token", tokenC);
+
+            return {
+                ...state,
+                cleaner: { empName, empPhone },
+                token: tokenC,
+                cleanerId,
+                loading: false,
+                error: null
+            };
+
 
         case "FETCH_PROFILE_SUCCESS_CUSTOMER":
-            const { name, phone } = action.payload;
-            const userProfile = { name, phone };
-            localStorage.setItem("user", JSON.stringify(userProfile));
-            return { ...state, user: userProfile };
+            const { name: customerName, phone: customerPhone } = action.payload;
+            const customerProfile = { customerName, customerPhone };
+            localStorage.setItem("user", JSON.stringify(customerProfile));
+            return { ...state, user: customerProfile };
 
         case "FETCH_PROFILE_SUCCESS_CLEANER":
-            const { nameC, phoneC, email, gender, dob, addresses } = action.payload;
-            const empProfile = { nameC, phoneC, email, gender, dob, addresses };
-            localStorage.setItem("user", JSON.stringify(userProfile));
-            return { ...state, user: empProfile };
-
+            const { name: cleanerName, phone: cleanerPhone, email: cleanerEmail, age: cleanerAge, address: cleanerAddress, identity_number: cleanerIDnum, experience: cleanerExp } = action.payload;
+            const cleanerProfile = { cleanerName, cleanerPhone, cleanerEmail, cleanerAge, cleanerAddress, cleanerIDnum, cleanerExp };
+            localStorage.setItem("cleaner", JSON.stringify(cleanerProfile));
+            return { ...state, cleaner: cleanerProfile };
 
         case "LOGIN_FAILURE":
             return { ...state, user: null, loading: false, error: action.payload };
@@ -63,9 +81,23 @@ const AuthReducer = (state, action) => {
 
         case "LOGOUT":
             localStorage.removeItem("user");
+            localStorage.removeItem("cleaner");
+            localStorage.removeItem("name");
             localStorage.removeItem("token");
             localStorage.removeItem("customerId");
-            return { ...state, user: null, token: null, customerId: null, loading: false, error: null };
+            localStorage.removeItem("cleanerId");
+
+            return {
+                ...state,
+                user: null,
+                cleaner: null,
+                token: null,
+                customerId: null,
+                cleanerId: null,
+                loading: false,
+                error: null
+            };
+
 
         default:
             return state;
@@ -83,6 +115,13 @@ export const AuthContextProvider = ({ children }) => {
         }
     }, [state.user]);
 
+    useEffect(() => {
+        if (state.cleaner) {
+            localStorage.setItem("cleaner", JSON.stringify(state.cleaner));
+        } else {
+            localStorage.removeItem("cleaner");
+        }
+    }, [state.cleaner]);
     return (
         <AuthContext.Provider value={{ ...state, dispatch }}>
             {children}

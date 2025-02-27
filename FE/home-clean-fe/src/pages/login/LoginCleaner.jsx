@@ -58,16 +58,19 @@ function Login() {
             });
 
             const result = await response.json();
-
+            console.log(result);
             if (response.ok) {
-                const { token, cleanerId, phone } = result;
+                const { name, token, cleanerId } = result;
+                localStorage.setItem("name", name);
+                localStorage.setItem("token", token);
+                localStorage.setItem("cleanerId", cleanerId);
                 dispatch({
-                    type: 'LOGIN_SUCCESS',
-                    payload: { user: { phone }, token, cleanerId }
+                    type: 'LOGIN_SUCCESS_CLEANER',
+                    payload: { name, token, cleanerId }
                 });
 
                 message.success('Đăng nhập thành công!');
-                navigate('/homeclean');
+                navigate('/homeclean'); // Điều hướng đến trang Home của Cleaner
             } else {
                 setErrorMessage(result.message || 'Đăng nhập thất bại.');
             }

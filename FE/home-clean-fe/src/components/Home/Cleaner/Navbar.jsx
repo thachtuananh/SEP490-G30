@@ -3,47 +3,30 @@ import { useState, useContext, useEffect } from "react";
 import { AuthContext } from "../../../context/AuthContext";
 import houseCleanLogo from '../../../assets/HouseClean_logo.png';
 import { Notification } from "../../Notification/Notification";
-import styles from "../../../assets/CSS/Notification/Notification.module.css"
-
+import styles from "../../../assets/CSS/Notification/Notification.module.css";
 
 function Navbar() {
-    const { user } = useContext(AuthContext); // Lấy user từ AuthContext
+    const { cleaner } = useContext(AuthContext); // Lấy thông tin từ context (user)
     const [isMenuOpen, setIsMenuOpen] = useState(false);
-
-    const toggleMenu = () => {
-        setIsMenuOpen(!isMenuOpen);
-    };
-
     const [isPopupNotification, setIsPopupNotification] = useState(false);
 
-    useEffect(() => {
-        const handleResize = () => {
-            if (window.innerWidth >= 1024) {
-                document.body.style.overflow = isPopupNotification ? "hidden" : "auto";
-            } else {
-                document.body.style.overflow = "auto";
-            }
-        };
+    const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
 
-        const handleEscape = (e) => {
-            if (e.key === "Escape") setIsPopupNotification(false);
-        };
+    // Lấy tên của cleaner từ user trong AuthContext hoặc localStorage nếu không có trong context
+    const getCleanerName = () => {
+        if (cleaner && cleaner.name) {
+            return cleaner.name;
+        }
+        const storedName = localStorage.getItem("name");
+        return storedName ? storedName : '';
 
-        window.addEventListener("resize", handleResize);
-        document.addEventListener("keydown", handleEscape);
-        handleResize();
+    };
 
-        return () => {
-            window.removeEventListener("resize", handleResize);
-            document.removeEventListener("keydown", handleEscape);
-            document.body.style.overflow = "auto";
-        };
-    }, [isPopupNotification]);
     return (
         <div className="Container">
             <nav className="navbar">
                 <div className="logo">
-                    <Link to="/homecleaner">
+                    <Link to="/homeclean">
                         <img src={houseCleanLogo} alt="House Clean Logo" className="logo-img" />
                     </Link>
                 </div>
@@ -57,7 +40,7 @@ function Navbar() {
                 <div className={`nav-content ${isMenuOpen ? 'active' : ''}`}>
                     <ul className="menu">
                         <li><Link to="/" className="nav-link">Việc Làm</Link></li>
-                        <li><Link to="/" className="nav-link">Hồ sơ của bản</Link></li>
+                        <li><Link to="/" className="nav-link">Hồ sơ của bạn</Link></li>
                         <li><Link to="/" className="nav-link">Tin tức</Link></li>
                         <li><Link to="/" className="nav-link">Thu nhập</Link></li>
                         <li className={styles.nav_link_notification}
@@ -67,9 +50,9 @@ function Navbar() {
                         </li>
 
                         <li className="mobile-login">
-                            {user ? (
+                            {cleaner ? (
                                 <Link to="/infomationcleaner" className="user-name">
-                                    {user.name}
+                                    {getCleanerName()} {/* Hiển thị tên của cleaner */}
                                 </Link>
                             ) : (
                                 <Link to="/login" className="login-btn">Đăng nhập</Link>
@@ -79,22 +62,22 @@ function Navbar() {
                 </div>
 
                 <div className="desktop-login">
-                    {user ? (
+                    {cleaner ? (
                         <Link to="/infomationcleaner" className="user-name">
-                            {user.name}
+                            {getCleanerName()} {/* Hiển thị tên của cleaner */}
                         </Link>
                     ) : (
                         <Link to="/login" className="login-btn">Đăng nhập</Link>
                     )}
                 </div>
             </nav>
+
             {isPopupNotification && (
                 <div className={styles.box_Notification}>
                     <div className={styles.overlayContainer} onClick={() => setIsPopupNotification(false)}></div>
                     <Notification />
                 </div>
             )}
-
         </div>
     );
 }
