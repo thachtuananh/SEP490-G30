@@ -5,10 +5,10 @@ import java.util.List;
 public class ServiceDTO {
     private Long serviceId;
     private String serviceName;
-    private String description;  // Description của service
+    private String description;  
     private Double basePrice;
     private String serviceType;
-    private List<ServiceDetailDTO> serviceDetails; // Thêm danh sách ServiceDetailDTO
+    private List<ServiceDetailDTO> serviceDetails; 
 
    
 
@@ -88,7 +88,7 @@ public class ServiceDTO {
         private Long serviceDetailId;
         private String name;
         private Double additionalPrice;
-        private String description; // Description của ServiceDetail
+        private String description; 
 		public Long getServiceDetailId() {
 			return serviceDetailId;
 		}
