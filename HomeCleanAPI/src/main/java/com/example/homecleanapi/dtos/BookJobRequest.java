@@ -10,7 +10,7 @@ public class BookJobRequest {
     private Integer customerAddressId; 
     private Integer roomSize;         
     private String imageUrl;
-    
+    // test thu 1 dong o day
     
 	
 	public Long getServiceId() {
