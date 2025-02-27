@@ -13,6 +13,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.Map;
 
 @RestController
@@ -34,12 +35,12 @@ public class EmployeeController {
     }
 
     @PostMapping(value = "/{employeeId}/create-address", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Map<String, Object>> createEmployeeAddress(@RequestBody EmployeeLocationsDTO request, @RequestParam int employeeId) {
+    public ResponseEntity<Map<String, Object>> createEmployeeAddress(@RequestBody EmployeeLocationsDTO request, @PathVariable int employeeId) throws IOException {
         return employeeService.employeeCreateAddress(request, employeeId);
     }
 
     @PutMapping(value = "/{employeeId}/update-address", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Map<String, Object>> updateEmployeeAddress(@RequestBody EmployeeLocationsDTO request, @RequestParam int employeeId) {
+    public ResponseEntity<Map<String, Object>> updateEmployeeAddress(@RequestBody EmployeeLocationsDTO request, @PathVariable int employeeId) throws IOException {
         // Gọi service để xử lý update địa chỉ
         return employeeService.updateEmployeeAddress(request, employeeId);
     }
