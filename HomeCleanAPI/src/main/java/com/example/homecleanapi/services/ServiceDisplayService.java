@@ -21,34 +21,44 @@ public class ServiceDisplayService {
     @Autowired
     private ServiceDetailRepository serviceDetailRepository;
 
-    // customer xem tất cả dịch vụ
+    // customer xem tất cả dịch vụ, bao gồm cả ServiceDetails
     public List<ServiceDTO> getAllServices() {
         List<Services> homeCleanServices = serviceRepository.findAll();
 
-        // Chuyển các HomeCleanService thành ServiceDTO
+        // Chuyển các HomeCleanService thành ServiceDTO, bao gồm cả ServiceDetail
         return homeCleanServices.stream()
                 .map(this::convertToServiceDTO)
                 .collect(Collectors.toList());
     }
 
-    // Lấy chi tiết dịch vụ từ service_id
+    // Lấy chi tiết dịch vụ từ serviceDetailId, bao gồm cả description
     public ServiceDTO.ServiceDetailDTO getServiceDetailById(Long serviceDetailId) {
         ServiceDetail serviceDetail = serviceDetailRepository.findById(serviceDetailId).orElse(null);
         if (serviceDetail == null) {
             return null;  // Trả về null nếu không tìm thấy ServiceDetail
         }
 
-        return convertToServiceDetailDTO(serviceDetail);
-    }
+        // Lấy Service tương ứng với ServiceDetail để lấy description
+        Services service = serviceDetail.getService();
+        ServiceDTO.ServiceDetailDTO serviceDetailDTO = convertToServiceDetailDTO(serviceDetail);
+        serviceDetailDTO.setDescription(service.getDescription());  // Thêm description từ service
 
+        return serviceDetailDTO;
+    }
 
     private ServiceDTO convertToServiceDTO(Services homeCleanService) {
         ServiceDTO serviceDTO = new ServiceDTO();
         serviceDTO.setServiceId(homeCleanService.getId());
         serviceDTO.setServiceName(homeCleanService.getName());
-        serviceDTO.setDescription(homeCleanService.getDescription());
+        serviceDTO.setDescription(homeCleanService.getDescription()); // Thêm description
         serviceDTO.setBasePrice(homeCleanService.getBasePrice());
         serviceDTO.setServiceType(homeCleanService.getServiceType().name());
+
+        // Lấy danh sách ServiceDetails cho dịch vụ này
+        List<ServiceDTO.ServiceDetailDTO> serviceDetailDTOs = homeCleanService.getServiceDetails().stream()
+                .map(this::convertToServiceDetailDTO)
+                .collect(Collectors.toList());
+        serviceDTO.setServiceDetails(serviceDetailDTOs);  // Đính kèm danh sách service details vào ServiceDTO
 
         return serviceDTO;
     }
@@ -60,6 +70,5 @@ public class ServiceDisplayService {
         serviceDetailDTO.setAdditionalPrice(serviceDetail.getAdditionalPrice());
         return serviceDetailDTO;
     }
-
 }
 
