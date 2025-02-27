@@ -22,8 +22,8 @@ const MenuInfomation = ({ selectedMenu, setSelectedMenu }) => {
       <div className="menu-profile">
         <img className="profile-avatar" src={profileImg} alt="icon" />
         <div className="profile-details">
-          <p className="profile-name"><strong>{cleaner?.name || "Người dùng"}</strong></p>
-          <p className="profile-email">{cleaner?.email || "Chưa có email"}</p>
+          <p className="profile-name"><strong>{cleaner?.cleanerName || "Người dùng"}</strong></p>
+          <p className="profile-email">{cleaner?.cleanerEmail || "Chưa có email"}</p>
         </div>
       </div>
       <hr className="menu-separator" />
