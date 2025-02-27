@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { message } from "antd";
-import Footer from '../../components/Footer';
 import logo from '../../assets/HouseClean_logo.png';
 import { Link, useNavigate } from 'react-router-dom';
 import ImgLeft from '../../assets/image-left.png';

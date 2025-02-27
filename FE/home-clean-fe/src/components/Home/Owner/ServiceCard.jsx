@@ -1,3 +1,5 @@
+import { Link } from "react-router-dom";
+
 function ServiceCard({ image, title, description, rating, reviews, price }) {
   return (
     <div className="service-card">
@@ -15,7 +17,9 @@ function ServiceCard({ image, title, description, rating, reviews, price }) {
           <div className="price">{price}đ/h</div>
         </div>
         <div className="card-footer">
-          <button className="hire-btn">Thuê ngay</button>
+          <Link to="/service">
+            <button className="hire-btn">Thuê ngay</button>
+          </Link>
           <div className="user-avatars">
             {[1, 2, 3].map((i) => (
               <img

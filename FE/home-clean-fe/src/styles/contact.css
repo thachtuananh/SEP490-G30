@@ -1,0 +1,160 @@
+.contact-container {
+    display: flex;
+    gap: 24px;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    justify-content: center;
+    max-width: 1200px;
+    margin: 40px auto;
+    padding: 0 20px;
+}
+
+/* Form Section */
+.contact-form-section {
+    flex: 1;
+    /* border: 1px solid #e5e7eb;
+    border-radius: 8px; */
+    padding: 24px;
+}
+
+.section-header {
+    margin-bottom: 24px;
+}
+
+.section-title {
+    font-size: 24px;
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: 8px;
+}
+
+.section-description {
+    color: #6b7280;
+    font-size: 16px;
+    line-height: 1.5;
+}
+
+.contact-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.form-label {
+    font-size: 14px;
+    font-weight: 500;
+    color: #374151;
+}
+
+.form-input,
+.form-textarea {
+    padding: 10px 14px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 16px;
+    color: #111827;
+    transition: border-color 0.2s;
+}
+
+.form-input:focus,
+.form-textarea:focus {
+    outline: none;
+    border-color: #00a651;
+    box-shadow: 0 0 0 2px rgba(0, 166, 81, 0.1);
+}
+
+.form-textarea {
+    min-height: 120px;
+    resize: vertical;
+}
+
+.submit-button {
+    background-color: #00a651;
+    color: white;
+    border: none;
+    border-radius: 64px;
+    padding: 12px 24px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    width: fit-content;
+}
+
+.submit-button:hover {
+    background-color: #008c44;
+}
+
+/* Info Section */
+.contact-info-section {
+    flex: 1;
+    /* border: 1px solid #e5e7eb;
+    border-radius: 8px; */
+    padding: 24px;
+}
+
+.info-list {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.info-item {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.info-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 24px;
+    flex-shrink: 0;
+}
+
+.info-icon svg {
+    width: 48px;
+    height: 48px;
+    color: #00a651;
+}
+
+.info-text-contact {
+    color: #00a651;
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 1.5;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .contact-container {
+        flex-direction: column;
+    }
+
+    .contact-form-section,
+    .contact-info-section {
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .contact-container {
+        padding: 16px;
+        margin: 20px auto;
+    }
+
+    .section-title {
+        font-size: 20px;
+    }
+
+    .submit-button {
+        width: 100%;
+    }
+}

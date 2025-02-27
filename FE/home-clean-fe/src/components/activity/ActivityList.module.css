@@ -39,7 +39,7 @@
 @media (max-width: 768px) {
     .container {
         width: 100%;
-        padding: 20px;
+        /* padding: 20px; */
         border-radius: 0;
         border: none;
     }
