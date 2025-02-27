@@ -169,18 +169,13 @@ public class CleanerJobService {
 
 
     // accept hoặc reject cleaner
-    public Map<String, Object> acceptOrRejectApplication(Long jobId, Long cleanerId, String action) {
+    public Map<String, Object> acceptOrRejectApplication(Long jobId, Long cleanerId, Long customerId, String action) {
         Map<String, Object> response = new HashMap<>();
 
-
-        String phoneNumber = SecurityContextHolder.getContext().getAuthentication().getName(); 
-        System.out.println("phone = " + phoneNumber);
-
-        // Tìm customer theo phone number để xác thực quyền của customer
-        Optional<Customers> customerOpt = customerRepo.findByPhone(phoneNumber);
-
+        // Tìm customer theo customerId để xác thực quyền của customer
+        Optional<Customers> customerOpt = customerRepo.findById(customerId);
         if (!customerOpt.isPresent()) {
-            response.put("message", "Customer not found with phone number: " + phoneNumber);
+            response.put("message", "Customer not found with customerId: " + customerId);
             return response;
         }
 
@@ -195,11 +190,13 @@ public class CleanerJobService {
 
         Job job = jobOpt.get();
 
-        // Kiểm tra quyền của customer (customer phải là người đã tạo job này)
-        if (!job.getCustomer().getId().equals(customer.getId())) {
+        System.out.println(job.getCustomer().getId());
+        System.out.println(job.getCustomer().getId());
+        if (job.getCustomer().getId().longValue() != customer.getId().longValue()) {
             response.put("message", "You are not authorized to accept or reject this job");
             return response;
         }
+
 
         // Tìm cleaner theo cleanerId
         Optional<Employee> cleanerOpt = cleanerRepository.findById(cleanerId);
@@ -251,6 +248,7 @@ public class CleanerJobService {
 
         return response;
     }
+
 
 
 

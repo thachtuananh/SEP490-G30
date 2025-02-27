@@ -11,7 +11,7 @@ import com.example.homecleanapi.repositories.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-
+import org.springframework.web.bind.annotation.PathVariable;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -49,7 +49,7 @@ public class JobService {
     @Autowired JobDetailsRepository jobDetailsRepository;
 
     // Tạo job mới cho customer
-    public Map<String, Object> bookJob(Long customerId, BookJobRequest request) {
+    public Map<String, Object> bookJob( @PathVariable Long customerId, BookJobRequest request) {
         Map<String, Object> response = new HashMap<>();
 
         // Lấy customerId từ tham số trực tiếp
@@ -137,13 +137,7 @@ public class JobService {
 
 
 
-
-
-
-
-
-    // Chuyển trạng thái job sang started
-    public Map<String, Object> updateJobStatusToStarted(Long jobId) {
+    public Map<String, Object> updateJobStatusToStarted(Long jobId, @PathVariable Long customerId) {
         Map<String, Object> response = new HashMap<>();
 
         // Tìm công việc theo jobId
@@ -155,12 +149,11 @@ public class JobService {
 
         Job job = jobOpt.get();
 
-//        // Kiểm tra quyền của customer (sử dụng customerId từ @PathVariable)
-//        if (job.getCustomer().getId().longValue() != customerId) {
-//            response.put("message", "You are not authorized to start this job");
-//            return response;
-//        }
-
+        // Kiểm tra quyền của customer (sử dụng customerId từ @RequestParam)
+        if (!job.getCustomer().getId().equals(customerId)) {
+            response.put("message", "You are not authorized to start this job");
+            return response;
+        }
 
         // Kiểm tra trạng thái công việc và sự tồn tại của job application
         JobApplication jobApplication = jobApplicationRepository.findByJobIdAndStatus(jobId, "Accepted");
@@ -181,6 +174,7 @@ public class JobService {
         response.put("message", "Job status updated to STARTED");
         return response;
     }
+
 
 
 }
