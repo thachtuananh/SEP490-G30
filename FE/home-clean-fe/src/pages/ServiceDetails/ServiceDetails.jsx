@@ -1,7 +1,7 @@
 import "../../assets/CSS/Service/Service.css";
 import { useState } from "react";
 import ServiceContent from "../../components/service-details/ServiceContent"
-import ServiceDescription from "../../components/service-details/ServiceDescription";
+
 import SuggestedServices from "../../components/service-details/SuggestedServices";
 import SelectLocationModal from "../../components/service-details/SelectLocationModal";
 
@@ -11,7 +11,9 @@ const ServiceDetails = () => {
     <div className="container-service">
       <div className="body-service">
         <ServiceContent setIsShowLocationModal={setIsShowLocationModal} />
-        <ServiceDescription />
+        <div style={{
+          height: 100
+        }}></div>
         <SuggestedServices />
         {isShowLocationModal && (
           <SelectLocationModal

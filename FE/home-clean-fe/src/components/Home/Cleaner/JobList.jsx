@@ -1,5 +1,7 @@
 import React from 'react';
 import { FaMapMarkerAlt, FaClock, FaCalendarAlt } from 'react-icons/fa';
+import { Link } from 'react-router-dom';
+
 
 function JobCard({ type, status, date, time, location, price }) {
     return (
@@ -10,7 +12,9 @@ function JobCard({ type, status, date, time, location, price }) {
                     <span className="job-status">{status}</span>
                 </div>
                 <button className="detail-button">
-                    Xem chi tiết
+                    <Link className="link-view-details" to="/workdetails">
+                        Xem chi tiết
+                    </Link>
                 </button>
             </div>
 
