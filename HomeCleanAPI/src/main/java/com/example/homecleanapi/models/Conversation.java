@@ -5,7 +5,7 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "converstion")
+@Table(name = "conversations")
 public class Conversation {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -16,7 +16,6 @@ public class Conversation {
 
     @Column(name = "cleaner_id")
     private Integer cleanerId;
-    private LocalDateTime created_at = LocalDateTime.now();
 
     public Conversation() {
     }
@@ -43,13 +42,5 @@ public class Conversation {
 
     public void setCleanerId(Integer cleanerId) {
         this.cleanerId = cleanerId;
-    }
-
-    public LocalDateTime getCreated_at() {
-        return created_at;
-    }
-
-    public void setCreated_at(LocalDateTime created_at) {
-        this.created_at = created_at;
     }
 }

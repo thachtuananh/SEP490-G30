@@ -6,19 +6,23 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "messages")
-public class MessageBatch {
+public class Message {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     @Column(name = "conversation_id")
     private Long conversationId;
 
-    @Column(name = "meassge_content")
-    private String meassge_content;
+    @Column(name = "message_content")
+    private String content;
+
+    @Column(name = "sender_id")
+    private Integer senderId;
 
     private LocalDateTime sent_at = LocalDateTime.now();
 
-    public MessageBatch() {
+    public Message() {
     }
 
     public Long getId() {
@@ -37,12 +41,20 @@ public class MessageBatch {
         this.conversationId = conversationId;
     }
 
-    public String getMeassge_content() {
-        return meassge_content;
+    public String getContent() {
+        return content;
     }
 
-    public void setMeassge_content(String meassge_content) {
-        this.meassge_content = meassge_content;
+    public void setContent(String content) {
+        this.content = content;
+    }
+
+    public Integer getSenderId() {
+        return senderId;
+    }
+
+    public void setSenderId(Integer senderId) {
+        this.senderId = senderId;
     }
 
     public LocalDateTime getSent_at() {
