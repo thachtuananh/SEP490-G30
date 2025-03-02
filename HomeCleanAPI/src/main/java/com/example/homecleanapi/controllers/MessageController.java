@@ -1,8 +1,8 @@
 package com.example.homecleanapi.controllers;
 
 import com.example.homecleanapi.dtos.ChatMessage;
-import com.example.homecleanapi.models.MessageBatch;
-import com.example.homecleanapi.repositories.MessageBatchRepository;
+import com.example.homecleanapi.models.Message;
+import com.example.homecleanapi.repositories.MessageRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -18,19 +18,19 @@ import java.util.List;
 @RequestMapping("/api/messages")
 public class MessageController {
     @Autowired
-    private MessageBatchRepository messageBatchRepository;
+    private MessageRepository messageRepository;
     @Autowired
     private ObjectMapper objectMapper;
 
     @GetMapping("/{conversationId}")
     public ResponseEntity<List<ChatMessage>> getConversationHistory(@PathVariable Long conversationId) {
-        List<MessageBatch> batches = messageBatchRepository.findMessageBatchByConversationId(conversationId);
+        List<Message> batches = messageRepository.findByConversationId(conversationId);
 
         List<ChatMessage> allMessages = new ArrayList<>();
-        for (MessageBatch batch : batches) {
+        for (Message batch : batches) {
             try {
                 List<ChatMessage> messages = objectMapper.readValue(
-                        batch.getMeassge_content(),
+                        batch.getContent(),
                         new com.fasterxml.jackson.core.type.TypeReference<List<ChatMessage>>() {}
                 );
                 allMessages.addAll(messages);

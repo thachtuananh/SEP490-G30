@@ -1,23 +1,40 @@
 package com.example.homecleanapi.controllers;
 
 import com.example.homecleanapi.models.Conversation;
-import com.example.homecleanapi.repositories.ConversationRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.example.homecleanapi.services.ConversationService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import java.util.Map;
 
 @RestController
+@Tag(name = "Conversation API")
 @RequestMapping("/api/conversations")
+@SecurityRequirement(name = "BearerAuth")
 public class ConversationController {
-    @Autowired
-    private ConversationRepository conversationRepository;
 
-    @GetMapping("/api/{customer_id}")
-    public ResponseEntity<Conversation> getUserConversation(@PathVariable("customer_id") Integer customer_id,
-                                                            @RequestParam Integer cleaner_id) {
-        Conversation conversation = conversationRepository.findByCustomerIdAndCleanerId(customer_id, cleaner_id);
-        return ResponseEntity.ok(conversation);
+    private final ConversationService conversationService;
+
+    public ConversationController(ConversationService conversationService) {
+        this.conversationService = conversationService;
     }
+
+    @PostMapping(name = "/createConversation")
+    public Conversation createConversation(@RequestParam @Valid Integer customerId, @RequestParam @Valid Integer cleanerId) {
+        return conversationService.getOrCreateConversation(customerId, cleanerId);
+    }
+
+    @GetMapping("/{customer-id}/getConverstaionByCusomerId")
+    public ResponseEntity<Map<String, Object>> getAllConversations(@RequestParam Integer customerId) {
+        return conversationService.getConversationsByCustomerId(customerId);
+    }
+
+    @GetMapping("/{cleaner-id}/getConverstaionByCleanId")
+    public ResponseEntity<Map<String, Object>> getConversationsByCleanerId(@RequestParam Integer cleanerId) {
+        return conversationService.getConversationsByCleanerId(cleanerId);
+    }
+
 }
