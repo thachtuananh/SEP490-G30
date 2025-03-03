@@ -7,8 +7,7 @@ public class BookJobRequest {
 	private Long serviceId;          
     private Long serviceDetailId;    
     private String jobTime;          
-    private Integer customerAddressId; 
-    private Integer roomSize;         
+    private Integer customerAddressId;         
     private String imageUrl;
     // test thu 1 dong o day
     
@@ -37,12 +36,7 @@ public class BookJobRequest {
 	public void setCustomerAddressId(Integer customerAddressId) {
 		this.customerAddressId = customerAddressId;
 	}
-	public Integer getRoomSize() {
-		return roomSize;
-	}
-	public void setRoomSize(Integer roomSize) {
-		this.roomSize = roomSize;
-	}
+
 	public String getImageUrl() {
 		return imageUrl;
 	}

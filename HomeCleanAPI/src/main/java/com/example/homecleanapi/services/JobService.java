@@ -13,6 +13,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.PathVariable;
 
+import java.time.DayOfWeek;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
@@ -28,9 +29,6 @@ public class JobService {
 
     @Autowired
     private JobApplicationRepository jobApplicationRepository;
-
-    @Autowired
-    private CustomerRepository customerRepository;
     
     @Autowired
     private CustomerRepo customerRepo;
@@ -49,13 +47,11 @@ public class JobService {
     @Autowired JobDetailsRepository jobDetailsRepository;
 
     // Tạo job mới cho customer
-    public Map<String, Object> bookJob( @PathVariable Long customerId, BookJobRequest request) {
+    public Map<String, Object> bookJob(@PathVariable Long customerId, BookJobRequest request) {
         Map<String, Object> response = new HashMap<>();
 
-        // Lấy customerId từ tham số trực tiếp
         System.out.println("customerId = " + customerId);
 
-        // Tìm customer theo customerId
         Optional<Customers> customerOpt = customerRepo.findById(customerId);
         if (!customerOpt.isPresent()) {
             response.put("message", "Customer not found with customerId: " + customerId);
@@ -72,7 +68,6 @@ public class JobService {
         }
         CustomerAddresses customerAddress = customerAddressOpt.get();
 
-        // Tạo mới Job
         Job job = new Job();
 
         // Kiểm tra Service
@@ -109,9 +104,42 @@ public class JobService {
         job.setStatus(JobStatus.OPEN);
         job.setCustomer(customer);
 
+        // Tính toán giá dịch vụ dựa trên giá trong service_detail
+        double serviceDetailPrice = serviceDetail.getPrice();  // Sử dụng giá dịch vụ từ service_detail
+        double additionalPrice = serviceDetail.getAdditionalPrice();
+        double finalPrice = serviceDetailPrice + additionalPrice;  // Bắt đầu với giá dịch vụ từ service_detail và phụ phí
+
+        // Kiểm tra xem job có thuộc giờ cao điểm hoặc ngày lễ/cuối tuần không
+        double peakTimeFee = 0;
+        double discount = 0;
+
+        // Kiểm tra ngày lễ và cuối tuần
+        DayOfWeek dayOfWeek = job.getScheduledTime().getDayOfWeek();
+        if (dayOfWeek == DayOfWeek.SATURDAY || dayOfWeek == DayOfWeek.SUNDAY) {
+            // Thêm phụ phí cho cuối tuần
+            peakTimeFee = 0.1 * finalPrice;  // 10% phụ phí cho cuối tuần
+        }
+
+        // Kiểm tra xem job có vào khung giờ cao điểm hay không
+        if (job.getScheduledTime().getHour() >= 18 && job.getScheduledTime().getHour() <= 22) {
+            // Thêm phụ phí giờ cao điểm
+            peakTimeFee += 0.2 * finalPrice; // 20% phụ phí giờ cao điểm
+        }
+
+        // Cộng phụ phí vào giá cuối cùng
+        finalPrice += peakTimeFee;
+
+        // Kiểm tra chiết khấu từ dịch vụ (nếu có)
+        if (serviceDetail.getDiscounts() != null && !serviceDetail.getDiscounts().isEmpty()) {
+            discount = 0.05 * finalPrice;  // Giảm giá 5% nếu có chiết khấu
+            finalPrice -= discount;
+        }
+
+        // Gán giá cuối cùng cho Job
+        job.setTotalPrice(finalPrice);
+
         // Tạo JobDetails mới và liên kết với Job
         JobDetails jobDetails = new JobDetails();
-        jobDetails.setRoomSize(request.getRoomSize());
         jobDetails.setImageUrl(request.getImageUrl());
 
         // Gán Job cho JobDetails trước khi lưu
@@ -126,13 +154,10 @@ public class JobService {
         response.put("message", "Job booked successfully");
         response.put("jobId", job.getId());
         response.put("status", job.getStatus());
+        response.put("finalPrice", finalPrice);  // Trả về giá cuối cùng
 
         return response;
     }
-
-
-
-
 
 
 

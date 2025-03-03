@@ -1,6 +1,6 @@
-package com.example.homecleanapi.enums;
-
-public enum ServiceType {
-    BASIC, 
-    ON_DEMAND;
-}
+//package com.example.homecleanapi.enums;
+//
+//public enum ServiceType {
+//    BASIC, 
+//    ON_DEMAND;
+//}

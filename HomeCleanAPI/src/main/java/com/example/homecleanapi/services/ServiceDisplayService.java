@@ -52,7 +52,7 @@ public class ServiceDisplayService {
         serviceDTO.setServiceName(homeCleanService.getName());
         serviceDTO.setDescription(homeCleanService.getDescription()); // Thêm description
         serviceDTO.setBasePrice(homeCleanService.getBasePrice());
-        serviceDTO.setServiceType(homeCleanService.getServiceType().name());
+
 
         // Lấy danh sách ServiceDetails cho dịch vụ này
         List<ServiceDTO.ServiceDetailDTO> serviceDetailDTOs = homeCleanService.getServiceDetails().stream()

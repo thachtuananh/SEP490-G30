@@ -6,18 +6,20 @@ import com.example.homecleanapi.models.Customers;
 import com.example.homecleanapi.models.Employee;
 import com.example.homecleanapi.models.Job;
 import com.example.homecleanapi.models.JobApplication;
-
+import com.example.homecleanapi.models.ServiceDetail;
+import com.example.homecleanapi.models.Services;
 import com.example.homecleanapi.repositories.CleanerRepository;
 import com.example.homecleanapi.repositories.CustomerRepo;
 import com.example.homecleanapi.repositories.CustomerRepository;
 import com.example.homecleanapi.repositories.JobApplicationRepository;
 import com.example.homecleanapi.repositories.JobRepository;
+import com.example.homecleanapi.repositories.ServiceDetailRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
-
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,6 +40,9 @@ public class CleanerJobService {
     
     @Autowired
     private CustomerRepo customerRepo;
+    
+    @Autowired
+    private ServiceDetailRepository serviceDetailRepository;
 
     // Lấy danh sách các công việc đang mở
     public List<JobSummaryDTO> getOpenJobs() {
@@ -58,10 +63,36 @@ public class CleanerJobService {
 
         Job job = jobRepository.findById(jobId).orElse(null);
         if (job != null) {
+            // Thêm thông tin về job
             jobDetails.put("jobId", job.getId());
             jobDetails.put("status", job.getStatus());
             jobDetails.put("totalPrice", job.getTotalPrice());
             jobDetails.put("scheduledTime", job.getScheduledTime());
+
+            // Thêm thông tin về Service (name và description)
+            Services service = job.getService();
+            if (service != null) {
+                jobDetails.put("serviceName", service.getName());
+                jobDetails.put("serviceDescription", service.getDescription());
+            }
+
+            // Lấy tất cả ServiceDetails có service_id giống với service_id trong job
+            List<ServiceDetail> serviceDetails = serviceDetailRepository.findByServiceId(job.getService().getId());
+            if (serviceDetails != null && !serviceDetails.isEmpty()) {
+                List<Map<String, Object>> serviceDetailList = new ArrayList<>();
+                for (ServiceDetail detail : serviceDetails) {
+                    Map<String, Object> detailInfo = new HashMap<>();
+                    detailInfo.put("serviceDetailId", detail.getId());
+                    detailInfo.put("name", detail.getName());
+                    detailInfo.put("price", detail.getPrice());
+                    detailInfo.put("additionalPrice", detail.getAdditionalPrice());
+                    detailInfo.put("areaRange", detail.getAreaRange());
+                    detailInfo.put("description", detail.getDescription());
+                    detailInfo.put("discounts", detail.getDiscounts());
+                    serviceDetailList.add(detailInfo);
+                }
+                jobDetails.put("serviceDetails", serviceDetailList);
+            }
         }
 
         return jobDetails.isEmpty() ? null : jobDetails;
