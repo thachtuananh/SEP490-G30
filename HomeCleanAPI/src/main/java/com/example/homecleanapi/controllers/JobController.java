@@ -82,6 +82,17 @@ public class JobController {
         return ResponseEntity.ok(addresses);
     }
 	
+	@PutMapping("/{customerId}/addresses/{addressId}/set-default")
+    public ResponseEntity<String> setDefaultAddress(@PathVariable("customerId") Integer customerId,
+                                                    @PathVariable("addressId") Integer addressId) {
+        boolean success = jobService.setDefaultAddressForCustomer(customerId, addressId);
+        if (success) {
+            return ResponseEntity.ok("Default address updated successfully");
+        } else {
+            return ResponseEntity.status(400).body("Failed to update default address");
+        }
+    }
+	
 	
 	
 	// LUỒNG CODE 2 

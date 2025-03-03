@@ -206,6 +206,32 @@ public class JobService {
         return customerAddressRepository.findByCustomerId(customerId);
     }
     
+    
+    public boolean setDefaultAddressForCustomer(Integer customerId, Integer addressId) {
+        // Lấy tất cả các địa chỉ của customer
+        List<CustomerAddresses> addresses = customerAddressRepository.findByCustomerId(customerId);
+
+        if (addresses.isEmpty()) {
+            return false; // Nếu không có địa chỉ nào
+        }
+
+        // Cập nhật trạng thái is_default của tất cả các địa chỉ của customer thành false
+        for (CustomerAddresses address : addresses) {
+            address.setIs_current(false); // Hoặc nếu bạn dùng "is_default", hãy đổi theo thuộc tính đó
+            customerAddressRepository.save(address);
+        }
+
+        // Cập nhật địa chỉ được chọn thành mặc định
+        CustomerAddresses defaultAddress = customerAddressRepository.findById(addressId).orElse(null);
+        if (defaultAddress != null) {
+            defaultAddress.setIs_current(true); // Hoặc nếu bạn dùng "is_default", hãy đổi theo thuộc tính đó
+            customerAddressRepository.save(defaultAddress);
+            return true;
+        }
+
+        return false;
+    }
+    
     // LU
     
 
