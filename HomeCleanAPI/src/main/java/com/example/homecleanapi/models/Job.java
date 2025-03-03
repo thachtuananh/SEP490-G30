@@ -40,7 +40,7 @@ public class Job {
     @Column(name = "scheduled_time")
     private LocalDateTime scheduledTime; 
 
-    @Column(name = "created_at", nullable = false, updatable = false)
+    @Column(name = "created_at")
     private LocalDateTime createdAt;
 
     private Double totalPrice;

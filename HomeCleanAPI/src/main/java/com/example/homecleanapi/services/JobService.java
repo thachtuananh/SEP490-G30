@@ -45,6 +45,9 @@ public class JobService {
     @Autowired 
     private JobDetailsRepository jobDetailsRepository;
     
+    @Autowired
+    private CustomerRepository customerRepository;
+    
 
     
     
@@ -281,6 +284,48 @@ public class JobService {
         }
 
         return bookedJobs;
+    }
+    
+    // huy job ddax book
+    public Map<String, Object> cancelJobForCustomer(Long customerId, Long jobId) {
+        Map<String, Object> response = new HashMap<>();
+
+        // Kiểm tra xem customer có tồn tại không
+        Optional<Customers> customerOpt = customerRepository.findById(customerId);
+        if (!customerOpt.isPresent()) {
+            response.put("message", "Customer not found");
+            return response;
+        }
+        Customers customer = customerOpt.get();
+
+        // Tìm job theo jobId
+        Optional<Job> jobOpt = jobRepository.findById(jobId);
+        if (!jobOpt.isPresent()) {
+            response.put("message", "Job not found");
+            return response;
+        }
+        Job job = jobOpt.get();
+
+        // Kiểm tra xem customer có phải là người tạo job này không
+        if (!job.getCustomer().getId().equals(customerId)) {
+            response.put("message", "You are not authorized to cancel this job");
+            return response;
+        }
+
+        // Kiểm tra trạng thái của job
+        if (job.getStatus().equals(JobStatus.STARTED) || job.getStatus().equals(JobStatus.IN_PROGRESS)) {
+            response.put("message", "You cannot cancel a job that has already started");
+            return response;
+        }
+
+        // Cập nhật trạng thái công việc thành "CANCELLED"
+        job.setStatus(JobStatus.CANCELLED);
+        jobRepository.save(job);
+
+        response.put("message", "Job has been cancelled successfully");
+        response.put("jobId", jobId);
+        response.put("status", job.getStatus());
+        return response;
     }
     
     // LU

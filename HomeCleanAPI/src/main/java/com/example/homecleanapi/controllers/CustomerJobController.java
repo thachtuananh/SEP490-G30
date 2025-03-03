@@ -110,6 +110,12 @@ public class CustomerJobController {
     }
 
 	
+	// hủy job
+	@PostMapping("/{customerId}/cancel-job/{jobId}")
+    public ResponseEntity<Map<String, Object>> cancelJob(@PathVariable("customerId") Long customerId, @PathVariable("jobId") Long jobId) {
+        Map<String, Object> response = jobService.cancelJobForCustomer(customerId, jobId);
+        return ResponseEntity.ok(response);
+    }
 	
 	// LUỒNG CODE 2 
 	
