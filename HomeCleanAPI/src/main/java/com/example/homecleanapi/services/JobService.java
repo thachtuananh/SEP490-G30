@@ -9,14 +9,12 @@ import com.example.homecleanapi.repositories.*;
 
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.PathVariable;
 
 import java.time.DayOfWeek;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -33,8 +31,6 @@ public class JobService {
     @Autowired
     private CustomerRepo customerRepo;
     
-    
-    
     @Autowired
     private CustomerAddressRepository customerAddressRepository; 
     
@@ -44,7 +40,12 @@ public class JobService {
     @Autowired
     private ServiceDetailRepository serviceDetailRepository;
     
-    @Autowired JobDetailsRepository jobDetailsRepository;
+    @Autowired 
+    private JobDetailsRepository jobDetailsRepository;
+    
+
+    
+    
 
     // Tạo job mới cho customer
     public Map<String, Object> bookJob(@PathVariable Long customerId, BookJobRequest request) {
@@ -199,6 +200,9 @@ public class JobService {
         response.put("message", "Job status updated to STARTED");
         return response;
     }
+    
+    // LU
+    
 
 
 

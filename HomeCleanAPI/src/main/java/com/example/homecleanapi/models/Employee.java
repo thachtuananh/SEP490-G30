@@ -37,6 +37,8 @@ public class Employee {
     @Column(name = "profile_image", columnDefinition = "BYTEA")
     private byte[] profile_image;
 
+    @Column(name = "status")
+    private Boolean status;
 
     @PrePersist
     protected void onCreate() {
@@ -54,7 +56,18 @@ public class Employee {
 //        }
     }
 
-    public Integer getAge() {
+    
+    public Boolean getStatus() {
+		return status;
+	}
+
+
+	public void setStatus(Boolean status) {
+		this.status = status;
+	}
+
+
+	public Integer getAge() {
         return age;
     }
 

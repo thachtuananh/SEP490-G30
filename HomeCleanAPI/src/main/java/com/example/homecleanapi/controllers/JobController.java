@@ -28,7 +28,7 @@ public class JobController {
 	private CleanerJobService cleanerJobService;
 
 	// API cho customer tạo job
-	@PostMapping(value = "/{customerId}/create-job")
+	@PostMapping(value = "/{customerId}/createjob")
 	public ResponseEntity<Map<String, Object>> createJob(@RequestBody BookJobRequest request,
 			@RequestParam Long customerId) {
 		Map<String, Object> response = jobService.bookJob(customerId, request);
@@ -71,6 +71,43 @@ public class JobController {
 	    Map<String, Object> response = jobService.updateJobStatusToStarted(jobId, customerId);
 	    return ResponseEntity.ok(response);
 	}
+	
+	
+	
+	// LUỒNG CODE 2 
+	
+	@GetMapping("/cleaners/online")
+    public ResponseEntity<List<Map<String, Object>>> getOnlineCleaners() {
+        List<Map<String, Object>> onlineCleaners = cleanerJobService.getOnlineCleaners();
+
+        if (onlineCleaners.isEmpty()) {
+            return ResponseEntity.status(404).body(List.of(Map.of("message", "No online cleaners found")));
+        }
+
+        return ResponseEntity.ok(onlineCleaners);
+    }
+	
+	@GetMapping("/cleaner/{cleanerId}")
+    public ResponseEntity<Map<String, Object>> getCleanerDetails(@PathVariable Long cleanerId) {
+        Map<String, Object> cleanerDetails = cleanerJobService.getCleanerDetails(cleanerId);
+
+        if (cleanerDetails.containsKey("message")) {
+            return ResponseEntity.status(404).body(cleanerDetails);
+        }
+
+        return ResponseEntity.ok(cleanerDetails);
+    }
+	
+	@PostMapping(value = "/{customerId}/bookjob/{cleanerId}")
+    public ResponseEntity<Map<String, Object>> bookJobForCleaner(
+            @RequestParam Long customerId, 
+            @PathVariable Long cleanerId, 
+            @RequestBody BookJobRequest request) {
+
+        Map<String, Object> response = cleanerJobService.bookJobForCleaner(customerId, cleanerId, request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+	
 
 
 }

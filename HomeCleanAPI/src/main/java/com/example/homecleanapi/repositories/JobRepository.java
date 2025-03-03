@@ -1,6 +1,7 @@
 package com.example.homecleanapi.repositories;
 
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -17,7 +18,7 @@ public interface JobRepository extends JpaRepository<Job, Long> {
     Optional<Job> findById(Long jobId);
    
 
-    
+    List<Job> findByCleanerIdAndScheduledTimeBetween(Long cleanerId, LocalDateTime startTime, LocalDateTime endTime);
 
 }
 
