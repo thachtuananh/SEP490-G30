@@ -63,6 +63,14 @@ public class CleanerJobController {
         return ResponseEntity.ok(response);
     }
     
+    @GetMapping("/{cleanerId}/listjobsapply")
+    public ResponseEntity<List<Map<String, Object>>> getAppliedJobs(@PathVariable("cleanerId") Long cleanerId) {
+        List<Map<String, Object>> appliedJobs = cleanerJobService.getAppliedJobsForCleaner(cleanerId);
+        if (appliedJobs.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(appliedJobs);
+    }
     // LUỒNG 2 
     
     @GetMapping(value = "/{cleanerId}/jobs")

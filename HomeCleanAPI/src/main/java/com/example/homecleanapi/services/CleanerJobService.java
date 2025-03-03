@@ -408,6 +408,31 @@ public class CleanerJobService {
 		response.put("message", "Job status updated to COMPLETED");
 		return response;
 	}
+	
+	 public List<Map<String, Object>> getAppliedJobsForCleaner(Long cleanerId) {
+	        List<Map<String, Object>> appliedJobs = new ArrayList<>();
+
+	        // Lấy tất cả các JobApplication mà cleaner đã ứng tuyển
+	        List<JobApplication> jobApplications = jobApplicationRepository.findByCleanerId(cleanerId);
+
+	        for (JobApplication jobApplication : jobApplications) {
+	            Job job = jobApplication.getJob();
+	            Map<String, Object> jobInfo = new HashMap<>();
+
+	            jobInfo.put("jobId", job.getId());
+	            jobInfo.put("status", job.getStatus());
+	            jobInfo.put("scheduledTime", job.getScheduledTime());
+	            jobInfo.put("totalPrice", job.getTotalPrice());
+	            jobInfo.put("serviceName", job.getService().getName());
+
+	            // Thêm thông tin về dịch vụ (nếu cần)
+	            jobInfo.put("serviceDescription", job.getService().getDescription());
+
+	            appliedJobs.add(jobInfo);
+	        }
+
+	        return appliedJobs;
+	    }
 
 	// LUỒNG CODE 2
 
