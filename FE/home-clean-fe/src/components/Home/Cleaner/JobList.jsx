@@ -3,16 +3,35 @@ import { FaMapMarkerAlt, FaClock, FaCalendarAlt } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import { AuthContext } from "../../../context/AuthContext"; // Import AuthContext
 
-function JobCard({ type, status, date, time, location, price }) {
+// Hàm format ngày theo yêu cầu
+const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    const day = date.getDate();
+    const month = date.getMonth() + 1;
+    const year = date.getFullYear();
+    return `Ngày ${day} - Tháng ${month} - Năm ${year}`;
+};
+
+// Hàm format giờ theo yêu cầu
+const formatTime = (dateString) => {
+    const date = new Date(dateString);
+    const startHour = date.getHours();
+    const startMinute = date.getMinutes();
+    const endHour = startHour + 3; // Giả sử công việc kéo dài 3 giờ
+
+    return `${endHour - startHour} giờ - Từ ${startHour}:${startMinute.toString().padStart(2, "0")} đến ${endHour}:${startMinute.toString().padStart(2, "0")}`;
+};
+
+// Component JobCard
+const JobCard = ({ job }) => {
     return (
         <div className="job-card">
             <div className="job-header">
                 <div className="job-title-status">
-                    <span className="job-title">{type}</span>
-                    <span className="job-status">{status}</span>
+                    <span className="job-title">{job.serviceName}</span>
                 </div>
                 <button className="detail-button">
-                    <Link className="link-view-details" to="/workdetails">
+                    <Link className="link-view-details" to={`/workdetail/${job.jobId}`}>
                         Xem chi tiết
                     </Link>
                 </button>
@@ -21,26 +40,22 @@ function JobCard({ type, status, date, time, location, price }) {
             <div className="job-info">
                 <div className="info-row">
                     <FaCalendarAlt className="icon" />
-                    <span>{date}</span>
+                    <span>{formatDate(job.scheduledTime)}</span>
                 </div>
                 <div className="info-row">
                     <FaClock className="icon" />
-                    <span>{time}</span>
+                    <span>{formatTime(job.scheduledTime)}</span>
                 </div>
                 <div className="location-price">
-                    <div className="location-tag">
-                        <FaMapMarkerAlt className="icon" />
-                        <span>{location}</span>
-                    </div>
-                    <span className="price">{price} VND</span>
+                    <span className="price">{job.price} VND</span>
                 </div>
             </div>
         </div>
     );
-}
+};
 
 function JobList() {
-    const { token } = useContext(AuthContext); // Lấy token từ AuthContext
+    const { token } = useContext(AuthContext);
     const [jobs, setJobs] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -91,9 +106,16 @@ function JobList() {
         <section className="job-list-section">
             <div className="container">
                 <div className="content">
+                    <div className="filter-buttons">
+                        <button className="filter-button">Lọc theo</button>
+                        <button className="filter-button">Thời gian</button>
+                        <button className="filter-button">Khoảng cách</button>
+                        <button className="filter-button">Khoảng giá</button>
+                        <button className="search-button">Tìm kiếm</button>
+                    </div>
                     <div className="job-list">
                         {jobs.length > 0 ? (
-                            jobs.map((job, index) => <JobCard key={index} {...job} />)
+                            jobs.map((job) => <JobCard key={job.jobId} job={job} />)
                         ) : (
                             <p>Không có công việc nào.</p>
                         )}

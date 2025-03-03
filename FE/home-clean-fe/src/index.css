@@ -1,4 +1,31 @@
 /* Reset and base styles */
+:root {
+  --ant-primary-color: #00a651;
+  --ant-primary-color-hover: #009245;
+  --ant-primary-color-active: #007d3d;
+  --ant-btn-variant-outlined-hover: #00a651;
+}
+
+.ant-btn-primary {
+  background-color: var(--ant-primary-color) !important;
+  border-color: var(--ant-primary-color) !important;
+}
+
+.ant-btn-variant-outlined:hover {
+  border-color: var(--ant-btn-variant-outlined-hover) !important;
+  color: var(--ant-btn-variant-outlined-hover) !important;
+}
+
+.ant-btn-primary:hover {
+  background-color: var(--ant-primary-color-hover) !important;
+}
+
+.ant-btn-primary:active {
+  background-color: var(--ant-primary-color-active) !important;
+}
+
+
+
 * {
   margin: 0;
   padding: 0;

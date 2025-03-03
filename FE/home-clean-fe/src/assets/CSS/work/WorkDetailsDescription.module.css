@@ -74,6 +74,10 @@
     align-items: center;
 }
 
+.acceptButton:hover {
+    background: #008c44 !important;
+}
+
 .rightCard {
     display: flex;
     flex-direction: column;

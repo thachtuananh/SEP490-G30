@@ -1,34 +1,22 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-
+import { AuthContext } from '../../context/AuthContext'
+import { message } from "antd";
 
 const JobInfomation = ({ selectedDate, hour, minute }) => {
     const location = useLocation();
     const navigate = useNavigate();
     const state = location.state || {};
-    const [serviceData, setServiceData] = useState(null);
-
-    useEffect(() => {
-        if (!state.serviceDetailId) return;
-
-        const fetchServiceData = async () => {
-            try {
-                const response = await fetch(`http://localhost:8080/api/services/details/${state.serviceDetailId}`);
-                if (!response.ok) {
-                    throw new Error("Lỗi khi gọi API");
-                }
-                const data = await response.json();
-                setServiceData(data);
-            } catch (error) {
-                console.error("Lỗi khi gọi API:", error);
-            }
-        };
-
-        fetchServiceData();
-    }, [state.serviceDetailId]);
+    console.log(state);
 
     const serviceId = state.serviceId;
-    const serviceDetailId = state.serviceDetailId
+    const serviceDetailId = state.serviceDetailId;
+    const customerAddressId = state.customerAddressId;
+
+    console.log(customerAddressId);
+
+    // token
+    const { token, customerId } = useContext(AuthContext);
 
     const handleCreateJob = async () => {
         const formattedJobTime = `${selectedDate.getFullYear()}-${(selectedDate.getMonth() + 1)
@@ -41,31 +29,38 @@ const JobInfomation = ({ selectedDate, hour, minute }) => {
             serviceId,
             serviceDetailId,
             jobTime: formattedJobTime,
-            customerAddressId: 1,
-            roomSize: 30,
+            customerAddressId,
             imageUrl: "http://example.com/room.jpg",
         };
 
+        const apiUrl = `http://localhost:8080/api/customer/${customerId}/createjob?customerId=${customerId}`;
+
         try {
-            const response = await fetch(`http://localhost:8080/api/customer/1/create-job`, {
+            if (!token) {
+                console.error("Không tìm thấy token. Vui lòng đăng nhập lại.");
+                return;
+            }
+
+            const response = await fetch(`http://localhost:8080/api/customer/${customerId}/createjob?customerId=${customerId}`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    "Authorization": `Bearer ${localStorage.getItem("accessToken")}` // Nếu API yêu cầu token
+                    "Authorization": `Bearer ${localStorage.getItem("token")}`
                 },
                 body: JSON.stringify(jobData),
             });
-            console.log(`${localStorage.getItem("accessToken")}`);
 
+            const responseData = await response.json();
 
-            console.log("Raw API Response:", response.status, response.statusText);
-
-            if (response.ok) {
+            if (response.ok && responseData.status === "OPEN") {
                 console.log("Job created successfully");
                 navigate('/ordersuccess');
             } else {
-                console.error("Lỗi khi tạo job:", response.statusText);
+                console.error("Lỗi khi tạo job:", responseData);
+                message.error(responseData.message || "Tạo job thất bại, vui lòng thử lại!");
             }
+
+
         } catch (error) {
             console.error("Lỗi kết nối API:", error);
         }
@@ -101,7 +96,7 @@ const JobInfomation = ({ selectedDate, hour, minute }) => {
             <h4>Chi tiết</h4>
             <p>
                 <span>Loại dịch vụ</span>
-                <span style={{ float: "right" }}>{serviceData?.name}</span>
+                <span style={{ float: "right" }}>{state?.serviceName}</span>
             </p>
             <p>
                 <span>Địa điểm</span>
@@ -109,10 +104,12 @@ const JobInfomation = ({ selectedDate, hour, minute }) => {
                     {state.address}
                 </span>
             </p>
-            {/* <p>
+            <p>
                 <span>Khối lượng công việc</span>
-                <span style={{ float: "right" }}>30m2</span>
-            </p> */}
+                <span style={{ float: "right" }}>
+                    {state?.selectedSize || 0}m² - {state?.maxSize || 0}m²
+                </span>
+            </p>
             <p>
                 <span>Số nhân công</span>
                 <span style={{ float: "right" }}>1 người</span>
@@ -137,7 +134,7 @@ const JobInfomation = ({ selectedDate, hour, minute }) => {
             >
                 <span>Tổng thanh toán</span>
                 <h4 style={{ textAlign: "right", fontSize: 20 }}>
-                    {state.price} VNĐ
+                    {state.price.toLocaleString()} VNĐ
                 </h4>
             </div>
 

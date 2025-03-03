@@ -19,33 +19,30 @@ function ServiceSection() {
   return (
     <section className="service-section">
       <h2 className="section-title">Danh sách dịch vụ</h2>
-      {services.length > 0 ? (
-        services.map((service) => (
-          <div key={service.serviceId}>
-            <h3 className="service-category">{service.serviceName}</h3>
-            <div className="service-grid">
-              {service.serviceDetails.length > 0 ? (
-                service.serviceDetails.map((detail) => (
-                  <ServiceCard
-                    key={detail.serviceDetailId}
-                    id={detail.serviceDetailId}
-                    image={DEFAULT_IMAGE}
-                    title={detail.name}
-                    description={detail.description || "Không có mô tả"}
-                    rating={4.6}
-                    reviews={100}
-                    serviceId={service.serviceId}
-                  />
-                ))
-              ) : (
-                <p>Không có dịch vụ nào</p>
-              )}
-            </div>
-          </div>
-        ))
-      ) : (
-        <p>Đang tải dịch vụ...</p>
-      )}
+      <div
+        style={{
+          display: 'flex',
+          gap: 15,
+          flexWrap: 'wrap'
+        }}
+      >
+        {services.length > 0 ? (
+          services.map((service) => (
+            <ServiceCard
+              key={service.serviceId}
+              id={service.serviceId}
+              image={DEFAULT_IMAGE}
+              title={service.serviceName}
+              description={service.description || "Không có mô tả"}
+              rating={4.6}
+              reviews={100}
+              serviceId={service.serviceId}
+            />
+          ))
+        ) : (
+          <p>Đang tải dịch vụ...</p>
+        )}
+      </div>
     </section>
   );
 }

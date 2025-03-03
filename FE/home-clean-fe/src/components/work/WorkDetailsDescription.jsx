@@ -1,21 +1,84 @@
-import React, { useState } from "react";
-import { Modal, Input, Button } from "antd";
+import React, { useEffect, useState, useContext } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { Modal, Button, message } from "antd";
 import { FaClock, FaSearchLocation, FaDollarSign, FaCommentAlt } from "react-icons/fa";
+import { AuthContext } from "../../context/AuthContext"; // Lấy token từ AuthContext
 import styles from "../../assets/CSS/work/WorkDetailsDescription.module.css";
 
-const WorkDetailsDesCription = () => {
+const WorkDetailsDescription = () => {
+  const { jobId } = useParams(); // Lấy jobId từ URL
+  const { token } = useContext(AuthContext);
+  const navigate = useNavigate();
+  const [job, setJob] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const showModal = () => setIsModalOpen(true);
-  const handleOk = () => setIsModalOpen(false);
-  const handleCancel = () => setIsModalOpen(false);
+  useEffect(() => {
+    fetch(`http://localhost:8080/api/cleaner/job/${jobId}`, {
+      method: "GET",
+      headers: {
+        "Accept": "application/json",
+        "Authorization": `Bearer ${token}`
+      }
+    })
+      .then((response) => response.json())
+      .then((data) => setJob(data))
+      .catch((error) => console.error("Lỗi khi lấy chi tiết công việc:", error));
+  }, [jobId, token]);
+
+  // Hàm gửi yêu cầu nhận việc
+  const handleApplyJob = () => {
+    if (!token) {
+      message.error("Bạn cần đăng nhập để nhận việc!");
+      return;
+    }
+
+    fetch(`http://localhost:8080/api/cleaner/apply-job/${jobId}`, {
+      method: "POST",
+      headers: {
+        "Accept": "application/json",
+        "Authorization": `Bearer ${token}`
+      }
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Không thể nhận việc!");
+        }
+        return response.json();
+      })
+      .then(() => {
+        // message.success("Bạn đã nhận việc thành công!");
+        navigate("/applysuccess");
+        setIsModalOpen(false);
+      })
+      .catch((error) => {
+        console.error("Lỗi khi nhận việc:", error);
+        message.error("Nhận việc thất bại, vui lòng thử lại!");
+      });
+  };
+
+  if (!job) {
+    return <p>Đang tải chi tiết công việc...</p>;
+  }
+
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return `${date.getDate()} - ${date.getMonth() + 1} - ${date.getFullYear()}`;
+  };
+
+  // const formatTime = (dateString) => {
+  //   const date = new Date(dateString);
+  //   const startHour = date.getHours();
+  //   const endHour = startHour + 3;
+  //   return `${endHour - startHour} giờ - Từ ${startHour}:00 đến ${endHour}:00`;
+  // };
 
   return (
     <div className={styles.container}>
+      {/* Left Card */}
       <div className={styles.leftCard}>
         <div className={styles.header}>
-          <h3>Dọn phòng khách</h3>
-          <span>Đăng vào 2 tiếng trước</span>
+          <h3>{job.serviceName}</h3>
+          <span>{job.status === "OPEN" ? "Đang mở" : "Đã đóng"}</span>
         </div>
 
         <div className={styles.infoRow}>
@@ -23,7 +86,7 @@ const WorkDetailsDesCription = () => {
             <FaDollarSign className={styles.icon} />
             <div className={styles.text}>
               <span>Thù lao</span>
-              <b>900.000 VNĐ</b>
+              <b>{job.totalPrice.toLocaleString()} VNĐ</b>
             </div>
           </div>
 
@@ -31,7 +94,7 @@ const WorkDetailsDesCription = () => {
             <FaSearchLocation className={styles.icon} />
             <div className={styles.text}>
               <span>Địa điểm</span>
-              <b>Hà Nội</b>
+              <b>{job.customerAddress}</b>
             </div>
           </div>
 
@@ -39,7 +102,7 @@ const WorkDetailsDesCription = () => {
             <FaClock className={styles.icon} />
             <div className={styles.text}>
               <span>Thời gian</span>
-              <b>13h - 15h</b>
+              <b>{formatDate(job.scheduledTime)}</b>
             </div>
           </div>
         </div>
@@ -48,58 +111,48 @@ const WorkDetailsDesCription = () => {
           <Button className={styles.contactButton} icon={<FaCommentAlt />}>
             Liên hệ
           </Button>
-          <Button type="primary" className={styles.acceptButton} onClick={showModal}>
+          <Button type="primary" className={styles.acceptButton} onClick={() => setIsModalOpen(true)}>
             Nhận việc
           </Button>
         </div>
       </div>
 
+      {/* Right Card */}
       <div className={styles.rightCard}>
         <h3>Thông tin chung</h3>
         <h4>Mô tả công việc</h4>
+        <ul>
+          <li >{job.serviceDescription}</li>
+        </ul>
         <b>Loại dịch vụ:</b>
         <ul>
-          <li>Dọn phòng khách</li>
+          {job.serviceDetails.map((detail) => (
+            <li key={detail.serviceDetailId}>{detail.name} - {detail.description}</li>
+          ))}
         </ul>
 
-        <b>Yêu cầu ứng viên:</b>
+        <b>Ưu đãi:</b>
         <ul>
-          <li>Hiểu rõ quy trình dọn vệ sinh</li>
-          <li>Tác phong nhanh nhẹn</li>
-          <li>Không yêu cầu kinh nghiệm</li>
-          <li>Cẩn thận, tỉ mỉ</li>
+          <li>
+            {job.serviceDetails[0]?.discounts || "Không có ưu đãi"}
+          </li>
         </ul>
 
-        <b>Địa điểm làm việc</b>
-        <p>Hà Nội: Hoàn Kiếm, Ba Đình, Cầu Giấy</p>
 
-        <b>Thời gian làm việc</b>
-        <p>Thứ 2 (từ 13:00 đến 15:00)</p>
+        <b>Khách hàng:</b>
+        <ul>
+          <li>
+            {job.customerName} - {job.customerPhone}
+          </li>
+        </ul>
       </div>
 
       {/* Modal Nhận Việc */}
-      <Modal title="Ứng tuyển dọn phòng khách" open={isModalOpen} onOk={handleOk} onCancel={handleCancel} footer={null}>
-        <div className={styles.modalContent}>
-          <h4 className={styles.sectionTitle}>Nhập thông tin đầy đủ</h4>
-          <p className={styles.description}>Vui lòng nhập thông tin đầy đủ</p>
-          <Input placeholder="Nhập họ và tên" className={styles.input} />
-          <Input placeholder="Nhập email" className={styles.input} />
-          <Input placeholder="Nhập số điện thoại" className={styles.input} />
-
-          <h4 className={styles.sectionTitle}>Lời giới thiệu của bạn với người thuê</h4>
-          <p className={styles.description}>
-            Một thư giới thiệu ngắn gọn, chỉnh chu sẽ giúp bạn trở nên chuyên nghiệp và gây ấn tượng hơn với người thuê.
-          </p>
-          <Input.TextArea placeholder="Nhập lời giới thiệu" rows={4} className={styles.input} />
-
-          <div className={styles.modalFooter}>
-            <Button onClick={handleCancel} className={styles.cancelButton}>Hủy</Button>
-            <Button type="primary" onClick={handleOk} className={styles.submitButton}>Nhận việc</Button>
-          </div>
-        </div>
+      <Modal title="Xác nhận nhận việc" open={isModalOpen} onOk={handleApplyJob} onCancel={() => setIsModalOpen(false)}>
+        <p>Bạn có chắc chắn muốn nhận công việc này không?</p>
       </Modal>
     </div>
   );
 };
 
-export default WorkDetailsDesCription;
+export default WorkDetailsDescription;
