@@ -99,6 +99,15 @@ public class CustomerJobController {
         Map<String, Object> response = jobService.updateJobStatusToDone(jobId); 
         return ResponseEntity.ok(response);
     }
+	
+	@GetMapping("/{customerId}/listjobsbook")
+    public ResponseEntity<List<Map<String, Object>>> getBookedJobs(@PathVariable("customerId") Long customerId) {
+        List<Map<String, Object>> bookedJobs = jobService.getBookedJobsForCustomer(customerId);
+        if (bookedJobs.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(bookedJobs);
+    }
 
 	
 	

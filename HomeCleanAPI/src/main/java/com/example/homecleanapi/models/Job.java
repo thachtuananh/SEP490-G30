@@ -40,6 +40,8 @@ public class Job {
     @Column(name = "scheduled_time")
     private LocalDateTime scheduledTime; 
 
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime createdAt;
 
     private Double totalPrice;
 
@@ -47,11 +49,20 @@ public class Job {
     private JobStatus status;  // Import JobStatus ở đây 
 
     // Getters and Setters
+    
     public Long getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public LocalDateTime getCreatedAt() {
+		return createdAt;
+	}
+
+	public void setCreatedAt(LocalDateTime createdAt) {
+		this.createdAt = createdAt;
+	}
+
+	public void setId(Long id) {
         this.id = id;
     }
 

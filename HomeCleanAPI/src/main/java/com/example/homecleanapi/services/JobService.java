@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import java.time.DayOfWeek;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -256,6 +257,30 @@ public class JobService {
 
         response.put("message", "Job status updated to DONE");
         return response;
+    }
+    
+    // list tất cả job đã book
+    public List<Map<String, Object>> getBookedJobsForCustomer(Long customerId) {
+        List<Map<String, Object>> bookedJobs = new ArrayList<Map<String,Object>>();
+
+        // Lấy tất cả các job mà customer đã đặt
+        List<Job> jobs = jobRepository.findByCustomerId(customerId);
+
+        for (Job job : jobs) {
+            Map<String, Object> jobInfo = new HashMap<>();
+            
+            jobInfo.put("jobId", job.getId());
+            jobInfo.put("serviceName", job.getService().getName());  // Tên dịch vụ
+            jobInfo.put("scheduledTime", job.getScheduledTime());  // Thời gian
+            jobInfo.put("customerAddress", job.getCustomerAddress().getAddress());  // Địa chỉ
+            jobInfo.put("status", job.getStatus());  // Trạng thái
+            jobInfo.put("totalPrice", job.getTotalPrice());  // Giá
+            jobInfo.put("createdAt", job.getCreatedAt());  
+
+            bookedJobs.add(jobInfo);
+        }
+
+        return bookedJobs;
     }
     
     // LU
