@@ -4,8 +4,9 @@ public enum JobStatus {
 	OPEN,
     PENDING_APPROVAL,
     IN_PROGRESS,
-    ARRIVED,       // Khi cleaner đã đến
-    STARTED,       // Khi công việc bắt đầu
+    ARRIVED,       
+    STARTED,       
     COMPLETED,     
-    CANCELLED
+    CANCELLED,
+    DONE
 }

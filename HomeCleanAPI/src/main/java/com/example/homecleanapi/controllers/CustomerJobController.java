@@ -20,7 +20,7 @@ import java.util.Map;
 @Tag(name = "Customer API")
 @SecurityRequirement(name = "BearerAuth")
 @RequestMapping("/api/customer")
-public class JobController {
+public class CustomerJobController {
 
 	@Autowired
 	private JobService jobService;
@@ -93,6 +93,13 @@ public class JobController {
         }
     }
 	
+	// Chuyển trạng thái công việc sang DONE sau khi Cleaner đã hoàn thành
+	@PostMapping(value = "/job/done/customer/{jobId}")
+    public ResponseEntity<Map<String, Object>> markJobAsDone(@PathVariable("jobId") Long jobId) {
+        Map<String, Object> response = jobService.updateJobStatusToDone(jobId); 
+        return ResponseEntity.ok(response);
+    }
+
 	
 	
 	// LUỒNG CODE 2 

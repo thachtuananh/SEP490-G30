@@ -232,6 +232,32 @@ public class JobService {
         return false;
     }
     
+    public Map<String, Object> updateJobStatusToDone(Long jobId) {
+        Map<String, Object> response = new HashMap<>();
+
+        // Lấy thông tin job từ jobId
+        Optional<Job> jobOpt = jobRepository.findById(jobId);
+        if (!jobOpt.isPresent()) {
+            response.put("message", "Job not found");
+            return response;
+        }
+
+        Job job = jobOpt.get();
+
+        // Kiểm tra nếu job đã có trạng thái "COMPLETED"
+        if (!job.getStatus().equals(JobStatus.COMPLETED)) {
+            response.put("message", "Job must be in 'COMPLETED' state before marking as DONE");
+            return response;
+        }
+
+        // Chuyển trạng thái công việc sang "DONE"
+        job.setStatus(JobStatus.DONE);
+        jobRepository.save(job);
+
+        response.put("message", "Job status updated to DONE");
+        return response;
+    }
+    
     // LU
     
 
