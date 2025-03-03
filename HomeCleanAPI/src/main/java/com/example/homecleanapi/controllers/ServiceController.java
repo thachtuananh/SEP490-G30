@@ -31,16 +31,21 @@ public class ServiceController {
         return ResponseEntity.ok(services);
     }
 
-    
- // API lấy chi tiết của một dịch vụ theo serviceId
-    @GetMapping("/details/{serviceDetailId}")
-    public ResponseEntity<ServiceDTO.ServiceDetailDTO> getServiceDetailById(@PathVariable("serviceDetailId") Long serviceDetailId) {
-        ServiceDTO.ServiceDetailDTO serviceDetailDTO = serviceDisplayService.getServiceDetailById(serviceDetailId);
-        if (serviceDetailDTO == null) {
+    // API lấy chi tiết của một dịch vụ theo serviceDetailId
+    @GetMapping("/details/{serviceId}")
+    public ResponseEntity<ServiceDTO> getServiceDetailsByServiceId(@PathVariable("serviceId") Long serviceId) {
+        // Lấy thông tin dịch vụ và các service_details từ serviceId
+        ServiceDTO serviceDTO = serviceDisplayService.getServiceDetailsByServiceId(serviceId);
+        
+        // Kiểm tra nếu không tìm thấy dịch vụ
+        if (serviceDTO == null) {
             return ResponseEntity.notFound().build();
         }
-        return ResponseEntity.ok(serviceDetailDTO);
+        
+        return ResponseEntity.ok(serviceDTO);
     }
+
+
 
 
 
