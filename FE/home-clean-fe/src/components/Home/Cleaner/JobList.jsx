@@ -1,7 +1,7 @@
-import React from 'react';
-import { FaMapMarkerAlt, FaClock, FaCalendarAlt } from 'react-icons/fa';
-import { Link } from 'react-router-dom';
-
+import React, { useState, useEffect, useContext } from "react";
+import { FaMapMarkerAlt, FaClock, FaCalendarAlt } from "react-icons/fa";
+import { Link } from "react-router-dom";
+import { AuthContext } from "../../../context/AuthContext"; // Import AuthContext
 
 function JobCard({ type, status, date, time, location, price }) {
     return (
@@ -31,7 +31,6 @@ function JobCard({ type, status, date, time, location, price }) {
                     <div className="location-tag">
                         <FaMapMarkerAlt className="icon" />
                         <span>{location}</span>
-                        <span className="user-tag">Khánh Trần</span>
                     </div>
                     <span className="price">{price} VND</span>
                 </div>
@@ -41,130 +40,63 @@ function JobCard({ type, status, date, time, location, price }) {
 }
 
 function JobList() {
-    const jobs = [
-        {
-            type: "Dọn phòng ngủ",
-            status: "Vừa xong",
-            date: "Ngày 16 - Tháng 2 - Năm 2025",
-            time: "3 giờ - Từ 13:00 đến 16:00",
-            location: "Hà Nội",
-            price: "900.000"
-        },
-        {
-            type: "Dọn phòng khách",
-            status: "Vừa xong",
-            date: "Ngày 16 - Tháng 2 - Năm 2025",
-            time: "3 giờ - Từ 13:00 đến 16:00",
-            location: "Hà Nội",
-            price: "900.000"
-        },
-        {
-            type: "Dọn bếp",
-            status: "2 tuần trước",
-            date: "Ngày 16 - Tháng 2 - Năm 2025",
-            time: "3 giờ - Từ 13:00 đến 16:00",
-            location: "Hà Nội",
-            price: "350.000"
-        },
-        {
-            type: "Dọn phòng ngủ",
-            status: "Vừa xong",
-            date: "Ngày 16 - Tháng 2 - Năm 2025",
-            time: "3 giờ - Từ 13:00 đến 16:00",
-            location: "Hà Nội",
-            price: "900.000"
-        },
-        {
-            type: "Dọn phòng khách",
-            status: "Vừa xong",
-            date: "Ngày 16 - Tháng 2 - Năm 2025",
-            time: "3 giờ - Từ 13:00 đến 16:00",
-            location: "Hà Nội",
-            price: "900.000"
-        },
-        {
-            type: "Dọn bếp",
-            status: "2 tuần trước",
-            date: "Ngày 16 - Tháng 2 - Năm 2025",
-            time: "3 giờ - Từ 13:00 đến 16:00",
-            location: "Hà Nội",
-            price: "350.000"
-        },
-        {
-            type: "Dọn phòng ngủ",
-            status: "Vừa xong",
-            date: "Ngày 16 - Tháng 2 - Năm 2025",
-            time: "3 giờ - Từ 13:00 đến 16:00",
-            location: "Hà Nội",
-            price: "900.000"
-        },
-        {
-            type: "Dọn phòng khách",
-            status: "Vừa xong",
-            date: "Ngày 16 - Tháng 2 - Năm 2025",
-            time: "3 giờ - Từ 13:00 đến 16:00",
-            location: "Hà Nội",
-            price: "900.000"
-        },
-        {
-            type: "Dọn bếp",
-            status: "2 tuần trước",
-            date: "Ngày 16 - Tháng 2 - Năm 2025",
-            time: "3 giờ - Từ 13:00 đến 16:00",
-            location: "Hà Nội",
-            price: "350.000"
-        },
-        {
-            type: "Dọn phòng ngủ",
-            status: "Vừa xong",
-            date: "Ngày 16 - Tháng 2 - Năm 2025",
-            time: "3 giờ - Từ 13:00 đến 16:00",
-            location: "Hà Nội",
-            price: "900.000"
-        },
-        {
-            type: "Dọn phòng khách",
-            status: "Vừa xong",
-            date: "Ngày 16 - Tháng 2 - Năm 2025",
-            time: "3 giờ - Từ 13:00 đến 16:00",
-            location: "Hà Nội",
-            price: "900.000"
-        },
-        {
-            type: "Dọn bếp",
-            status: "2 tuần trước",
-            date: "Ngày 16 - Tháng 2 - Năm 2025",
-            time: "3 giờ - Từ 13:00 đến 16:00",
-            location: "Hà Nội",
-            price: "350.000"
+    const { token } = useContext(AuthContext); // Lấy token từ AuthContext
+    const [jobs, setJobs] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    useEffect(() => {
+        if (!token) {
+            setLoading(false);
+            return;
         }
-    ];
+
+        fetch("http://localhost:8080/api/cleaner/jobs", {
+            method: "GET",
+            headers: {
+                "Accept": "application/json",
+                "Authorization": `Bearer ${token}`
+            }
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error("Không thể lấy danh sách công việc.");
+                }
+                return response.json();
+            })
+            .then(data => {
+                setJobs(data);
+                setLoading(false);
+            })
+            .catch(error => {
+                console.error("Lỗi khi lấy danh sách công việc:", error);
+                setError(error.message);
+                setLoading(false);
+            });
+    }, [token]);
+
+    if (!token) {
+        return <p className="error-message">Bạn cần đăng nhập để xem danh sách công việc.</p>;
+    }
+
+    if (loading) {
+        return <p>Đang tải danh sách công việc...</p>;
+    }
+
+    if (error) {
+        return <p className="error-message">Lỗi: {error}</p>;
+    }
 
     return (
         <section className="job-list-section">
             <div className="container">
                 <div className="content">
-                    <div className="filter-buttons">
-                        <button className="filter-button">Lọc theo</button>
-                        <button className="filter-button">Thời gian</button>
-                        <button className="filter-button">Khoảng cách</button>
-                        <button className="filter-button">Khoảng giá</button>
-                        <button className="search-button">Tìm kiếm</button>
-                    </div>
-
                     <div className="job-list">
-                        {jobs.map((job, index) => (
-                            <JobCard key={index} {...job} />
-                        ))}
-                    </div>
-
-                    <div className="pagination">
-                        <button className="page-button active">1</button>
-                        <button className="page-button">2</button>
-                        <span className="page-dots">...</span>
-                        <button className="page-button">9</button>
-                        <button className="page-button">10</button>
-                        <button className="page-button">→</button>
+                        {jobs.length > 0 ? (
+                            jobs.map((job, index) => <JobCard key={index} {...job} />)
+                        ) : (
+                            <p>Không có công việc nào.</p>
+                        )}
                     </div>
                 </div>
             </div>

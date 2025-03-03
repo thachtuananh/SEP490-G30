@@ -228,9 +228,7 @@ body {
   margin: 0 auto;
 }
 
-.section-title.job-title::after {
-  content: none;
-}
+
 
 .section-title {
   color: #333;
@@ -251,10 +249,7 @@ body {
   background: #00a651;
 }
 
-.service-grid.job-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-}
+
 
 .service-grid {
   display: flex;
@@ -464,9 +459,7 @@ body {
   transition: transform 0.3s ease;
 }
 
-.service-card.job-card {
-  background: #E8E8E8;
-}
+
 
 .service-card:hover {
   transform: translateY(-5px);
@@ -477,15 +470,7 @@ body {
   height: 100px;
 }
 
-.card-image.job-image {
-  text-align: center;
-}
 
-.card-image.job-image img {
-  width: 60px;
-  height: 60px;
-  margin: 30px;
-}
 
 .card-image img {
   width: 100%;
@@ -511,17 +496,13 @@ body {
   color: #ff4081;
 }
 
-.card-content.job-content {
-  text-align: center;
-}
+
 
 .card-content {
   padding: 1rem;
 }
 
-.service-title.job-count {
-  color: #039855;
-}
+
 
 .service-title {
   margin-bottom: 0.5rem;

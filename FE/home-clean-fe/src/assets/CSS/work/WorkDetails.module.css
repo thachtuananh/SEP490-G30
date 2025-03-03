@@ -1,5 +1,11 @@
 .container {
-    padding: 50px 250px;
+    display: flex;
+    justify-content: center;
+    padding: 50px;
+}
+
+.containerbody {
+    max-width: 1200px;
 }
 
 .backButton {
