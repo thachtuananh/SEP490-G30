@@ -307,13 +307,14 @@ public class JobService {
         Job job = jobOpt.get();
 
         // Kiểm tra xem customer có phải là người tạo job này không
-        if (!job.getCustomer().getId().equals(customerId)) {
+        if (job.getCustomer().getId().longValue() != customerId) {
             response.put("message", "You are not authorized to cancel this job");
             return response;
         }
 
+
         // Kiểm tra trạng thái của job
-        if (job.getStatus().equals(JobStatus.STARTED) || job.getStatus().equals(JobStatus.IN_PROGRESS)) {
+        if (job.getStatus().equals(JobStatus.STARTED) || job.getStatus().equals(JobStatus.COMPLETED) || job.getStatus().equals(JobStatus.DONE) ) {
             response.put("message", "You cannot cancel a job that has already started");
             return response;
         }
