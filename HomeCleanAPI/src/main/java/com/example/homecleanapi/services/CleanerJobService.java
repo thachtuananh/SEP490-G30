@@ -67,6 +67,8 @@ public class CleanerJobService {
 
 	@Autowired
 	private JobDetailsRepository jobDetailsRepository;
+	
+	
 
 	// Lấy danh sách các công việc đang mở
 	public List<JobSummaryDTO> getOpenJobs() {
@@ -566,5 +568,51 @@ public class CleanerJobService {
 
 		return response;
 	}
+	
+	
+	
+	public List<Map<String, Object>> getJobsBookedForCleaner(@RequestParam Long cleanerId) {
+        List<Map<String, Object>> responseList = new ArrayList<>();
+
+        // Tìm cleaner theo cleanerId
+        Optional<Employee> cleanerOpt = cleanerRepository.findById(cleanerId);
+        if (!cleanerOpt.isPresent()) {
+            responseList.add(Map.of("message", "Cleaner not found with cleanerId: " + cleanerId));
+            return responseList;
+        }
+
+        Employee cleaner = cleanerOpt.get();
+
+        // Tìm tất cả các job mà cleaner đã được gán
+        List<Job> jobs = jobRepository.findByCleanerId(cleanerId);
+        if (jobs.isEmpty()) {
+            responseList.add(Map.of("message", "No jobs found for cleaner with cleanerId: " + cleanerId));
+            return responseList;
+        }
+
+        // Lấy thông tin các job mà cleaner được book
+        for (Job job : jobs) {
+            Map<String, Object> jobInfo = new HashMap<>();
+            
+            // Thêm thông tin về job
+            jobInfo.put("jobId", job.getId());
+            jobInfo.put("status", job.getStatus());
+            jobInfo.put("scheduledTime", job.getScheduledTime());
+
+            // Thêm thông tin về customer
+            Customers customer = job.getCustomer();
+            jobInfo.put("customerId", customer.getId());
+            jobInfo.put("customerName", customer.getFull_name());
+            jobInfo.put("customerPhone", customer.getPhone());
+
+            // Thêm thông tin về service và serviceDetail
+            jobInfo.put("serviceName", job.getService().getName());
+            jobInfo.put("serviceDetailName", job.getServiceDetail().getName());
+
+            responseList.add(jobInfo);
+        }
+
+        return responseList;
+    }
 
 }

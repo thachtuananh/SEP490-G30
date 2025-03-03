@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -60,6 +61,17 @@ public class CleanerJobController {
     public ResponseEntity<Map<String, Object>> completeJob(@PathVariable("jobId") Long jobId) {
         Map<String, Object> response = cleanerJobService.updateJobStatusToCompleted(jobId);
         return ResponseEntity.ok(response);
+    }
+    
+    // LUỒNG 2 
+    
+    @GetMapping(value = "/{cleanerId}/jobs")
+    public ResponseEntity<List<Map<String, Object>>> getJobsBookedForCleaner(@RequestParam Long cleanerId) {
+        List<Map<String, Object>> jobs = cleanerJobService.getJobsBookedForCleaner(cleanerId);
+        if (jobs.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(List.of(Map.of("message", "No jobs found for cleaner")));
+        }
+        return ResponseEntity.ok(jobs);
     }
 
 }

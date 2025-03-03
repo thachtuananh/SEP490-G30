@@ -22,4 +22,6 @@ public interface JobApplicationRepository extends JpaRepository<JobApplication, 
 	JobApplication findByJobIdAndStatus(Long jobId, String status);
 	
 	Optional<JobApplication> findByJobIdAndCleanerId(Long jobId, Long cleanerId);
+	
+	List<JobApplication> findByCleanerId(Long cleanerId);
 }

@@ -17,8 +17,10 @@ public interface JobRepository extends JpaRepository<Job, Long> {
     
     Optional<Job> findById(Long jobId);
    
-
     List<Job> findByCleanerIdAndScheduledTimeBetween(Long cleanerId, LocalDateTime startTime, LocalDateTime endTime);
+    
+    List<Job> findByCleanerId(Long cleanerId);
+
 
 }
 
