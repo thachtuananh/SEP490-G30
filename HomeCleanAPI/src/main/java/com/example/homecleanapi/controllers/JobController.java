@@ -1,6 +1,7 @@
 package com.example.homecleanapi.controllers;
 
 import com.example.homecleanapi.dtos.BookJobRequest;
+import com.example.homecleanapi.models.CustomerAddresses;
 import com.example.homecleanapi.services.CleanerJobService;
 import com.example.homecleanapi.services.JobService;
 
@@ -71,6 +72,15 @@ public class JobController {
 	    Map<String, Object> response = jobService.updateJobStatusToStarted(jobId, customerId);
 	    return ResponseEntity.ok(response);
 	}
+	
+	@GetMapping("/{customerId}/addresses")
+    public ResponseEntity<List<CustomerAddresses>> getCustomerAddresses(@PathVariable("customerId") Integer customerId) {
+        List<CustomerAddresses> addresses = jobService.getAddressesByCustomerId(customerId);
+        if (addresses.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(addresses);
+    }
 	
 	
 	

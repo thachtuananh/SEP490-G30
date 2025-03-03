@@ -16,6 +16,7 @@ import java.time.DayOfWeek;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -199,6 +200,10 @@ public class JobService {
 
         response.put("message", "Job status updated to STARTED");
         return response;
+    }
+    
+    public List<CustomerAddresses> getAddressesByCustomerId(Integer customerId) {
+        return customerAddressRepository.findByCustomerId(customerId);
     }
     
     // LU

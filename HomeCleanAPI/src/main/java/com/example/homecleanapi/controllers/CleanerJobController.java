@@ -73,5 +73,17 @@ public class CleanerJobController {
         }
         return ResponseEntity.ok(jobs);
     }
+    
+ // Cleaner chấp nhận hoặc từ chối công việc mà customer đã đặt cho mình
+    @PutMapping("/job/{jobId}/accept-reject")
+    public ResponseEntity<Map<String, Object>> acceptOrRejectJob(
+            @PathVariable("jobId") Long jobId, 
+            @RequestParam("action") String action) {
+        
+        Map<String, Object> response = cleanerJobService.acceptOrRejectJob(jobId, action);
+        
+        return ResponseEntity.ok(response);
+    }
+
 
 }
