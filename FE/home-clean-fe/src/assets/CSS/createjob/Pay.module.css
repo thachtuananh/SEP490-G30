@@ -1,0 +1,61 @@
+.container {
+    padding: 15px;
+    border: 1px solid rgb(225, 225, 225);
+    border-radius: 5px;
+    margin-top: 15px;
+    background: #fff;
+}
+
+.separator {
+    height: 2px;
+    width: 100%;
+    background: rgb(225, 225, 225);
+    margin: 10px 0;
+}
+
+.paymentList {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.paymentItem {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.paymentItem:hover {
+    background: rgba(0, 0, 0, 0.05);
+}
+
+input[type="radio"] {
+    accent-color: green;
+    margin-right: 8px;
+}
+
+.icon {
+    font-size: 18px;
+}
+
+.label {
+    font-weight: 500;
+}
+
+.account {
+    margin-left: auto;
+    font-weight: bold;
+}
+
+.terms {
+    margin-top: 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+
+}

@@ -90,4 +90,11 @@
     height: 15px;
     border-radius: 50%;
     object-fit: cover;
+
+}
+
+.hireNowButton {
+    text-decoration: none;
+    color: white;
+
 }

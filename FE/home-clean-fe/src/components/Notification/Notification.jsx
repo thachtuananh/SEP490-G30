@@ -3,7 +3,8 @@ import { FaRegNewspaper } from "react-icons/fa";
 import anhdaidien from "../../assets/bgintroduce.png";
 import styles from "../../assets/CSS/Notification/Notification.module.css";
 
-export const Notification = () => {
+const Notification = () => {
+
     let data = [
         { id: 1, tittle: "Công việc bạn đăng đã có người nhận", time: "14:56", day: "Thứ tư" },
         { id: 2, tittle: "Hết hạn đăng tải công việc", time: "14:56", day: "Thứ 4" },
@@ -52,3 +53,4 @@ export const Notification = () => {
         </div>
     );
 };
+export default Notification;

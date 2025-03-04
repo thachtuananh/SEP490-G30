@@ -133,7 +133,7 @@ export const ActivityCard = () => {
                                 className={styles.exitButton}
                                 onClick={() => setIsView(false)}
                             >
-                               Đóng
+                                Đóng
                             </p>
                         </div>
                     </div>

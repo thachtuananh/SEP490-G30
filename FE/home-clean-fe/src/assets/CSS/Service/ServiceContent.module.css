@@ -1,0 +1,9 @@
+.btn_Next:hover {
+    transform: scale(1.05);
+    transition-duration: 0.5s;
+}
+
+.link_Next {
+    text-decoration: none;
+    color: white;
+}

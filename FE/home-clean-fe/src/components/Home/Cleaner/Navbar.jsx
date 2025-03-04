@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { useState, useContext, useEffect } from "react";
 import { AuthContext } from "../../../context/AuthContext";
 import houseCleanLogo from '../../../assets/HouseClean_logo.png';
-import { Notification } from "../../Notification/Notification";
+import Notification from "../../Notification/Notification";
 import styles from "../../../assets/CSS/Notification/Notification.module.css";
 
 function Navbar() {
@@ -39,10 +39,10 @@ function Navbar() {
 
                 <div className={`nav-content ${isMenuOpen ? 'active' : ''}`}>
                     <ul className="menu">
-                        <li><Link to="/" className="nav-link">Việc Làm</Link></li>
-                        <li><Link to="/" className="nav-link">Hồ sơ của bạn</Link></li>
-                        <li><Link to="/" className="nav-link">Tin tức</Link></li>
-                        <li><Link to="/" className="nav-link">Thu nhập</Link></li>
+                        <li><Link to="/homeclean" className="nav-link">Công việc đã nhận</Link></li>
+                        <li><Link to="/activityjob" className="nav-link">Lịch sử sử dụng dịch vụ</Link></li>
+                        <li><Link to="/homeclean" className="nav-link">Tin tức</Link></li>
+                        <li><Link to="/homeclean" className="nav-link">Bảng giá dịch vụ</Link></li>
                         <li className={styles.nav_link_notification}
                             onClick={() => setIsPopupNotification(true)}
                         >

@@ -89,6 +89,38 @@
     background-color: #008f5d;
 }
 
+.section-title.job-title::after {
+    content: none;
+}
+
+.service-grid.job-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+}
+
+.service-card.job-card {
+    background: #E8E8E8;
+}
+
+.card-image.job-image {
+    text-align: center;
+}
+
+.card-image.job-image img {
+    width: 60px;
+    height: 60px;
+    margin: 30px;
+}
+
+.card-content.job-content {
+    text-align: center;
+    padding: 0;
+}
+
+.service-title.job-count {
+    color: #039855;
+}
+
 .job-list {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -99,7 +131,7 @@
 .job-card {
     background-color: white;
     border-radius: 0.5rem;
-    padding: 1rem;
+    padding: 10px;
     border: 1px solid #E0E0E0;
 }
 
@@ -131,17 +163,21 @@
 }
 
 .detail-button {
-    color: #00A76F;
-    border: 1px solid #00A76F;
-    padding: 0.375rem 0.75rem;
-    border-radius: 0.25rem;
+    padding: 9px;
+    border-radius: 20px;
     font-size: 0.875rem;
-    background: white;
+    border: none;
     cursor: pointer;
+    background-color: #039855;
+}
+
+.detail-button a {
+    text-decoration: none;
+    color: white;
 }
 
 .detail-button:hover {
-    background-color: #E5F5EF;
+    background-color: #008c44;
 }
 
 .job-info {
