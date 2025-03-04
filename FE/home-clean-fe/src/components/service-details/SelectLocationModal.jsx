@@ -4,7 +4,7 @@ import AddLocationModal from "./AddLocationModal";
 import styles from "../../assets/CSS/Service/SelectLocationModal.module.css";
 import { AuthContext } from "../../context/AuthContext";
 
-const SelectLocationModal = ({ isShowLocationModal, setIsShowLocationModal, setCustomerAddressId }) => {
+const SelectLocationModal = ({ isShowLocationModal, setIsShowLocationModal, setCustomerAddressId, setNameAddress }) => {
   const [isShowAddLocationModal, setIsShowAddLocationModal] = useState(false);
   const [locations, setLocations] = useState([]);
   const listLocationRef = useRef(null);
@@ -68,6 +68,10 @@ const SelectLocationModal = ({ isShowLocationModal, setIsShowLocationModal, setC
           }))
         );
         setCustomerAddressId(addressId);
+        const selectedAddress = locations.find((loc) => loc.id === addressId);
+        if (selectedAddress) {
+          setNameAddress(selectedAddress.address);
+        }
         console.log("Cập nhật địa chỉ mặc định thành công");
       } else {
         console.error("Lỗi khi cập nhật địa chỉ mặc định");
@@ -112,7 +116,7 @@ const SelectLocationModal = ({ isShowLocationModal, setIsShowLocationModal, setC
                       onClick={() => {
                         setDefaultAddress(location.id);
                         setCustomerAddressId(location.id);
-
+                        setNameAddress(location.address)
                       }}
                     >
                       Chọn

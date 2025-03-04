@@ -10,9 +10,18 @@ const getUserFromLocalStorage = () => {
         return null;
     }
 };
-
+const getCleanerFromLocalStorage = () => {
+    try {
+        const cleaner = localStorage.getItem("cleaner");
+        return cleaner ? JSON.parse(cleaner) : null;
+    } catch (error) {
+        console.error("Lỗi khi parse JSON:", error);
+        return null;
+    }
+};
 const initial_state = {
     user: getUserFromLocalStorage(),
+    cleaner: getCleanerFromLocalStorage(),
     token: localStorage.getItem("token") || null,
     customerId: localStorage.getItem("customerId") || null,
     cleanerId: localStorage.getItem("cleanerId") || null,
@@ -41,23 +50,43 @@ const AuthReducer = (state, action) => {
                 error: null
             };
 
-        case "LOGIN_SUCCESS_CLEANER":
-            const { name: empName, token: tokenC, cleanerId, phone: empPhone } = action.payload;
+        // case "LOGIN_SUCCESS_CLEANER":
+        //     const { name: empName, token: tokenC, cleanerId, phone: empPhone } = action.payload;
 
-            // Lưu thông tin của cleaner vào localStorage
-            localStorage.setItem("name", empName);
-            localStorage.setItem("cleanerId", cleanerId);
-            localStorage.setItem("token", tokenC);
+        //     // Lưu thông tin của cleaner vào localStorage
+        //     localStorage.setItem("name", empName);
+        //     localStorage.setItem("cleanerId", cleanerId);
+        //     localStorage.setItem("token", tokenC);
+
+        //     return {
+        //         ...state,
+        //         cleaner: { empName, empPhone },
+        //         token: tokenC,
+        //         cleanerId,
+        //         loading: false,
+        //         error: null
+        //     };
+
+        case "LOGIN_SUCCESS_CLEANER":
+
+
+            const cleanerLogin = {
+                name: action.payload.name,
+                phone: action.payload.phone,
+                token: action.payload.token,
+                cleanerId: action.payload.cleanerId
+            };
+
+            localStorage.setItem("cleaner", JSON.stringify(cleanerLogin));
 
             return {
                 ...state,
-                cleaner: { empName, empPhone },
-                token: tokenC,
-                cleanerId,
+                cleaner: cleanerLogin,
+                token: action.payload.token,
+                cleanerId: action.payload.cleanerId,
                 loading: false,
                 error: null
             };
-
 
         case "FETCH_PROFILE_SUCCESS_CUSTOMER":
             const { name: customerName, phone: customerPhone } = action.payload;
@@ -82,7 +111,6 @@ const AuthReducer = (state, action) => {
         case "LOGOUT":
             localStorage.removeItem("user");
             localStorage.removeItem("cleaner");
-            localStorage.removeItem("name");
             localStorage.removeItem("token");
             localStorage.removeItem("customerId");
             localStorage.removeItem("cleanerId");
@@ -97,6 +125,7 @@ const AuthReducer = (state, action) => {
                 loading: false,
                 error: null
             };
+
 
 
         default:

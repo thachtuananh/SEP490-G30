@@ -4,49 +4,10 @@ import styles from "../activity/ActivityCard.module.css";
 import { FaArchive, FaRegCommentAlt } from "react-icons/fa";
 import { MdCalendarToday, MdLocationOn, MdAccessTime } from "react-icons/md";
 
-export const ActivityCard = () => {
+export const ActivityCard = ({ data, onDelete }) => {
     const [isView, setIsView] = useState(false);
 
-    const data = [
-        {
-            title: "Dọn phòng ngủ",
-            time: "Vừa xong",
-            date: "Ngày 16 - Tháng 2 - Năm 2025",
-            duration: "3 giờ - Từ 13:00 đến 16:00",
-            location: "Số 36 Đường Tôn Đức Thắng, Khu 2, Thị trấn Côn Đả...",
-            price: "900.000 VND",
-            status: "Đang chờ...",
-        },
-        {
-            title: "Dọn phòng khách",
-            time: "Vừa xong",
-            date: "Ngày 16 - Tháng 2 - Năm 2025",
-            duration: "3 giờ - Từ 13:00 đến 16:00",
-            location: "Số 36 Đường Tôn Đức Thắng, Khu 2, Thị trấn Côn Đả...",
-            price: "900.000 VND",
-            status: "Đang chờ...",
-        },
-        {
-            title: "Dọn bếp",
-            time: "2 tuần trước",
-            date: "Ngày 16 - Tháng 2 - Năm 2025",
-            duration: "3 giờ - Từ 13:00 đến 16:00",
-            location: "Số 36 Đường Tôn Đức Thắng, Khu 2, Thị trấn Côn Đả...",
-            price: "900.000 VND",
-            status: "Đang thực hiện",
-        },
-        {
-            title: "Dọn bếp",
-            time: "2 tuần trước",
-            date: "Ngày 16 - Tháng 2 - Năm 2025",
-            duration: "3 giờ - Từ 13:00 đến 16:00",
-            location: "Số 36 Đường Tôn Đức Thắng, Khu 2, Thị trấn Côn Đả...",
-            price: "900.000 VND",
-            status: "Đã hoàn thành",
-        },
-    ];
-
-    // Xử lý ẩn/hiện popup khi resize hoặc bấm ESC
+    //  API GET
     useEffect(() => {
         const handleResize = () => {
             if (window.innerWidth >= 1024) {
@@ -71,6 +32,23 @@ export const ActivityCard = () => {
         };
     }, [isView]);
 
+    //  TRANG THAI
+    const getStatusColor = (status) => {
+        switch (status) {
+            case "OPEN": return "#3498db";
+            case "PENDING_APPROVAL": return "#f1c40f";
+            case "IN_PROGRESS": return "#e67e22";
+            case "ARRIVED": return "#9b59b6";
+            case "STARTED": return "#2980b9";
+            case "COMPLETED": return "#2ecc71";
+            case "CANCELLED": return "#e74c3c";
+            case "DONE": return "#27ae60";
+            case "BOOKED": return "#8e44ad";
+            default: return "#bdc3c7";
+        }
+    };
+
+
     return (
         <div className={styles.cardlist}>
             <div className={styles.container}>
@@ -78,33 +56,34 @@ export const ActivityCard = () => {
                     <div key={index} className={styles.card}>
                         <div className={styles.cardContent}>
                             <div className={styles.header}>
-                                <h3>{activity.title}</h3>
-                                <p className={activity.time === "Vừa xong" ? styles.timeNew : styles.timeOld}>
-                                    {activity.time}
+                                <h3>{activity.serviceName}</h3>
+                                <p className={activity.createdAt === "Vừa xong" ? styles.timeNew : styles.timeOld}>
+                                    {new Date(activity.createdAt).toLocaleDateString("vi-VN")} -
+                                    {new Date(activity.createdAt).toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" })}
                                 </p>
                             </div>
 
-                            <p><MdCalendarToday className={styles.icon} /> {activity.date}</p>
-                            <p><MdAccessTime className={styles.icon} /> {activity.duration}</p>
+                            <p><MdCalendarToday className={styles.icon} /> {new Date(activity.scheduledTime).toLocaleDateString("vi-VN")}</p>
+                            <p><MdAccessTime className={styles.icon} /> {new Date(activity.scheduledTime).toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" })}</p>
+
 
                             <div className={styles.location}>
-                                <MdLocationOn className={styles.icon} /> {activity.location}
+                                <MdLocationOn className={styles.icon} /> {activity.customerAddress}
                             </div>
 
-                            <div className={styles.deleteButton}>
+                            <div className={styles.deleteButton} onClick={() => onDelete(activity.jobId)}>
                                 <b>Xóa bài đăng</b>
-                                <FaArchive className={styles.deleteIcon} />
                             </div>
 
                             <div className={styles.price}>
-                                <b>{activity.price}</b>
+                                <b>{activity.totalPrice.toLocaleString("vi-VN")} VNĐ</b>
                             </div>
                         </div>
 
                         <div className={styles.divider}></div>
 
                         <div className={styles.footer}>
-                            <b>{activity.status}</b>
+                            <b style={{ color: getStatusColor(activity.status) }}>{activity.status}</b>
 
                             {activity.status === "Đã hoàn thành" && (
                                 <div className={styles.reviewButton}>
@@ -113,7 +92,7 @@ export const ActivityCard = () => {
                                 </div>
                             )}
 
-                            {activity.status === "Đang chờ..." && (
+                            {activity.status === "OPEN" && (
                                 <div className={styles.viewButton} onClick={() => setIsView(true)}>
                                     Xem thông tin Cleaner
                                 </div>

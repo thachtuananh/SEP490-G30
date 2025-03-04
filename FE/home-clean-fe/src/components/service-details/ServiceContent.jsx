@@ -5,7 +5,7 @@ import { Link, useLocation, useParams } from "react-router-dom";
 import { Spin } from "antd";
 import styles from '../../assets/CSS/Service/ServiceContent.module.css';
 
-const ServiceContent = ({ setIsShowLocationModal, setDescription, customerAddressId }) => {
+const ServiceContent = ({ setIsShowLocationModal, setDescription, customerAddressId, nameAddress }) => {
   const { id } = useParams();
   const [serviceData, setServiceData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -98,7 +98,7 @@ const ServiceContent = ({ setIsShowLocationModal, setDescription, customerAddres
               <LocationIcon />
               Đổi địa chỉ
             </div>
-            <p style={{ maxWidth: "60%", color: "#B8B8B8" }}>{data}</p>
+            <p style={{ maxWidth: "60%", color: "#B8B8B8" }}>{nameAddress}</p>
           </div>
         </div>
 
@@ -152,7 +152,7 @@ const ServiceContent = ({ setIsShowLocationModal, setDescription, customerAddres
               price: price,
               serviceDetailId: selectedServiceDetailId, // Sử dụng state đã lưu serviceDetailId
               serviceId: state || null,
-              address: data,
+              address: nameAddress,
               serviceName: serviceData?.serviceName || "Dịch vụ",
               selectedSize: selectedSize,
               maxSize: serviceData?.serviceDetails?.find((detail) => detail?.minRoomSize === selectedSize)?.maxRoomSize || 0,

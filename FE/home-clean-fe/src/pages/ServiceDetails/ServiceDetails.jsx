@@ -8,11 +8,17 @@ import SelectLocationModal from "../../components/service-details/SelectLocation
 const ServiceDetails = () => {
   const [isShowLocationModal, setIsShowLocationModal] = useState(false);
   const [description, setDescription] = useState("Không có mô tả");
-  const [customerAddressId, setCustomerAddressId] = useState("Không có mô tả");
+  const [customerAddressId, setCustomerAddressId] = useState("0");
+  const [nameAddress, setNameAddress] = useState("Vui lòng chọn địa chỉ");
   return (
     <div className="container-service">
       <div className="body-service">
-        <ServiceContent setIsShowLocationModal={setIsShowLocationModal} setDescription={setDescription} customerAddressId={customerAddressId} />
+        <ServiceContent
+          setIsShowLocationModal={setIsShowLocationModal}
+          setDescription={setDescription}
+          customerAddressId={customerAddressId}
+          nameAddress={nameAddress}
+        />
         <div style={{
           height: 50
         }}></div>
@@ -27,6 +33,7 @@ const ServiceDetails = () => {
             isShowLocationModal={isShowLocationModal}
             setIsShowLocationModal={setIsShowLocationModal}
             setCustomerAddressId={setCustomerAddressId}
+            setNameAddress={setNameAddress}
           />
         )}
       </div>
