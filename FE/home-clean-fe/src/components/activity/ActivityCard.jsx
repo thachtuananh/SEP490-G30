@@ -1,38 +1,20 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
+import { Modal, List, Button, Table, message } from "antd";
 import { InfoCleanerCard } from "../activity/InfoCleanerCard";
 import styles from "../activity/ActivityCard.module.css";
-import { FaArchive, FaRegCommentAlt } from "react-icons/fa";
+import { FaRegCommentAlt } from "react-icons/fa";
 import { MdCalendarToday, MdLocationOn, MdAccessTime } from "react-icons/md";
+import axios from "axios";
+import { AuthContext } from "../../context/AuthContext";
 
 export const ActivityCard = ({ data, onDelete }) => {
-    const [isView, setIsView] = useState(false);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [cleanerList, setCleanerList] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [selectedCleaner, setSelectedCleaner] = useState(null);
+    const { customerId } = useContext(AuthContext);
+    const [selectedJobId, setSelectedJobId] = useState(null);
 
-    //  API GET
-    useEffect(() => {
-        const handleResize = () => {
-            if (window.innerWidth >= 1024) {
-                document.body.style.overflow = isView ? "hidden" : "auto";
-            } else {
-                document.body.style.overflow = "auto";
-            }
-        };
-
-        const handleEscape = (e) => {
-            if (e.key === "Escape") setIsView(false);
-        };
-
-        window.addEventListener("resize", handleResize);
-        document.addEventListener("keydown", handleEscape);
-        handleResize();
-
-        return () => {
-            window.removeEventListener("resize", handleResize);
-            document.removeEventListener("keydown", handleEscape);
-            document.body.style.overflow = "auto";
-        };
-    }, [isView]);
-
-    //  TRANG THAI
     const getStatusColor = (status) => {
         switch (status) {
             case "OPEN": return "#3498db";
@@ -48,6 +30,119 @@ export const ActivityCard = ({ data, onDelete }) => {
         }
     };
 
+    //  API LIST CLEARN
+    const fetchCleaners = async (jobId) => {
+        setLoading(true);
+        try {
+            const token = localStorage.getItem("token"); // Lấy token từ localStorage
+            const response = await axios.get(`http://localhost:8080/api/customer/applications/${customerId}/${jobId}`, {
+                headers: {
+                    "Authorization": `Bearer ${token}`,
+                    "Content-Type": "application/json",
+                },
+            });
+            setCleanerList(response.data || []);
+        } catch (error) {
+            console.error("Lỗi khi lấy danh sách cleaner:", error);
+        }
+        setLoading(false);
+    };
+
+    //  API DETAILS
+    const fetchCleanerDetail = async (cleanerId) => {
+        setLoading(true);
+        try {
+            const token = localStorage.getItem("token");
+            const response = await axios.get(`http://localhost:8080/api/customer/cleaner/${cleanerId}`, {
+                headers: {
+                    "Authorization": `Bearer ${token}`,
+                    "Content-Type": "application/json",
+                },
+            });
+            setSelectedCleaner(response.data); // Lưu dữ liệu cleaner vào state
+        } catch (error) {
+            console.error("Lỗi khi lấy thông tin cleaner:", error);
+        }
+        setLoading(false);
+    };
+
+    const openModal = (jobId) => {
+        setIsModalOpen(true);
+        fetchCleaners(jobId); // Gọi API khi mở modal
+        setSelectedJobId(jobId);
+    };
+
+    //  API THUE
+    const handleHireCleaner = async (jobId, cleanerId, customerId) => {
+        if (!jobId) {
+            console.error("Không tìm thấy jobId!");
+            return;
+        }
+
+        try {
+            const token = localStorage.getItem("token");
+            await axios.post(
+                `http://localhost:8080/api/customer/accept-job/${jobId}/cleaner/${cleanerId}/customer/${customerId}`,
+                {},
+                {
+                    headers: {
+                        "Authorization": `Bearer ${token}`,
+                        "Content-Type": "application/json",
+                    },
+                }
+            );
+            console.log("✅ Thuê cleaner thành công!", { jobId, cleanerId, customerId });
+            message.success("✅ Thuê cleaner thành công!");
+        } catch (error) {
+            console.error("❌ Lỗi khi thuê cleaner:", error);
+            message.error("❌ Lỗi khi thuê cleaner");
+        }
+    };
+
+
+    const columns = [
+        {
+            title: "Ảnh",
+            dataIndex: "profileImage",
+            key: "profileImage",
+            render: (base64) => (
+                <img src={`data:image/png;base64,${base64}`} alt="Avatar" style={{ width: 40, borderRadius: "50%" }} />
+            ),
+        },
+        {
+            title: "Tên người dọn",
+            dataIndex: "cleanerName",
+            key: "cleanerName",
+        },
+        {
+            title: "Xem thông tin",
+            key: "actions",
+            render: (_, record) => (
+                <Button
+                    type="default"
+                    onClick={() => fetchCleanerDetail(record.cleanerId)}
+                >
+                    Xem
+                </Button>
+            ),
+        },
+        {
+            title: "Hành động",
+            key: "actions",
+            render: (_, record) => (
+                <>
+                    <Button
+                        type="primary"
+                        style={{ marginRight: 8 }}
+                        onClick={() => handleHireCleaner(selectedJobId, record.cleanerId, customerId)}
+                    >
+                        Thuê
+                    </Button>
+                    <Button type="danger">Từ chối</Button>
+                </>
+            ),
+        }
+    ];
 
     return (
         <div className={styles.cardlist}>
@@ -65,7 +160,6 @@ export const ActivityCard = ({ data, onDelete }) => {
 
                             <p><MdCalendarToday className={styles.icon} /> {new Date(activity.scheduledTime).toLocaleDateString("vi-VN")}</p>
                             <p><MdAccessTime className={styles.icon} /> {new Date(activity.scheduledTime).toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" })}</p>
-
 
                             <div className={styles.location}>
                                 <MdLocationOn className={styles.icon} /> {activity.customerAddress}
@@ -85,7 +179,7 @@ export const ActivityCard = ({ data, onDelete }) => {
                         <div className={styles.footer}>
                             <b style={{ color: getStatusColor(activity.status) }}>{activity.status}</b>
 
-                            {activity.status === "Đã hoàn thành" && (
+                            {activity.status === "COMPLETED" && (
                                 <div className={styles.reviewButton}>
                                     <FaRegCommentAlt className={styles.reviewIcon} />
                                     <span>Thêm đánh giá</span>
@@ -93,31 +187,48 @@ export const ActivityCard = ({ data, onDelete }) => {
                             )}
 
                             {activity.status === "OPEN" && (
-                                <div className={styles.viewButton} onClick={() => setIsView(true)}>
+                                <div className={styles.viewButton} onClick={() => openModal(activity.jobId)}>
                                     Xem thông tin Cleaner
                                 </div>
                             )}
                         </div>
                     </div>
                 ))}
-
-                {isView && (
-                    <div className={styles.modal}>
-                        <div className={styles.overlay} onClick={() => setIsView(false)}></div>
-
-                        <div className={styles.popup}>
-                            <InfoCleanerCard />
-
-                            <p
-                                className={styles.exitButton}
-                                onClick={() => setIsView(false)}
-                            >
-                                Đóng
-                            </p>
-                        </div>
-                    </div>
-                )}
             </div>
+
+
+
+            <Modal
+                title="Danh sách Cleaner"
+                open={isModalOpen}
+                onCancel={() => {
+                    setIsModalOpen(false);
+                    setSelectedCleaner(null);
+                }}
+                width={1050}
+                footer={null}
+            >
+                {selectedCleaner ? (
+                    <>
+                        <InfoCleanerCard cleaner={selectedCleaner} />
+                        <Button className="back-btn" onClick={() => setSelectedCleaner(null)}>Quay lại</Button>
+                    </>
+                ) : cleanerList.length === 0 && !loading ? (
+                    <div style={{ textAlign: "center", padding: "20px", fontSize: "16px", color: "#888" }}>
+                        Chưa có Cleaner nào nhận việc
+                    </div>
+                ) : (
+                    <Table
+                        dataSource={cleanerList}
+                        columns={columns}
+                        rowKey="cleanerId"
+                        loading={loading}
+                        pagination={{ pageSize: 5 }}
+                    />
+                )}
+            </Modal>
+
+
         </div>
     );
 };
