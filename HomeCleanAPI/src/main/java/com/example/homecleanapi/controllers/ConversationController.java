@@ -27,14 +27,14 @@ public class ConversationController {
         return conversationService.getOrCreateConversation(customerId, cleanerId);
     }
 
-    @GetMapping("/{customer-id}/getConverstaionByCusomerId")
-    public ResponseEntity<Map<String, Object>> getAllConversations(@RequestParam Integer customerId) {
-        return conversationService.getConversationsByCustomerId(customerId);
+    @GetMapping("/{customer_id}/getConversationByCustomerId")
+    public ResponseEntity<Map<String, Object>> getAllConversationsByCustomerId(@PathVariable Integer customer_id) {
+        return conversationService.getConversationsByCustomerId(customer_id);
     }
 
-    @GetMapping("/{cleaner-id}/getConverstaionByCleanId")
-    public ResponseEntity<Map<String, Object>> getConversationsByCleanerId(@RequestParam Integer cleanerId) {
-        return conversationService.getConversationsByCleanerId(cleanerId);
+    @GetMapping("/{cleaner_id}/getConversationByCleanerId")
+    public ResponseEntity<Map<String, Object>> getConversationsByCleanerId(@PathVariable Integer cleaner_id) {
+        return conversationService.getConversationsByCleanerId(cleaner_id);
     }
 
 }

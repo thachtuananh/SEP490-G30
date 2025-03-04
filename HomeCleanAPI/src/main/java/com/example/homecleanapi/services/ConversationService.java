@@ -10,7 +10,6 @@ import org.springframework.stereotype.Service;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -36,6 +35,7 @@ public class ConversationService {
                     Map<String, Object> allConversation = new HashMap<>();
                     allConversation.put("customer_id", conversation.getCustomerId());
                     allConversation.put("cleaner_id", conversation.getCleanerId());
+                    allConversation.put("conversation_id", conversation.getId());
                     return allConversation;
                 })
                 .toList();
@@ -52,6 +52,7 @@ public class ConversationService {
                     Map<String, Object> allConversation = new HashMap<>();
                     allConversation.put("customer_id", conversation.getCustomerId());
                     allConversation.put("cleaner_id", conversation.getCleanerId());
+                    allConversation.put("conversation_id", conversation.getId());
                     return allConversation;
                 })
                 .toList();

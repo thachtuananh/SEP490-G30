@@ -1,45 +1,53 @@
 package com.example.homecleanapi.services;
 
-import com.example.homecleanapi.models.Message;
-import com.example.homecleanapi.repositories.MessageRepository;
+import com.example.homecleanapi.dtos.ChatMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
 @Service
 public class MessageSyncService {
 
-    private final RedisTemplate<String, Message> redisTemplate;
-    private final MessageRepository messageRepository;
+    private final RedisTemplate<String, ChatMessage> redisTemplate;
+
+    private static final String MESSAGE_CACHE_PREFIX = "conversation:";
 
     @Autowired
-    public MessageSyncService(RedisTemplate<String, Message> redisTemplate, MessageRepository messageRepository) {
+    public MessageSyncService(RedisTemplate<String, ChatMessage> redisTemplate) {
         this.redisTemplate = redisTemplate;
-        this.messageRepository = messageRepository;
     }
 
-    @Scheduled(fixedRate = 5000) // Đồng bộ mỗi 10 giây
-    public void syncMessages() {
-        Set<String> keys = redisTemplate.keys("conversation:*");
+    public List<ChatMessage> getMessagesFromConversationId(Long conversationId) {
+        String redisKey = MESSAGE_CACHE_PREFIX + conversationId;
 
-        // Kiểm tra nếu danh sách keys trống, không cần làm gì
-        if (keys.isEmpty()) {
-            System.out.println("No messages found");
-            return;
+        // Lấy tin nhắn từ Redis
+        List<ChatMessage> messages = redisTemplate.opsForList().range(redisKey, 0, -1);
+
+        return (messages != null) ? messages : Collections.emptyList(); // Trả về danh sách rỗng nếu không có tin nhắn
+    }
+
+    public List<ChatMessage> getAllMessages() {
+        Set<String> keys = redisTemplate.keys(MESSAGE_CACHE_PREFIX + "*");
+
+        // Nếu không có keys nào, trả về danh sách rỗng
+        if (keys == null || keys.isEmpty()) {
+            return Collections.emptyList();
         }
+
+        List<ChatMessage> allMessages = new ArrayList<>();
 
         for (String key : keys) {
-            List<Message> messages = redisTemplate.opsForList().range(key, 0, -1);
-
-            if (messages != null && !messages.isEmpty()) {
-                messageRepository.saveAll(messages); // Ghi vào DB
-                redisTemplate.delete(key); // Xóa sau khi đồng bộ
+            List<ChatMessage> messages = redisTemplate.opsForList().range(key, 0, -1);
+            if (messages != null) {
+                allMessages.addAll(messages); // Gộp tất cả tin nhắn lại
             }
         }
-    }
 
+        return allMessages;
+    }
 }
