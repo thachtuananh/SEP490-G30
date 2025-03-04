@@ -38,9 +38,8 @@ const AddLocationModal = ({ setIsShowAddLocationModal }) => {
           {addressType.map((type) => (
             <div
               key={type}
-              className={`${styles.addressTypeItem} ${
-                address === type ? styles.active : ""
-              }`}
+              className={`${styles.addressTypeItem} ${address === type ? styles.active : ""
+                }`}
               onClick={() => setAddress(type)}
             >
               {type}

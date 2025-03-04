@@ -24,6 +24,12 @@ import { ActivityList } from "../pages/ActivityList"
 import Contact from "../pages/Contact"
 import ServiceDetails from "../pages/ServiceDetails/ServiceDetails"
 
+import CreateJob from "../pages/ServiceDetails/CreateJob"
+import OrderSuccess from "../pages/order_success/OrderSuccess"
+import ApplySuccess from "../pages/order_success/ApplySuccess"
+import WorkDetail from "../pages/work/WorkDetail"
+import ActivityJob from "../pages/ActivityJob"
+
 const Routers = () => {
     return (
         <Routes>
@@ -49,6 +55,15 @@ const Routers = () => {
             <Route path="/about" element={<About />} />
 
             <Route path="/service/:id?" element={<ServiceDetails />} />
+
+            <Route path="/createjob" element={<CreateJob />} />
+            <Route path="/activityjob" element={<ActivityJob />} />
+
+            <Route path="/ordersuccess" element={<OrderSuccess />} />
+            <Route path="/applysuccess" element={<ApplySuccess />} />
+
+            <Route path="/workdetail/:jobId?" element={<WorkDetail />} />
+
         </Routes>
     )
 }
