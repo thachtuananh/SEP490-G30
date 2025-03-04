@@ -197,7 +197,6 @@ public class CleanerJobService {
 
 	    Customers customer = customerOpt.get();
 
-	    // Tìm công việc theo jobId
 	    Job job = jobRepository.findById(jobId).orElse(null);
 	    if (job == null) {
 	        response.put("message", "Job not found");
