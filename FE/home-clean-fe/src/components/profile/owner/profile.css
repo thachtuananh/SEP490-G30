@@ -1,0 +1,357 @@
+/* menu profile */
+.menu-wrapper {
+    width: 250px;
+}
+
+.menu-profile {
+    display: flex;
+    align-items: center;
+}
+
+
+
+.profile-details {
+    padding-left: 10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.profile-name {
+    font-weight: bold;
+}
+
+.profile-email {
+    font-size: 14px;
+    color: gray;
+}
+
+.menu-separator {
+    width: 90%;
+    margin-top: 10px;
+}
+
+.menu-options {
+    margin-top: 30px;
+}
+
+.menu-item {
+    padding: 8px;
+}
+
+.menu-link {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    color: black;
+    transition: 0.3s;
+}
+
+.menu-link:hover {
+    color: #007bff;
+}
+
+.menu-icon {
+    width: 30px;
+    height: 30px;
+    padding-right: 8px;
+}
+
+.menu-text {
+    font-size: 16px;
+}
+
+.menu-active {
+    font-weight: bold;
+    color: black;
+}
+
+.persona-container {
+    /* width: 900px; */
+    box-sizing: border-box;
+}
+
+.persona-container .form-group {
+    padding: 10px 0;
+    margin: 0;
+}
+
+.persona-header {
+    margin-bottom: 10px;
+}
+
+.persona-subtext {
+    padding-top: 5px;
+}
+
+.avatar-section {
+    display: flex;
+    flex-direction: column;
+    /* align-items: center; */
+    padding-top: 10px;
+}
+
+.avatar-image,
+.profile-avatar {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+}
+
+.avatar-image {
+    margin-top: 10px;
+}
+
+.avatar-select {
+    color: green;
+    cursor: pointer;
+}
+
+.input-section {
+    padding: 20px 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.input-label {
+    padding-bottom: 8px;
+}
+
+/* .input-field {
+    height: 30px;
+    border-radius: 5px;
+    border: 0.5px solid gray;
+    padding-left: 20px;
+    width: 855px;
+} */
+
+.info-section {
+    padding: 10px 0;
+}
+
+.info-text {
+    padding-top: 5px;
+    display: flex;
+}
+
+.info-change {
+    padding-left: 10px;
+    color: green;
+    cursor: pointer;
+}
+
+.gender-section {
+    padding: 10px 0;
+}
+
+.gender-options {
+    display: flex;
+}
+
+.gender-option {
+    display: flex;
+    align-items: center;
+    padding: 10px 20px 10px 0px;
+}
+
+.dob-section {
+    padding-top: 20px;
+}
+
+.dob-inputs {
+    padding-top: 5px;
+    gap: 10px;
+    display: flex;
+}
+
+.dob-field {
+    width: 15% !important;
+    /* height: 30px;
+    border: 0.5px solid gray;
+    padding: 0 5px;
+    border-radius: 5px; */
+}
+
+.save-button {
+    width: 100px;
+    height: 40px;
+    border-radius: 5px;
+    border: none;
+    background: green;
+    color: white;
+    margin-top: 20px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.save-button:hover {
+    background: darkgreen;
+}
+
+.address-container {
+    box-sizing: border-box;
+}
+
+.address-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.address-subtext {
+    padding-top: 5px;
+}
+
+.add-address-button {
+    padding: 10px 15px;
+    color: white;
+    background: #00a651;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.address-list {
+    padding-top: 30px;
+}
+
+.address-item {
+    display: flex;
+    justify-content: space-between;
+    padding-bottom: 30px;
+}
+
+.address-info {
+    width: 70%;
+}
+
+.address-details {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+}
+
+.default-badge {
+    color: green;
+    background: #B8D9D0;
+    width: 90px;
+    border-radius: 20px;
+    font-weight: bold;
+    text-align: center;
+    height: 25px;
+    line-height: 25px;
+}
+
+.address-text {
+    padding-top: 10px;
+}
+
+.address-actions {
+    width: 30%;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 20px;
+}
+
+.update-button {
+    color: green;
+    cursor: pointer;
+}
+
+.delete-button {
+    color: red;
+    cursor: pointer;
+}
+
+.default-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-top: 10px;
+}
+
+@media (max-width: 1024px) {
+
+    .persona-container,
+    .address-container {
+        max-width: 100%;
+        /* padding: 0 20px; */
+    }
+
+    .dob-field {
+        width: 30% !important;
+    }
+}
+
+@media (max-width: 768px) {
+    .menu-wrapper {
+        width: 100%;
+    }
+
+    .menu-profile {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .profile-avatar {
+        width: 50px;
+        height: 50px;
+    }
+
+    .menu-options {
+        margin-top: 15px;
+    }
+
+    .address-item {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .address-actions {
+        width: 100%;
+        align-items: flex-start;
+    }
+
+    .action-buttons {
+        width: 100%;
+        justify-content: space-between;
+    }
+}
+
+@media (max-width: 480px) {
+    .menu-wrapper {
+        width: 100%;
+    }
+
+    .menu-profile {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+
+    .profile-avatar {
+        width: 40px;
+        height: 40px;
+    }
+
+    .menu-text {
+        font-size: 14px;
+    }
+
+    .dob-field {
+        width: 100% !important;
+    }
+
+    .save-button {
+        width: 100%;
+    }
+}
+
+.logout-button {
+    margin-left: 10px;
+}

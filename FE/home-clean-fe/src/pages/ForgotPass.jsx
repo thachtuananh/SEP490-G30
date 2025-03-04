@@ -1,6 +1,6 @@
 import React from 'react';
 import '../index.css';
-import Footer from '../components/Footer';
+import Footer from '../components/Home/Owner/Footer';
 import logo from '../assets/HouseClean_logo.png';
 import { Link } from 'react-router-dom';
 import ImgLeft from '../assets/deep-cleaning-list-hero.jpg';

@@ -6,7 +6,7 @@ services:
     ports:
       - "8080:8080"
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/test_sep490
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/SEP490_v1
       - SPRING_DATASOURCE_USERNAME=sep490
       - SPRING_DATASOURCE_PASSWORD=123456
     network_mode: host

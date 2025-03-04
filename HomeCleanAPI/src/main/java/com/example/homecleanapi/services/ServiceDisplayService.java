@@ -1,45 +1,48 @@
 package com.example.homecleanapi.services;
-
 import com.example.homecleanapi.dtos.ServiceDTO;
-import com.example.homecleanapi.models.Service;
 import com.example.homecleanapi.models.ServiceDetail;
+import com.example.homecleanapi.models.Services;
 import com.example.homecleanapi.repositories.ServiceRepository;
 import com.example.homecleanapi.repositories.ServiceDetailRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
-@org.springframework.stereotype.Service
+
+@Service
 public class ServiceDisplayService {
 
-    @Autowired
+	@Autowired
     private ServiceRepository serviceRepository;
 
-    @Autowired
+	@Autowired
     private ServiceDetailRepository serviceDetailRepository;
 
     public List<ServiceDTO> getAllServices() {
-        // Lấy tất cả dịch vụ từ repository
-        List<Service> services = serviceRepository.findAll();
-        
-        // Chuyển các Service thành ServiceDTO
-        return services.stream().map(this::convertToServiceDTO).collect(Collectors.toList());
+
+    	List<Services> homeCleanServices = serviceRepository.findAll();
+
+        // Chuyển các HomeCleanService thành ServiceDTO
+        return homeCleanServices.stream().map(this::convertToServiceDTO).collect(Collectors.toList());
     }
 
-    private ServiceDTO convertToServiceDTO(Service service) {
-        // Chuyển đổi Service thành ServiceDTO
+
+    private ServiceDTO convertToServiceDTO(Services homeCleanService) {
+
+        // Chuyển đổi HomeCleanService thành ServiceDTO
         ServiceDTO serviceDTO = new ServiceDTO();
-        serviceDTO.setServiceId(service.getId());
-        serviceDTO.setServiceName(service.getName());
-        serviceDTO.setDescription(service.getDescription());
-        serviceDTO.setBasePrice(service.getBasePrice());
-        serviceDTO.setServiceType(service.getServiceType().name());
+        serviceDTO.setServiceId(homeCleanService.getId());
+        serviceDTO.setServiceName(homeCleanService.getName());
+        serviceDTO.setDescription(homeCleanService.getDescription());
+        serviceDTO.setBasePrice(homeCleanService.getBasePrice());
+        serviceDTO.setServiceType(homeCleanService.getServiceType().name());
 
         // Lấy chi tiết dịch vụ liên quan
         List<ServiceDTO.ServiceDetailDTO> serviceDetailDTOs = serviceDetailRepository
-                .findByServiceId(service.getId()).stream()
+                .findByServiceId(homeCleanService.getId()).stream()
                 .map(this::convertToServiceDetailDTO)
                 .collect(Collectors.toList());
 

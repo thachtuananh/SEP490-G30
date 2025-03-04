@@ -20,18 +20,20 @@ public class EmployeeAuthService {
     private final EmployeeRepository employeeRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtils jwtUtils;
+    private final AvatarService avatarService;
 
-    public EmployeeAuthService(EmployeeRepository employeeRepository, PasswordEncoder passwordEncoder, JwtUtils jwtUtils) {
+    public EmployeeAuthService(EmployeeRepository employeeRepository, PasswordEncoder passwordEncoder, JwtUtils jwtUtils, AvatarService avatarService) {
         this.employeeRepository = employeeRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtUtils = jwtUtils;
+        this.avatarService = avatarService;
     }
 
     public ResponseEntity<Map<String, Object>> cleanerRegister(CleanerRegisterRequest request) {
         Map<String, Object> response = new HashMap<>();
 
         if (request == null || request.getPhone() == null || request.getPassword() == null || request.getName() == null
-        || request.getAge() == null || request.getAddress() == null || request.getExperience() == null || request.getIdentity_number() == null) {
+                || request.getAge() == null || request.getAddress() == null || request.getExperience() == null || request.getIdentity_number() == null) {
             response.put("message", "Thông tin đăng ký không hợp lệ!");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
@@ -50,11 +52,11 @@ public class EmployeeAuthService {
         employee.setAddress(request.getAddress());
         employee.setExperience(request.getExperience());
         employee.setIdentity_number(request.getIdentity_number().toString());
+        employee.setProfile_image(avatarService.generateIdenticon(request.getName()));
 //    customer.setRole("USER"); // Kiểm tra lại nếu role là enum hoặc bảng riêng
 
         employeeRepository.save(employee);
 
-        response.put("message", "Đăng ký thành công!");
         response.put("EmployeeID", employee.getId());
         response.put("phone", employee.getPhone());
         response.put("name", employee.getName());
@@ -80,10 +82,10 @@ public class EmployeeAuthService {
 
         String token = jwtUtils.generateToken(employee.getPhone(), employee.getName(), employee.getId().toString());
 
-        response.put("message", "Đăng nhập thành công!");
         response.put("token", token);
         response.put("phone", employee.getPhone());
         response.put("cleanerId", employee.getId());
+        response.put("name", employee.getName());
 
         return ResponseEntity.ok(response);
     }

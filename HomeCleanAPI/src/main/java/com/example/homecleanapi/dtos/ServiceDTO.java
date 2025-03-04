@@ -90,4 +90,8 @@ public class ServiceDTO {
             this.additionalPrice = additionalPrice;
         }
     }
+
 }
+
+
+

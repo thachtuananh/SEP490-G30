@@ -23,7 +23,7 @@ public class Service {
     @OneToMany(mappedBy = "service", cascade = CascadeType.ALL)
     private List<ServiceDetail> serviceDetails;
 
-    
+
     public Long getId() {
         return id;
     }
@@ -32,7 +32,7 @@ public class Service {
         this.id = id;
     }
 
-    
+
     public String getName() {
         return name;
     }

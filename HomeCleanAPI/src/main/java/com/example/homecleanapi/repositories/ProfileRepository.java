@@ -7,7 +7,7 @@ import com.example.homecleanapi.models.Customers;
 
 @Repository
 public interface ProfileRepository extends JpaRepository<Customers, Long> {
-	Customers findByPhone(String phone);
+    Customers findByPhone(String phone);
     boolean existsByPhone(String phone);
 
 }

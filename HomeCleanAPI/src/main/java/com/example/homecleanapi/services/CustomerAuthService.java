@@ -75,10 +75,10 @@ public class CustomerAuthService {
 
         String token = jwtUtils.generateToken(customer.getPhone(), customer.getFull_name(), customer.getId().toString());
 
-        response.put("message", "Đăng nhập thành công!");
         response.put("token", token);
         response.put("phone", customer.getPhone());
         response.put("customerId", customer.getId());
+        response.put("name", customer.getFull_name());
 
         return ResponseEntity.ok(response);
     }

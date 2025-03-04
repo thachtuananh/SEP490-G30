@@ -12,5 +12,3 @@ public interface ServiceDetailRepository extends JpaRepository<ServiceDetail, Lo
     List<ServiceDetail> findByServiceId(Long serviceId);
 }
 
-
-
