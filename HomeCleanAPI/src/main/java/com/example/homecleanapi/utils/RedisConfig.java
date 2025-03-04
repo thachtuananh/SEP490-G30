@@ -1,6 +1,6 @@
 package com.example.homecleanapi.utils;
 
-import com.example.homecleanapi.models.Message;
+import com.example.homecleanapi.dtos.ChatMessage;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -9,7 +9,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
-import org.springframework.data.redis.serializer.RedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 @Configuration
@@ -23,13 +22,13 @@ public class RedisConfig {
     }
 
     @Bean
-    public Jackson2JsonRedisSerializer<Message> messageSerializer(ObjectMapper objectMapper) {
-        return new Jackson2JsonRedisSerializer<>(objectMapper, Message.class);
+    public Jackson2JsonRedisSerializer<ChatMessage> messageSerializer(ObjectMapper objectMapper) {
+        return new Jackson2JsonRedisSerializer<>(objectMapper, ChatMessage.class);
     }
 
     @Bean
-    public RedisTemplate<String, Message> redisTemplate(RedisConnectionFactory connectionFactory) {
-        RedisTemplate<String, Message> template = new RedisTemplate<>();
+    public RedisTemplate<String, ChatMessage> redisTemplate(RedisConnectionFactory connectionFactory) {
+        RedisTemplate<String, ChatMessage> template = new RedisTemplate<>();
         template.setConnectionFactory(connectionFactory);
 
         // Cấu hình Jackson để hỗ trợ LocalDateTime
@@ -38,7 +37,7 @@ public class RedisConfig {
         objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 
         // Dùng constructor mới thay vì setObjectMapper()
-        Jackson2JsonRedisSerializer<Message> serializer = new Jackson2JsonRedisSerializer<>(objectMapper, Message.class);
+        Jackson2JsonRedisSerializer<ChatMessage> serializer = new Jackson2JsonRedisSerializer<>(objectMapper, ChatMessage.class);
 
         // Cấu hình Serializer
         template.setKeySerializer(new StringRedisSerializer());

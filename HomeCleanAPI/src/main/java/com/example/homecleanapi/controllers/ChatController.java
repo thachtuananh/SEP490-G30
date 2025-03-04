@@ -1,7 +1,7 @@
 package com.example.homecleanapi.controllers;
 
+import com.example.homecleanapi.dtos.ChatMessage;
 import com.example.homecleanapi.models.Conversation;
-import com.example.homecleanapi.models.Message;
 import com.example.homecleanapi.repositories.ConversationRepository;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -12,6 +12,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.Optional;
 
 @RestController
@@ -31,7 +32,7 @@ public class ChatController {
     }
 
     @MessageMapping("/chat")
-    public void sendMessage(@Payload Message message,
+    public void sendMessage(@Payload ChatMessage message,
                             @Header("customerId") Integer customerId,
                             @Header("employeeId") Integer employeeId) {
         // Lấy hoặc tạo mới conversation
@@ -42,7 +43,7 @@ public class ChatController {
             throw new IllegalArgumentException("SenderId is required");
         }
 
-        message.setSent_at(LocalDateTime.now());
+        message.setSent_at(LocalTime.now());
 
         // Đẩy tin nhắn vào RabbitMQ
         rabbitTemplate.convertAndSend("chat-messages", message);

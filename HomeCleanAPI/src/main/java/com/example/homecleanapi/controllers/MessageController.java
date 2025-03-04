@@ -1,43 +1,46 @@
 package com.example.homecleanapi.controllers;
 
 import com.example.homecleanapi.dtos.ChatMessage;
-import com.example.homecleanapi.models.Message;
-import com.example.homecleanapi.repositories.MessageRepository;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.beans.factory.annotation.Autowired;
+
+import com.example.homecleanapi.services.MessageSyncService;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 @RestController
 @RequestMapping("/api/messages")
 public class MessageController {
-    @Autowired
-    private MessageRepository messageRepository;
-    @Autowired
-    private ObjectMapper objectMapper;
+
+    private  final MessageSyncService messageSyncService;
+
+    public MessageController(MessageSyncService messageSyncService) {
+        this.messageSyncService = messageSyncService;
+    }
 
     @GetMapping("/{conversationId}")
-    public ResponseEntity<List<ChatMessage>> getConversationHistory(@PathVariable Long conversationId) {
-        List<Message> batches = messageRepository.findByConversationId(conversationId);
+    public ResponseEntity<Map<String, Object>> getMessageFromConversationId(@PathVariable Long conversationId) {
+        List<ChatMessage> messages = messageSyncService.getMessagesFromConversationId(conversationId);
 
-        List<ChatMessage> allMessages = new ArrayList<>();
-        for (Message batch : batches) {
-            try {
-                List<ChatMessage> messages = objectMapper.readValue(
-                        batch.getContent(),
-                        new com.fasterxml.jackson.core.type.TypeReference<List<ChatMessage>>() {}
-                );
-                allMessages.addAll(messages);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-        return ResponseEntity.ok(allMessages);
+        // Trả về JSON chuẩn
+        Map<String, Object> response = new HashMap<>();
+        response.put("conversationId", conversationId);
+        response.put("messages", messages);
+
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping(name = "/getAllConversation", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Map<String, Object>> getAllConversation() {
+        List<ChatMessage> messages = messageSyncService.getAllMessages();
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("messages", messages);
+
+        return ResponseEntity.ok(response);
     }
 }
