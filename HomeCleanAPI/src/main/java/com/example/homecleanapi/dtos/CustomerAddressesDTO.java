@@ -1,12 +1,9 @@
 package com.example.homecleanapi.dtos;
 
-
-import java.util.Date;
-
-public class EmployeeLocationsDTO {
+public class CustomerAddressesDTO {
     private String address;
 
-    public EmployeeLocationsDTO() {
+    public CustomerAddressesDTO() {
     }
 
     public String getAddress() {

@@ -4,14 +4,18 @@ import com.example.homecleanapi.dtos.BookJobRequest;
 import com.example.homecleanapi.services.JobService;
 import com.example.homecleanapi.utils.JwtUtils;
 
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
+
+@Tag(name = "Book Job API")
 @RestController
-@RequestMapping("/api/customer")
+@RequestMapping("/api/book-job")
 public class JobController {
 
 	@Autowired
@@ -20,7 +24,8 @@ public class JobController {
     @Autowired
     private JwtUtils jwtUtils;  
     //new job
-    
+
+    @SecurityRequirement(name = "BearerAuth")
     // customer tạo job
     @PostMapping("/book-job")
     public ResponseEntity<Map<String, Object>> bookJob(@RequestBody BookJobRequest request, @RequestHeader("Authorization") String authorizationHeader) {
