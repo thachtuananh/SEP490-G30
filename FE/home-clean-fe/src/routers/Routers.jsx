@@ -28,7 +28,7 @@ import CreateJob from "../pages/ServiceDetails/CreateJob"
 import OrderSuccess from "../pages/order_success/OrderSuccess"
 import ApplySuccess from "../pages/order_success/ApplySuccess"
 import WorkDetail from "../pages/work/WorkDetail"
-
+import ActivityJob from "../pages/ActivityJob"
 
 const Routers = () => {
     return (
@@ -57,6 +57,7 @@ const Routers = () => {
             <Route path="/service/:id?" element={<ServiceDetails />} />
 
             <Route path="/createjob" element={<CreateJob />} />
+            <Route path="/activityjob" element={<ActivityJob />} />
 
             <Route path="/ordersuccess" element={<OrderSuccess />} />
             <Route path="/applysuccess" element={<ApplySuccess />} />

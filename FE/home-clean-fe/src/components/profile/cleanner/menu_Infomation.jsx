@@ -5,7 +5,6 @@ import infoImg from "../../../assets/imgProfile/info.svg";
 import addressImg from "../../../assets/imgProfile/address.svg";
 import discountImg from "../../../assets/imgProfile/discount.svg";
 import paymentImg from "../../../assets/imgProfile/payment.svg";
-import favoriteImg from "../../../assets/imgProfile/favorite.svg";
 import helpImg from "../../../assets/imgProfile/help.svg";
 import profileImg from "../../../assets/imgProfile/imgProfile.svg";
 import "../owner/profile.css";
@@ -34,8 +33,7 @@ const MenuInfomation = ({ selectedMenu, setSelectedMenu }) => {
           { id: "2", label: "Địa chỉ", icon: addressImg },
           { id: "3", label: "Ưu đãi của tôi", icon: discountImg },
           { id: "4", label: "Quản lý thanh toán", icon: paymentImg },
-          { id: "5", label: "Nhân viên yêu thích", icon: favoriteImg },
-          { id: "6", label: "Trợ giúp", icon: helpImg },
+          { id: "5", label: "Trợ giúp", icon: helpImg },
         ].map((item) => (
           <div key={item.id} className="menu-item">
             <Link
