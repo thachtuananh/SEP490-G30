@@ -168,7 +168,7 @@ public class JobService {
 
 
 
-    public Map<String, Object> updateJobStatusToStarted(Long jobId, @PathVariable Long customerId) {
+    public Map<String, Object> updateJobStatusToStarted(Long jobId, @PathVariable Long customerId) { // Dùng @PathVariable cho customerId
         Map<String, Object> response = new HashMap<>();
 
         // Tìm công việc theo jobId
@@ -180,11 +180,12 @@ public class JobService {
 
         Job job = jobOpt.get();
 
-        // Kiểm tra quyền của customer (sử dụng customerId từ @RequestParam)
-        if (!job.getCustomer().getId().equals(customerId)) {
+        // Kiểm tra quyền của customer (sử dụng customerId từ @PathVariable)
+        if (!customerId.equals(job.getCustomer().getId().longValue())) {
             response.put("message", "You are not authorized to start this job");
             return response;
         }
+
 
         // Kiểm tra trạng thái công việc và sự tồn tại của job application
         JobApplication jobApplication = jobApplicationRepository.findByJobIdAndStatus(jobId, "Accepted");
@@ -205,6 +206,7 @@ public class JobService {
         response.put("message", "Job status updated to STARTED");
         return response;
     }
+
     
     public List<CustomerAddresses> getAddressesByCustomerId(Integer customerId) {
         return customerAddressRepository.findByCustomerId(customerId);

@@ -76,10 +76,11 @@ public class CustomerJobController {
 	@PostMapping(value = "/job/start/{jobId}/{customerId}")
 	public ResponseEntity<Map<String, Object>> startJob(
 	        @PathVariable("jobId") Long jobId,
-	        @RequestParam Long customerId) {
+	        @PathVariable("customerId") Long customerId) { 
 	    Map<String, Object> response = jobService.updateJobStatusToStarted(jobId, customerId);
 	    return ResponseEntity.ok(response);
 	}
+
 	
 	@GetMapping("/{customerId}/addresses")
     public ResponseEntity<List<CustomerAddresses>> getCustomerAddresses(@PathVariable("customerId") Integer customerId) {
@@ -116,6 +117,18 @@ public class CustomerJobController {
         }
         return ResponseEntity.ok(bookedJobs);
     }
+	
+	@GetMapping("/viewdetailcleaner/{cleanerId}")
+	public ResponseEntity<Map<String, Object>> getCleanerDetailnonedk(@PathVariable Long cleanerId) {
+	    Map<String, Object> cleanerDetails = cleanerJobService.getCleanerDetailnone(cleanerId);
+
+	    if (cleanerDetails.containsKey("message")) {
+	        return ResponseEntity.status(404).body(cleanerDetails);  
+	    }
+
+	    return ResponseEntity.ok(cleanerDetails);  
+	}
+
 
 	
 	// hủy job
@@ -138,7 +151,7 @@ public class CustomerJobController {
         return ResponseEntity.ok(onlineCleaners);
     }
 	
-	@GetMapping("/cleaner/{cleanerId}")
+	@GetMapping("/viewdetailcleaneron/{cleanerId}")
     public ResponseEntity<Map<String, Object>> getCleanerDetails(@PathVariable Long cleanerId) {
         Map<String, Object> cleanerDetails = cleanerJobService.getCleanerDetails(cleanerId);
 

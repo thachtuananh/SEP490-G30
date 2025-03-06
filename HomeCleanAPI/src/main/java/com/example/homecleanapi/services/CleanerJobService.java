@@ -1,5 +1,6 @@
 package com.example.homecleanapi.services;
 
+import com.example.homecleanapi.SocketConfig.NotificationController;
 import com.example.homecleanapi.dtos.BookJobRequest;
 import com.example.homecleanapi.dtos.JobSummaryDTO;
 import com.example.homecleanapi.enums.JobStatus;
@@ -15,7 +16,7 @@ import com.example.homecleanapi.models.Services;
 import com.example.homecleanapi.repositories.CleanerRepository;
 import com.example.homecleanapi.repositories.CustomerAddressRepository;
 import com.example.homecleanapi.repositories.CustomerRepo;
-import com.example.homecleanapi.repositories.CustomerRepository;
+
 import com.example.homecleanapi.repositories.FeedbackRepository;
 import com.example.homecleanapi.repositories.JobApplicationRepository;
 import com.example.homecleanapi.repositories.JobDetailsRepository;
@@ -24,6 +25,7 @@ import com.example.homecleanapi.repositories.ServiceDetailRepository;
 import com.example.homecleanapi.repositories.ServiceRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -67,6 +69,12 @@ public class CleanerJobService {
 
 	@Autowired
 	private JobDetailsRepository jobDetailsRepository;
+	
+	@Autowired
+    private SimpMessagingTemplate messagingTemplate;
+	
+	@Autowired
+	private NotificationController notificationController;
 
 	// Lấy danh sách các công việc đang mở
 	public List<JobSummaryDTO> getOpenJobs() {
@@ -139,50 +147,63 @@ public class CleanerJobService {
 
 	// Apply job
 	public Map<String, Object> applyForJob(Long jobId) {
-		Map<String, Object> response = new HashMap<>();
+	    Map<String, Object> response = new HashMap<>();
 
-		String phoneNumber = SecurityContextHolder.getContext().getAuthentication().getName();
-		System.out.println("phone = " + phoneNumber);
+	    String phoneNumber = SecurityContextHolder.getContext().getAuthentication().getName();
+	    System.out.println("phone = " + phoneNumber);
 
-		Optional<Employee> cleanerOpt = cleanerRepository.findByPhone(phoneNumber);
+	    Optional<Employee> cleanerOpt = cleanerRepository.findByPhone(phoneNumber);
 
-		if (!cleanerOpt.isPresent()) {
-			response.put("message", "Cleaner not found");
-			return response;
-		}
+	    if (!cleanerOpt.isPresent()) {
+	        response.put("message", "Cleaner not found");
+	        return response;
+	    }
 
-		Employee cleaner = cleanerOpt.get();
+	    Employee cleaner = cleanerOpt.get();
 
-		// Tìm công việc theo jobId
-		Optional<Job> jobOpt = jobRepository.findById(jobId);
-		if (!jobOpt.isPresent()) {
-			response.put("message", "Job not found");
-			return response;
-		}
+	    // Tìm công việc theo jobId
+	    Optional<Job> jobOpt = jobRepository.findById(jobId);
+	    if (!jobOpt.isPresent()) {
+	        response.put("message", "Job not found");
+	        return response;
+	    }
 
-		Job job = jobOpt.get();
+	    Job job = jobOpt.get();
 
-		// Kiểm tra trạng thái công việc
-		if (!job.getStatus().equals(JobStatus.OPEN)) {
-			response.put("message", "Job is no longer open or has been taken");
-			return response;
-		}
+	    // Kiểm tra trạng thái công việc
+	    if (!job.getStatus().equals(JobStatus.OPEN)) {
+	        response.put("message", "Job is no longer open or has been taken");
+	        return response;
+	    }
 
-		// Tạo job application và lưu vào database
-		JobApplication jobApplication = new JobApplication();
-		jobApplication.setJob(job);
-		jobApplication.setCleaner(cleaner);
-		jobApplication.setStatus("Pending");
+	    // Tạo job application và lưu vào database
+	    JobApplication jobApplication = new JobApplication();
+	    jobApplication.setJob(job);
+	    jobApplication.setCleaner(cleaner);
+	    jobApplication.setStatus("Pending");
 
-		jobApplicationRepository.save(jobApplication);
+	    jobApplicationRepository.save(jobApplication);
 
-		response.put("message", "Cleaner has successfully applied for the job");
-		response.put("jobId", jobId);
-		response.put("cleanerId", cleaner.getId());
-		response.put("status", "Pending");
+	    // Lấy customerId và gửi thông báo
+	    Long customerId = job.getCustomer().getId().longValue();  // Chuyển Integer sang Long nếu cần
+	    String message = "Cleaner with ID " + cleaner.getId() + " has applied for job with ID " + jobId;
+	    
+	    // Gửi thông báo cho customer qua WebSocket
+	    notificationController.sendNotification(customerId, message); 
 
-		return response;
+	    response.put("message", "Cleaner has successfully applied for the job");
+	    response.put("jobId", jobId);
+	    response.put("cleanerId", cleaner.getId());
+	    response.put("status", "Pending");
+
+	    return response;
 	}
+
+
+    // Gửi thông báo WebSocket cho customer
+    public void sendNotification(Long customerId, String message) {
+        messagingTemplate.convertAndSendToUser(String.valueOf(customerId), "/topic/notifications", message);
+    }
 
 	// Get applications for job
 	public List<Map<String, Object>> getApplicationsForJob(Long jobId, Long customerId) {
@@ -314,8 +335,8 @@ public class CleanerJobService {
 		Map<String, Object> response = new HashMap<>();
 
 		// Lấy phone từ JWT hoặc SecurityContext (sử dụng phone_number từ token)
-		String phoneNumber = SecurityContextHolder.getContext().getAuthentication().getName(); // Lấy phone number từ
-																								// SecurityContext
+		String phoneNumber = SecurityContextHolder.getContext().getAuthentication().getName(); 
+																								
 		System.out.println("phone = " + phoneNumber);
 
 		// Tìm cleaner theo phone number
@@ -446,6 +467,41 @@ public class CleanerJobService {
 
 		return cleanerList;
 	}
+	
+	// xem detail cleaner không cần đk 
+	public Map<String, Object> getCleanerDetailnone(Long cleanerId) {
+	    // Tìm cleaner theo cleanerId
+	    Optional<Employee> cleanerOpt = cleanerRepository.findById(cleanerId);
+	    if (!cleanerOpt.isPresent()) {
+	        return Map.of("message", "Cleaner not found");
+	    }
+
+	    Employee cleaner = cleanerOpt.get();
+
+	    // Tạo map chứa thông tin của cleaner
+	    Map<String, Object> cleanerInfo = new HashMap<>();
+	    cleanerInfo.put("cleanerId", cleaner.getId());
+	    cleanerInfo.put("cleanerName", cleaner.getName());
+	    cleanerInfo.put("profileImage", cleaner.getProfile_image());
+
+	    // Lấy feedback cho cleaner
+	    List<Feedback> feedbacks = feedbackRepository.findByJobId(cleaner.getId());
+	    if (!feedbacks.isEmpty()) {
+	        List<Map<String, Object>> feedbackList = new ArrayList<>();
+	        for (Feedback feedback : feedbacks) {
+	            Map<String, Object> feedbackInfo = new HashMap<>();
+	            feedbackInfo.put("rating", feedback.getRating());
+	            feedbackInfo.put("comment", feedback.getComment());
+	            feedbackList.add(feedbackInfo);
+	        }
+	        cleanerInfo.put("feedbacks", feedbackList);
+	    } else {
+	        cleanerInfo.put("feedbacks", "No feedback yet");
+	    }
+
+	    return cleanerInfo;
+	}
+
 
 	public Map<String, Object> getCleanerDetails(Long cleanerId) {
 		// Tìm cleaner theo cleanerId
