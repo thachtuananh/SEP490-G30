@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { Button, Modal } from "antd";
+import { Modal, List, Button, Table, message } from "antd";
+import axios from "axios";
 import styles from "./JobList.module.css";
 
 const getStatusColor = (status) => {
@@ -17,6 +18,20 @@ const getStatusColor = (status) => {
     default: return "#bdc3c7";
   }
 };
+const getStatusLabel = (status) => {
+  const statusMap = {
+    OPEN: "Đang mở",
+    PENDING_APPROVAL: "Chờ phê duyệt",
+    IN_PROGRESS: "Đang thực hiện",
+    ARRIVED: "Đã đến nơi",
+    STARTED: "Đã bắt đầu",
+    COMPLETED: "Đã hoàn thành",
+    CANCELLED: "Đã hủy",
+    DONE: "Hoàn tất",
+    BOOKED: "Đã đặt lịch",
+  };
+  return statusMap[status.toUpperCase()] || "Không xác định";
+};
 
 const JobCard = ({ job }) => {
 
@@ -25,7 +40,7 @@ const JobCard = ({ job }) => {
   const handleStatusUpdate = (newStatus) => {
     Modal.confirm({
       title: "Xác nhận",
-      content: `Bạn có chắc muốn cập nhật trạng thái thành '${newStatus}' không?`,
+      content: `Bạn có chắc muốn cập nhật trạng thái thành '${getStatusLabel(newStatus)}' không?`,
       onOk: () => {
         const token = localStorage.getItem("token");
         fetch(`http://localhost:8080/api/cleaner/job/${newStatus}/${job.jobId}`, {
@@ -45,13 +60,17 @@ const JobCard = ({ job }) => {
     });
   };
 
+
+
+
   return (
     <article className={styles.jobCard}>
       <header className={styles.jobHeader}>
         <h2 className={styles.jobTitle}>{job.serviceName}</h2>
         <span className={styles.status} style={{ color: getStatusColor(currentStatus) }}>
-          {currentStatus}
+          {getStatusLabel(currentStatus)}
         </span>
+
       </header>
 
       <section className={styles.jobDetails}>
@@ -126,22 +145,31 @@ const JobCard = ({ job }) => {
           </div>
           <div className={styles.detailContent}>
             <span className={styles.detailLabel}>Thời gian</span>
-            <strong className={styles.detailValue}>{new Date(job.scheduledTime).toLocaleString()}</strong>
+            <strong className={styles.detailValue}>
+              {new Date(job.scheduledTime).toLocaleString("vi-VN", {
+                hour: "2-digit",
+                minute: "2-digit",
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric",
+              })}
+            </strong>
           </div>
         </div>
       </section>
 
       <footer className={styles.actionButtons}>
-        {/* <span className={styles.status} style={{ backgroundColor: getStatusColor(job.status), padding: "5px 10px", borderRadius: "5px", color: "#fff" }}>
-          {job.status}
-        </span> */}
-        <Button type="primary">Hủy công việc</Button>
+
+        {job.status === "OPEN" && (
+          <Button type="primary">Hủy công việc</Button>
+        )}
         {job.status === "IN_PROGRESS" && (
           <Button type="primary" onClick={() => handleStatusUpdate("arrived")}>Đã tới</Button>
         )}
         {job.status === "STARTED" && (
           <Button type="primary" onClick={() => handleStatusUpdate("completed")}>Hoàn thành công việc</Button>
         )}
+
       </footer>
     </article>
   );

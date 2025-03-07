@@ -108,9 +108,9 @@ const WorkDetailsDescription = () => {
         </div>
 
         <div className={styles.buttonGroup}>
-          <Button className={styles.contactButton} icon={<FaCommentAlt />}>
+          {/* <Button className={styles.contactButton} icon={<FaCommentAlt />}>
             Liên hệ
-          </Button>
+          </Button> */}
           <Button type="primary" className={styles.acceptButton} onClick={() => setIsModalOpen(true)}>
             Nhận việc
           </Button>
@@ -127,16 +127,16 @@ const WorkDetailsDescription = () => {
         <b>Loại dịch vụ:</b>
         <ul>
           {job.serviceDetails.map((detail) => (
-            <li key={detail.serviceDetailId}>{detail.name} - {detail.description}</li>
+            <li key={detail.serviceDetailId}>{detail.name} {detail.description}</li>
           ))}
         </ul>
 
-        <b>Ưu đãi:</b>
+        {/* <b>Ưu đãi:</b>
         <ul>
           <li>
             {job.serviceDetails[0]?.discounts || "Không có ưu đãi"}
           </li>
-        </ul>
+        </ul> */}
 
 
         <b>Khách hàng:</b>

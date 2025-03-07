@@ -29,6 +29,20 @@ export const ActivityCard = ({ data, onDelete }) => {
             default: return "#bdc3c7";
         }
     };
+    const getStatusText = (status) => {
+        switch (status) {
+            case "OPEN": return "Đang mở";
+            case "PENDING_APPROVAL": return "Chờ phê duyệt";
+            case "IN_PROGRESS": return "Đang thực hiện";
+            case "ARRIVED": return "Đã đến nơi";
+            case "STARTED": return "Đã bắt đầu";
+            case "COMPLETED": return "Đã hoàn thành";
+            case "CANCELLED": return "Đã hủy";
+            case "DONE": return "Hoàn tất";
+            case "BOOKED": return "Đã đặt lịch";
+            default: return "Không xác định";
+        }
+    };
 
     //  API LIST CLEARN
     const fetchCleaners = async (jobId) => {
@@ -100,6 +114,50 @@ export const ActivityCard = ({ data, onDelete }) => {
     };
 
 
+    //  API BAT DAU LAM VIEC
+    const handleStartJob = async (jobId) => {
+        try {
+            const token = localStorage.getItem("token"); // Lấy token từ localStorage
+            const customerId = localStorage.getItem("customerId");
+            await axios.post(
+                `http://localhost:8080/api/customer/job/start/${jobId}/${customerId}`,
+                {},
+                {
+                    headers: {
+                        "Authorization": `Bearer ${token}`,
+                        "Accept": "application/json",
+                    },
+                }
+            );
+            message.success("✅ Công việc đã bắt đầu!");
+            // Cập nhật trạng thái công việc thành "STARTED"
+        } catch (error) {
+            console.error("❌ Lỗi khi bắt đầu công việc:", error);
+            message.error("❌ Không thể bắt đầu công việc.");
+        }
+    };
+
+    const handleCompleteJob = async (jobId) => {
+        try {
+            const token = localStorage.getItem("token"); // Lấy token từ localStorage
+            await axios.post(
+                `http://localhost:8080/api/customer/job/done/customer/${jobId}`,
+                {},
+                {
+                    headers: {
+                        "Authorization": `Bearer ${token}`,
+                        "Accept": "application/json",
+                    },
+                }
+            );
+            message.success("✅ Công việc đã hoàn thành!");
+        } catch (error) {
+            console.error("❌ Lỗi khi hoàn thành công việc:", error);
+            message.error("❌ Không thể hoàn thành công việc.");
+        }
+    };
+
+
     const columns = [
         {
             title: "Ảnh",
@@ -152,10 +210,10 @@ export const ActivityCard = ({ data, onDelete }) => {
                         <div className={styles.cardContent}>
                             <div className={styles.header}>
                                 <h3>{activity.serviceName}</h3>
-                                <p className={activity.createdAt === "Vừa xong" ? styles.timeNew : styles.timeOld}>
+                                {/* <p className={activity.createdAt === "Vừa xong" ? styles.timeNew : styles.timeOld}>
                                     {new Date(activity.createdAt).toLocaleDateString("vi-VN")} -
                                     {new Date(activity.createdAt).toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" })}
-                                </p>
+                                </p> */}
                             </div>
 
                             <p><MdCalendarToday className={styles.icon} /> {new Date(activity.scheduledTime).toLocaleDateString("vi-VN")}</p>
@@ -177,9 +235,9 @@ export const ActivityCard = ({ data, onDelete }) => {
                         <div className={styles.divider}></div>
 
                         <div className={styles.footer}>
-                            <b style={{ color: getStatusColor(activity.status) }}>{activity.status}</b>
+                            <b style={{ color: getStatusColor(activity.status) }}>{getStatusText(activity.status)}</b>
 
-                            {activity.status === "COMPLETED" && (
+                            {activity.status === "DONE" && (
                                 <div className={styles.reviewButton}>
                                     <FaRegCommentAlt className={styles.reviewIcon} />
                                     <span>Thêm đánh giá</span>
@@ -187,9 +245,22 @@ export const ActivityCard = ({ data, onDelete }) => {
                             )}
 
                             {activity.status === "OPEN" && (
-                                <div className={styles.viewButton} onClick={() => openModal(activity.jobId)}>
+                                <Button type="primary" className={styles.statusButton}
+                                    onClick={() => openModal(activity.jobId)}>
                                     Xem thông tin Cleaner
-                                </div>
+                                </Button>
+                            )}
+                            {activity.status === "ARRIVED" && (
+                                <Button type="primary" className={styles.statusButton}
+                                    onClick={() => handleStartJob(activity.jobId, selectedCleaner?.cleanerId)}>
+                                    Bắt đầu làm việc
+                                </Button>
+                            )}
+                            {activity.status === "COMPLETED" && (
+                                <Button type="primary" className={styles.statusButton}
+                                    onClick={() => handleCompleteJob(activity.jobId)}>
+                                    Đã hoàn thành
+                                </Button>
                             )}
                         </div>
                     </div>
