@@ -129,7 +129,6 @@ public class CustomerJobController {
 	    return ResponseEntity.ok(cleanerDetails);  
 	}
 
-
 	
 	// hủy job
 	@PostMapping("/{customerId}/cancel-job/{jobId}")
