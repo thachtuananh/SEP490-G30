@@ -23,7 +23,7 @@ import { ActivityList } from "../pages/ActivityList"
 
 import Contact from "../pages/Contact"
 import ServiceDetails from "../pages/ServiceDetails/ServiceDetails"
-
+import CleanerDetails from "../pages/CleanerDetails/CleanerDetails"
 import CreateJob from "../pages/ServiceDetails/CreateJob"
 import OrderSuccess from "../pages/order_success/OrderSuccess"
 import ApplySuccess from "../pages/order_success/ApplySuccess"
@@ -56,6 +56,7 @@ const Routers = () => {
 
             <Route path="/service/:id?" element={<ServiceDetails />} />
 
+            <Route path="/cleaner/:cleanerId" element={<CleanerDetails />} />
             <Route path="/createjob" element={<CreateJob />} />
             <Route path="/activityjob" element={<ActivityJob />} />
 

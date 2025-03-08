@@ -494,7 +494,7 @@ body {
 
 .card-image {
   position: relative;
-  height: 100px;
+  height: 150px;
 }
 
 
@@ -966,7 +966,7 @@ body {
   }
 
   .service-card {
-    flex: 0 0 calc(50% - 0.5rem);
+    flex: 1 1 calc(25% - 0.5rem);
   }
 }
 
@@ -1042,7 +1042,7 @@ body {
 
 @media (max-width: 640px) {
   .service-card {
-    flex: 0 0 100%;
+    flex: 0 0 48%;
   }
 
   .features-grid {
