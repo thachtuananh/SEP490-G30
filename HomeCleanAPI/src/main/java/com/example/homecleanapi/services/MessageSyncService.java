@@ -28,7 +28,7 @@ public class MessageSyncService {
         // Lấy tin nhắn từ Redis
         List<ChatMessage> messages = redisTemplate.opsForList().range(redisKey, 0, -1);
 
-        return (messages != null) ? messages : Collections.emptyList(); // Trả về danh sách rỗng nếu không có tin nhắn
+        return (messages != null) ? messages : Collections.emptyList();
     }
 
     public List<ChatMessage> getAllMessages() {
