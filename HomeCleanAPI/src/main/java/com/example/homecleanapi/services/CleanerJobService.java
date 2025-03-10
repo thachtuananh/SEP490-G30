@@ -1,6 +1,6 @@
 package com.example.homecleanapi.services;
 import com.example.homecleanapi.CustomerError.CustomException;
-import com.example.homecleanapi.SocketConfig.NotificationController;
+import com.example.homecleanapi.SocketConfig.UserStatusWebSocketHandler;
 import com.example.homecleanapi.dtos.BookJobRequest;
 import com.example.homecleanapi.dtos.JobSummaryDTO;
 import com.example.homecleanapi.enums.JobStatus;
@@ -70,11 +70,8 @@ public class CleanerJobService {
 	@Autowired
 	private JobDetailsRepository jobDetailsRepository;
 	
-	@Autowired
-    private SimpMessagingTemplate messagingTemplate;
 	
-	@Autowired
-	private NotificationController notificationController;
+	
 
 	// Lấy danh sách các công việc đang mở
 	public List<JobSummaryDTO> getOpenJobs() {
@@ -185,11 +182,7 @@ public class CleanerJobService {
 
 	    jobApplicationRepository.save(jobApplication);
 
-	    // Lấy customerId và gửi thông báo
-	    Long customerId = job.getCustomer().getId().longValue();
-	    String message = "Cleaner with ID " + cleaner.getId() + " has applied for job with ID " + jobId;
 
-	    notificationController.sendNotification(customerId, message);
 
 	    // Cung cấp thông tin phản hồi
 	    response.put("message", "Cleaner has successfully applied for the job");
@@ -202,11 +195,6 @@ public class CleanerJobService {
 
 
 
-
-    // Gửi thông báo WebSocket cho customer
-    public void sendNotification(Long customerId, String message) {
-        messagingTemplate.convertAndSendToUser(String.valueOf(customerId), "/topic/notifications", message);
-    }
 
 	// Get applications for job
 	public List<Map<String, Object>> getApplicationsForJob(Long jobId, Long customerId) {
@@ -444,21 +432,35 @@ public class CleanerJobService {
 
 	// LUỒNG CODE 2
 
+//	public List<Map<String, Object>> getOnlineCleaners() {
+//		List<Employee> onlineCleaners = cleanerRepository.findByStatus(true);
+//
+//		List<Map<String, Object>> cleanerList = new ArrayList<>();
+//
+//		for (Employee cleaner : onlineCleaners) {
+//			Map<String, Object> cleanerInfo = new HashMap<>();
+//			cleanerInfo.put("cleanerId", cleaner.getId());
+//			cleanerInfo.put("cleanerName", cleaner.getName());
+//			cleanerInfo.put("profileImage", cleaner.getProfile_image());
+//			cleanerList.add(cleanerInfo);
+//		}
+//
+//		return cleanerList;
+//	}
+	
 	public List<Map<String, Object>> getOnlineCleaners() {
-		List<Employee> onlineCleaners = cleanerRepository.findByStatus(true);
-
-		List<Map<String, Object>> cleanerList = new ArrayList<>();
-
-		for (Employee cleaner : onlineCleaners) {
-			Map<String, Object> cleanerInfo = new HashMap<>();
-			cleanerInfo.put("cleanerId", cleaner.getId());
-			cleanerInfo.put("cleanerName", cleaner.getName());
-			cleanerInfo.put("profileImage", cleaner.getProfile_image());
-			cleanerList.add(cleanerInfo);
-		}
-
-		return cleanerList;
+	    return UserStatusWebSocketHandler.getOnlineCleaners().values().stream()
+	            .map(cleanerSessionInfo -> {
+	                Map<String, Object> cleanerInfo = Map.of(
+	                        "cleanerId", cleanerSessionInfo.getCleanerId(),
+	                        "cleanerName", cleanerSessionInfo.getCleanerName(),
+	                        "profileImage", cleanerSessionInfo.getProfileImage()
+	                );
+	                return cleanerInfo;
+	            })
+	            .collect(Collectors.toList());
 	}
+
 	
 	// xem detail cleaner không cần đk 
 	public Map<String, Object> getCleanerDetailnone(Long cleanerId) {

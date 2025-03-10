@@ -139,16 +139,28 @@ public class CustomerJobController {
 	
 	// LUỒNG CODE 2 
 	
+//	@GetMapping("/cleaners/online")
+//    public ResponseEntity<List<Map<String, Object>>> getOnlineCleaners() {
+//        List<Map<String, Object>> onlineCleaners = cleanerJobService.getOnlineCleaners();
+//
+//        if (onlineCleaners.isEmpty()) {
+//            return ResponseEntity.status(404).body(List.of(Map.of("message", "No online cleaners found")));
+//        }
+//
+//        return ResponseEntity.ok(onlineCleaners);
+//    }
 	@GetMapping("/cleaners/online")
-    public ResponseEntity<List<Map<String, Object>>> getOnlineCleaners() {
-        List<Map<String, Object>> onlineCleaners = cleanerJobService.getOnlineCleaners();
+	public ResponseEntity<List<Map<String, Object>>> getOnlineCleaners() {
+	    // Lấy thông tin các cleaner đang online từ WebSocket handler
+	    List<Map<String, Object>> onlineCleaners = cleanerJobService.getOnlineCleaners();
 
-        if (onlineCleaners.isEmpty()) {
-            return ResponseEntity.status(404).body(List.of(Map.of("message", "No online cleaners found")));
-        }
+	    if (onlineCleaners.isEmpty()) {
+	        return ResponseEntity.status(404).body(List.of(Map.of("message", "No online cleaners found")));
+	    }
 
-        return ResponseEntity.ok(onlineCleaners);
-    }
+	    return ResponseEntity.ok(onlineCleaners);
+	}
+
 	
 	@GetMapping("/viewdetailcleaneron/{cleanerId}")
     public ResponseEntity<Map<String, Object>> getCleanerDetails(@PathVariable Long cleanerId) {
