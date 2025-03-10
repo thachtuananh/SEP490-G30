@@ -1,8 +1,8 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import styles from "../Owner/JobUpload.module.css";
+import styles from "./JobUpload.module.css";
 
-const JobUploadCard = ({ icon, title, description, srcDetail }) => {
+const JobUploadCard = ({ id, icon, title, description }) => {
     return (
         <article className={styles.serviceCard}>
             <div className={styles.iconWrapper}>
@@ -11,7 +11,7 @@ const JobUploadCard = ({ icon, title, description, srcDetail }) => {
             <div className={styles.serviceContent}>
                 <h3 className={styles.serviceTitle}>{title}</h3>
                 <p className={styles.serviceDescription}>{description}</p>
-                <Link to={srcDetail} className={styles.serviceButton} style={{ textDecoration: "none" }}>Đăng việc</Link>
+                <Link to={`/service/${id}`} state={id} className={styles.serviceButton} style={{ textDecoration: "none" }} >Đăng việc</Link>
             </div>
         </article>
     );

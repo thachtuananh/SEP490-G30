@@ -32,26 +32,53 @@ const Time = ({ onTimeChange }) => {
     }, []);
 
     const handleDateChange = (date) => {
+        const now = new Date();
+        if (date < now.setHours(0, 0, 0, 0)) return; // Chặn chọn ngày trong quá khứ
+
         setSelectedDate(date);
-        onTimeChange(date, hour, minute);
+
+        // Nếu chọn ngày hôm nay, kiểm tra giờ phút
+        if (date.toDateString() === now.toDateString()) {
+            const validHour = hour >= now.getHours() ? hour : now.getHours();
+            const validMinute = validHour === now.getHours() && minute < now.getMinutes() ? now.getMinutes() : minute;
+            setHour(validHour);
+            setMinute(validMinute);
+            onTimeChange(date, validHour, validMinute);
+        } else {
+            onTimeChange(date, hour, minute);
+        }
     };
+
 
     const handleHourChange = (e) => {
         let value = parseInt(e.target.value, 10);
         if (isNaN(value) || value < 0) value = 0;
         if (value > 23) value = 23;
+
+        const now = new Date();
+        if (selectedDate.toDateString() === now.toDateString() && value < now.getHours()) {
+            value = now.getHours(); // Không cho chọn giờ nhỏ hơn hiện tại
+        }
+
         setHour(value);
         onTimeChange(selectedDate, value, minute);
     };
 
+
     const handleMinuteChange = (e) => {
-        let value = e.target.value.replace(/^0+/, "");
-        value = parseInt(value, 10);
+        let value = parseInt(e.target.value.replace(/^0+/, ""), 10);
         if (isNaN(value) || value < 0) value = 0;
         if (value > 59) value = 59;
+
+        const now = new Date();
+        if (selectedDate.toDateString() === now.toDateString() && hour === now.getHours() && value < now.getMinutes()) {
+            value = now.getMinutes(); // Không cho chọn phút nhỏ hơn hiện tại nếu giờ trùng
+        }
+
         setMinute(value);
         onTimeChange(selectedDate, hour, value);
     };
+
 
     return (
         <div className={styles.container}>
@@ -60,13 +87,23 @@ const Time = ({ onTimeChange }) => {
 
             <Card className={styles.card}>
                 <div className={styles.weekNavigation}>
-                    <Button onClick={() => setWeekOffset(weekOffset - 7)}>Tuần trước</Button>
-                    <Button onClick={() => setWeekOffset(weekOffset + 7)}>Tuần tiếp theo</Button>
+                    <Button
+                        onClick={() => setWeekOffset(weekOffset - 7)}
+                        className={styles.navButton}
+                    >
+                        Tuần trước
+                    </Button>
+                    <Button
+                        onClick={() => setWeekOffset(weekOffset + 7)}
+                        className={styles.navButton}
+                    >
+                        Tuần tiếp theo
+                    </Button>
                 </div>
 
                 <div className={styles.selectedDate}>
                     <p>Chọn ngày làm</p>
-                    <p>
+                    <p className={styles.dateDisplay}>
                         {selectedDate
                             ? `Ngày ${selectedDate.getDate()} - Tháng ${selectedDate.getMonth() + 1} - Năm ${selectedDate.getFullYear()}`
                             : "Chưa chọn ngày"}
@@ -78,30 +115,57 @@ const Time = ({ onTimeChange }) => {
                         <Button
                             key={day.date}
                             type={selectedDate?.toDateString() === day.fullDate.toDateString() ? "primary" : "default"}
-                            className={`${styles.dayButton} ${selectedDate?.toDateString() === day.fullDate.toDateString() ? styles.selected : ""
-                                }`}
+                            className={`${styles.dayButton} ${selectedDate?.toDateString() === day.fullDate.toDateString() ? styles.selected : ""}`}
                             onClick={() => handleDateChange(day.fullDate)}
                         >
                             <b>{day.label}</b>
-                            {day.date}
+                            <span>{day.date}</span>
                         </Button>
                     ))}
                 </div>
             </Card>
 
             <div className={styles.timeSelection}>
-                <h4>Chọn giờ làm việc</h4>
-                <p>Giờ mà người giúp việc sẽ đến</p>
+                <div className={styles.timeHeader}>
+                    <h4>Chọn giờ làm việc</h4>
+                    <p>Giờ mà người giúp việc sẽ đến</p>
+                </div>
                 <div className={styles.timeInputGroup}>
                     <div className={styles.timeInput}>
-                        <input type="number" value={hour} onChange={handleHourChange} min="0" max="23" />
+                        <input
+                            type="number"
+                            value={hour}
+                            onChange={handleHourChange}
+                            min="0"
+                            max="23"
+                        />
                         <span>h</span>
                     </div>
                     <span className={styles.timeSeparator}>:</span>
                     <div className={styles.timeInput}>
-                        <input type="number" value={minute} onChange={handleMinuteChange} min="0" max="59" />
+                        <input
+                            type="number"
+                            value={minute}
+                            onChange={handleMinuteChange}
+                            min="0"
+                            max="59"
+                        />
                         <span>p</span>
                     </div>
+                </div>
+            </div>
+
+            <div className={styles.phoneSection}>
+                <div className={styles.phoneInfo}>
+                    <h4>Số điện thoại</h4>
+                    <p>Nhân công sẽ liên hệ với bạn khi đến nơi</p>
+                </div>
+                <div className={styles.phoneContainer}>
+                    <span className={styles.phonePrefix}>(+84)</span>
+                    <span className={styles.phoneNumber}>947736987</span>
+                    <button className={styles.changeButton}>
+                        Thay đổi
+                    </button>
                 </div>
             </div>
         </div>

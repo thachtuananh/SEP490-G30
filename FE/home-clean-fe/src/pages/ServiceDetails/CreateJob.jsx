@@ -3,9 +3,9 @@ import Time from '../../components/create-job/Time';
 import Note from '../../components/create-job/Note';
 import Pay from '../../components/create-job/Pay';
 import JobInfomation from "../../components/create-job/JobInfomation";
+import styles from "../../assets/CSS/createjob/CreateJob.module.css";
 
 const CreateJob = () => {
-
     const [selectedDate, setSelectedDate] = useState(null);
     const [hour, setHour] = useState(0);
     const [minute, setMinute] = useState(0);
@@ -17,13 +17,13 @@ const CreateJob = () => {
     };
 
     return (
-        <div style={{ display: "flex", justifyContent: "center" }}>
-            <div style={{ width: 800, padding: "50px 50px 100px 50px" }}>
-                <h3>Chọn thời gian bắt đầu</h3>
+        <div className={styles.createJobContainer}>
+            <div className={styles.createJobContent}>
+                <h3 className={styles.sectionTitle}>Chọn thời gian bắt đầu</h3>
                 <Time onTimeChange={handleTimeChange} />
                 <Note />
                 <Pay />
-                <h3 style={{ margin: "15px 0px" }}>Thông tin công việc</h3>
+                <h3 className={styles.sectionTitle}>Thông tin công việc</h3>
                 <JobInfomation
                     selectedDate={selectedDate}
                     hour={hour}

@@ -1,28 +1,14 @@
 import React from "react";
+import styles from "../../assets/CSS/createjob/Note.module.css";
 
 const Note = () => {
     return (
-        <div
-            style={{
-                padding: '15px',
-                border: '1px solid rgb(225, 225, 225)',
-                borderRadius: '5px',
-                marginTop: '15px'
-            }}
-        >
-            <h4>Ghi chú cho Cleaner</h4>
-            <textarea name="" id=""
-                style={{
-                    minWidth: 665,
-                    padding: '15px',
-                    border: '1px solid rgb(225, 225, 225)',
-                    borderRadius: '5px',
-                    marginTop: 15,
-                    maxWidth: 665,
-                    minHeight: 100
-                }}
+        <div className={styles.noteContainer}>
+            <h4 className={styles.noteTitle}>Ghi chú cho Cleaner</h4>
+            <textarea
+                className={styles.noteTextarea}
+                placeholder="Nhập ghi chú cho người giúp việc..."
             >
-
             </textarea>
         </div>
     )

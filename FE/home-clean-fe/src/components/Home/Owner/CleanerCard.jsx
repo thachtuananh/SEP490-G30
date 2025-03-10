@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 
-function ServiceCard({ cleanerId, cleanerImg, cleanerName, rating, reviews }) {
+function CleanerCard({ cleanerId, cleanerImg, cleanerName, rating, reviews }) {
   return (
     <div className="service-card">
       <div className="card-image">
@@ -47,4 +47,4 @@ function ServiceCard({ cleanerId, cleanerImg, cleanerName, rating, reviews }) {
   );
 }
 
-export default ServiceCard;
+export default CleanerCard;

@@ -55,12 +55,21 @@ export const ActivityCard = ({ data, onDelete }) => {
                     "Content-Type": "application/json",
                 },
             });
-            setCleanerList(response.data || []);
+
+            const cleaners = response.data || [];
+
+            setCleanerList(cleaners);
+
+            if (cleaners.length === 0) {
+                message.info("Chưa có Cleaner nào nhận việc");
+            }
         } catch (error) {
             console.error("Lỗi khi lấy danh sách cleaner:", error);
+            message.error("Không thể tải danh sách Cleaner");
         }
         setLoading(false);
     };
+
 
     //  API DETAILS
     const fetchCleanerDetail = async (cleanerId) => {

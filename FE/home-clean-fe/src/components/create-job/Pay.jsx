@@ -13,7 +13,7 @@ const Pay = () => {
 
     return (
         <div className={styles.container}>
-            <h4>Phương thức thanh toán</h4>
+            <h4 className={styles.title}>Phương thức thanh toán</h4>
             <div className={styles.separator}></div>
 
             <div className={styles.paymentList}>
@@ -25,6 +25,7 @@ const Pay = () => {
                             value={method.id}
                             checked={selectedMethod === method.id}
                             onChange={() => setSelectedMethod(method.id)}
+                            className={styles.radioInput}
                         />
                         <span className={styles.icon}>{method.icon}</span>
                         <span className={styles.label}>{method.label}</span>
@@ -34,8 +35,10 @@ const Pay = () => {
             </div>
 
             <div className={styles.terms}>
-                <input type="checkbox" id="terms" />
-                <label htmlFor="terms"> Tôi đồng ý với <strong>Điều khoản và dịch vụ</strong> của HouseClean</label>
+                <input type="checkbox" id="terms" className={styles.checkbox} />
+                <label htmlFor="terms" className={styles.termsLabel}>
+                    Tôi đồng ý với <strong>Điều khoản và dịch vụ</strong> của HouseClean
+                </label>
             </div>
         </div>
     );

@@ -1,5 +1,5 @@
 import profileImg from '../../assets/imgProfile/imgProfile.svg';
-export async function fetchServices() {
+export async function fetchCleaners() {
     try {
         const token = localStorage.getItem("token"); // Lấy token từ localStorage
         const response = await fetch('http://localhost:8080/api/customer/cleaners/online', {

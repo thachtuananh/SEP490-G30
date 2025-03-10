@@ -1,17 +1,15 @@
-import { useEffect, useState, useContext } from "react";
-import ServiceCard from "./ServiceCard";
-import { AuthContext } from "../../../context/AuthContext";
+import { useEffect, useState } from "react";
+import CleanerCard from "./CleanerCard";
 
-import { fetchServices } from "../../api/Home_API";
-import profileImg from "../../../assets/imgProfile/imgProfile.svg";
+import { fetchCleaners } from "../../api/Home_API";
 
-function ServiceSection() {
-  const [services, setServices] = useState([]);
+function CleanerSection() {
+  const [cleaners, setCleaners] = useState([]);
 
   useEffect(() => {
     async function fetchData() {
-      const data = await fetchServices();
-      setServices(data);
+      const data = await fetchCleaners();
+      setCleaners(data);
     }
     fetchData();
   }, []);
@@ -20,9 +18,9 @@ function ServiceSection() {
     <section className="service-section">
       <h2 className="section-title">Danh sách cleaner</h2>
       <div style={{ display: 'flex', gap: 15, flexWrap: 'wrap' }}>
-        {services.length > 0 ? (
-          services.map((cleaner) => (
-            <ServiceCard
+        {cleaners.length > 0 ? (
+          cleaners.map((cleaner) => (
+            <CleanerCard
               key={cleaner.cleanerId}
               cleanerId={cleaner.cleanerId}
               cleanerImg={cleaner.cleanerImg}
@@ -39,4 +37,4 @@ function ServiceSection() {
   );
 }
 
-export default ServiceSection;
+export default CleanerSection;
