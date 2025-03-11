@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import { Form, message } from "antd";
+import { useNavigate } from "react-router-dom";
 import styles from "./JobUpload.module.css";
 import JobUploadCard from "./JobUploadCard";
 import ServiceSelectionModal from "./ServiceSelectionModal";
-import ServiceDetailsModal from "./ServiceDetailsModal";
 import donBep from "../../assets/icon-home/don-bep.svg";
 import donNhaVeSinh from "../../assets/icon-home/don-nha-vs.svg";
 import donPhongKhach from "../../assets/icon-home/phong-khach.svg";
@@ -14,10 +14,9 @@ import donDepVanPhong from "../../assets/icon-home/don-van-phong.svg";
 import donDepTheoKy from "../../assets/icon-home/don-dinh-ky.svg";
 
 const JobUpload = () => {
+    const navigate = useNavigate();
     const [isServiceModalVisible, setIsServiceModalVisible] = useState(false);
-    const [isDetailsModalVisible, setIsDetailsModalVisible] = useState(false);
     const [selectedServices, setSelectedServices] = useState([]);
-    const [form] = Form.useForm();
 
     // Combined services array (regular + special)
     const allServices = [
@@ -86,28 +85,16 @@ const JobUpload = () => {
     const handleServiceOk = () => {
         if (selectedServices.length > 0) {
             setIsServiceModalVisible(false);
-            setIsDetailsModalVisible(true);
+            // Navigate to the service details page instead of showing modal
+            navigate("/service-details-combo", {
+                state: {
+                    selectedServices,
+                    allServices
+                }
+            });
         } else {
             message.error('Vui lòng chọn ít nhất một dịch vụ!');
         }
-    };
-
-    const handleDetailsCancel = () => {
-        setIsDetailsModalVisible(false);
-        setIsServiceModalVisible(true);
-    };
-
-    const handleDetailsOk = () => {
-        form.validateFields().then(values => {
-            // Process form data with selectedServices
-            console.log('Selected services:', selectedServices);
-            console.log('Form values:', values);
-
-            // Reset and close
-            setSelectedServices([]);
-            form.resetFields();
-            setIsDetailsModalVisible(false);
-        });
     };
 
     const onServiceChange = (serviceId) => {
@@ -120,14 +107,14 @@ const JobUpload = () => {
         });
     };
 
-    const switchToServiceSelection = () => {
-        setIsDetailsModalVisible(false);
-        setIsServiceModalVisible(true);
-    };
-
-    // Find service details based on ID
-    const getServiceDetails = (serviceId) => {
-        return allServices.find(service => service.id === serviceId);
+    // Handler for direct selection of a single service
+    const handleServiceCardClick = (serviceId) => {
+        navigate("/service-details-combo", {
+            state: {
+                selectedServices: [serviceId],
+                allServices
+            }
+        });
     };
 
     return (
@@ -143,31 +130,33 @@ const JobUpload = () => {
                     </button>
                 </div>
                 <section className={styles.servicesGrid}>
-                    {regularServices.map((service, index) => (
-                        <JobUploadCard
-                            key={index}
-                            id={service.id}
-                            icon={service.icon}
-                            title={service.title}
-                            description={service.description}
-                        />
+                    {regularServices.map((service) => (
+                        <div key={service.id} onClick={() => handleServiceCardClick(service.id)}>
+                            <JobUploadCard
+                                id={service.id}
+                                icon={service.icon}
+                                title={service.title}
+                                description={service.description}
+                            />
+                        </div>
                     ))}
                 </section>
                 <h2 className={styles.sectionTitle}>Dịch Vụ Theo Nhu Cầu</h2>
                 <section className={styles.servicesGrid}>
-                    {specialServices.map((service, index) => (
-                        <JobUploadCard
-                            key={index}
-                            id={service.id}
-                            icon={service.icon}
-                            title={service.title}
-                            description={service.description}
-                        />
+                    {specialServices.map((service) => (
+                        <div key={service.id} onClick={() => handleServiceCardClick(service.id)}>
+                            <JobUploadCard
+                                id={service.id}
+                                icon={service.icon}
+                                title={service.title}
+                                description={service.description}
+                            />
+                        </div>
                     ))}
                 </section>
             </div>
 
-            {/* Service Selection Modal Component */}
+            {/* Service Selection Modal - keep this as a modal */}
             <ServiceSelectionModal
                 isVisible={isServiceModalVisible}
                 onCancel={handleServiceCancel}
@@ -175,18 +164,6 @@ const JobUpload = () => {
                 selectedServices={selectedServices}
                 onServiceChange={onServiceChange}
                 allServices={allServices}
-            />
-
-            {/* Service Details Modal Component */}
-            <ServiceDetailsModal
-                isVisible={isDetailsModalVisible}
-                onCancel={handleDetailsCancel}
-                onOk={handleDetailsOk}
-                form={form}
-                selectedServices={selectedServices}
-                getServiceDetails={getServiceDetails}
-                onServiceChange={onServiceChange}
-                switchToServiceSelection={switchToServiceSelection}
             />
         </>
     );

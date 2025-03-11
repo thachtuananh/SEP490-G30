@@ -3,6 +3,12 @@
     margin: 0 auto;
 }
 
+.pageContainerCombo {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 50px;
+}
+
 .headerContainer {
     justify-content: space-between;
     display: flex;
@@ -252,4 +258,32 @@
     color: #039855;
     font-size: 12px;
     margin-top: 4px;
+}
+
+/* These are additions to your existing CSS file */
+
+.serviceDetailsContainer {
+    background-color: white;
+    padding: 24px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+}
+
+.actionButtons {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 24px;
+}
+
+.backButton {
+    border-radius: 4px;
+}
+
+.continueButton {
+    background-color: #039855;
+    border-color: #039855;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
 }

@@ -30,6 +30,8 @@ import ApplySuccess from "../pages/order_success/ApplySuccess"
 import WorkDetail from "../pages/work/WorkDetail"
 import ActivityJob from "../pages/ActivityJob"
 
+import ServiceDetailsCombo from './../pages/ServiceDetails/ServiceDetailsCombo';
+
 const Routers = () => {
     return (
         <Routes>
@@ -64,6 +66,8 @@ const Routers = () => {
             <Route path="/applysuccess" element={<ApplySuccess />} />
 
             <Route path="/workdetail/:jobId?" element={<WorkDetail />} />
+
+            <Route path="/service-details-combo" element={<ServiceDetailsCombo />} />
 
         </Routes>
     )
