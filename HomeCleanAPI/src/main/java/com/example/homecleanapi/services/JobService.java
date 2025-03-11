@@ -58,19 +58,18 @@ public class JobService {
 
         System.out.println("customerId = " + customerId);
 
-        // Kiểm tra nếu khách hàng không tồn tại
         Optional<Customers> customerOpt = customerRepo.findById(customerId);
         if (!customerOpt.isPresent()) {
-            response.put("message", "Khách hàng không tồn tại với customerId: " + customerId);
+            response.put("message", "Customer not found with customerId: " + customerId);
             return response;
         }
 
         Customers customer = customerOpt.get();
 
-        // Tìm địa chỉ của khách hàng
+        // Tìm địa chỉ của customer
         Optional<CustomerAddresses> customerAddressOpt = customerAddressRepository.findById(request.getCustomerAddressId());
         if (!customerAddressOpt.isPresent()) {
-            response.put("message", "Địa chỉ của khách hàng không tồn tại");
+            response.put("message", "Customer address not found");
             return response;
         }
         CustomerAddresses customerAddress = customerAddressOpt.get();
@@ -80,7 +79,7 @@ public class JobService {
         // Kiểm tra Service
         Optional<Services> serviceOpt = serviceRepository.findById(request.getServiceId());
         if (!serviceOpt.isPresent()) {
-            response.put("message", "Dịch vụ không tồn tại");
+            response.put("message", "Service not found");
             return response;
         }
         Services service = serviceOpt.get();
@@ -88,7 +87,7 @@ public class JobService {
         // Kiểm tra Service Detail
         Optional<ServiceDetail> serviceDetailOpt = serviceDetailRepository.findById(request.getServiceDetailId());
         if (!serviceDetailOpt.isPresent()) {
-            response.put("message", "Chi tiết dịch vụ không tồn tại");
+            response.put("message", "Service Detail not found");
             return response;
         }
         ServiceDetail serviceDetail = serviceDetailOpt.get();
@@ -98,33 +97,12 @@ public class JobService {
         job.setServiceDetail(serviceDetail);
 
         // Chuyển jobTime từ String sang LocalDateTime
-        LocalDateTime jobTime;
         try {
             DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
-            jobTime = LocalDateTime.parse(request.getJobTime(), formatter);
+            LocalDateTime jobTime = LocalDateTime.parse(request.getJobTime(), formatter);
             job.setScheduledTime(jobTime);
         } catch (Exception e) {
-            response.put("message", "Định dạng thời gian công việc không hợp lệ");
-            return response;
-        }
-
-
-        LocalDateTime now = LocalDateTime.now();
-        if (jobTime.isBefore(now)) {
-            response.put("message", "Không thể đặt công việc trong quá khứ");
-            return response;
-        }
-
-        if (jobTime.isBefore(now.plusHours(2))) {
-            response.put("message", "Công việc phải được đặt ít nhất 2 giờ sau thời gian hiện tại");
-            return response;
-        }
-
-        // Kiểm tra trùng lịch công việc (job đã được đặt trong khoảng thời gian gần với jobTime)
-        List<Job> existingJobs = jobRepository.findByCustomerIdAndScheduledTimeBetween(
-                customerId, jobTime.minusHours(2), jobTime.plusHours(2));
-        if (!existingJobs.isEmpty()) {
-            response.put("message", "Công việc không thể đặt vì trùng lịch với công việc đã đặt trước đó");
+            response.put("message", "Invalid job time format");
             return response;
         }
 
@@ -132,36 +110,46 @@ public class JobService {
         job.setStatus(JobStatus.OPEN);
         job.setCustomer(customer);
 
-
-        double serviceDetailPrice = serviceDetail.getPrice();  
+        // Tính toán giá dịch vụ dựa trên giá trong service_detail
+        double serviceDetailPrice = serviceDetail.getPrice();  // Sử dụng giá dịch vụ từ service_detail
         double additionalPrice = serviceDetail.getAdditionalPrice();
-        double finalPrice = serviceDetailPrice + additionalPrice;  
+        double finalPrice = serviceDetailPrice + additionalPrice;  // Bắt đầu với giá dịch vụ từ service_detail và phụ phí
 
+        // Kiểm tra xem job có thuộc giờ cao điểm hoặc ngày lễ/cuối tuần không
         double peakTimeFee = 0;
         double discount = 0;
 
+        // Kiểm tra ngày lễ và cuối tuần
         DayOfWeek dayOfWeek = job.getScheduledTime().getDayOfWeek();
         if (dayOfWeek == DayOfWeek.SATURDAY || dayOfWeek == DayOfWeek.SUNDAY) {
-            peakTimeFee = 0.1 * finalPrice;  
+            // Thêm phụ phí cho cuối tuần
+            peakTimeFee = 0.1 * finalPrice;  // 10% phụ phí cho cuối tuần
         }
 
+        // Kiểm tra xem job có vào khung giờ cao điểm hay không
         if (job.getScheduledTime().getHour() >= 18 && job.getScheduledTime().getHour() <= 22) {
-            peakTimeFee += 0.2 * finalPrice; 
+            // Thêm phụ phí giờ cao điểm
+            peakTimeFee += 0.2 * finalPrice; // 20% phụ phí giờ cao điểm
         }
 
+        // Cộng phụ phí vào giá cuối cùng
         finalPrice += peakTimeFee;
 
+        // Kiểm tra chiết khấu từ dịch vụ (nếu có)
         if (serviceDetail.getDiscounts() != null && !serviceDetail.getDiscounts().isEmpty()) {
-            discount = 0.05 * finalPrice;  
+            discount = 0.05 * finalPrice;  // Giảm giá 5% nếu có chiết khấu
             finalPrice -= discount;
         }
 
+        // Gán giá cuối cùng cho Job
         job.setTotalPrice(finalPrice);
 
+        // Tạo JobDetails mới và liên kết với Job
         JobDetails jobDetails = new JobDetails();
         jobDetails.setImageUrl(request.getImageUrl());
 
-        jobDetails.setJob(job);
+        // Gán Job cho JobDetails trước khi lưu
+        jobDetails.setJob(job); // Liên kết Job với JobDetails
 
         // Lưu Job vào cơ sở dữ liệu trước
         jobRepository.save(job);
@@ -169,10 +157,10 @@ public class JobService {
         // Lưu JobDetails vào cơ sở dữ liệu
         jobDetailsRepository.save(jobDetails);
 
-        response.put("message", "Công việc đã được đặt thành công");
+        response.put("message", "Job booked successfully");
         response.put("jobId", job.getId());
         response.put("status", job.getStatus());
-        response.put("finalPrice", finalPrice);  
+        response.put("finalPrice", finalPrice);  // Trả về giá cuối cùng
 
         return response;
     }
@@ -180,8 +168,7 @@ public class JobService {
 
 
 
-
-    public Map<String, Object> updateJobStatusToStarted(Long jobId, @PathVariable Long customerId) { 
+    public Map<String, Object> updateJobStatusToStarted(Long jobId, @PathVariable Long customerId) { // Dùng @PathVariable cho customerId
         Map<String, Object> response = new HashMap<>();
 
         // Tìm công việc theo jobId

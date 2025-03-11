@@ -23,7 +23,6 @@ public interface JobRepository extends JpaRepository<Job, Long> {
     
     List<Job> findByCustomerId(Long customerId);
 
-    List<Job> findByCustomerIdAndScheduledTimeBetween(Long customerId, LocalDateTime startTime, LocalDateTime endTime);
 
 }
 
