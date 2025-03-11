@@ -73,7 +73,7 @@ public class CustomerAuthService {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
         }
 
-        String token = jwtUtils.generateToken(customer.getPhone(), customer.getFull_name(), customer.getId().toString(), "Cleaner");
+        String token = jwtUtils.generateToken(customer.getPhone(), customer.getFull_name(), customer.getId().toString(), "Customer");
 
         response.put("token", token);
         response.put("phone", customer.getPhone());

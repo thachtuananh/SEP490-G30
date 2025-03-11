@@ -30,9 +30,10 @@ public class EmployeeAuthenticationProvider implements AuthenticationProvider {
     @Override
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
         String name = authentication.getName();
+        System.out.println("name: " + name);
         String password = authentication.getCredentials().toString();
 
-        Employee employee = employeeRepository.findByName(name);
+        Employee employee = employeeRepository.findByPhone(name);
 
         if (employee == null || !password.equals(employee.getPassword())){
             throw new UsernameNotFoundException("Invalid username or password");
