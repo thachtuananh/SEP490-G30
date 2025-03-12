@@ -541,135 +541,135 @@ public class CleanerJobService {
 	}
 
 	// customer book job cleaner online
-	public Map<String, Object> bookJobForCleaner(@RequestParam Long customerId, Long cleanerId,
-			BookJobRequest request) {
-		Map<String, Object> response = new HashMap<>();
-
-		// Lấy customer thông qua customerId
-		Optional<Customers> customerOpt = customerRepo.findById(customerId);
-		if (!customerOpt.isPresent()) {
-			response.put("message", "Customer not found with customerId: " + customerId);
-			return response;
-		}
-
-		Customers customer = customerOpt.get();
-
-		// Tìm địa chỉ của customer
-		Optional<CustomerAddresses> customerAddressOpt = customerAddressRepository
-				.findById(request.getCustomerAddressId());
-		if (!customerAddressOpt.isPresent()) {
-			response.put("message", "Customer address not found");
-			return response;
-		}
-		CustomerAddresses customerAddress = customerAddressOpt.get();
-
-		// Tạo mới job
-		Job job = new Job();
-
-		// Kiểm tra Service
-		Optional<Services> serviceOpt = serviceRepository.findById(request.getServiceId());
-		if (!serviceOpt.isPresent()) {
-			response.put("message", "Service not found");
-			return response;
-		}
-		Services service = serviceOpt.get();
-
-		// Kiểm tra Service Detail
-		Optional<ServiceDetail> serviceDetailOpt = serviceDetailRepository.findById(request.getServiceDetailId());
-		if (!serviceDetailOpt.isPresent()) {
-			response.put("message", "Service Detail not found");
-			return response;
-		}
-		ServiceDetail serviceDetail = serviceDetailOpt.get();
-
-		// Gán thông tin cho Job
-		job.setService(service);
-		job.setServiceDetail(serviceDetail);
-
-		// Chuyển jobTime từ String sang LocalDateTime
-		try {
-			DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
-			LocalDateTime jobTime = LocalDateTime.parse(request.getJobTime(), formatter);
-			job.setScheduledTime(jobTime);
-		} catch (Exception e) {
-			response.put("message", "Invalid job time format");
-			return response;
-		}
-
-		job.setCustomerAddress(customerAddress);
-		job.setStatus(JobStatus.BOOKED); // Đặt trạng thái job là BOOKED
-		job.setCustomer(customer);
-
-		// Gán cleaner cho job
-		Optional<Employee> cleanerOpt = cleanerRepository.findById(cleanerId);
-		if (!cleanerOpt.isPresent()) {
-			response.put("message", "Cleaner not found with cleanerId: " + cleanerId);
-			return response;
-		}
-		Employee cleaner = cleanerOpt.get();
-		job.setCleaner(cleaner);
-
-		// Kiểm tra xem cleaner đã có lịch trùng thời gian không
-		List<Job> existingJobs = jobRepository.findByCleanerIdAndScheduledTimeBetween(cleanerId,
-				job.getScheduledTime().minusHours(2), job.getScheduledTime().plusHours(2));
-
-		if (!existingJobs.isEmpty()) {
-			response.put("message", "Cleaner has overlapping schedule or time gap between jobs is less than 2 hours.");
-			return response;
-		}
-
-		// Tính toán giá dịch vụ
-		double serviceDetailPrice = serviceDetail.getPrice();
-		double additionalPrice = serviceDetail.getAdditionalPrice();
-		double finalPrice = serviceDetailPrice + additionalPrice;
-
-		// Kiểm tra giờ cao điểm và giảm giá
-		double peakTimeFee = 0;
-		double discount = 0;
-
-		DayOfWeek dayOfWeek = job.getScheduledTime().getDayOfWeek();
-		if (dayOfWeek == DayOfWeek.SATURDAY || dayOfWeek == DayOfWeek.SUNDAY) {
-			peakTimeFee = 0.1 * finalPrice;
-		}
-
-		if (job.getScheduledTime().getHour() >= 18 && job.getScheduledTime().getHour() <= 22) {
-			peakTimeFee += 0.2 * finalPrice;
-		}
-
-		finalPrice += peakTimeFee;
-
-		if (serviceDetail.getDiscounts() != null && !serviceDetail.getDiscounts().isEmpty()) {
-			discount = 0.05 * finalPrice;
-			finalPrice -= discount;
-		}
-
-		job.setTotalPrice(finalPrice);
-
-		// Tạo JobDetails mới và liên kết với Job
-		JobDetails jobDetails = new JobDetails();
-		jobDetails.setImageUrl(request.getImageUrl());
-		jobDetails.setJob(job);
-
-		// Lưu Job vào cơ sở dữ liệu
-		jobRepository.save(job);
-		jobDetailsRepository.save(jobDetails);
-
-		// Tạo JobApplication để theo dõi status của job
-		JobApplication jobApplication = new JobApplication();
-		jobApplication.setJob(job);
-		jobApplication.setCleaner(cleaner);
-		jobApplication.setStatus("Pending"); // Trạng thái Pending khi job đã được đặt
-
-		// Lưu vào bảng JobApplication
-		jobApplicationRepository.save(jobApplication);
-
-		response.put("message", "Job booked successfully");
-		response.put("jobId", job.getId());
-		response.put("status", job.getStatus());
-		response.put("finalPrice", finalPrice);
-
-		return response;
-	}
+//	public Map<String, Object> bookJobForCleaner(@RequestParam Long customerId, Long cleanerId,
+//			BookJobRequest request) {
+//		Map<String, Object> response = new HashMap<>();
+//
+//		// Lấy customer thông qua customerId
+//		Optional<Customers> customerOpt = customerRepo.findById(customerId);
+//		if (!customerOpt.isPresent()) {
+//			response.put("message", "Customer not found with customerId: " + customerId);
+//			return response;
+//		}
+//
+//		Customers customer = customerOpt.get();
+//
+//		// Tìm địa chỉ của customer
+//		Optional<CustomerAddresses> customerAddressOpt = customerAddressRepository
+//				.findById(request.getCustomerAddressId());
+//		if (!customerAddressOpt.isPresent()) {
+//			response.put("message", "Customer address not found");
+//			return response;
+//		}
+//		CustomerAddresses customerAddress = customerAddressOpt.get();
+//
+//		// Tạo mới job
+//		Job job = new Job();
+//
+//		// Kiểm tra Service
+//		Optional<Services> serviceOpt = serviceRepository.findById(request.getServiceId());
+//		if (!serviceOpt.isPresent()) {
+//			response.put("message", "Service not found");
+//			return response;
+//		}
+//		Services service = serviceOpt.get();
+//
+//		// Kiểm tra Service Detail
+//		Optional<ServiceDetail> serviceDetailOpt = serviceDetailRepository.findById(request.getServiceDetailId());
+//		if (!serviceDetailOpt.isPresent()) {
+//			response.put("message", "Service Detail not found");
+//			return response;
+//		}
+//		ServiceDetail serviceDetail = serviceDetailOpt.get();
+//
+//		// Gán thông tin cho Job
+//		job.setService(service);
+//		job.setServiceDetail(serviceDetail);
+//
+//		// Chuyển jobTime từ String sang LocalDateTime
+//		try {
+//			DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
+//			LocalDateTime jobTime = LocalDateTime.parse(request.getJobTime(), formatter);
+//			job.setScheduledTime(jobTime);
+//		} catch (Exception e) {
+//			response.put("message", "Invalid job time format");
+//			return response;
+//		}
+//
+//		job.setCustomerAddress(customerAddress);
+//		job.setStatus(JobStatus.BOOKED); // Đặt trạng thái job là BOOKED
+//		job.setCustomer(customer);
+//
+//		// Gán cleaner cho job
+//		Optional<Employee> cleanerOpt = cleanerRepository.findById(cleanerId);
+//		if (!cleanerOpt.isPresent()) {
+//			response.put("message", "Cleaner not found with cleanerId: " + cleanerId);
+//			return response;
+//		}
+//		Employee cleaner = cleanerOpt.get();
+//		job.setCleaner(cleaner);
+//
+//		// Kiểm tra xem cleaner đã có lịch trùng thời gian không
+//		List<Job> existingJobs = jobRepository.findByCleanerIdAndScheduledTimeBetween(cleanerId,
+//				job.getScheduledTime().minusHours(2), job.getScheduledTime().plusHours(2));
+//
+//		if (!existingJobs.isEmpty()) {
+//			response.put("message", "Cleaner has overlapping schedule or time gap between jobs is less than 2 hours.");
+//			return response;
+//		}
+//
+//		// Tính toán giá dịch vụ
+//		double serviceDetailPrice = serviceDetail.getPrice();
+//		double additionalPrice = serviceDetail.getAdditionalPrice();
+//		double finalPrice = serviceDetailPrice + additionalPrice;
+//
+//		// Kiểm tra giờ cao điểm và giảm giá
+//		double peakTimeFee = 0;
+//		double discount = 0;
+//
+//		DayOfWeek dayOfWeek = job.getScheduledTime().getDayOfWeek();
+//		if (dayOfWeek == DayOfWeek.SATURDAY || dayOfWeek == DayOfWeek.SUNDAY) {
+//			peakTimeFee = 0.1 * finalPrice;
+//		}
+//
+//		if (job.getScheduledTime().getHour() >= 18 && job.getScheduledTime().getHour() <= 22) {
+//			peakTimeFee += 0.2 * finalPrice;
+//		}
+//
+//		finalPrice += peakTimeFee;
+//
+//		if (serviceDetail.getDiscounts() != null && !serviceDetail.getDiscounts().isEmpty()) {
+//			discount = 0.05 * finalPrice;
+//			finalPrice -= discount;
+//		}
+//
+//		job.setTotalPrice(finalPrice);
+//
+//		// Tạo JobDetails mới và liên kết với Job
+//		JobDetails jobDetails = new JobDetails();
+//		jobDetails.setImageUrl(request.getImageUrl());
+//		jobDetails.setJob(job);
+//
+//		// Lưu Job vào cơ sở dữ liệu
+//		jobRepository.save(job);
+//		jobDetailsRepository.save(jobDetails);
+//
+//		// Tạo JobApplication để theo dõi status của job
+//		JobApplication jobApplication = new JobApplication();
+//		jobApplication.setJob(job);
+//		jobApplication.setCleaner(cleaner);
+//		jobApplication.setStatus("Pending"); // Trạng thái Pending khi job đã được đặt
+//
+//		// Lưu vào bảng JobApplication
+//		jobApplicationRepository.save(jobApplication);
+//
+//		response.put("message", "Job booked successfully");
+//		response.put("jobId", job.getId());
+//		response.put("status", job.getStatus());
+//		response.put("finalPrice", finalPrice);
+//
+//		return response;
+//	}
 
 	public List<Map<String, Object>> getJobsBookedForCleaner(@RequestParam Long cleanerId) {
 		List<Map<String, Object>> responseList = new ArrayList<>();

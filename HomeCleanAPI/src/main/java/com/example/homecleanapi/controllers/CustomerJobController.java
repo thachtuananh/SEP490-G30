@@ -174,15 +174,15 @@ public class CustomerJobController {
         return ResponseEntity.ok(cleanerDetails);
     }
 	
-	@PostMapping(value = "/{customerId}/bookjob/{cleanerId}")
-    public ResponseEntity<Map<String, Object>> bookJobForCleaner(
-            @RequestParam Long customerId, 
-            @PathVariable Long cleanerId, 
-            @RequestBody BookJobRequest request) {
-
-        Map<String, Object> response = cleanerJobService.bookJobForCleaner(customerId, cleanerId, request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
-    }
+//	@PostMapping(value = "/{customerId}/bookjob/{cleanerId}")
+//    public ResponseEntity<Map<String, Object>> bookJobForCleaner(
+//            @RequestParam Long customerId, 
+//            @PathVariable Long cleanerId, 
+//            @RequestBody BookJobRequest request) {
+//
+//        Map<String, Object> response = cleanerJobService.bookJobForCleaner(customerId, cleanerId, request);
+//        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+//    }
 	
 
 

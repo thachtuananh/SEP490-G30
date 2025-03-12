@@ -3,10 +3,12 @@ package com.example.homecleanapi.services;
 
 
 import com.example.homecleanapi.dtos.BookJobRequest;
+import com.example.homecleanapi.dtos.BookJobRequest.ServiceRequest;
 import com.example.homecleanapi.enums.JobStatus;
 import com.example.homecleanapi.models.*;
 import com.example.homecleanapi.repositories.*;
 
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -53,20 +55,131 @@ public class JobService {
     
 
     // Tạo job mới cho customer
-    public Map<String, Object> bookJob(@PathVariable Long customerId, BookJobRequest request) {
+//    public Map<String, Object> bookJob(@PathVariable Long customerId, BookJobRequest request) {
+//        Map<String, Object> response = new HashMap<>();
+//
+//        System.out.println("customerId = " + customerId);
+//
+//        Optional<Customers> customerOpt = customerRepo.findById(customerId);
+//        if (!customerOpt.isPresent()) {
+//            response.put("message", "Customer not found with customerId: " + customerId);
+//            return response;
+//        }
+//
+//        Customers customer = customerOpt.get();
+//
+//        // Tìm địa chỉ của customer
+//        Optional<CustomerAddresses> customerAddressOpt = customerAddressRepository.findById(request.getCustomerAddressId());
+//        if (!customerAddressOpt.isPresent()) {
+//            response.put("message", "Customer address not found");
+//            return response;
+//        }
+//        CustomerAddresses customerAddress = customerAddressOpt.get();
+//
+//        Job job = new Job();
+//
+//        // Kiểm tra Service
+//        Optional<Services> serviceOpt = serviceRepository.findById(request.getServiceId());
+//        if (!serviceOpt.isPresent()) {
+//            response.put("message", "Service not found");
+//            return response;
+//        }
+//        Services service = serviceOpt.get();
+//
+//        // Kiểm tra Service Detail
+//        Optional<ServiceDetail> serviceDetailOpt = serviceDetailRepository.findById(request.getServiceDetailId());
+//        if (!serviceDetailOpt.isPresent()) {
+//            response.put("message", "Service Detail not found");
+//            return response;
+//        }
+//        ServiceDetail serviceDetail = serviceDetailOpt.get();
+//
+//        // Gán thông tin cho Job
+//        job.setService(service);
+//        job.setServiceDetail(serviceDetail);
+//
+//        // Chuyển jobTime từ String sang LocalDateTime
+//        try {
+//            DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
+//            LocalDateTime jobTime = LocalDateTime.parse(request.getJobTime(), formatter);
+//            job.setScheduledTime(jobTime);
+//        } catch (Exception e) {
+//            response.put("message", "Invalid job time format");
+//            return response;
+//        }
+//
+//        job.setCustomerAddress(customerAddress);
+//        job.setStatus(JobStatus.OPEN);
+//        job.setCustomer(customer);
+//
+//        // Tính toán giá dịch vụ dựa trên giá trong service_detail
+//        double serviceDetailPrice = serviceDetail.getPrice();  // Sử dụng giá dịch vụ từ service_detail
+//        double additionalPrice = serviceDetail.getAdditionalPrice();
+//        double finalPrice = serviceDetailPrice + additionalPrice;  // Bắt đầu với giá dịch vụ từ service_detail và phụ phí
+//
+//        // Kiểm tra xem job có thuộc giờ cao điểm hoặc ngày lễ/cuối tuần không
+//        double peakTimeFee = 0;
+//        double discount = 0;
+//
+//        // Kiểm tra ngày lễ và cuối tuần
+//        DayOfWeek dayOfWeek = job.getScheduledTime().getDayOfWeek();
+//        if (dayOfWeek == DayOfWeek.SATURDAY || dayOfWeek == DayOfWeek.SUNDAY) {
+//            // Thêm phụ phí cho cuối tuần
+//            peakTimeFee = 0.1 * finalPrice;  // 10% phụ phí cho cuối tuần
+//        }
+//
+//        // Kiểm tra xem job có vào khung giờ cao điểm hay không
+//        if (job.getScheduledTime().getHour() >= 18 && job.getScheduledTime().getHour() <= 22) {
+//            // Thêm phụ phí giờ cao điểm
+//            peakTimeFee += 0.2 * finalPrice; // 20% phụ phí giờ cao điểm
+//        }
+//
+//        // Cộng phụ phí vào giá cuối cùng
+//        finalPrice += peakTimeFee;
+//
+//        // Kiểm tra chiết khấu từ dịch vụ (nếu có)
+//        if (serviceDetail.getDiscounts() != null && !serviceDetail.getDiscounts().isEmpty()) {
+//            discount = 0.05 * finalPrice;  // Giảm giá 5% nếu có chiết khấu
+//            finalPrice -= discount;
+//        }
+//
+//        // Gán giá cuối cùng cho Job
+//        job.setTotalPrice(finalPrice);
+//
+//        // Tạo JobDetails mới và liên kết với Job
+//        JobDetails jobDetails = new JobDetails();
+//        jobDetails.setImageUrl(request.getImageUrl());
+//
+//        // Gán Job cho JobDetails trước khi lưu
+//        jobDetails.setJob(job); // Liên kết Job với JobDetails
+//
+//        // Lưu Job vào cơ sở dữ liệu trước
+//        jobRepository.save(job);
+//
+//        // Lưu JobDetails vào cơ sở dữ liệu
+//        jobDetailsRepository.save(jobDetails);
+//
+//        response.put("message", "Job booked successfully");
+//        response.put("jobId", job.getId());
+//        response.put("status", job.getStatus());
+//        response.put("finalPrice", finalPrice);  // Trả về giá cuối cùng
+//
+//        return response;
+//    }
+    
+    
+    public Map<String, Object> bookJob(@PathVariable Long customerId, @RequestBody BookJobRequest request) {
         Map<String, Object> response = new HashMap<>();
 
-        System.out.println("customerId = " + customerId);
-
+        // Kiểm tra khách hàng có tồn tại không
         Optional<Customers> customerOpt = customerRepo.findById(customerId);
         if (!customerOpt.isPresent()) {
             response.put("message", "Customer not found with customerId: " + customerId);
             return response;
         }
-
         Customers customer = customerOpt.get();
 
-        // Tìm địa chỉ của customer
+        // Kiểm tra địa chỉ của customer
         Optional<CustomerAddresses> customerAddressOpt = customerAddressRepository.findById(request.getCustomerAddressId());
         if (!customerAddressOpt.isPresent()) {
             response.put("message", "Customer address not found");
@@ -74,96 +187,101 @@ public class JobService {
         }
         CustomerAddresses customerAddress = customerAddressOpt.get();
 
+        // Tạo Job và gán các thuộc tính cần thiết
         Job job = new Job();
-
-        // Kiểm tra Service
-        Optional<Services> serviceOpt = serviceRepository.findById(request.getServiceId());
-        if (!serviceOpt.isPresent()) {
-            response.put("message", "Service not found");
-            return response;
-        }
-        Services service = serviceOpt.get();
-
-        // Kiểm tra Service Detail
-        Optional<ServiceDetail> serviceDetailOpt = serviceDetailRepository.findById(request.getServiceDetailId());
-        if (!serviceDetailOpt.isPresent()) {
-            response.put("message", "Service Detail not found");
-            return response;
-        }
-        ServiceDetail serviceDetail = serviceDetailOpt.get();
-
-        // Gán thông tin cho Job
-        job.setService(service);
-        job.setServiceDetail(serviceDetail);
+        job.setCustomer(customer);
+        job.setCustomerAddress(customerAddress);
+        job.setStatus(JobStatus.OPEN);
 
         // Chuyển jobTime từ String sang LocalDateTime
         try {
             DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
             LocalDateTime jobTime = LocalDateTime.parse(request.getJobTime(), formatter);
-            job.setScheduledTime(jobTime);
+            job.setScheduledTime(jobTime);  // Gán giá trị cho scheduledTime
         } catch (Exception e) {
             response.put("message", "Invalid job time format");
             return response;
         }
 
-        job.setCustomerAddress(customerAddress);
-        job.setStatus(JobStatus.OPEN);
-        job.setCustomer(customer);
-
-        // Tính toán giá dịch vụ dựa trên giá trong service_detail
-        double serviceDetailPrice = serviceDetail.getPrice();  // Sử dụng giá dịch vụ từ service_detail
-        double additionalPrice = serviceDetail.getAdditionalPrice();
-        double finalPrice = serviceDetailPrice + additionalPrice;  // Bắt đầu với giá dịch vụ từ service_detail và phụ phí
-
-        // Kiểm tra xem job có thuộc giờ cao điểm hoặc ngày lễ/cuối tuần không
-        double peakTimeFee = 0;
-        double discount = 0;
-
-        // Kiểm tra ngày lễ và cuối tuần
-        DayOfWeek dayOfWeek = job.getScheduledTime().getDayOfWeek();
-        if (dayOfWeek == DayOfWeek.SATURDAY || dayOfWeek == DayOfWeek.SUNDAY) {
-            // Thêm phụ phí cho cuối tuần
-            peakTimeFee = 0.1 * finalPrice;  // 10% phụ phí cho cuối tuần
-        }
-
-        // Kiểm tra xem job có vào khung giờ cao điểm hay không
-        if (job.getScheduledTime().getHour() >= 18 && job.getScheduledTime().getHour() <= 22) {
-            // Thêm phụ phí giờ cao điểm
-            peakTimeFee += 0.2 * finalPrice; // 20% phụ phí giờ cao điểm
-        }
-
-        // Cộng phụ phí vào giá cuối cùng
-        finalPrice += peakTimeFee;
-
-        // Kiểm tra chiết khấu từ dịch vụ (nếu có)
-        if (serviceDetail.getDiscounts() != null && !serviceDetail.getDiscounts().isEmpty()) {
-            discount = 0.05 * finalPrice;  // Giảm giá 5% nếu có chiết khấu
-            finalPrice -= discount;
-        }
-
-        // Gán giá cuối cùng cho Job
-        job.setTotalPrice(finalPrice);
-
-        // Tạo JobDetails mới và liên kết với Job
-        JobDetails jobDetails = new JobDetails();
-        jobDetails.setImageUrl(request.getImageUrl());
-
-        // Gán Job cho JobDetails trước khi lưu
-        jobDetails.setJob(job); // Liên kết Job với JobDetails
-
         // Lưu Job vào cơ sở dữ liệu trước
+        job = jobRepository.save(job);
+
+        // Tính tổng giá cho tất cả các dịch vụ
+        double totalPrice = 0;
+
+        // Duyệt qua các dịch vụ mà customer đã chọn
+        for (ServiceRequest serviceRequest : request.getServices()) {
+
+            // Kiểm tra dịch vụ có tồn tại không
+            Optional<Services> serviceOpt = serviceRepository.findById(serviceRequest.getServiceId());
+            if (!serviceOpt.isPresent()) {
+                response.put("message", "Service not found with serviceId: " + serviceRequest.getServiceId());
+                return response;
+            }
+            Services service = serviceOpt.get();
+
+            // Gán service cho job
+            job.setService(service);  // Gán service cho Job
+
+            // Kiểm tra chi tiết dịch vụ có tồn tại không
+            Optional<ServiceDetail> serviceDetailOpt = serviceDetailRepository.findById(serviceRequest.getServiceDetailId());
+            if (!serviceDetailOpt.isPresent()) {
+                response.put("message", "Service Detail not found for serviceId: " + serviceRequest.getServiceDetailId());
+                return response;
+            }
+            ServiceDetail serviceDetail = serviceDetailOpt.get();
+
+            // Gán chi tiết dịch vụ cho công việc
+            job.setServiceDetail(serviceDetail);
+
+            // Tính toán giá cho dịch vụ
+            double serviceDetailPrice = serviceDetail.getPrice();
+            double additionalPrice = serviceDetail.getAdditionalPrice();
+            double finalPrice = serviceDetailPrice + additionalPrice;
+
+            // Tính toán các phụ phí (giờ cao điểm, cuối tuần, chiết khấu...)
+            double peakTimeFee = 0;
+            if (job.getScheduledTime() != null) {
+                // Kiểm tra ngày lễ và cuối tuần
+                if (job.getScheduledTime().getDayOfWeek() == DayOfWeek.SATURDAY || job.getScheduledTime().getDayOfWeek() == DayOfWeek.SUNDAY) {
+                    peakTimeFee = 0.1 * finalPrice; // Phụ phí cuối tuần
+                }
+                // Kiểm tra giờ cao điểm
+                if (job.getScheduledTime().getHour() >= 18 && job.getScheduledTime().getHour() <= 22) {
+                    peakTimeFee += 0.2 * finalPrice; // Phụ phí giờ cao điểm
+                }
+            }
+
+            finalPrice += peakTimeFee;
+
+            // Cộng tổng giá dịch vụ
+            totalPrice += finalPrice;
+
+            // Tạo JobDetails và liên kết với Job đã được lưu
+            JobDetails jobDetails = new JobDetails();
+            jobDetails.setImageUrl(serviceRequest.getImageUrl());
+            jobDetails.setJob(job); // Liên kết với Job đã được lưu
+            jobDetailsRepository.save(jobDetails); // Lưu JobDetails
+        }
+
+        // Cập nhật tổng giá và lưu lại Job
+        job.setTotalPrice(totalPrice);
         jobRepository.save(job);
 
-        // Lưu JobDetails vào cơ sở dữ liệu
-        jobDetailsRepository.save(jobDetails);
-
+        // Trả về thông tin công việc đã tạo
         response.put("message", "Job booked successfully");
         response.put("jobId", job.getId());
         response.put("status", job.getStatus());
-        response.put("finalPrice", finalPrice);  // Trả về giá cuối cùng
+        response.put("totalPrice", totalPrice);
 
         return response;
     }
+
+
+
+
+
+
 
 
 
