@@ -19,7 +19,7 @@ public class RabbitMQConfig {
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.registerModule(new JavaTimeModule()); // Đăng ký module hỗ trợ Java 8 Date/Time
         objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false); // Serialize LocalDateTime thành chuỗi ISO
-        log.info("Jackson2JsonMessageConverter configured with JavaTimeModule");
+//        log.info("Jackson2JsonMessageConverter configured with JavaTimeModule");
         return new Jackson2JsonMessageConverter(objectMapper);
     }
 

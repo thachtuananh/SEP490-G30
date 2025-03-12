@@ -47,12 +47,12 @@ public class ChatController {
 
         // Đẩy tin nhắn vào RabbitMQ
         rabbitTemplate.convertAndSend("chat-messages", message);
-        log.info("Sending to RabbitMQ: ", message);
+//        log.info("Sending to RabbitMQ: ", message);
 
         // Gửi ngay lập tức qua WebSocket tới người nhận
         Integer receiverId = determineReceiverId(message.getConversationId(), message.getSenderId());
         messagingTemplate.convertAndSend("/queue/messages-" + receiverId, message);
-        log.info("Sending to WebSocket receiver: {}", receiverId);
+//        log.info("Sending to WebSocket receiver: {}", receiverId);
     }
 
     private Long getOrCreateConversation(Integer customerId, Integer employeeId) {
@@ -68,7 +68,7 @@ public class ChatController {
         newConversation.setCleanerId(employeeId);
         newConversation = conversationRepository.save(newConversation);
 
-        log.info("New conversation created with ID: {}", newConversation.getId());
+//        log.info("New conversation created with ID: {}", newConversation.getId());
         return newConversation.getId();
     }
 

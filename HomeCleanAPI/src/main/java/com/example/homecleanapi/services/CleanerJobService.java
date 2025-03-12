@@ -1,7 +1,5 @@
 package com.example.homecleanapi.services;
 
-import com.example.homecleanapi.SocketConfig.UserStatusWebSocketHandler;
-
 import com.example.homecleanapi.dtos.BookJobRequest;
 import com.example.homecleanapi.dtos.JobSummaryDTO;
 import com.example.homecleanapi.enums.JobStatus;
@@ -24,6 +22,7 @@ import com.example.homecleanapi.repositories.JobDetailsRepository;
 import com.example.homecleanapi.repositories.JobRepository;
 import com.example.homecleanapi.repositories.ServiceDetailRepository;
 import com.example.homecleanapi.repositories.ServiceRepository;
+import com.example.homecleanapi.utils.UserStatusWebSocketHandler;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;

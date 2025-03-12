@@ -4,6 +4,8 @@ package com.example.homecleanapi.services;
 import com.example.homecleanapi.models.Conversation;
 import com.example.homecleanapi.repositories.ConversationRepository;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -14,7 +16,9 @@ import java.util.Map;
 @Service
 @RequiredArgsConstructor
 public class ConversationService {
-    private final ConversationRepository conversationRepository;
+	
+	@Autowired
+    private ConversationRepository conversationRepository;
 
     public Conversation getOrCreateConversation(Integer customerId, Integer cleanerId) {
         return conversationRepository.findByCustomerIdAndCleanerId(customerId, cleanerId)
