@@ -1,8 +1,11 @@
-import React, { useContext } from "react";
+import React, { useContext, useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { AuthContext } from '../../context/AuthContext';
-import { message } from "antd";
+import { message, Typography, Modal, Checkbox } from "antd";
 import styles from "../../assets/CSS/createjob/JobInformation.module.css";
+import dayjs from "dayjs";
+
+const { Title, Text, Paragraph } = Typography;
 
 const JobInfomation = ({ selectedDate, hour, minute }) => {
     const location = useLocation();
@@ -11,31 +14,103 @@ const JobInfomation = ({ selectedDate, hour, minute }) => {
     const serviceId = state.serviceId;
     const serviceDetailId = state.serviceDetailId;
     const customerAddressId = state.customerAddressId;
+    const [termsAccepted, setTermsAccepted] = useState(false);
+
+    // State để kiểm tra thời gian
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [currentTime, setCurrentTime] = useState(dayjs());
+
     // token
     const { token, customerId } = useContext(AuthContext);
 
+    // Cập nhật thời gian hiện tại mỗi phút
+    useEffect(() => {
+        const timer = setInterval(() => {
+            setCurrentTime(dayjs());
+        }, 60000); // Cập nhật mỗi phút
+
+        return () => clearInterval(timer);
+    }, []);
+
+    const validateJobTime = () => {
+        if (!selectedDate) {
+            message.error("Vui lòng chọn ngày và giờ làm việc!");
+            return false;
+        }
+
+        // Tạo đối tượng dayjs từ thời gian đã chọn
+        const selectedDateTime = dayjs(new Date(
+            selectedDate.getFullYear(),
+            selectedDate.getMonth(),
+            selectedDate.getDate(),
+            hour,
+            minute
+        ));
+
+        // Kiểm tra nếu thời gian đã chọn nằm trong quá khứ
+        if (selectedDateTime.isBefore(currentTime)) {
+            Modal.warning({
+                title: 'Thời gian không hợp lệ',
+                content: 'Thời gian bạn chọn đã là quá khứ. Vui lòng cập nhật thời gian bắt đầu.',
+                okText: 'Đã hiểu'
+            });
+            return false;
+        }
+
+        // Kiểm tra nếu thời gian đã chọn quá gần hiện tại (ít hơn 30 phút)
+        if (selectedDateTime.diff(currentTime, 'minute') < 30) {
+            return new Promise((resolve) => {
+                Modal.confirm({
+                    title: 'Thời gian quá gần',
+                    content: `Thời gian bạn chọn chỉ còn ${selectedDateTime.diff(currentTime, 'minute')} phút nữa. 
+                             Nhân công có thể không kịp nhận việc. Bạn có muốn tiếp tục?`,
+                    okText: 'Tiếp tục',
+                    cancelText: 'Hủy',
+                    onOk: () => resolve(true),
+                    onCancel: () => resolve(false)
+                });
+            });
+        }
+
+        return true;
+    };
+
     const handleCreateJob = async () => {
-        const formattedJobTime = `${selectedDate.getFullYear()}-${(selectedDate.getMonth() + 1)
-            .toString()
-            .padStart(2, '0')}-${selectedDate.getDate().toString().padStart(2, '0')}T${hour
-                .toString()
-                .padStart(2, '0')}:${minute.toString().padStart(2, '0')}:00`;
-
-        const jobData = {
-            serviceId,
-            serviceDetailId,
-            jobTime: formattedJobTime,
-            customerAddressId,
-            imageUrl: "http://example.com/room.jpg",
-        };
-
-        const apiUrl = `http://localhost:8080/api/customer/${customerId}/createjob?customerId=${customerId}`;
+        if (!termsAccepted) {
+            message.error("Vui lòng đồng ý với Điều khoản và dịch vụ để tiếp tục!");
+            return;
+        }
+        setIsSubmitting(true);
 
         try {
-            if (!token) {
-                console.error("Không tìm thấy token. Vui lòng đăng nhập lại.");
+            // Kiểm tra tính hợp lệ của thời gian
+            const isTimeValid = await validateJobTime();
+
+            if (!isTimeValid) {
+                setIsSubmitting(false);
                 return;
             }
+
+            if (!token) {
+                console.error("Không tìm thấy token. Vui lòng đăng nhập lại.");
+                message.error("Vui lòng đăng nhập lại để tiếp tục!");
+                setIsSubmitting(false);
+                return;
+            }
+
+            const formattedJobTime = `${selectedDate.getFullYear()}-${(selectedDate.getMonth() + 1)
+                .toString()
+                .padStart(2, '0')}-${selectedDate.getDate().toString().padStart(2, '0')}T${hour
+                    .toString()
+                    .padStart(2, '0')}:${minute.toString().padStart(2, '0')}:00`;
+
+            const jobData = {
+                serviceId,
+                serviceDetailId,
+                jobTime: formattedJobTime,
+                customerAddressId,
+                imageUrl: "http://example.com/room.jpg",
+            };
 
             const response = await fetch(`http://localhost:8080/api/customer/${customerId}/createjob?customerId=${customerId}`, {
                 method: "POST",
@@ -50,6 +125,7 @@ const JobInfomation = ({ selectedDate, hour, minute }) => {
 
             if (response.ok && responseData.status === "OPEN") {
                 console.log("Job created successfully");
+                message.success("Đăng việc thành công!");
                 navigate('/ordersuccess');
             } else {
                 console.error("Lỗi khi tạo job:", responseData);
@@ -57,56 +133,68 @@ const JobInfomation = ({ selectedDate, hour, minute }) => {
             }
         } catch (error) {
             console.error("Lỗi kết nối API:", error);
+            message.error("Có lỗi xảy ra, vui lòng thử lại sau!");
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
     return (
         <div className={styles.jobInfoContainer}>
-            <h4 className={styles.infoTitle}>Thời gian làm việc</h4>
-            <p className={styles.infoRow}>
-                <span>Ngày làm việc</span>
-                <span>{selectedDate
-                    ? `Ngày ${selectedDate.getDate()} - Tháng ${selectedDate.getMonth() + 1} - Năm ${selectedDate.getFullYear()}`
-                    : "Chưa chọn"}</span>
-            </p>
-            <p className={styles.infoRow}>
-                <span>Thời gian làm việc</span>
-                <span>
+            <Title level={5} className={styles.infoTitle}>Thời gian làm việc</Title>
+            <Paragraph className={styles.infoRow}>
+                <Text>Ngày làm việc</Text>
+                <Text>{selectedDate
+                    ? `${selectedDate.getDate().toString().padStart(2, '0')} - ${(selectedDate.getMonth() + 1).toString().padStart(2, '0')} - ${selectedDate.getFullYear()}`
+                    : "Chưa chọn"}</Text>
+            </Paragraph>
+            <Paragraph className={styles.infoRow}>
+                <Text>Thời gian làm việc</Text>
+                <Text>
                     {selectedDate
-                        ? `${hour}h : ${minute}p`
+                        ? `${hour.toString().padStart(2, '0')} : ${minute.toString().padStart(2, '0')}`
                         : "Chưa chọn"}
-                </span>
-            </p>
-
-            <br />
-            <h4 className={styles.infoTitle}>Chi tiết</h4>
-            <p className={styles.infoRow}>
-                <span>Loại dịch vụ</span>
-                <span>{state?.serviceName}</span>
-            </p>
-            <p className={styles.infoRow}>
-                <span>Địa điểm</span>
-                <span>
+                </Text>
+            </Paragraph>
+            <Title level={5} className={styles.infoTitle}>Chi tiết</Title>
+            <Paragraph className={styles.infoRow}>
+                <Text>Loại dịch vụ</Text>
+                <Text>{state?.serviceName}</Text>
+            </Paragraph>
+            <Paragraph className={styles.infoRow}>
+                <Text>Địa điểm</Text>
+                <Text>
                     {state.address}
-                </span>
-            </p>
-            <p className={styles.infoRow}>
-                <span>Khối lượng công việc</span>
-                <span>
+                </Text>
+            </Paragraph>
+            <Paragraph className={styles.infoRow}>
+                <Text>Khối lượng công việc</Text>
+                <Text>
                     {state?.selectedSize || 0}m² - {state?.maxSize || 0}m²
-                </span>
-            </p>
-            <p className={styles.infoRow}>
-                <span>Số nhân công</span>
-                <span>1 người</span>
-            </p>
+                </Text>
+            </Paragraph>
+            <Paragraph className={styles.infoRow}>
+                <Text>Số nhân công</Text>
+                <Text>1 người</Text>
+            </Paragraph>
             <div className={styles.divider}></div>
 
             <div className={styles.totalContainer}>
-                <span>Tổng thanh toán</span>
-                <h4 className={styles.totalPrice}>
+                <Text>Tổng thanh toán</Text>
+                <Title level={4} className={styles.totalPrice}>
                     {state.price?.toLocaleString() || 0} VNĐ
-                </h4>
+                </Title>
+            </div>
+
+            <div style={{ marginBottom: '16px' }}>
+                <Checkbox
+                    checked={termsAccepted}
+                    onChange={(e) => setTermsAccepted(e.target.checked)}
+                >
+                    <Text style={{ fontSize: '14px' }}>
+                        Tôi đồng ý với <Text strong>Điều khoản và dịch vụ</Text> của HouseClean
+                    </Text>
+                </Checkbox>
             </div>
 
             <div className={styles.actionButtons}>
@@ -118,8 +206,12 @@ const JobInfomation = ({ selectedDate, hour, minute }) => {
                 <div
                     className={styles.submitButton}
                     onClick={handleCreateJob}
+                    style={{
+                        opacity: (isSubmitting || !termsAccepted) ? 0.7 : 1,
+                        cursor: (isSubmitting || !termsAccepted) ? 'not-allowed' : 'pointer'
+                    }}
                 >
-                    Đăng việc
+                    {isSubmitting ? 'Đang xử lý...' : 'Đăng việc'}
                 </div>
             </div>
         </div>

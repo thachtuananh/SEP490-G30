@@ -47,8 +47,8 @@ const JobUpload = () => {
         {
             id: 5,
             icon: donDepSauTiec,
-            title: "Dọn dẹp sau tiệc/tổ chức sự kiện",
-            description: "Mô tả dịch vụ",
+            title: "Dọn dẹp theo Combo",
+            description: "Chọn nhiều dịch vụ cùng 1 lúc",
         },
         {
             id: 6,
@@ -65,7 +65,7 @@ const JobUpload = () => {
         {
             id: 8,
             icon: donDepTheoKy,
-            title: "Dọn dẹp nhà theo định kỳ (Hàng tuần, hàng tháng)",
+            title: "Dọn dẹp nhà theo định kỳ",
             description: "Mô tả dịch vụ",
         },
     ];
@@ -107,51 +107,33 @@ const JobUpload = () => {
         });
     };
 
-    // Handler for direct selection of a single service
-    const handleServiceCardClick = (serviceId) => {
-        navigate("/service-details-combo", {
-            state: {
-                selectedServices: [serviceId],
-                allServices
-            }
-        });
-    };
-
     return (
         <>
             <div className={styles.pageContainer}>
-                <div className={styles.headerContainer}>
-                    <h1 className={styles.header}>Đăng tải việc làm</h1>
-                    <button
-                        className={styles.comboButton}
-                        onClick={showServiceModal}
-                    >
-                        Đăng ký dịch vụ tuỳ chọn +
-                    </button>
-                </div>
+                <h1 className={styles.header}>Đăng tải việc làm</h1>
+
                 <section className={styles.servicesGrid}>
-                    {regularServices.map((service) => (
-                        <div key={service.id} onClick={() => handleServiceCardClick(service.id)}>
-                            <JobUploadCard
-                                id={service.id}
-                                icon={service.icon}
-                                title={service.title}
-                                description={service.description}
-                            />
-                        </div>
+                    {regularServices.map((service, index) => (
+                        <JobUploadCard
+                            key={index}
+                            id={service.id}
+                            icon={service.icon}
+                            title={service.title}
+                            description={service.description}
+                            onComboSelect={showServiceModal}
+                        />
                     ))}
                 </section>
-                <h2 className={styles.sectionTitle}>Dịch Vụ Theo Nhu Cầu</h2>
                 <section className={styles.servicesGrid}>
-                    {specialServices.map((service) => (
-                        <div key={service.id} onClick={() => handleServiceCardClick(service.id)}>
-                            <JobUploadCard
-                                id={service.id}
-                                icon={service.icon}
-                                title={service.title}
-                                description={service.description}
-                            />
-                        </div>
+                    {specialServices.map((service, index) => (
+                        <JobUploadCard
+                            key={index}
+                            id={service.id}
+                            icon={service.icon}
+                            title={service.title}
+                            description={service.description}
+                            onComboSelect={showServiceModal}
+                        />
                     ))}
                 </section>
             </div>

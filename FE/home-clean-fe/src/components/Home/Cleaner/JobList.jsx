@@ -98,7 +98,6 @@ function JobList() {
                     <div className="filter-buttons">
                         <button className="filter-button">Lọc theo</button>
                         <button className="filter-button">Thời gian</button>
-                        <button className="filter-button">Khoảng cách</button>
                         <button className="filter-button">Khoảng giá</button>
                         <button className="search-button">Tìm kiếm</button>
                     </div>

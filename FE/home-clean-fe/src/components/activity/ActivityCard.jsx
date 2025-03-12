@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useContext } from "react";
-import { Modal, List, Button, Table, message } from "antd";
+import { Modal, List, Button, Table, message, Empty, Badge } from "antd";
 import { InfoCleanerCard } from "../activity/InfoCleanerCard";
 import styles from "../activity/ActivityCard.module.css";
 import { FaRegCommentAlt } from "react-icons/fa";
@@ -14,6 +14,7 @@ export const ActivityCard = ({ data, onDelete }) => {
     const [selectedCleaner, setSelectedCleaner] = useState(null);
     const { customerId } = useContext(AuthContext);
     const [selectedJobId, setSelectedJobId] = useState(null);
+    const [applicationsCount, setApplicationsCount] = useState({});
 
     const getStatusColor = (status) => {
         switch (status) {
@@ -48,7 +49,7 @@ export const ActivityCard = ({ data, onDelete }) => {
     const fetchCleaners = async (jobId) => {
         setLoading(true);
         try {
-            const token = localStorage.getItem("token"); // Lấy token từ localStorage
+            const token = localStorage.getItem("token");
             const response = await axios.get(`http://localhost:8080/api/customer/applications/${customerId}/${jobId}`, {
                 headers: {
                     "Authorization": `Bearer ${token}`,
@@ -56,42 +57,107 @@ export const ActivityCard = ({ data, onDelete }) => {
                 },
             });
 
-            const cleaners = response.data || [];
+            const data = response.data;
 
-            setCleanerList(cleaners);
-
-            if (cleaners.length === 0) {
-                message.info("Chưa có Cleaner nào nhận việc");
+            // Check if the response contains an error message
+            if (Array.isArray(data) && data.length === 1 && data[0].message && data[0].message.includes("No applications found")) {
+                // This is the error case, set empty list
+                setCleanerList([]);
+                setApplicationsCount(prev => ({
+                    ...prev,
+                    [jobId]: 0
+                }));
+            } else if (Array.isArray(data)) {
+                // Valid data
+                setCleanerList(data);
+                setApplicationsCount(prev => ({
+                    ...prev,
+                    [jobId]: data.length
+                }));
+            } else {
+                // Handle unexpected response format
+                console.error("Unexpected response format:", data);
+                setCleanerList([]);
+                setApplicationsCount(prev => ({
+                    ...prev,
+                    [jobId]: 0
+                }));
             }
         } catch (error) {
             console.error("Lỗi khi lấy danh sách cleaner:", error);
             message.error("Không thể tải danh sách Cleaner");
+            setCleanerList([]);
+            setApplicationsCount(prev => ({
+                ...prev,
+                [jobId]: 0
+            }));
         }
         setLoading(false);
     };
 
+    // Fetch application counts for all OPEN jobs on component mount
+    useEffect(() => {
+        if (data && data.length > 0) {
+            data.forEach(async (activity) => {
+                if (activity.status === "OPEN") {
+                    try {
+                        const token = localStorage.getItem("token");
+                        const response = await axios.get(`http://localhost:8080/api/customer/applications/${customerId}/${activity.jobId}`, {
+                            headers: {
+                                "Authorization": `Bearer ${token}`,
+                                "Content-Type": "application/json",
+                            },
+                        });
+
+                        const responseData = response.data;
+
+                        // Check if the response is an error message
+                        const count = Array.isArray(responseData) &&
+                            responseData.length === 1 &&
+                            responseData[0].message &&
+                            responseData[0].message.includes("No applications found")
+                            ? 0
+                            : responseData.length;
+
+                        setApplicationsCount(prev => ({
+                            ...prev,
+                            [activity.jobId]: count
+                        }));
+                    } catch (error) {
+                        console.error("Lỗi khi lấy số lượng ứng viên:", error);
+                        setApplicationsCount(prev => ({
+                            ...prev,
+                            [activity.jobId]: 0
+                        }));
+                    }
+                }
+            });
+        }
+    }, [data, customerId]);
 
     //  API DETAILS
     const fetchCleanerDetail = async (cleanerId) => {
         setLoading(true);
         try {
             const token = localStorage.getItem("token");
-            const response = await axios.get(`http://localhost:8080/api/customer/cleaner/${cleanerId}`, {
+            const response = await axios.get(`http://localhost:8080/api/customer/viewdetailcleaner/${cleanerId}`, {
                 headers: {
                     "Authorization": `Bearer ${token}`,
                     "Content-Type": "application/json",
                 },
             });
-            setSelectedCleaner(response.data); // Lưu dữ liệu cleaner vào state
+            setSelectedCleaner(response.data);
         } catch (error) {
             console.error("Lỗi khi lấy thông tin cleaner:", error);
+            message.error("Không thể tải thông tin Cleaner");
+            setSelectedCleaner(null);
         }
         setLoading(false);
     };
 
     const openModal = (jobId) => {
         setIsModalOpen(true);
-        fetchCleaners(jobId); // Gọi API khi mở modal
+        fetchCleaners(jobId);
         setSelectedJobId(jobId);
     };
 
@@ -116,17 +182,17 @@ export const ActivityCard = ({ data, onDelete }) => {
             );
             console.log("✅ Thuê cleaner thành công!", { jobId, cleanerId, customerId });
             message.success("✅ Thuê cleaner thành công!");
+            setIsModalOpen(false);
         } catch (error) {
             console.error("❌ Lỗi khi thuê cleaner:", error);
             message.error("❌ Lỗi khi thuê cleaner");
         }
     };
 
-
     //  API BAT DAU LAM VIEC
     const handleStartJob = async (jobId) => {
         try {
-            const token = localStorage.getItem("token"); // Lấy token từ localStorage
+            const token = localStorage.getItem("token");
             const customerId = localStorage.getItem("customerId");
             await axios.post(
                 `http://localhost:8080/api/customer/job/start/${jobId}/${customerId}`,
@@ -139,7 +205,6 @@ export const ActivityCard = ({ data, onDelete }) => {
                 }
             );
             message.success("✅ Công việc đã bắt đầu!");
-            // Cập nhật trạng thái công việc thành "STARTED"
         } catch (error) {
             console.error("❌ Lỗi khi bắt đầu công việc:", error);
             message.error("❌ Không thể bắt đầu công việc.");
@@ -148,7 +213,7 @@ export const ActivityCard = ({ data, onDelete }) => {
 
     const handleCompleteJob = async (jobId) => {
         try {
-            const token = localStorage.getItem("token"); // Lấy token từ localStorage
+            const token = localStorage.getItem("token");
             await axios.post(
                 `http://localhost:8080/api/customer/job/done/customer/${jobId}`,
                 {},
@@ -165,7 +230,6 @@ export const ActivityCard = ({ data, onDelete }) => {
             message.error("❌ Không thể hoàn thành công việc.");
         }
     };
-
 
     const columns = [
         {
@@ -188,6 +252,7 @@ export const ActivityCard = ({ data, onDelete }) => {
                 <Button
                     type="default"
                     onClick={() => fetchCleanerDetail(record.cleanerId)}
+                    disabled={!record.cleanerId}
                 >
                     Xem
                 </Button>
@@ -202,10 +267,11 @@ export const ActivityCard = ({ data, onDelete }) => {
                         type="primary"
                         style={{ marginRight: 8 }}
                         onClick={() => handleHireCleaner(selectedJobId, record.cleanerId, customerId)}
+                        disabled={!record.cleanerId}
                     >
                         Thuê
                     </Button>
-                    <Button type="danger">Từ chối</Button>
+                    <Button danger>Từ chối</Button>
                 </>
             ),
         }
@@ -219,10 +285,6 @@ export const ActivityCard = ({ data, onDelete }) => {
                         <div className={styles.cardContent}>
                             <div className={styles.header}>
                                 <h3>{activity.serviceName}</h3>
-                                {/* <p className={activity.createdAt === "Vừa xong" ? styles.timeNew : styles.timeOld}>
-                                    {new Date(activity.createdAt).toLocaleDateString("vi-VN")} -
-                                    {new Date(activity.createdAt).toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" })}
-                                </p> */}
                             </div>
 
                             <p><MdCalendarToday className={styles.icon} /> {new Date(activity.scheduledTime).toLocaleDateString("vi-VN")}</p>
@@ -254,14 +316,16 @@ export const ActivityCard = ({ data, onDelete }) => {
                             )}
 
                             {activity.status === "OPEN" && (
-                                <Button type="primary" className={styles.statusButton}
-                                    onClick={() => openModal(activity.jobId)}>
-                                    Xem thông tin Cleaner
-                                </Button>
+                                <Badge count={applicationsCount[activity.jobId] || 0} size="small">
+                                    <Button type="primary" className={styles.statusButton}
+                                        onClick={() => openModal(activity.jobId)}>
+                                        Xem thông tin Cleaner
+                                    </Button>
+                                </Badge>
                             )}
                             {activity.status === "ARRIVED" && (
                                 <Button type="primary" className={styles.statusButton}
-                                    onClick={() => handleStartJob(activity.jobId, selectedCleaner?.cleanerId)}>
+                                    onClick={() => handleStartJob(activity.jobId)}>
                                     Bắt đầu làm việc
                                 </Button>
                             )}
@@ -276,8 +340,6 @@ export const ActivityCard = ({ data, onDelete }) => {
                 ))}
             </div>
 
-
-
             <Modal
                 title="Danh sách Cleaner"
                 open={isModalOpen}
@@ -291,24 +353,31 @@ export const ActivityCard = ({ data, onDelete }) => {
                 {selectedCleaner ? (
                     <>
                         <InfoCleanerCard cleaner={selectedCleaner} />
-                        <Button className="back-btn" onClick={() => setSelectedCleaner(null)}>Quay lại</Button>
+                        <Button onClick={() => setSelectedCleaner(null)}>Quay lại</Button>
                     </>
-                ) : cleanerList.length === 0 && !loading ? (
-                    <div style={{ textAlign: "center", padding: "20px", fontSize: "16px", color: "#888" }}>
-                        Chưa có Cleaner nào nhận việc
-                    </div>
                 ) : (
-                    <Table
-                        dataSource={cleanerList}
-                        columns={columns}
-                        rowKey="cleanerId"
-                        loading={loading}
-                        pagination={{ pageSize: 5 }}
-                    />
+                    loading ? (
+                        <div style={{ textAlign: "center", padding: "40px 0" }}>
+                            {/* You can use Antd's Spin component here if needed */}
+                            Đang tải...
+                        </div>
+                    ) : cleanerList.length === 0 ? (
+                        <Empty
+                            image={Empty.PRESENTED_IMAGE_SIMPLE}
+                            description="Chưa có Cleaner nào nhận việc"
+                        />
+                    ) : (
+                        <Table
+                            dataSource={cleanerList}
+                            columns={columns}
+                            rowKey="cleanerId"
+                            loading={loading}
+                            pagination={{ pageSize: 5 }}
+                            locale={{ emptyText: <Empty description="Chưa có Cleaner nào nhận việc" /> }}
+                        />
+                    )
                 )}
             </Modal>
-
-
         </div>
     );
 };
