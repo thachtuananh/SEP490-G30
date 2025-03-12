@@ -32,10 +32,10 @@ public class NotificationService {
         NotificationDTO userNotification = new NotificationDTO(notification.getUserId(), notification.getMessage(), notification.getType(), LocalDate.now());
 
         // Save to Redis
-        redisTemplate.opsForList().leftPush(key, notification);
+        redisTemplate.opsForList().leftPush(key, userNotification);
 
         // Send to websocket
-        webSocketService.sendNotification(role, userId, notification);
+        webSocketService.sendNotification(role, userId, userNotification);
     }
 
     public List<NotificationDTO> getUnreadNotifications(String role, String userId) {
@@ -44,8 +44,7 @@ public class NotificationService {
                 "notifications:cleaners:" + userId;
 
         List<Object> notifications = redisTemplate.opsForList().range(key, 0, -1);
-        List<NotificationDTO> collect = notifications.stream().map(o -> (NotificationDTO) o).collect(Collectors.toList());
-        return collect;
+        return notifications.stream().map(o -> (NotificationDTO) o).collect(Collectors.toList());
     }
 
     public void sendBulkNotifications(String role, List<Integer> userIds, NotificationContent notifications) {
