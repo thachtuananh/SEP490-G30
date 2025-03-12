@@ -1,4 +1,7 @@
-function ServiceCard({ image, title, description, rating, reviews, price }) {
+import { Link } from "react-router-dom";
+
+function ServiceCard({ id, image, title, description, rating, reviews, serviceId }) {
+
   return (
     <div className="service-card">
       <div className="card-image">
@@ -6,16 +9,26 @@ function ServiceCard({ image, title, description, rating, reviews, price }) {
       </div>
       <div className="card-content">
         <h3 className="service-title">{title}</h3>
-        <p className="service-description">{description}</p>
+        <p className="service-description"
+          style={{
+            height: 72,
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            display: "-webkit-box",
+            WebkitLineClamp: 3,
+            WebkitBoxOrient: "vertical"
+          }}
+        >{description}</p>
         <div className="service-meta">
           <div className="rating">
             <span className="stars">{rating} ★</span>
             <span className="review-count">({reviews})</span>
           </div>
-          <div className="price">{price}đ/h</div>
         </div>
         <div className="card-footer">
-          <button className="hire-btn">Thuê ngay</button>
+          <Link to={`/service/${id}`} state={serviceId} >
+            <button className="hire-btn">Thuê ngay</button>
+          </Link>
           <div className="user-avatars">
             {[1, 2, 3].map((i) => (
               <img

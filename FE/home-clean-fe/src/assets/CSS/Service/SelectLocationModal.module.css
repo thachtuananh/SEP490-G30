@@ -1,0 +1,119 @@
+.overlay {
+    width: 100%;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.5);
+    position: fixed;
+    top: 0;
+    left: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .modal {
+    background-color: white;
+    padding: 15px 20px;
+    border-radius: 4px;
+    width: 45%;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .title {
+    font-size: 18px;
+    font-weight: 500;
+  }
+  
+  .subtitle {
+    color: #475467;
+  }
+  
+  .addButton {
+    color: white;
+    padding: 7px 12px;
+    background-color: #039855;
+    border: none;
+    border-radius: 5px;
+    height: fit-content;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+  }
+  
+  .plus {
+    font-size: 22px;
+  }
+  
+  .addressItem {
+    display: flex;
+    justify-content: space-between;
+  }
+  
+  .addressHeader {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  
+  .name {
+    font-size: 17px;
+    font-weight: 500;
+  }
+  
+  .phone {
+    color: #667085;
+  }
+  
+  .defaultTag {
+    color: #039855;
+    background-color: #ecfdf3;
+    padding: 6px;
+    border-radius: 15px;
+    font-weight: 600;
+    font-size: 14px;
+  }
+  
+  .addressDetail {
+    color: #475467;
+  }
+  
+  .actions {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 10px;
+  }
+  
+  .selectButton {
+    border: 1px solid #d4d4d4;
+    padding: 6px;
+    color: #827f7f;
+    background-color: white;
+    border-radius: 7px;
+    font-weight: 600;
+  }
+  
+  .checkboxWrapper {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-right: 10px;
+    color: #bcbcbc;
+    font-size: 15px;
+  }
+  
+  .divider {
+    width: 100%;
+    height: 1px;
+    background-color: #e4e7ec;
+  }
+  

@@ -1,0 +1,178 @@
+.container {
+  margin: 70px;
+}
+
+.containerbody {
+  width: 100%;
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 12px 0;
+  border: 1px solid rgb(231, 225, 225);
+  border-radius: 12px;
+}
+
+@media (width <=640px) {
+  .container {
+    padding: 12px;
+  }
+}
+
+.titleSection {
+  padding: 24px 24px 0;
+}
+
+.title {
+  color: #101828;
+  margin-bottom: 8px;
+  font-family: Inter, sans-serif;
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.subtitle {
+  color: #475467;
+  font-family: Inter, sans-serif;
+  font-size: 16px;
+  line-height: 24px;
+}
+
+.tabs {
+  gap: 12px;
+  padding: 20px 24px;
+  display: flex;
+  justify-content: center;
+}
+
+.tabactive,
+.tab {
+  cursor: pointer;
+  border: 1px solid #cdcdcd;
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-family: Inter, sans-serif;
+  font-size: 16px;
+  background: none;
+}
+
+.jobCard {
+  border: 1px solid #d4d4d4;
+  border-radius: 12px;
+  margin: 20px 24px;
+  padding: 20px 40px;
+}
+
+@media (width <=640px) {
+  .jobCard {
+    margin: 10px;
+    padding: 15px 20px;
+  }
+}
+
+.jobHeader {
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 40px;
+  display: flex;
+}
+
+.jobTitle {
+  color: #000;
+  font-family: Inter, sans-serif;
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 32px;
+  margin: 0;
+}
+
+.status {
+  color: #53d253;
+  font-family: Inter, sans-serif;
+  font-size: 12px;
+}
+
+.jobDetails {
+  justify-content: space-between;
+  margin-bottom: 40px;
+  display: flex;
+}
+
+@media (width <=640px) {
+  .jobDetails {
+    flex-direction: column;
+    gap: 20px;
+  }
+}
+
+.detailItem {
+  align-items: flex-start;
+  gap: 8px;
+  display: flex;
+}
+
+.detailContent {
+  flex-direction: column;
+  gap: 8px;
+  display: flex;
+}
+
+.detailLabel {
+  color: #aaa;
+  font-family: Inter, sans-serif;
+  font-size: 14px;
+}
+
+.detailValue {
+  color: #000;
+  font-family: Inter, sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.actionButtons {
+  justify-content: flex-end;
+  gap: 12px;
+  display: flex;
+}
+
+@media (width <=640px) {
+  .actionButtons {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+.cancelBtn {
+  cursor: pointer;
+  color: #29322e;
+  background-color: #ccc;
+  border: none;
+  border-radius: 12px;
+  min-width: 133px;
+  padding: 12px;
+  font-family: Inter, sans-serif;
+  font-size: 16px;
+}
+
+@media (width <=640px) {
+  .cancelBtn {
+    width: 100%;
+  }
+}
+
+.completeBtn {
+  cursor: pointer;
+  color: #fff;
+  background-color: #aaa;
+  border: none;
+  border-radius: 12px;
+  min-width: 246px;
+  padding: 12px;
+  font-family: Inter, sans-serif;
+  font-size: 16px;
+}
+
+@media (width <=640px) {
+  .completeBtn {
+    width: 100%;
+  }
+}

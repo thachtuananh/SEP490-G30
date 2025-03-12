@@ -1,0 +1,123 @@
+.container {
+    padding: 15px;
+    border: 1px solid rgb(225, 225, 225);
+    border-radius: 5px;
+    margin-top: 15px;
+}
+
+.card {
+    max-width: 700px;
+    margin: 20px auto;
+    border-radius: 10px;
+}
+
+.weekNavigation {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.selectedDate {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.dayList {
+    display: flex;
+    gap: 10px;
+}
+
+.dayButton {
+    width: 80px;
+    height: 60px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
+    background-color: white;
+    color: black;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+}
+
+.dayButton.selected {
+    background-color: green;
+    color: white;
+    border-color: green;
+}
+
+.timeSelection {
+    padding-top: 20px;
+    padding-bottom: 20px;
+    position: relative;
+}
+
+.timeInputGroup {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    position: absolute;
+    top: 30px;
+    right: 10px;
+}
+
+.timeInput {
+    position: relative;
+}
+
+.timeInput input {
+    width: 50px;
+    height: 30px;
+    text-align: center;
+    font-weight: bold;
+    border-radius: 5px;
+}
+
+.timeInput span {
+    position: absolute;
+    right: 10px;
+    top: 2.3px;
+    font-weight: bold;
+}
+
+.timeSeparator {
+    font-weight: bold;
+}
+
+.phoneSection {
+    position: relative;
+}
+
+.phoneContainer {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    position: absolute;
+    right: 10px;
+    top: 10px;
+    height: 40px;
+}
+
+.phonePrefix {
+    color: rgb(58, 173, 226);
+}
+
+.divider {
+    height: 30px;
+    width: 2px;
+    background: gray;
+}
+
+.changeButton {
+    height: 30px;
+    width: 80px;
+    background: green;
+    color: white;
+    text-align: center;
+    align-content: center;
+    border-radius: 5px;
+    cursor: pointer;
+}

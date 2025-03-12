@@ -1,6 +1,6 @@
-.container {
+/* .container {
     position: relative;
-}
+} */
 
 
 .card {
@@ -8,6 +8,7 @@
     border-radius: 10px;
     padding: 20px;
     margin-bottom: 15px;
+    position: relative;
 }
 
 .cardContent {
@@ -109,6 +110,7 @@ h3 {
 .reviewButton:hover {
     background: #027a44;
     transform: scale(1.05);
+    transition-duration: 0.5s;
 }
 
 .reviewIcon {
@@ -119,17 +121,19 @@ h3 {
     color: white;
     background: #949494;
     padding: 10px;
-    border-radius: 15px;
+    border-radius: 8px;
     position: absolute;
     top: 0;
     right: 0;
     cursor: pointer;
+    transition-duration: 0.5s;
 }
 
-/* .viewButton:hover {
+.viewButton:hover {
     background: rgb(100, 95, 95);
     transform: scale(1.05);
-} */
+    transition-duration: 0.5s;
+}
 
 .bottomDivider {
     height: 1px;
@@ -141,33 +145,29 @@ h3 {
     color: rgb(180, 179, 179);
 }
 
-.overlay {
-    top: 0;
-    left: 0;
-    width: 1100px;
-    box-shadow: -2px 0px 8px rgb(60, 60, 60), 2px 8px 8px rgb(60, 60, 60);
-    border-radius: 10px;
-    position: absolute;
-    transform: translate(-60px, -50px);
-}
-
-/* .overlay {
-    top: 100px;
-    left: 21.5vw;
+.popup {
+    top: 50%;
+    left: 50%;
     width: 1100px;
     box-shadow: -2px 0px 8px rgb(60, 60, 60), 2px 8px 8px rgb(60, 60, 60);
     border-radius: 10px;
     position: fixed;
-} */
+    transform: translate(-50%, -50%);
+    z-index: 9999;
+
+}
+
 
 .exitButton {
     cursor: pointer;
     position: absolute;
     bottom: -50px;
     left: 500px;
+    color: white;
+    font-weight: bold;
 }
 
-.overlayContainer {
+.overlay {
     position: fixed;
     width: 100vw;
     height: 100%;
@@ -235,7 +235,7 @@ h3 {
     }
 
 
-    .overlay {
+    .popup {
         width: 100%;
         left: 0;
         top: 0;

@@ -1,7 +1,7 @@
 import React from "react"
 import { useLocation } from "react-router-dom"
-import Navbar from "../components/Navbar"
-import Footer from "../components/Footer"
+import Navbar from "../components/Home/Owner/Navbar"
+import Footer from "../components/Home/Owner/Footer"
 import Routers from "../routers/Routers"
 
 const Layout = () => {
@@ -16,8 +16,12 @@ const Layout = () => {
         "/register/cleaner",
         "/login",
         "/login/user",
-        "/login/cleaner"
-    ].includes(location.pathname)
+        "/login/cleaner",
+        "/homeclean",
+        "/",
+        "/infomationcleaner",
+
+    ].includes(location.pathname) || location.pathname.startsWith("/workdetail/")
 
     return (
         <>

@@ -5,12 +5,16 @@ import com.example.homecleanapi.models.Employee;
 import com.example.homecleanapi.models.EmployeeLocations;
 import com.example.homecleanapi.repositories.EmployeeAddressRepository;
 import com.example.homecleanapi.repositories.EmployeeRepository;
+import com.example.homecleanapi.utils.ConvertAddressToLatLong;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.PathVariable;
 
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,12 +28,15 @@ public class EmployeeService {
 
     private EmployeeRepository employeeRepository;
 
-    public EmployeeService(EmployeeAddressRepository employeeAddressRepository, EmployeeRepository employeeRepository) {
+    private ConvertAddressToLatLong  convertAddressToLatLong;
+
+    public EmployeeService(EmployeeAddressRepository employeeAddressRepository, EmployeeRepository employeeRepository, ConvertAddressToLatLong convertAddressToLatLong) {
         this.employeeAddressRepository = employeeAddressRepository;
         this.employeeRepository = employeeRepository;
+        this.convertAddressToLatLong = convertAddressToLatLong;
     }
 
-    public ResponseEntity<Map<String, Object>> employeeCreateAddress(EmployeeLocationsDTO request, @PathVariable int employeeId) {
+    public ResponseEntity<Map<String, Object>> employeeCreateAddress(EmployeeLocationsDTO request, @PathVariable int employeeId) throws IOException {
         Map<String, Object> response = new HashMap<>();
 
         Employee employee = employeeRepository.findById(employeeId).orElseThrow(() -> new RuntimeException("Employee not found"));
@@ -43,19 +50,30 @@ public class EmployeeService {
         EmployeeLocations newLocation = new EmployeeLocations();
         newLocation.setEmployee(employee);
         newLocation.setAddress(request.getAddress());
-        newLocation.setLatitude(request.getLatitude());
-        newLocation.setLongitude(request.getLongitude());
+        String data = convertAddressToLatLong.convertAddressToLatLong(request.getAddress());
+        JSONObject jsonObject = new JSONObject(data);
 
+        JSONArray resultsArray = jsonObject.getJSONArray("results");
+        if (!resultsArray.isEmpty()) {
+            JSONObject firstResult = resultsArray.getJSONObject(0);
+            JSONObject geometry = firstResult.getJSONObject("geometry");
+            JSONObject location = geometry.getJSONObject("location");
+            double lat = location.getDouble("lat");
+            double lng = location.getDouble("lng");
+            newLocation.setLatitude(lat);
+            newLocation.setLongitude(lng);
+        } else {
+            System.out.println("Không tìm thấy kết quả trong JSON!");
+        }
         // Nếu chưa có địa chỉ nào, set is_current = true, ngược lại set false
         newLocation.setIs_current(employeeLocations.isEmpty());
 
         employeeAddressRepository.save(newLocation);
-
         response.put("information", newLocation);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    public ResponseEntity<Map<String, Object>> updateEmployeeAddress(EmployeeLocationsDTO request, @PathVariable int employeeId) {
+    public ResponseEntity<Map<String, Object>> updateEmployeeAddress(EmployeeLocationsDTO request, @PathVariable int employeeId) throws IOException {
         Map<String, Object> response = new HashMap<>();
 
         // Tìm employee từ database theo ID
@@ -75,8 +93,21 @@ public class EmployeeService {
 
         // Cập nhật các trường thông tin theo input từ request (JSON)
         existingLocation.setAddress(request.getAddress());
-        existingLocation.setLatitude(request.getLatitude());
-        existingLocation.setLongitude(request.getLongitude());
+        String data = convertAddressToLatLong.convertAddressToLatLong(request.getAddress());
+        JSONObject jsonObject = new JSONObject(data);
+
+        JSONArray resultsArray = jsonObject.getJSONArray("results");
+        if (!resultsArray.isEmpty()) {
+            JSONObject firstResult = resultsArray.getJSONObject(0);
+            JSONObject geometry = firstResult.getJSONObject("geometry");
+            JSONObject location = geometry.getJSONObject("location");
+            double lat = location.getDouble("lat");
+            double lng = location.getDouble("lng");
+            existingLocation.setLatitude(lat);
+            existingLocation.setLongitude(lng);
+        } else {
+            System.out.println("Không tìm thấy kết quả trong JSON!");
+        }
         existingLocation.setIs_current(false); // Đánh dấu địa chỉ này là hiện tại
 
         // Lưu địa chỉ đã được cập nhật

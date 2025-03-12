@@ -39,13 +39,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         String token = authHeader.substring(7);
         String phone = jwtUtils.getAllClaimsFromToken(token).get("phone").toString();
+        String role = jwtUtils.getAllClaimsFromToken(token).get("role").toString();
         System.out.println("phone = " + phone);
+        System.out.println("role = " + role);
 
         if (phone != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            UserDetails userDetails;
-            if (phone.startsWith("C")) {
+            UserDetails userDetails = null;
+
+            if ("Customer".equals(role)) {
                 userDetails = customerUserDetailsService.loadUserByUsername(phone);
-            } else {
+            } else if ("Employee".equals(role)) {
                 userDetails = employeeUserDetailsService.loadUserByUsername(phone);
             }
 

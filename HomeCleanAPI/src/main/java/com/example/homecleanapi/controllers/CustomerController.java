@@ -9,6 +9,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.Map;
 
 
@@ -44,23 +45,23 @@ public class CustomerController {
     }
 
     @PutMapping(value = "/{customer_id}/profile",  produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Map<String, Object>> updateProfile(@RequestBody CustomerProfileRequest request, @RequestParam int customer_id) {
+    public ResponseEntity<Map<String, Object>> updateProfile(@RequestBody CustomerProfileRequest request, @PathVariable int customer_id) {
 
         return customerService.updateProfile(customer_id, request);
     }
 
-    @GetMapping(value = "/profile", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/{customer_id}/profile", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Map<String, Object>> getProfile(@PathVariable int customer_id) {
         return customerService.getProfile(customer_id);
     }
 
     @PostMapping(value = "/{customer_id}/create-address",  produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Map<String, Object>> createAddress(@RequestBody CustomerAddressesDTO request, @RequestParam int customer_id) {
+    public ResponseEntity<Map<String, Object>> createAddress(@RequestBody CustomerAddressesDTO request, @PathVariable int customer_id) throws IOException {
         return customerService.addAddress(request, customer_id);
     }
 
     @PutMapping(value = "/{customer_id}/update-address", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Map<String, Object>> updateEmployeeAddress(@RequestBody CustomerAddressesDTO request, @RequestParam int employeeId) {
+    public ResponseEntity<Map<String, Object>> updateEmployeeAddress(@RequestBody CustomerAddressesDTO request, @PathVariable int employeeId) throws IOException {
         // Gọi service để xử lý update địa chỉ
         return customerService.updateCustomerAddress(request, employeeId);
     }
