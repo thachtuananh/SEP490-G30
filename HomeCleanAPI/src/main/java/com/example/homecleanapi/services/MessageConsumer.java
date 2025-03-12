@@ -2,6 +2,7 @@ package com.example.homecleanapi.services;
 
 import com.example.homecleanapi.dtos.ChatMessage;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -9,7 +10,7 @@ import org.springframework.stereotype.Service;
 public class MessageConsumer {
     private final RedisTemplate<String, ChatMessage> redisTemplate;
 
-    public MessageConsumer(RedisTemplate<String, ChatMessage> redisTemplate) {
+    public MessageConsumer(@Qualifier("chatMessageRedisTemplate") RedisTemplate<String, ChatMessage> redisTemplate) {
         this.redisTemplate = redisTemplate;
     }
 

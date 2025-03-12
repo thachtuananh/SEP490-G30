@@ -4,6 +4,7 @@ import com.example.homecleanapi.dtos.JobSummaryDTO;
 import com.example.homecleanapi.services.CleanerJobService;
 import com.example.homecleanapi.services.JobService;
 import com.example.homecleanapi.utils.JwtUtils;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
 
+@Tag(name = "Cleaner Job API")
 @RestController
 @RequestMapping("/api/cleaner")
 public class CleanerJobController {
