@@ -6,6 +6,9 @@ import com.example.homecleanapi.services.CleanerJobService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
+import com.example.homecleanapi.services.JobService;
+import com.example.homecleanapi.utils.JwtUtils;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,8 +17,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
 
+@Tag(name = "Cleaner Job API")
 @RestController
-@Tag(name = "Employee API")
 @SecurityRequirement(name = "BearerAuth")
 @RequestMapping("/api/cleaner")
 public class CleanerJobController {
@@ -62,7 +65,7 @@ public class CleanerJobController {
         Map<String, Object> response = cleanerJobService.updateJobStatusToCompleted(jobId);
         return ResponseEntity.ok(response);
     }
-    
+
     @GetMapping("/{cleanerId}/listjobsapply")
     public ResponseEntity<List<Map<String, Object>>> getAppliedJobs(@PathVariable("cleanerId") Long cleanerId) {
         List<Map<String, Object>> appliedJobs = cleanerJobService.getAppliedJobsForCleaner(cleanerId);
@@ -71,7 +74,7 @@ public class CleanerJobController {
         }
         return ResponseEntity.ok(appliedJobs);
     }
-    // LUỒNG 2 
+    // LUỒNG 2
     
     @GetMapping(value = "/{cleanerId}/jobs")
     public ResponseEntity<List<Map<String, Object>>> getJobsBookedForCleaner(@RequestParam Long cleanerId) {
@@ -81,15 +84,15 @@ public class CleanerJobController {
         }
         return ResponseEntity.ok(jobs);
     }
-    
+
  // Cleaner chấp nhận hoặc từ chối công việc mà customer đã đặt cho mình
     @PutMapping("/job/{jobId}/accept-reject")
     public ResponseEntity<Map<String, Object>> acceptOrRejectJob(
-            @PathVariable("jobId") Long jobId, 
+            @PathVariable("jobId") Long jobId,
             @RequestParam("action") String action) {
-        
+
         Map<String, Object> response = cleanerJobService.acceptOrRejectJob(jobId, action);
-        
+
         return ResponseEntity.ok(response);
     }
 
