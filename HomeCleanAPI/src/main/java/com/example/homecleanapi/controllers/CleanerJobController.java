@@ -73,6 +73,7 @@ public class CleanerJobController {
         return ResponseEntity.ok(appliedJobs);
     }
     
+    // danh sách các job đã hoàn thành 
     @GetMapping(value = "/{cleanerId}/jobs/done")
     public ResponseEntity<List<Map<String, Object>>> getCompletedJobs(@PathVariable Long cleanerId) {
         List<Map<String, Object>> completedJobs = cleanerJobService.getCompletedJobs(cleanerId);
@@ -83,6 +84,27 @@ public class CleanerJobController {
 
         return ResponseEntity.ok(completedJobs);
     }
+    
+    // ds jobs đang làm
+    @GetMapping("/{cleanerId}/jobs/doing")
+    public ResponseEntity<List<Map<String, Object>>> getInProgressJobs(@PathVariable Long cleanerId) {
+        List<Map<String, Object>> inProgressJobs = cleanerJobService.getInProgressJobs(cleanerId);
+        if (inProgressJobs.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(List.of(Map.of("message", "No in-progress jobs")));
+        }
+        return ResponseEntity.ok(inProgressJobs);
+    }
+
+    // ds job mà cleaner đã apply
+    @GetMapping("/{cleanerId}/jobs/applied")
+    public ResponseEntity<List<Map<String, Object>>> getAppliedJobs2(@PathVariable Long cleanerId) {
+        List<Map<String, Object>> appliedJobs = cleanerJobService.getAppliedJobsForCleaner2(cleanerId);
+        if (appliedJobs.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(List.of(Map.of("message", "No applied jobs")));
+        }
+        return ResponseEntity.ok(appliedJobs);
+    }
+
 
     
 
