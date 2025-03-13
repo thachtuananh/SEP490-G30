@@ -191,21 +191,40 @@ public class JobService {
         }
         CustomerAddresses customerAddress = customerAddressOpt.get();
 
+        // Chuyển jobTime từ String sang LocalDateTime
+        LocalDateTime jobTime = null;
+        try {
+            DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
+            jobTime = LocalDateTime.parse(request.getJobTime(), formatter);
+        } catch (Exception e) {
+            response.put("message", "Invalid job time format");
+            return response;
+        }
+
+        // Kiểm tra trùng lịch và địa chỉ
+        List<Job> existingJobs = jobRepository.findByScheduledTimeAndCustomerAddress(jobTime, customerAddress);
+        if (!existingJobs.isEmpty()) {
+            // Kiểm tra trùng dịch vụ
+            for (Job existingJob : existingJobs) {
+                // Kiểm tra xem có dịch vụ và service detail trùng không
+                for (JobServiceDetail jobServiceDetail : existingJob.getJobServiceDetails()) {
+                    for (ServiceRequest serviceRequest : request.getServices()) {
+                        if (jobServiceDetail.getService().getId().equals(serviceRequest.getServiceId()) &&
+                                jobServiceDetail.getServiceDetail().getId().equals(serviceRequest.getServiceDetailId())) {
+                            response.put("message", "There is already a job booked at this time, address, and service.");
+                            return response;
+                        }
+                    }
+                }
+            }
+        }
+
         // Tạo Job và gán các thuộc tính cần thiết
         Job job = new Job();
         job.setCustomer(customer);
         job.setCustomerAddress(customerAddress);
         job.setStatus(JobStatus.OPEN);
-
-        // Chuyển jobTime từ String sang LocalDateTime
-        try {
-            DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
-            LocalDateTime jobTime = LocalDateTime.parse(request.getJobTime(), formatter);
-            job.setScheduledTime(jobTime);  // Gán giá trị cho scheduledTime
-        } catch (Exception e) {
-            response.put("message", "Invalid job time format");
-            return response;
-        }
+        job.setScheduledTime(jobTime);
 
         // Lưu Job vào cơ sở dữ liệu trước
         job = jobRepository.save(job);
@@ -243,11 +262,9 @@ public class JobService {
             // Tính toán các phụ phí (giờ cao điểm, cuối tuần, chiết khấu...)
             double peakTimeFee = 0;
             if (job.getScheduledTime() != null) {
-                // Kiểm tra ngày lễ và cuối tuần
                 if (job.getScheduledTime().getDayOfWeek() == DayOfWeek.SATURDAY || job.getScheduledTime().getDayOfWeek() == DayOfWeek.SUNDAY) {
                     peakTimeFee = 0.1 * finalPrice; // Phụ phí cuối tuần
                 }
-                // Kiểm tra giờ cao điểm
                 if (job.getScheduledTime().getHour() >= 18 && job.getScheduledTime().getHour() <= 22) {
                     peakTimeFee += 0.2 * finalPrice; // Phụ phí giờ cao điểm
                 }
@@ -283,6 +300,8 @@ public class JobService {
 
         return response;
     }
+
+
 
 
 
