@@ -4,9 +4,9 @@ import java.util.List;
 
 public class BookJobRequest {
 
-    private Integer customerAddressId;  // ID địa chỉ của khách hàng
-    private String jobTime;  // Thời gian công việc
-    private List<ServiceRequest> services;  // Danh sách các dịch vụ mà khách hàng muốn chọn
+    private Integer customerAddressId;  
+    private String jobTime;  
+    private List<ServiceRequest> services;  
 
     // Getter và Setter cho customerAddressId
     public Integer getCustomerAddressId() {
