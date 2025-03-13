@@ -15,7 +15,7 @@ const services = [
     image: iconKhach,
     title: "Dọn phòng khách",
     description: "Lau sàn, hút bụi, lau bàn ghế, cửa kính",
-    count: "1234 việc làm",
+    count: "2 việc làm",
 
   },
   {
@@ -23,28 +23,28 @@ const services = [
     image: iconNgu,
     title: "Dọn phòng ngủ",
     description: "Gấp chăn gối, lau bụi, hút bụi, lau sàn",
-    count: "1234 việc làm",
+    count: "1 việc làm",
   },
   {
     id: 3,
     image: iconBep,
     title: "Dọn bếp",
     description: "Gấp chăn gối, lau bụi, hút bụi, lau sàn",
-    count: "1234 việc làm",
+    count: "3 việc làm",
   },
   {
     id: 4,
     image: iconToilet,
     title: "Dọn nhà vệ sinh",
     description: "Gấp chăn gối, lau bụi, hút bụi, lau sàn",
-    count: "1234 việc làm",
+    count: "2 việc làm",
   },
   {
     id: 5,
     image: iconSk,
     title: "Dọn dẹp sau tiệc/tổ chức sự kiện",
     description: "Lau sàn, hút bụi, lau bàn ghế, cửa kính",
-    count: "1234 việc làm",
+    count: "0 việc làm",
 
   },
   {
@@ -52,7 +52,7 @@ const services = [
     image: iconSua,
     title: "Dọn dẹp nhà mới xây, sau sửa chữa",
     description: "Lau sàn, hút bụi, lau bàn ghế, cửa kính",
-    count: "1234 việc làm",
+    count: "2 việc làm",
 
   },
   {
@@ -60,7 +60,7 @@ const services = [
     image: iconVanPhong,
     title: "Dọn dẹp văn phòng, cửa hàng",
     description: "Lau sàn, hút bụi, lau bàn ghế, cửa kính",
-    count: "1234 việc làm",
+    count: "4 việc làm",
 
   },
   {
@@ -68,7 +68,7 @@ const services = [
     image: iconDinhKy,
     title: "Dọn dẹp nhà theo định kỳ (Hàng tuần, hàng tháng)",
     description: "Lau sàn, hút bụi, lau bàn ghế, cửa kính",
-    count: "1234 việc làm",
+    count: "3 việc làm",
 
   },
 ];

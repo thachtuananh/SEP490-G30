@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { AuthContext } from "../../../context/AuthContext";
 import { Link } from "react-router-dom";
 import infoImg from "../../../assets/imgProfile/info.svg";
@@ -11,15 +11,26 @@ import "../owner/profile.css";
 
 const MenuInfomation = ({ selectedMenu, setSelectedMenu }) => {
   const { cleaner } = useContext(AuthContext); // Lấy thông tin người dùng
+  const [cleanerImg, setImg] = useState(cleaner?.cleanerImg || "");
 
   const handleClick = (menuName) => {
     setSelectedMenu(menuName);
   };
-
+  useEffect(() => {
+    if (cleaner) {
+      if (cleaner.profile_image) {
+        setImg(`data:image/png;base64,${cleaner.profile_image}`);
+      } else {
+        setImg(profileImg); // Ảnh mặc định nếu không có ảnh từ API
+      }
+    } else {
+      setImg(profileImg);
+    }
+  }, [cleaner]);
   return (
     <div className="menu-wrapper">
       <div className="menu-profile">
-        <img className="profile-avatar" src={profileImg} alt="icon" />
+        <img className="profile-avatar" src={cleanerImg} alt="icon" />
         <div className="profile-details">
           <p className="profile-name"><strong>{cleaner?.cleanerName || "Người dùng"}</strong></p>
           <p className="profile-email">{cleaner?.cleanerEmail || "Chưa có email"}</p>

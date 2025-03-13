@@ -1,12 +1,81 @@
-import React from "react";
+import React, { useState } from "react";
+import { Modal, List, Button, Table, message } from "antd";
 import styles from "./JobList.module.css";
 
-const JobCard = () => {
+const getStatusColor = (status) => {
+  const normalizedStatus = status.toUpperCase();
+  switch (normalizedStatus) {
+    case "OPEN": return "#3498db";
+    case "PENDING_APPROVAL": return "#f1c40f";
+    case "IN_PROGRESS": return "#e67e22";
+    case "ARRIVED": return "#9b59b6";
+    case "STARTED": return "#2980b9";
+    case "COMPLETED": return "#2ecc71";
+    case "CANCELLED": return "#e74c3c";
+    case "DONE": return "#27ae60";
+    case "BOOKED": return "#8e44ad";
+    default: return "#bdc3c7";
+  }
+};
+const getStatusLabel = (status) => {
+  const statusMap = {
+    OPEN: "Đang mở",
+    PENDING_APPROVAL: "Chờ phê duyệt",
+    IN_PROGRESS: "Đang đến ",
+    ARRIVED: "Đã đến nơi",
+    STARTED: "Bắt đầu làm việc",
+    COMPLETED: "Đã hoàn thành công việc",
+    CANCELLED: "Đã hủy",
+    DONE: "Hoàn tất công việc",
+    BOOKED: "Đã đặt lịch",
+  };
+  return statusMap[status.toUpperCase()] || "Không xác định";
+};
+
+const JobCard = ({ job }) => {
+
+  const [currentStatus, setCurrentStatus] = useState(job.status.toUpperCase());
+
+  const handleStatusUpdate = (newStatus) => {
+    Modal.confirm({
+      title: "Xác nhận",
+      content: `Bạn có chắc muốn cập nhật trạng thái thành '${getStatusLabel(newStatus)}' không?`,
+      onOk: () => {
+        const token = localStorage.getItem("token");
+        fetch(`http://localhost:8080/api/cleaner/job/${newStatus}/${job.jobId}`, {
+          method: "POST",
+          headers: {
+            "Accept": "application/json",
+            "Authorization": `Bearer ${token}`,
+          },
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            console.log("Status updated:", data);
+            setCurrentStatus(newStatus.toUpperCase());
+          })
+          .catch((error) => console.error("Error updating status:", error));
+      },
+    });
+  };
+
+
+
+
   return (
     <article className={styles.jobCard}>
       <header className={styles.jobHeader}>
-        <h2 className={styles.jobTitle}>Dọn phòng khách</h2>
-        <span className={styles.status}>Đang hoạt động</span>
+        <h2 className={styles.jobTitle}>
+          {job.services
+            ? (Array.isArray(job.services)
+              ? job.services.map(service => service.serviceName).join(", ")
+              : job.services.serviceName || "Unnamed Service")
+            : "Unnamed Service"}
+        </h2>
+        <span className={styles.status} style={{ color: getStatusColor(currentStatus) }}>
+          {getStatusLabel(currentStatus)}
+        </span>
+
       </header>
 
       <section className={styles.jobDetails}>
@@ -37,7 +106,7 @@ const JobCard = () => {
           </div>
           <div className={styles.detailContent}>
             <span className={styles.detailLabel}>Thù lao</span>
-            <strong className={styles.detailValue}>900.000</strong>
+            <strong className={styles.detailValue}>{job.totalPrice.toLocaleString()} VND</strong>
           </div>
         </div>
 
@@ -61,7 +130,7 @@ const JobCard = () => {
           </div>
           <div className={styles.detailContent}>
             <span className={styles.detailLabel}>Địa điểm</span>
-            <strong className={styles.detailValue}>Hà Nội</strong>
+            <strong className={styles.detailValue}>{job.customerAddress}</strong>
           </div>
         </div>
 
@@ -81,14 +150,31 @@ const JobCard = () => {
           </div>
           <div className={styles.detailContent}>
             <span className={styles.detailLabel}>Thời gian</span>
-            <strong className={styles.detailValue}>13h-15h</strong>
+            <strong className={styles.detailValue}>
+              {new Date(job.scheduledTime).toLocaleString("vi-VN", {
+                hour: "2-digit",
+                minute: "2-digit",
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric",
+              })}
+            </strong>
           </div>
         </div>
       </section>
 
       <footer className={styles.actionButtons}>
-        <button className={styles.cancelBtn}>Hủy công việc</button>
-        <button className={styles.completeBtn}>Hoàn thành công việc</button>
+
+        {job.status === "OPEN" && (
+          <Button type="primary">Hủy công việc</Button>
+        )}
+        {job.status === "IN_PROGRESS" && (
+          <Button type="primary" onClick={() => handleStatusUpdate("arrived")}>Đã tới</Button>
+        )}
+        {job.status === "STARTED" && (
+          <Button type="primary" onClick={() => handleStatusUpdate("completed")}>Hoàn thành công việc</Button>
+        )}
+
       </footer>
     </article>
   );

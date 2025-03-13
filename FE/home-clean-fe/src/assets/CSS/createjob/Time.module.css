@@ -6,8 +6,8 @@
 }
 
 .card {
-    max-width: 700px;
-    margin: 20px auto;
+    width: 100%;
+    /* margin: 20px auto; */
     border-radius: 10px;
 }
 
@@ -17,20 +17,33 @@
     margin-bottom: 10px;
 }
 
+.navButton {
+    white-space: nowrap;
+}
+
 .selectedDate {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 15px;
+    /* margin-bottom: 15px; */
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.dateDisplay {
+    text-align: right;
 }
 
 .dayList {
     display: flex;
     gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
 }
 
 .dayButton {
-    width: 80px;
+    width: calc(14.28% - 10px);
+    min-width: 60px;
     height: 60px;
     display: flex;
     flex-direction: column;
@@ -40,7 +53,8 @@
     background-color: white;
     color: black;
     border-radius: 5px;
-    border: 1px solid #ddd;
+    border: 2px solid #D4D4D4;
+    padding: 5px;
 }
 
 .dayButton.selected {
@@ -51,36 +65,45 @@
 
 .timeSelection {
     padding-top: 20px;
-    padding-bottom: 20px;
+    /* padding-bottom: 20px; */
     position: relative;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.timeHeader {
+    margin-bottom: 10px;
 }
 
 .timeInputGroup {
     display: flex;
     align-items: center;
     gap: 5px;
-    position: absolute;
-    top: 30px;
-    right: 10px;
 }
 
 .timeInput {
     position: relative;
+    display: flex;
+    align-items: center;
 }
 
 .timeInput input {
-    width: 50px;
-    height: 30px;
+    width: 60px;
+    height: 35px;
     text-align: center;
     font-weight: bold;
     border-radius: 5px;
+    border: 2px solid #D4D4D4;
 }
 
 .timeInput span {
     position: absolute;
-    right: 10px;
-    top: 2.3px;
+    right: 1rem;
     font-weight: bold;
+    font-size: 14px;
+
 }
 
 .timeSeparator {
@@ -88,16 +111,23 @@
 }
 
 .phoneSection {
-    position: relative;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    /* margin-top: 20px; */
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.phoneInfo {
+    flex: 1;
+    min-width: 200px;
 }
 
 .phoneContainer {
     display: flex;
     gap: 10px;
     align-items: center;
-    position: absolute;
-    right: 10px;
-    top: 10px;
     height: 40px;
 }
 
@@ -105,19 +135,66 @@
     color: rgb(58, 173, 226);
 }
 
-.divider {
-    height: 30px;
-    width: 2px;
-    background: gray;
+.phoneNumber {
+    color: #000;
 }
 
 .changeButton {
     height: 30px;
-    width: 80px;
-    background: green;
+    padding: 0 10px;
+    background: #0A8B03;
     color: white;
-    text-align: center;
-    align-content: center;
-    border-radius: 5px;
+    border: none;
+    border-radius: 4px;
     cursor: pointer;
+    font-size: 14px;
+    min-width: 80px;
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+    .dayButton {
+        width: calc(25% - 10px);
+        margin-bottom: 10px;
+    }
+
+    .timeSelection {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .timeInputGroup {
+        margin-top: 10px;
+    }
+}
+
+@media (max-width: 480px) {
+    .container {
+        padding: 10px;
+    }
+
+    .dayButton {
+        width: calc(33.33% - 10px);
+        height: 50px;
+        font-size: 0.9rem;
+    }
+
+    .selectedDate {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .dateDisplay {
+        text-align: left;
+    }
+
+    .phoneSection {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .phoneContainer {
+        width: 100%;
+        justify-content: space-between;
+    }
 }

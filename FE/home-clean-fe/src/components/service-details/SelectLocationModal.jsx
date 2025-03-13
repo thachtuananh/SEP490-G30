@@ -3,8 +3,9 @@ import useClickOutside from "../../hooks/useClickOutside";
 import AddLocationModal from "./AddLocationModal";
 import styles from "../../assets/CSS/Service/SelectLocationModal.module.css";
 import { AuthContext } from "../../context/AuthContext";
+import { fetchCustomerAddresses, setDefaultAddress } from "../../services/owner/OwnerAddressAPI"; // Import API functions
 
-const SelectLocationModal = ({ isShowLocationModal, setIsShowLocationModal, setCustomerAddressId }) => {
+const SelectLocationModal = ({ isShowLocationModal, setIsShowLocationModal, setCustomerAddressId, setNameAddress }) => {
   const [isShowAddLocationModal, setIsShowAddLocationModal] = useState(false);
   const [locations, setLocations] = useState([]);
   const listLocationRef = useRef(null);
@@ -20,62 +21,43 @@ const SelectLocationModal = ({ isShowLocationModal, setIsShowLocationModal, setC
     return () => (document.body.style.overflow = "auto");
   }, []);
 
-  // Gọi API để lấy danh sách địa chỉ
+  // Fetch addresses
   useEffect(() => {
-    const fetchAddresses = async () => {
-      try {
-        if (!token) {
-          console.error("Không tìm thấy token. Vui lòng đăng nhập lại.");
-          return;
-        }
+    if (!customerId) return;
 
-        const response = await fetch(`http://localhost:8080/api/customer/${customerId}/addresses`, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          setLocations(data);
-        } else {
-          console.error("Lỗi khi lấy danh sách địa chỉ");
-        }
-      } catch (error) {
-        console.error("Lỗi khi gọi API:", error);
-      }
-    };
-
-    if (customerId) fetchAddresses();
+    fetchCustomerAddresses(customerId)
+      .then(data => {
+        setLocations(data);
+      })
+      .catch(error => {
+        console.error("Lỗi khi lấy danh sách địa chỉ", error);
+      });
   }, [customerId]);
 
-  // 🛠 **Hàm cập nhật địa chỉ mặc định**
-  const setDefaultAddress = async (addressId) => {
+  // Update default address function
+  const handleSetDefaultAddress = async (addressId) => {
     try {
-      const response = await fetch(`http://localhost:8080/api/customer/${customerId}/addresses/${addressId}/set-default`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      });
+      await setDefaultAddress(customerId, addressId);
 
-      if (response.ok) {
-        setLocations((prevLocations) =>
-          prevLocations.map((loc) => ({
-            ...loc,
-            is_current: loc.id === addressId, // Đánh dấu địa chỉ được chọn là mặc định
-          }))
-        );
-        setCustomerAddressId(addressId);
-        console.log("Cập nhật địa chỉ mặc định thành công");
-      } else {
-        console.error("Lỗi khi cập nhật địa chỉ mặc định");
+      setLocations((prevLocations) =>
+        prevLocations.map((loc) => ({
+          ...loc,
+          is_current: loc.id === addressId,
+        }))
+      );
+
+      setCustomerAddressId(addressId);
+      const selectedAddress = locations.find((loc) => loc.id === addressId);
+      if (selectedAddress) {
+        setNameAddress(selectedAddress.address);
       }
+
+      console.log("Cập nhật địa chỉ mặc định thành công");
     } catch (error) {
-      console.error("Lỗi khi gửi yêu cầu cập nhật địa chỉ mặc định:", error);
+      console.error("Lỗi khi cập nhật địa chỉ mặc định:", error);
     }
   };
+
 
   return (
     <div className={styles.overlay}>
@@ -110,9 +92,9 @@ const SelectLocationModal = ({ isShowLocationModal, setIsShowLocationModal, setC
                         cursor: 'pointer'
                       }}
                       onClick={() => {
-                        setDefaultAddress(location.id);
+                        handleSetDefaultAddress(location.id);
                         setCustomerAddressId(location.id);
-
+                        setNameAddress(location.address)
                       }}
                     >
                       Chọn
@@ -123,7 +105,7 @@ const SelectLocationModal = ({ isShowLocationModal, setIsShowLocationModal, setC
                       <input
                         type="checkbox"
                         checked={location.is_current}
-                        onChange={() => setDefaultAddress(location.id)}
+                        onChange={() => handleSetDefaultAddress(location.id)}
                       />
                     </p>
                   </div>

@@ -1,0 +1,34 @@
+.createJobContainer {
+    display: flex;
+    justify-content: center;
+    padding: 20px;
+    width: 100%;
+}
+
+.createJobContent {
+    width: 100%;
+    max-width: 1000px;
+    padding: 30px 20px 100px 20px;
+}
+
+.sectionTitle {
+    margin: 15px 0;
+    font-size: 1.25rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .createJobContent {
+        padding: 20px 15px 80px 15px;
+    }
+}
+
+@media (max-width: 480px) {
+    .createJobContent {
+        padding: 15px 10px 60px 10px;
+    }
+
+    .sectionTitle {
+        font-size: 1.1rem;
+    }
+}
