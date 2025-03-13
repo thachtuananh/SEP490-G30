@@ -22,10 +22,13 @@ public class Employee {
     private String name;
     @Column(name = "phone_number")
     private String phone;
+    
     private String email;
     private Integer age;
     private String address;
+    
     private String identity_number;
+    
     @Column(name = "identity_verified")
     private Boolean is_verified;
     private String experience;
@@ -34,6 +37,8 @@ public class Employee {
     @Column(name = "profile_image", columnDefinition = "BYTEA")
     private byte[] profile_image;
 
+    @Column(name = "status")
+    private Boolean status;
 
     @PrePersist
     protected void onCreate() {
@@ -51,7 +56,18 @@ public class Employee {
 //        }
     }
 
-    public Integer getAge() {
+    
+    public Boolean getStatus() {
+		return status;
+	}
+
+
+	public void setStatus(Boolean status) {
+		this.status = status;
+	}
+
+
+	public Integer getAge() {
         return age;
     }
 

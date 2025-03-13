@@ -1,116 +1,71 @@
 package com.example.homecleanapi.dtos;
 
-import java.time.LocalDateTime;
+import java.util.List;
 
 public class BookJobRequest {
 
-	private String phone;
-    private Long customerId;
-    private Long serviceId;
-    private Long serviceDetailId;
-    private String address;
-    private Double latitude;
-    private Double longitude;
-    private String requestedAddress;
-    private Double requestedLatitude;
-    private Double requestedLongitude;
-    private LocalDateTime scheduledTime;
-    private Double totalPrice;
+    private Integer customerAddressId;  
+    private String jobTime;  
+    private List<ServiceRequest> services;  
 
-    
-    public String getPhone() {
-		return phone;
-	}
-
-	public void setPhone(String phone) {
-		this.phone = phone;
-	}
-
-	public Long getCustomerId() {
-        return customerId;
+    // Getter và Setter cho customerAddressId
+    public Integer getCustomerAddressId() {
+        return customerAddressId;
     }
 
-    public void setCustomerId(Long customerId) {
-        this.customerId = customerId;
+    public void setCustomerAddressId(Integer customerAddressId) {
+        this.customerAddressId = customerAddressId;
     }
 
-    public Long getServiceId() {
-        return serviceId;
+    // Getter và Setter cho jobTime
+    public String getJobTime() {
+        return jobTime;
     }
 
-    public void setServiceId(Long serviceId) {
-        this.serviceId = serviceId;
+    public void setJobTime(String jobTime) {
+        this.jobTime = jobTime;
     }
 
-    public Long getServiceDetailId() {
-        return serviceDetailId;
+    // Getter và Setter cho services
+    public List<ServiceRequest> getServices() {
+        return services;
     }
 
-    public void setServiceDetailId(Long serviceDetailId) {
-        this.serviceDetailId = serviceDetailId;
+    public void setServices(List<ServiceRequest> services) {
+        this.services = services;
     }
 
-    public String getAddress() {
-        return address;
-    }
+    // Đối tượng đại diện cho một dịch vụ và chi tiết dịch vụ
+    public static class ServiceRequest {
+        private Long serviceId;  // ID dịch vụ
+        private Long serviceDetailId;  // ID chi tiết dịch vụ
+        private String imageUrl;  // Link ảnh liên quan đến dịch vụ
 
-    public void setAddress(String address) {
-        this.address = address;
-    }
+        // Getter và Setter cho serviceId
+        public Long getServiceId() {
+            return serviceId;
+        }
 
-    public Double getLatitude() {
-        return latitude;
-    }
+        public void setServiceId(Long serviceId) {
+            this.serviceId = serviceId;
+        }
 
-    public void setLatitude(Double latitude) {
-        this.latitude = latitude;
-    }
+        // Getter và Setter cho serviceDetailId
+        public Long getServiceDetailId() {
+            return serviceDetailId;
+        }
 
-    public Double getLongitude() {
-        return longitude;
-    }
+        public void setServiceDetailId(Long serviceDetailId) {
+            this.serviceDetailId = serviceDetailId;
+        }
 
-    public void setLongitude(Double longitude) {
-        this.longitude = longitude;
-    }
+        // Getter và Setter cho imageUrl
+        public String getImageUrl() {
+            return imageUrl;
+        }
 
-    public String getRequestedAddress() {
-        return requestedAddress;
-    }
-
-    public void setRequestedAddress(String requestedAddress) {
-        this.requestedAddress = requestedAddress;
-    }
-
-    public Double getRequestedLatitude() {
-        return requestedLatitude;
-    }
-
-    public void setRequestedLatitude(Double requestedLatitude) {
-        this.requestedLatitude = requestedLatitude;
-    }
-
-    public Double getRequestedLongitude() {
-        return requestedLongitude;
-    }
-
-    public void setRequestedLongitude(Double requestedLongitude) {
-        this.requestedLongitude = requestedLongitude;
-    }
-
-    public LocalDateTime getScheduledTime() {
-        return scheduledTime;
-    }
-
-    public void setScheduledTime(LocalDateTime scheduledTime) {
-        this.scheduledTime = scheduledTime;
-    }
-
-    public Double getTotalPrice() {
-        return totalPrice;
-    }
-
-    public void setTotalPrice(Double totalPrice) {
-        this.totalPrice = totalPrice;
+        public void setImageUrl(String imageUrl) {
+            this.imageUrl = imageUrl;
+        }
     }
 }
