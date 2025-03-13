@@ -2,7 +2,7 @@ import React, { useEffect, useState, useContext } from "react";
 import { Modal, List, Button, Table, message, Empty, Badge } from "antd";
 import { InfoCleanerCard } from "../activity/InfoCleanerCard";
 import styles from "../activity/ActivityCard.module.css";
-import { FaRegCommentAlt } from "react-icons/fa";
+import { FaRegCommentAlt, FaRulerHorizontal } from "react-icons/fa";
 import { MdCalendarToday, MdLocationOn, MdAccessTime } from "react-icons/md";
 import axios from "axios";
 import { AuthContext } from "../../context/AuthContext";
@@ -239,7 +239,7 @@ export const ActivityCard = ({ data, onDelete }) => {
                             <div className={styles.services}>
                                 {activity.services && activity.services.map((service, idx) => (
                                     <div key={idx} className={styles.serviceItem}>
-                                        <p><strong>{service.serviceName}</strong> - {service.serviceDetailAreaRange}</p>
+                                        <p><strong>{service.serviceName}</strong>: {service.serviceDetailAreaRange}</p>
                                     </div>
                                 ))}
                             </div>

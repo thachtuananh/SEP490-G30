@@ -32,10 +32,7 @@ const JobInfomation = ({ selectedDate, hour, minute }) => {
 
         return () => clearInterval(timer);
     }, []);
-    // Add at the beginning of the JobInfomation component
-    useEffect(() => {
-        console.log("State passed to JobInfomation:", state);
-    }, [state]);
+
     const validateJobTime = () => {
         if (!selectedDate) {
             message.error("Vui lòng chọn ngày và giờ làm việc!");
@@ -167,16 +164,16 @@ const JobInfomation = ({ selectedDate, hour, minute }) => {
                 <Title level={5} className={styles.infoTitle}>Chi tiết</Title>
                 <Paragraph className={styles.infoRow}>
                     <Text>Loại dịch vụ</Text>
-                    {state?.serviceDetails ? (
+                    {state?.serviceName ? (
+                        <Text>{state.serviceName}</Text>
+                    ) : (
                         <Text className={styles.serviceTags}>
-                            {state.serviceDetails.map((service, index) => (
+                            {state?.serviceDetails?.map((service, index) => (
                                 <Text key={index} className={styles.serviceTag}>
                                     {service.serviceName}
                                 </Text>
                             ))}
                         </Text>
-                    ) : (
-                        <Text>{state.serviceName || "Chưa chọn"}</Text>
                     )}
                 </Paragraph>
 
@@ -188,16 +185,18 @@ const JobInfomation = ({ selectedDate, hour, minute }) => {
                 </Paragraph>
                 <Paragraph className={styles.infoRow}>
                     <Text>Khối lượng công việc</Text>
-                    {/* <Text>
-                        {state?.selectedSize || 0}m² - {state?.maxSize || 0}m²
-                    </Text> */}
-                    <Text className={styles.serviceTags}>
-                        {state?.serviceDetails?.map((service, index) => (
-                            <Text key={index} className={styles.serviceTag}>
-                                {service.serviceName} | {service.selectedSize}m² - {service.maxSize}m²
-                            </Text>
-                        ))}
-                    </Text>
+                    {state?.selectedSize ? (
+                        <Text>{state.selectedSize}m² - {state.maxSize} m²</Text>
+                    ) : (
+                        <Text className={styles.serviceTags}>
+                            {state?.serviceDetails?.map((service, index) => (
+                                <Text key={index} className={styles.serviceTag}>
+                                    {service.serviceName} | {service.selectedSize}m² - {service.maxSize}m²
+                                </Text>
+                            ))}
+                        </Text>
+                    )}
+
                 </Paragraph>
                 <Paragraph className={styles.infoRow}>
                     <Text>Số nhân công</Text>
