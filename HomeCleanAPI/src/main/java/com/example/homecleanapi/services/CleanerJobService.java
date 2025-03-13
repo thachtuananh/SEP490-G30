@@ -552,23 +552,45 @@ public class CleanerJobService {
 	    cleanerInfo.put("cleanerName", cleaner.getName());
 	    cleanerInfo.put("profileImage", cleaner.getProfile_image());
 
-	    // Lấy feedback cho cleaner
-	    List<Feedback> feedbacks = feedbackRepository.findByJobId(cleaner.getId());
-	    if (!feedbacks.isEmpty()) {
-	        List<Map<String, Object>> feedbackList = new ArrayList<>();
+	    // Lấy tất cả các Job mà cleaner đã làm từ JobApplication
+	    List<JobApplication> jobApplications = jobApplicationRepository.findByCleanerId(cleanerId);
+	    if (jobApplications.isEmpty()) {
+	        cleanerInfo.put("feedbacks", "No feedback yet");
+	        cleanerInfo.put("averageRating", 0);
+	        return cleanerInfo;
+	    }
+
+	    // Lấy tất cả feedbacks từ các job mà cleaner đã làm
+	    List<Map<String, Object>> feedbackList = new ArrayList<>();
+	    int totalRating = 0;
+	    int feedbackCount = 0;
+
+	    for (JobApplication jobApplication : jobApplications) {
+	        Job job = jobApplication.getJob();  // Lấy Job từ JobApplication
+
+	        // Lấy feedbacks cho Job này
+	        List<Feedback> feedbacks = feedbackRepository.findByJobId(job.getId());
 	        for (Feedback feedback : feedbacks) {
 	            Map<String, Object> feedbackInfo = new HashMap<>();
 	            feedbackInfo.put("rating", feedback.getRating());
 	            feedbackInfo.put("comment", feedback.getComment());
 	            feedbackList.add(feedbackInfo);
+
+	            totalRating += feedback.getRating();  // Cộng dồn rating
+	            feedbackCount++;
 	        }
-	        cleanerInfo.put("feedbacks", feedbackList);
-	    } else {
-	        cleanerInfo.put("feedbacks", "No feedback yet");
 	    }
+
+	    // Tính trung bình rating nếu có feedback
+	    double averageRating = feedbackCount > 0 ? (double) totalRating / feedbackCount : 0;
+
+	    cleanerInfo.put("averageRating", averageRating);  // Thêm trung bình rating vào thông tin cleaner
+	    cleanerInfo.put("feedbacks", feedbackList);  // Thêm danh sách feedbacks vào thông tin cleaner
 
 	    return cleanerInfo;
 	}
+
+
 
 
 	public Map<String, Object> getCleanerDetails(Long cleanerId) {
