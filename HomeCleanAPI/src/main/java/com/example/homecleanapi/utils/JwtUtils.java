@@ -11,11 +11,12 @@ import java.util.Map;
 public class JwtUtils {
     private final String SECRET_KEY = "4b4a5e888ae16a09f0ba97fc4ed5396121292015cb53db43adc0c9f88d5a9f24"; // Đổi thành khóa bảo mật mạnh hơn
 
-    public String generateToken(String phone, String name, String id) {
+    public String generateToken(String phone, String name, String id, String role) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("phone", phone);
         claims.put("name", name);
         claims.put("id", id);
+        claims.put("role", role);
 
         return Jwts.builder()
                 .setClaims(claims)
