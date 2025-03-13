@@ -172,7 +172,7 @@ public class JobService {
 //    }
     
     
-    public Map<String, Object> bookJob(@RequestParam Long customerId, @RequestBody BookJobRequest request) {
+    public Map<String, Object> bookJob(@PathVariable Long customerId, @RequestBody BookJobRequest request) {
         Map<String, Object> response = new HashMap<>();
 
         // Kiểm tra khách hàng có tồn tại không
