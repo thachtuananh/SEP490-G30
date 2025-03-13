@@ -13,6 +13,7 @@ import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.time.DayOfWeek;
 import java.time.LocalDateTime;
@@ -49,6 +50,9 @@ public class JobService {
     
     @Autowired
     private CustomerRepository customerRepository;
+    
+    @Autowired
+    private JobServiceDetailRepository jobServiceDetailRepository; 
     
 
     
@@ -168,7 +172,7 @@ public class JobService {
 //    }
     
     
-    public Map<String, Object> bookJob(@PathVariable Long customerId, @RequestBody BookJobRequest request) {
+    public Map<String, Object> bookJob(@RequestParam Long customerId, @RequestBody BookJobRequest request) {
         Map<String, Object> response = new HashMap<>();
 
         // Kiểm tra khách hàng có tồn tại không
@@ -209,6 +213,9 @@ public class JobService {
         // Tính tổng giá cho tất cả các dịch vụ
         double totalPrice = 0;
 
+        // Danh sách lưu các JobServiceDetail sẽ được tạo
+        List<JobServiceDetail> jobServiceDetails = new ArrayList<>();
+
         // Duyệt qua các dịch vụ mà customer đã chọn
         for (ServiceRequest serviceRequest : request.getServices()) {
 
@@ -220,9 +227,6 @@ public class JobService {
             }
             Services service = serviceOpt.get();
 
-            // Gán service cho job
-            job.setService(service);  // Gán service cho Job
-
             // Kiểm tra chi tiết dịch vụ có tồn tại không
             Optional<ServiceDetail> serviceDetailOpt = serviceDetailRepository.findById(serviceRequest.getServiceDetailId());
             if (!serviceDetailOpt.isPresent()) {
@@ -230,9 +234,6 @@ public class JobService {
                 return response;
             }
             ServiceDetail serviceDetail = serviceDetailOpt.get();
-
-            // Gán chi tiết dịch vụ cho công việc
-            job.setServiceDetail(serviceDetail);
 
             // Tính toán giá cho dịch vụ
             double serviceDetailPrice = serviceDetail.getPrice();
@@ -257,12 +258,18 @@ public class JobService {
             // Cộng tổng giá dịch vụ
             totalPrice += finalPrice;
 
-            // Tạo JobDetails và liên kết với Job đã được lưu
-            JobDetails jobDetails = new JobDetails();
-            jobDetails.setImageUrl(serviceRequest.getImageUrl());
-            jobDetails.setJob(job); // Liên kết với Job đã được lưu
-            jobDetailsRepository.save(jobDetails); // Lưu JobDetails
+            // Tạo JobServiceDetail và lưu vào cơ sở dữ liệu
+            JobServiceDetail jobServiceDetail = new JobServiceDetail();
+            jobServiceDetail.setJob(job);
+            jobServiceDetail.setService(service);
+            jobServiceDetail.setServiceDetail(serviceDetail);
+
+            // Thêm JobServiceDetail vào danh sách
+            jobServiceDetails.add(jobServiceDetail);
         }
+
+        // Lưu các JobServiceDetail vào cơ sở dữ liệu
+        jobServiceDetailRepository.saveAll(jobServiceDetails);
 
         // Cập nhật tổng giá và lưu lại Job
         job.setTotalPrice(totalPrice);
@@ -276,9 +283,6 @@ public class JobService {
 
         return response;
     }
-
-
-
 
 
 

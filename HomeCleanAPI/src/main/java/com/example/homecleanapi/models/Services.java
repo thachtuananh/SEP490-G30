@@ -6,7 +6,7 @@ import java.util.List;
 
 @Entity
 @Table(name = "services")
-public class Services {  // Đổi tên từ HomeCleanService thành Services
+public class Services {  
 
 	@Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -25,8 +25,12 @@ public class Services {  // Đổi tên từ HomeCleanService thành Services
 
     @OneToMany(mappedBy = "service", cascade = CascadeType.ALL)
     private List<ServiceDetail> serviceDetails;
+    
+    @OneToMany(mappedBy = "service", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<JobServiceDetail> jobServiceDetails; 
 
     // Getters and Setters
+    
     
     public Long getId() {
         return id;
@@ -109,4 +113,14 @@ public class Services {  // Đổi tên từ HomeCleanService thành Services
     public void setServiceDetails(List<ServiceDetail> serviceDetails) {
         this.serviceDetails = serviceDetails;
     }
+
+	public List<JobServiceDetail> getJobServiceDetails() {
+		return jobServiceDetails;
+	}
+
+	public void setJobServiceDetails(List<JobServiceDetail> jobServiceDetails) {
+		this.jobServiceDetails = jobServiceDetails;
+	}
+    
+    
 }

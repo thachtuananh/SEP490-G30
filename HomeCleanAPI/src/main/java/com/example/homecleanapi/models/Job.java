@@ -2,6 +2,7 @@ package com.example.homecleanapi.models;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import java.util.List;
 
 import com.example.homecleanapi.enums.JobStatus;
 
@@ -12,13 +13,16 @@ public class Job {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    
+    @OneToMany(mappedBy = "job", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<JobServiceDetail> jobServiceDetails;
 
     @ManyToOne
     @JoinColumn(name = "customer_id", nullable = false)
     private Customers customer;
 
     @ManyToOne
-    @JoinColumn(name = "service_id", nullable = false)
+    @JoinColumn(name = "service_id")
     private Services service;
     
     @OneToOne(mappedBy = "job", fetch = FetchType.LAZY)
@@ -29,7 +33,7 @@ public class Job {
     private Employee cleaner;
 
     @ManyToOne
-    @JoinColumn(name = "service_detail_id", nullable = false)
+    @JoinColumn(name = "service_detail_id")
     private ServiceDetail serviceDetail;
 
     
@@ -50,11 +54,20 @@ public class Job {
 
     // Getters and Setters
     
+    
     public Long getId() {
         return id;
     }
 
-    public LocalDateTime getCreatedAt() {
+    public List<JobServiceDetail> getJobServiceDetails() {
+		return jobServiceDetails;
+	}
+
+	public void setJobServiceDetails(List<JobServiceDetail> jobServiceDetails) {
+		this.jobServiceDetails = jobServiceDetails;
+	}
+
+	public LocalDateTime getCreatedAt() {
 		return createdAt;
 	}
 

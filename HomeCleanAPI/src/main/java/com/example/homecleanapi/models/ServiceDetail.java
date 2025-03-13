@@ -1,11 +1,16 @@
 package com.example.homecleanapi.models;
 
+import java.util.List;
+
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 
 @Entity
@@ -30,6 +35,12 @@ public class ServiceDetail {
     private Double peakTimeFee;      // Phụ phí giờ cao điểm
     private String discounts;        // Chiết khấu hoặc ưu đãi
 
+    @OneToMany(mappedBy = "serviceDetail", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<JobServiceDetail> jobServiceDetails; 
+    
+    
+    
+    
     // Getters and Setters
     
     public Long getId() {
@@ -121,4 +132,13 @@ public class ServiceDetail {
     public void setDiscounts(String discounts) {
         this.discounts = discounts;
     }
+
+	public List<JobServiceDetail> getJobServiceDetails() {
+		return jobServiceDetails;
+	}
+
+	public void setJobServiceDetails(List<JobServiceDetail> jobServiceDetails) {
+		this.jobServiceDetails = jobServiceDetails;
+	}
+    
 }
