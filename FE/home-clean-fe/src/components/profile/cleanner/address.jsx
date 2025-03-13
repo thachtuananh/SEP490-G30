@@ -1,12 +1,44 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useState, useEffect } from "react";
 import { AuthContext } from "../../../context/AuthContext";
+import { message } from "antd";
+import { BASE_URL } from "../../../utils/config";
 import "../owner/profile.css";
 
 export const Address = () => {
-    const { user } = useContext(AuthContext);
+    const { user, dispatch } = useContext(AuthContext);
     const [defaultAddress, setDefaultAddress] = useState("home1");
+    const [addresses, setAddresses] = useState([]);
 
-    const addresses = user?.addresses || []; // Giả sử `user` có thuộc tính `addresses`
+    useEffect(() => {
+        const fetchAddresses = async () => {
+            const token = localStorage.getItem("token");
+            const cleanerId = localStorage.getItem("cleanerId");
+
+            if (token && cleanerId) {
+                try {
+                    const response = await fetch(`${BASE_URL}/employee/${cleanerId}/all-addresses`, {
+                        method: 'GET',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Accept': 'application/json'
+                        }
+                    });
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        setAddresses(data); // Cập nhật danh sách địa chỉ
+                        dispatch({ type: "FETCH_ADDRESSES_SUCCESS", payload: data });
+                    } else {
+                        message.error("Không thể lấy danh sách địa chỉ.");
+                    }
+                } catch (error) {
+                    message.error("Lỗi máy chủ, vui lòng thử lại sau.");
+                }
+            }
+        };
+
+        fetchAddresses();
+    }, [dispatch]);
 
     return (
         <div className="address-container">
@@ -31,7 +63,7 @@ export const Address = () => {
                                     </div>
                                 )}
                             </div>
-                            <p className="address-text">{address.adr || "Chưa có địa chỉ"}</p>
+                            <p className="address-text">{address.address || "Chưa có địa chỉ"}</p>
 
                             <div className="address-actions">
                                 <b className="update-button">Cập nhật</b>

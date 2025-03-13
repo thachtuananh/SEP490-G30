@@ -19,7 +19,8 @@ const formatTime = (dateString) => {
     const startMinute = date.getMinutes();
     const endHour = startHour + 3; // Giả sử công việc kéo dài 3 giờ
 
-    return `${endHour - startHour} giờ - Từ ${startHour}:${startMinute.toString().padStart(2, "0")} đến ${endHour}:${startMinute.toString().padStart(2, "0")}`;
+    // return `${endHour - startHour} giờ - Từ ${startHour}:${startMinute.toString().padStart(2, "0")} đến ${endHour}:${startMinute.toString().padStart(2, "0")}`;
+    return `${startHour} : ${startMinute.toString().padStart(2, "0")}`
 };
 
 // Component JobCard
@@ -90,18 +91,6 @@ function JobList() {
             });
     }, [token]);
 
-    if (!token) {
-        return <p className="error-message">Bạn cần đăng nhập để xem danh sách công việc.</p>;
-    }
-
-    if (loading) {
-        return <p>Đang tải danh sách công việc...</p>;
-    }
-
-    if (error) {
-        return <p className="error-message">Lỗi: {error}</p>;
-    }
-
     return (
         <section className="job-list-section">
             <div className="container">
@@ -109,12 +98,16 @@ function JobList() {
                     <div className="filter-buttons">
                         <button className="filter-button">Lọc theo</button>
                         <button className="filter-button">Thời gian</button>
-                        <button className="filter-button">Khoảng cách</button>
                         <button className="filter-button">Khoảng giá</button>
                         <button className="search-button">Tìm kiếm</button>
                     </div>
+                    {!token && <p className="error-message">Bạn cần đăng nhập để xem danh sách công việc.</p>}
                     <div className="job-list">
-                        {jobs.length > 0 ? (
+                        {loading ? (
+                            <p>Đang tải danh sách công việc...</p>
+                        ) : error ? (
+                            <p className="error-message">Lỗi: {error}</p>
+                        ) : jobs.length > 0 ? (
                             jobs.map((job) => <JobCard key={job.jobId} job={job} />)
                         ) : (
                             <p>Không có công việc nào.</p>

@@ -1,0 +1,30 @@
+.noteContainer {
+    padding: 15px;
+    border: 1px solid rgb(225, 225, 225);
+    border-radius: 5px;
+    margin-top: 15px;
+}
+
+.noteTitle {
+    margin-bottom: 10px;
+}
+
+.noteTextarea {
+    width: 100%;
+    padding: 15px;
+    border: 1px solid rgb(225, 225, 225);
+    border-radius: 5px;
+    margin-top: 15px;
+    min-height: 100px;
+    resize: vertical;
+}
+
+@media (max-width: 480px) {
+    .noteContainer {
+        padding: 12px;
+    }
+
+    .noteTextarea {
+        padding: 10px;
+    }
+}

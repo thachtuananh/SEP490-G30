@@ -1,107 +1,167 @@
 import React, { useState, useEffect } from "react";
-import { Card, Button } from "antd";
+import { Card, Button, DatePicker, TimePicker, Typography, Row, Col, Space, Input, Divider, InputNumber } from "antd";
+import { EditOutlined, ClockCircleOutlined } from "@ant-design/icons";
 import styles from "../../assets/CSS/createjob/Time.module.css";
+import dayjs from "dayjs";
+const { Title, Text, Paragraph } = Typography;
 
 const Time = ({ onTimeChange }) => {
-    const [weekOffset, setWeekOffset] = useState(0);
-    const today = new Date();
-    today.setDate(today.getDate() + weekOffset);
-
-    const startOfWeek = new Date(today);
-    startOfWeek.setDate(today.getDate() - today.getDay());
-
-    const days = Array.from({ length: 7 }, (_, i) => {
-        const day = new Date(startOfWeek);
-        day.setDate(startOfWeek.getDate() + i);
-        return {
-            label: ["CN", "T2", "T3", "T4", "T5", "T6", "T7"][i],
-            date: day.toLocaleDateString("vi-VN", { day: "2-digit", month: "2-digit" }),
-            fullDate: day,
-        };
-    });
-
-    const [selectedDate, setSelectedDate] = useState(today);
-    const [hour, setHour] = useState(0);
-    const [minute, setMinute] = useState(0);
+    const [selectedDate, setSelectedDate] = useState(new Date());
+    const [selectedTime, setSelectedTime] = useState(dayjs());
+    const [currentTime, setCurrentTime] = useState(dayjs());
 
     useEffect(() => {
+        // Khởi tạo thời gian ban đầu
         const now = new Date();
-        setHour(now.getHours());
-        setMinute(now.getMinutes());
-        onTimeChange(today, now.getHours(), now.getMinutes());
+        const currentDayjs = dayjs();
+
+        // Use current time directly without adding 30 minutes
+        setSelectedTime(currentDayjs);
+        setCurrentTime(currentDayjs);
+
+        // Pass current time to parent component
+        onTimeChange(selectedDate, currentDayjs.hour(), currentDayjs.minute());
+
+        // Thiết lập interval để cập nhật thời gian thực mỗi 30 giây
+        const timer = setInterval(() => {
+            const updatedTime = dayjs();
+            setCurrentTime(updatedTime);
+
+            // If you want to automatically update the selected time as well:
+            // setSelectedTime(updatedTime);
+            // onTimeChange(selectedDate, updatedTime.hour(), updatedTime.minute());
+        }, 30000);
+
+        // Dọn dẹp interval khi component unmount
+        return () => clearInterval(timer);
     }, []);
 
     const handleDateChange = (date) => {
-        setSelectedDate(date);
-        onTimeChange(date, hour, minute);
+        if (!date) return;
+
+        const selectedDateObj = date.toDate();
+        const now = new Date();
+
+        if (selectedDateObj < now.setHours(0, 0, 0, 0)) return;
+
+        setSelectedDate(selectedDateObj);
+
+        // Nếu chọn ngày hôm nay, kiểm tra thời gian
+        if (selectedDateObj.toDateString() === new Date().toDateString()) {
+            if (selectedTime.isBefore(currentTime)) {
+                // Thêm 30 phút vào thời gian hiện tại làm mặc định
+                const defaultTime = currentTime.add(30, 'minute');
+                setSelectedTime(defaultTime);
+                onTimeChange(selectedDateObj, defaultTime.hour(), defaultTime.minute());
+            } else {
+                onTimeChange(selectedDateObj, selectedTime.hour(), selectedTime.minute());
+            }
+        } else {
+            onTimeChange(selectedDateObj, selectedTime.hour(), selectedTime.minute());
+        }
     };
 
-    const handleHourChange = (e) => {
-        let value = parseInt(e.target.value, 10);
-        if (isNaN(value) || value < 0) value = 0;
-        if (value > 23) value = 23;
-        setHour(value);
-        onTimeChange(selectedDate, value, minute);
+    const handleTimeChange = (time) => {
+        if (!time) return;
+
+        // Kiểm tra nếu ngày đã chọn là hôm nay và thời gian đã chọn < thời gian hiện tại
+        if (selectedDate.toDateString() === new Date().toDateString() &&
+            time.isBefore(currentTime)) {
+            // Thêm 15 phút vào thời gian hiện tại làm mặc định
+            const defaultTime = currentTime.add(15, 'minute');
+            setSelectedTime(defaultTime);
+            onTimeChange(selectedDate, defaultTime.hour(), defaultTime.minute());
+        } else {
+            setSelectedTime(time);
+            onTimeChange(selectedDate, time.hour(), time.minute());
+        }
     };
 
-    const handleMinuteChange = (e) => {
-        let value = e.target.value.replace(/^0+/, "");
-        value = parseInt(value, 10);
-        if (isNaN(value) || value < 0) value = 0;
-        if (value > 59) value = 59;
-        setMinute(value);
-        onTimeChange(selectedDate, hour, value);
+    // Tùy chỉnh rendering ngày để vô hiệu hóa các ngày trong quá khứ
+    const disabledDate = (current) => {
+        return current && current < dayjs().startOf('day');
+    };
+
+    // Vô hiệu hóa các tùy chọn thời gian trong quá khứ nếu ngày đã chọn là hôm nay
+    const disabledTime = () => {
+        if (selectedDate.toDateString() === new Date().toDateString()) {
+            return {
+                disabledHours: () => Array.from({ length: currentTime.hour() }, (_, i) => i),
+                disabledMinutes: (selectedHour) =>
+                    selectedHour === currentTime.hour()
+                        ? Array.from({ length: currentTime.minute() }, (_, i) => i)
+                        : []
+            };
+        }
+        return {};
     };
 
     return (
         <div className={styles.container}>
-            <h4>Thời gian làm việc</h4>
-            <p>Chọn thời gian</p>
+            <Title level={5}>Thời gian làm việc</Title>
+            <Paragraph>Chọn thời gian</Paragraph>
 
             <Card className={styles.card}>
-                <div className={styles.weekNavigation}>
-                    <Button onClick={() => setWeekOffset(weekOffset - 7)}>Tuần trước</Button>
-                    <Button onClick={() => setWeekOffset(weekOffset + 7)}>Tuần tiếp theo</Button>
-                </div>
-
                 <div className={styles.selectedDate}>
-                    <p>Chọn ngày làm</p>
-                    <p>
-                        {selectedDate
-                            ? `Ngày ${selectedDate.getDate()} - Tháng ${selectedDate.getMonth() + 1} - Năm ${selectedDate.getFullYear()}`
-                            : "Chưa chọn ngày"}
-                    </p>
-                </div>
-
-                <div className={styles.dayList}>
-                    {days.map((day) => (
-                        <Button
-                            key={day.date}
-                            type={selectedDate?.toDateString() === day.fullDate.toDateString() ? "primary" : "default"}
-                            className={`${styles.dayButton} ${selectedDate?.toDateString() === day.fullDate.toDateString() ? styles.selected : ""
-                                }`}
-                            onClick={() => handleDateChange(day.fullDate)}
-                        >
-                            <b>{day.label}</b>
-                            {day.date}
-                        </Button>
-                    ))}
+                    <Paragraph>Chọn ngày làm</Paragraph>
+                    <DatePicker
+                        format="DD/MM/YYYY"
+                        onChange={handleDateChange}
+                        disabledDate={disabledDate}
+                        placeholder="Chọn ngày"
+                        className={styles.datePicker}
+                        size="large"
+                        value={dayjs(selectedDate)}
+                    />
                 </div>
             </Card>
 
             <div className={styles.timeSelection}>
-                <h4>Chọn giờ làm việc</h4>
-                <p>Giờ mà người giúp việc sẽ đến</p>
+                <div className={styles.timeHeader}>
+                    <Title level={5}>Chọn giờ làm việc</Title>
+                    <Paragraph>Giờ mà người giúp việc sẽ đến</Paragraph>
+                </div>
                 <div className={styles.timeInputGroup}>
-                    <div className={styles.timeInput}>
-                        <input type="number" value={hour} onChange={handleHourChange} min="0" max="23" />
-                        <span>h</span>
-                    </div>
-                    <span className={styles.timeSeparator}>:</span>
-                    <div className={styles.timeInput}>
-                        <input type="number" value={minute} onChange={handleMinuteChange} min="0" max="59" />
-                        <span>p</span>
-                    </div>
+                    <TimePicker
+                        format="HH:mm"
+                        value={selectedTime}
+                        onChange={handleTimeChange}
+                        disabledTime={disabledTime}
+                        size="large"
+                        className={styles.timePicker}
+                        hideDisabledOptions={true}
+                        use12Hours={false}
+                        allowClear={false}
+                    />
+                    {/* <Button
+                        icon={<ClockCircleOutlined />}
+                        onClick={handleUpdateToCurrentTime}
+                        className={styles.updateTimeButton}
+                        title="Cập nhật thời gian hiện tại + 30 phút"
+                    >
+                        Cập nhật
+                    </Button> */}
+                </div>
+                {/* <div className={styles.currentTimeDisplay}>
+                    <Paragraph>
+                        Thời gian hiện tại: {currentTime.format('HH:mm')} |
+                        Thời gian đã chọn: {selectedTime.format('HH:mm')}
+                    </Paragraph>
+                </div> */}
+            </div>
+
+            <div className={styles.phoneSection}>
+                <div className={styles.phoneInfo}>
+                    <Title level={5}>Số điện thoại</Title>
+                    <Paragraph>Nhân công sẽ liên hệ với bạn khi đến nơi</Paragraph>
+                </div>
+                <div className={styles.phoneContainer}>
+                    <Col flex="auto">
+                        <Input
+                            value="0384244398"
+                            disabled
+                        />
+                    </Col>
                 </div>
             </div>
         </div>

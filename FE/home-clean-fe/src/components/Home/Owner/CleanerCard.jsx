@@ -1,32 +1,34 @@
 import { Link } from "react-router-dom";
 
-function ServiceCard({ id, image, title, description, rating, reviews, serviceId }) {
-
+function CleanerCard({ cleanerId, cleanerImg, cleanerName, rating, reviews }) {
   return (
     <div className="service-card">
       <div className="card-image">
-        <img src={image} alt={title} />
+        <img src={cleanerImg} alt={cleanerName} />
       </div>
       <div className="card-content">
-        <h3 className="service-title">{title}</h3>
-        <p className="service-description"
-          style={{
-            height: 72,
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-            display: "-webkit-box",
-            WebkitLineClamp: 3,
-            WebkitBoxOrient: "vertical"
-          }}
-        >{description}</p>
+        <h3 className="service-title">{cleanerName}</h3>
+        <p
+          className="service-description"
+        // style={{
+        //   height: 72,
+        //   overflow: "hidden",
+        //   textOverflow: "ellipsis",
+        //   display: "-webkit-box",
+        //   WebkitLineClamp: 3,
+        //   WebkitBoxOrient: "vertical"
+        // }}
+        >
+          {`Dịch vụ của ${cleanerName}`}
+        </p>
         <div className="service-meta">
           <div className="rating">
             <span className="stars">{rating} ★</span>
-            <span className="review-count">({reviews})</span>
+            <span className="review-count">({reviews} đánh giá)</span>
           </div>
         </div>
         <div className="card-footer">
-          <Link to={`/service/${id}`} state={serviceId} >
+          <Link to={`/cleaner/${cleanerId}`} state={{ cleanerId }}>
             <button className="hire-btn">Thuê ngay</button>
           </Link>
           <div className="user-avatars">
@@ -45,4 +47,4 @@ function ServiceCard({ id, image, title, description, rating, reviews, serviceId
   );
 }
 
-export default ServiceCard;
+export default CleanerCard;

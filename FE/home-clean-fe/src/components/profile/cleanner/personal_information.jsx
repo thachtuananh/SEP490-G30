@@ -17,6 +17,7 @@ export const PersonaInformation = () => {
     const [cleanerAddress, setAddress] = useState(cleaner?.cleanerAddress || "");
     const [cleanerIDnum, setIdentityNumber] = useState(cleaner?.cleanerIDnum || "");
     const [cleanerExp, setExperience] = useState(cleaner?.cleanerExp || "");
+    const [cleanerImg, setImg] = useState(cleaner?.cleanerImg || "");
 
     // Hàm xử lý lưu thông tin từng trường
     const handleSave = (field, value) => {
@@ -43,6 +44,11 @@ export const PersonaInformation = () => {
             setAddress(cleaner.cleanerAddress || "");
             setIdentityNumber(cleaner.cleanerIDnum || "");
             setExperience(cleaner.cleanerExp || "");
+            if (cleaner.profile_image) {
+                setImg(`data:image/png;base64,${cleaner.profile_image}`);
+            } else {
+                setImg(profileImg); // Ảnh mặc định nếu không có ảnh từ API
+            }
         } else {
             // Nếu không có thông tin cleaner, reset các giá trị về mặc định
             setName("");
@@ -52,6 +58,7 @@ export const PersonaInformation = () => {
             setAddress("");
             setIdentityNumber("");
             setExperience("");
+            setImg(profileImg);
         }
     }, [cleaner]);
 
@@ -64,7 +71,7 @@ export const PersonaInformation = () => {
 
             <div className="avatar-section">
                 <b>Ảnh đại diện</b>
-                <img className="avatar-image" src={profileImg} alt="icon" />
+                <img className="avatar-image" src={cleanerImg} alt="icon" />
                 <b><u className="avatar-select">Chọn ảnh</u></b>
             </div>
 
