@@ -397,18 +397,36 @@ public class JobService {
             Map<String, Object> jobInfo = new HashMap<>();
             
             jobInfo.put("jobId", job.getId());
-            jobInfo.put("serviceName", job.getService().getName());  // Tên dịch vụ
             jobInfo.put("scheduledTime", job.getScheduledTime());  // Thời gian
             jobInfo.put("customerAddress", job.getCustomerAddress().getAddress());  // Địa chỉ
             jobInfo.put("status", job.getStatus());  // Trạng thái
             jobInfo.put("totalPrice", job.getTotalPrice());  // Giá
-            jobInfo.put("createdAt", job.getCreatedAt());  
+            jobInfo.put("createdAt", job.getCreatedAt());  // Thời gian tạo
+
+            // Lấy danh sách các dịch vụ từ bảng trung gian job_service_detail
+            List<JobServiceDetail> jobServiceDetails = jobServiceDetailRepository.findByJobId(job.getId());
+
+            List<Map<String, String>> services = new ArrayList<>();
+            for (JobServiceDetail jobServiceDetail : jobServiceDetails) {
+                Map<String, String> serviceInfo = new HashMap<>();
+                Services service = jobServiceDetail.getService();  // Lấy dịch vụ liên kết
+                ServiceDetail serviceDetail = jobServiceDetail.getServiceDetail();  // Lấy chi tiết dịch vụ liên kết
+
+                serviceInfo.put("serviceName", service.getName());  // Tên dịch vụ
+                serviceInfo.put("serviceDetailName", serviceDetail.getName());  // Tên chi tiết dịch vụ
+                serviceInfo.put("serviceDetailPrice", serviceDetail.getPrice().toString());  // Giá dịch vụ
+
+                services.add(serviceInfo);
+            }
+
+            jobInfo.put("services", services);  // Thêm danh sách dịch vụ vào thông tin job
 
             bookedJobs.add(jobInfo);
         }
 
         return bookedJobs;
     }
+
     
     // huy job ddax book
     public Map<String, Object> cancelJobForCustomer(Long customerId, Long jobId) {

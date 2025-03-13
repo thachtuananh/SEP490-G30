@@ -21,9 +21,9 @@ public class Job {
     @JoinColumn(name = "customer_id", nullable = false)
     private Customers customer;
 
-    @ManyToOne
-    @JoinColumn(name = "service_id")
-    private Services service;
+//    @ManyToOne
+//    @JoinColumn(name = "service_id")
+//    private Services service;
     
     @OneToOne(mappedBy = "job", fetch = FetchType.LAZY)
     private JobDetails jobDetails;
@@ -32,9 +32,9 @@ public class Job {
     @JoinColumn(name = "cleaner_id")
     private Employee cleaner;
 
-    @ManyToOne
-    @JoinColumn(name = "service_detail_id")
-    private ServiceDetail serviceDetail;
+//    @ManyToOne
+//    @JoinColumn(name = "service_detail_id")
+//    private ServiceDetail serviceDetail;
 
     
     @ManyToOne
@@ -87,21 +87,21 @@ public class Job {
         this.customer = customer;
     }
 
-    public Services getService() {
-        return service;
-    }
-
-    public void setService(Services service) {
-        this.service = service;
-    }
-
-    public ServiceDetail getServiceDetail() {
-        return serviceDetail;
-    }
-
-    public void setServiceDetail(ServiceDetail serviceDetail) {
-        this.serviceDetail = serviceDetail;
-    }
+//    public Services getService() {
+//        return service;
+//    }
+//
+//    public void setService(Services service) {
+//        this.service = service;
+//    }
+//
+//    public ServiceDetail getServiceDetail() {
+//        return serviceDetail;
+//    }
+//
+//    public void setServiceDetail(ServiceDetail serviceDetail) {
+//        this.serviceDetail = serviceDetail;
+//    }
 
     public CustomerAddresses getCustomerAddress() {
         return customerAddress;
