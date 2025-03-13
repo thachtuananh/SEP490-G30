@@ -1,6 +1,7 @@
 package com.example.homecleanapi.controllers;
 
 import com.example.homecleanapi.dtos.JobSummaryDTO;
+import com.example.homecleanapi.enums.JobStatus;
 import com.example.homecleanapi.services.CleanerJobService;
 
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -71,6 +72,24 @@ public class CleanerJobController {
         }
         return ResponseEntity.ok(appliedJobs);
     }
+    
+    @GetMapping(value = "/{cleanerId}/jobs/done")
+    public ResponseEntity<List<Map<String, Object>>> getCompletedJobs(@PathVariable Long cleanerId) {
+        List<Map<String, Object>> completedJobs = cleanerJobService.getCompletedJobs(cleanerId);
+
+        if (completedJobs.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(List.of(Map.of("message", "No completed jobs")));
+        }
+
+        return ResponseEntity.ok(completedJobs);
+    }
+
+    
+
+    
+
+    
+    
     // LUỒNG 2 
     
     @GetMapping(value = "/{cleanerId}/jobs")

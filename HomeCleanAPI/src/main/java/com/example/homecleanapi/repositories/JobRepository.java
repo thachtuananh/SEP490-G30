@@ -25,6 +25,12 @@ public interface JobRepository extends JpaRepository<Job, Long> {
     List<Job> findByCustomerId(Long customerId);
 
     public List<Job> findByScheduledTimeAndCustomerAddress(LocalDateTime scheduledTime, CustomerAddresses customerAddress);
+    
+    List<Job> findByCleanerIdAndStatus(Long cleanerId, JobStatus status);
+
+
+    List<Job> findByCleanerIdAndStatusIn(Long cleanerId, List<String> statuses);
+
 
 
 }
