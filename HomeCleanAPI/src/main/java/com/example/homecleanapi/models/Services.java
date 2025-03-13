@@ -105,7 +105,6 @@ public class Services {
     }
 
 
-
     public List<ServiceDetail> getServiceDetails() {
         return serviceDetails;
     }

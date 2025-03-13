@@ -459,13 +459,34 @@ public class CleanerJobService {
 	        Job job = jobApplication.getJob();
 	        Map<String, Object> jobInfo = new HashMap<>();
 
+	        // Thêm các thông tin chi tiết của job vào jobInfo
 	        jobInfo.put("jobId", job.getId());
 	        jobInfo.put("status", job.getStatus());
 	        jobInfo.put("scheduledTime", job.getScheduledTime());
 	        jobInfo.put("totalPrice", job.getTotalPrice());
+	        jobInfo.put("createdAt", job.getCreatedAt());  // Thêm thời gian tạo job
+
+	        // Thêm thông tin về customer đã book job
+	        Customers customer = job.getCustomer();
+	        if (customer != null) {
+	            jobInfo.put("customerId", customer.getId());
+	            jobInfo.put("customerName", customer.getFull_name());
+	            jobInfo.put("customerPhone", customer.getPhone());
+	        }
+
+	        // Thêm thông tin về địa chỉ của customer
+	        CustomerAddresses customerAddress = job.getCustomerAddress();
+	        if (customerAddress != null) {
+	            jobInfo.put("customerAddressId", customerAddress.getId());
+	            jobInfo.put("customerAddress", customerAddress.getAddress());
+	            jobInfo.put("latitude", customerAddress.getLatitude());
+	            jobInfo.put("longitude", customerAddress.getLongitude());
+	        }
 
 	        // Lấy tất cả các JobServiceDetail cho job này
 	        List<JobServiceDetail> jobServiceDetails = jobServiceDetailRepository.findByJobId(job.getId());
+	        System.out.println("JobServiceDetails for jobId " + job.getId() + ": " + jobServiceDetails);
+
 	        if (jobServiceDetails != null && !jobServiceDetails.isEmpty()) {
 	            List<Map<String, Object>> serviceList = new ArrayList<>();
 
@@ -474,9 +495,9 @@ public class CleanerJobService {
 	                Services service = jobServiceDetail.getService();
 	                if (service != null) {
 	                    Map<String, Object> serviceInfo = new HashMap<>();
-	                    serviceInfo.put("serviceName", service.getName());
+	                    serviceInfo.put("serviceName", service.getName());  // Lấy tên dịch vụ
 	                    serviceInfo.put("serviceDescription", service.getDescription());
-	                    
+
 	                    // Lấy các chi tiết dịch vụ
 	                    ServiceDetail serviceDetail = jobServiceDetail.getServiceDetail();
 	                    if (serviceDetail != null) {
@@ -488,13 +509,15 @@ public class CleanerJobService {
 	                        serviceInfo.put("description", serviceDetail.getDescription());
 	                        serviceInfo.put("discounts", serviceDetail.getDiscounts());
 	                    }
-	                    
+
 	                    serviceList.add(serviceInfo);
 	                }
 	            }
 
 	            // Thêm thông tin dịch vụ vào jobInfo
 	            jobInfo.put("services", serviceList);
+	        } else {
+	            jobInfo.put("services", "No services found for this job");
 	        }
 
 	        appliedJobs.add(jobInfo);
@@ -502,6 +525,11 @@ public class CleanerJobService {
 
 	    return appliedJobs;
 	}
+
+
+
+
+
 
 
 	// LUỒNG CODE 2

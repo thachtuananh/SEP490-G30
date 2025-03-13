@@ -414,7 +414,8 @@ public class JobService {
 
         for (Job job : jobs) {
             Map<String, Object> jobInfo = new HashMap<>();
-            
+
+            // Thêm các thông tin chi tiết của job vào jobInfo
             jobInfo.put("jobId", job.getId());
             jobInfo.put("scheduledTime", job.getScheduledTime());  // Thời gian
             jobInfo.put("customerAddress", job.getCustomerAddress().getAddress());  // Địa chỉ
@@ -422,29 +423,64 @@ public class JobService {
             jobInfo.put("totalPrice", job.getTotalPrice());  // Giá
             jobInfo.put("createdAt", job.getCreatedAt());  // Thời gian tạo
 
-            // Lấy danh sách các dịch vụ từ bảng trung gian job_service_detail
-            List<JobServiceDetail> jobServiceDetails = jobServiceDetailRepository.findByJobId(job.getId());
-
-            List<Map<String, String>> services = new ArrayList<>();
-            for (JobServiceDetail jobServiceDetail : jobServiceDetails) {
-                Map<String, String> serviceInfo = new HashMap<>();
-                Services service = jobServiceDetail.getService();  // Lấy dịch vụ liên kết
-                ServiceDetail serviceDetail = jobServiceDetail.getServiceDetail();  // Lấy chi tiết dịch vụ liên kết
-
-                serviceInfo.put("serviceName", service.getName());  // Tên dịch vụ
-                serviceInfo.put("serviceDetailName", serviceDetail.getName());  // Tên chi tiết dịch vụ
-                serviceInfo.put("serviceDetailPrice", serviceDetail.getPrice().toString());  // Giá dịch vụ
-
-                services.add(serviceInfo);
+            // Thêm thông tin về customer đã đặt job
+            Customers customer = job.getCustomer();
+            if (customer != null) {
+                jobInfo.put("customerId", customer.getId());
+                jobInfo.put("customerName", customer.getFull_name());
+                jobInfo.put("customerPhone", customer.getPhone());
             }
 
-            jobInfo.put("services", services);  // Thêm danh sách dịch vụ vào thông tin job
+            // Thêm thông tin về địa chỉ của customer
+            CustomerAddresses customerAddress = job.getCustomerAddress();
+            if (customerAddress != null) {
+                jobInfo.put("customerAddressId", customerAddress.getId());
+                jobInfo.put("customerAddress", customerAddress.getAddress());
+                jobInfo.put("latitude", customerAddress.getLatitude());
+                jobInfo.put("longitude", customerAddress.getLongitude());
+            }
+
+            // Lấy tất cả các JobServiceDetail cho job này
+            List<JobServiceDetail> jobServiceDetails = jobServiceDetailRepository.findByJobId(job.getId());
+            if (jobServiceDetails != null && !jobServiceDetails.isEmpty()) {
+                List<Map<String, Object>> serviceList = new ArrayList<>();
+
+                // Duyệt qua tất cả các dịch vụ trong bảng job_service_detail
+                for (JobServiceDetail jobServiceDetail : jobServiceDetails) {
+                    Services service = jobServiceDetail.getService();
+                    if (service != null) {
+                        Map<String, Object> serviceInfo = new HashMap<>();
+                        serviceInfo.put("serviceName", service.getName());
+                        serviceInfo.put("serviceDescription", service.getDescription());
+
+                        // Lấy các chi tiết dịch vụ
+                        ServiceDetail serviceDetail = jobServiceDetail.getServiceDetail();
+                        if (serviceDetail != null) {
+                            serviceInfo.put("serviceDetailId", serviceDetail.getId());
+                            serviceInfo.put("serviceDetailName", serviceDetail.getName());
+                            serviceInfo.put("serviceDetailPrice", serviceDetail.getPrice());
+                            serviceInfo.put("serviceDetailAdditionalPrice", serviceDetail.getAdditionalPrice());
+                            serviceInfo.put("serviceDetailAreaRange", serviceDetail.getAreaRange());
+                            serviceInfo.put("serviceDetailDescription", serviceDetail.getDescription());
+                            serviceInfo.put("serviceDetailDiscounts", serviceDetail.getDiscounts());
+                        }
+
+                        serviceList.add(serviceInfo);
+                    }
+                }
+
+                // Thêm thông tin dịch vụ vào jobInfo
+                jobInfo.put("services", serviceList);
+            } else {
+                jobInfo.put("services", "No services found for this job");
+            }
 
             bookedJobs.add(jobInfo);
         }
 
         return bookedJobs;
     }
+
 
     
     // huy job ddax book
