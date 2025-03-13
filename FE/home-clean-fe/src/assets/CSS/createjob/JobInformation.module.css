@@ -19,7 +19,7 @@
 
 .infoRow span:last-child {
     text-align: right;
-    max-width: 60%;
+    /* max-width: 60%; */
     word-break: break-word;
 }
 
@@ -77,6 +77,21 @@
     align-items: center;
     justify-content: center;
     cursor: pointer;
+}
+
+.serviceTags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 4px;
+}
+
+.serviceTag {
+    background: #f0f2f5;
+    padding: 4px 10px;
+    border-radius: 10px;
+    font-size: 14px;
+    color: #333;
 }
 
 /* Responsive adjustments */

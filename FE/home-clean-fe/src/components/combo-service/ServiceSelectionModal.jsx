@@ -40,7 +40,7 @@ const ServiceSelectionModal = ({
         >
             <p>Chọn những dịch vụ bạn muốn</p>
             <div className={styles.serviceCheckboxGrid}>
-                {allServices.map((service) => (
+                {allServices.filter(service => service.id !== 5).map((service) => (
                     <div
                         key={service.id}
                         className={`${styles.serviceCheckboxItem} ${selectedServices.includes(service.id) ? styles.serviceCheckboxItemSelected : ''}`}
@@ -49,7 +49,7 @@ const ServiceSelectionModal = ({
                             borderRadius: '8px',
                             padding: '16px',
                             textAlign: 'center',
-                            cursor: 'pointer'
+                            cursor: 'pointer',
                         }}
                         onClick={() => onServiceChange(service.id)}
                     >

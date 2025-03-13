@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { Modal, List, Button, Table, message } from "antd";
-import axios from "axios";
 import styles from "./JobList.module.css";
 
 const getStatusColor = (status) => {
@@ -22,12 +21,12 @@ const getStatusLabel = (status) => {
   const statusMap = {
     OPEN: "Đang mở",
     PENDING_APPROVAL: "Chờ phê duyệt",
-    IN_PROGRESS: "Đang thực hiện",
+    IN_PROGRESS: "Đang đến ",
     ARRIVED: "Đã đến nơi",
-    STARTED: "Đã bắt đầu",
-    COMPLETED: "Đã hoàn thành",
+    STARTED: "Bắt đầu làm việc",
+    COMPLETED: "Đã hoàn thành công việc",
     CANCELLED: "Đã hủy",
-    DONE: "Hoàn tất",
+    DONE: "Hoàn tất công việc",
     BOOKED: "Đã đặt lịch",
   };
   return statusMap[status.toUpperCase()] || "Không xác định";
@@ -66,7 +65,13 @@ const JobCard = ({ job }) => {
   return (
     <article className={styles.jobCard}>
       <header className={styles.jobHeader}>
-        <h2 className={styles.jobTitle}>{job.serviceName}</h2>
+        <h2 className={styles.jobTitle}>
+          {job.services
+            ? (Array.isArray(job.services)
+              ? job.services.map(service => service.serviceName).join(", ")
+              : job.services.serviceName || "Unnamed Service")
+            : "Unnamed Service"}
+        </h2>
         <span className={styles.status} style={{ color: getStatusColor(currentStatus) }}>
           {getStatusLabel(currentStatus)}
         </span>
@@ -125,7 +130,7 @@ const JobCard = ({ job }) => {
           </div>
           <div className={styles.detailContent}>
             <span className={styles.detailLabel}>Địa điểm</span>
-            <strong className={styles.detailValue}>{job.serviceDescription}</strong>
+            <strong className={styles.detailValue}>{job.customerAddress}</strong>
           </div>
         </div>
 

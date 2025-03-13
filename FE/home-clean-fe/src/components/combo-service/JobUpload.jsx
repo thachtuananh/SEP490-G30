@@ -29,7 +29,7 @@ const JobUpload = () => {
         {
             id: 2,
             icon: donBep,
-            title: "Dọn bếp",
+            title: "Dọn phòng bếp",
             description: "Gấp chăn gối, lau bụi, hút bụi, lau sàn",
         },
         {

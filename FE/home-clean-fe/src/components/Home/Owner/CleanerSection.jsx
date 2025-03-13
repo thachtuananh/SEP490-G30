@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import CleanerCard from "./CleanerCard";
 
-import { fetchCleaners } from "../../api/Home_API";
+import { fetchCleaners } from "../../../services/owner/OwnerAPI";
 
 function CleanerSection() {
   const [cleaners, setCleaners] = useState([]);

@@ -295,3 +295,180 @@
     display: flex;
     align-items: center;
 }
+
+/* pick location combo */
+.locationSelectorContainer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    gap: 12px;
+}
+
+.locationDisplay {
+    flex: 1;
+    padding: 8px 12px;
+    border: 1px solid #d9d9d9;
+    border-radius: 6px;
+    min-height: 32px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.locationButton {
+    flex-shrink: 0;
+    white-space: nowrap;
+}
+
+.buttonContent {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* location modal css */
+/* Address Book Modal Styles */
+.addressBookModal {
+    width: 100% !important;
+    max-width: 600px;
+}
+
+.addressBookModal :global(.ant-modal-header) {
+    border-bottom: none;
+    padding: 16px 24px 0;
+}
+
+.addressBookModal :global(.ant-modal-title) {
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.addressBookHeader {
+    color: #8c8c8c;
+    font-size: 14px;
+    margin-bottom: 16px;
+    padding: 0 24px;
+}
+
+.addressList {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.addressItem {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 24px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.addressInfo {
+    flex: 1;
+}
+
+.userName {
+    font-weight: 500;
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.phoneNumber {
+    font-weight: normal;
+    color: #666;
+}
+
+.defaultTag {
+    background-color: #e6f7ff;
+    color: #1890ff;
+    font-size: 12px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin-left: 8px;
+}
+
+.address {
+    color: #666;
+    margin-bottom: 8px;
+    font-size: 14px;
+}
+
+.addressActions {
+    margin-top: 8px;
+    display: flex;
+    align-items: center;
+}
+
+.defaultSelected,
+.defaultOption {
+    display: flex;
+    align-items: center;
+    font-size: 13px;
+    color: #039855;
+    cursor: pointer;
+}
+
+.checkIcon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background-color: #039855;
+    color: white;
+    font-size: 12px;
+    margin-left: 6px;
+}
+
+.checkBox {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 1px solid #d9d9d9;
+    border-radius: 50%;
+    margin-left: 6px;
+}
+
+.selectButtonContainer {
+    display: flex;
+    align-items: center;
+}
+
+.selectButton {
+    background-color: transparent;
+    border: 1px solid #039855;
+    color: #039855;
+    border-radius: 6px;
+    font-weight: 500;
+}
+
+.selectButton:hover {
+    background-color: rgba(3, 152, 85, 0.05);
+    border-color: #039855;
+    color: #039855;
+}
+
+.addAddressButtonContainer {
+    display: flex;
+    justify-content: center;
+    padding: 16px 0;
+}
+
+.addAddressButton {
+    background-color: #039855;
+    border-color: #039855;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 16px;
+    height: 36px;
+}
+
+.addAddressButton:hover {
+    background-color: #037b45;
+    border-color: #037b45;
+}

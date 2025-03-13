@@ -4,6 +4,7 @@ import { AuthContext } from '../../context/AuthContext';
 import { message, Typography, Modal, Checkbox } from "antd";
 import styles from "../../assets/CSS/createjob/JobInformation.module.css";
 import dayjs from "dayjs";
+import { createJob } from "../../services/owner/OwnerAPI"; // Import API function
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -31,7 +32,10 @@ const JobInfomation = ({ selectedDate, hour, minute }) => {
 
         return () => clearInterval(timer);
     }, []);
-
+    // Add at the beginning of the JobInfomation component
+    useEffect(() => {
+        console.log("State passed to JobInfomation:", state);
+    }, [state]);
     const validateJobTime = () => {
         if (!selectedDate) {
             message.error("Vui lòng chọn ngày và giờ làm việc!");
@@ -83,9 +87,8 @@ const JobInfomation = ({ selectedDate, hour, minute }) => {
         setIsSubmitting(true);
 
         try {
-            // Kiểm tra tính hợp lệ của thời gian
+            // Validate job time
             const isTimeValid = await validateJobTime();
-
             if (!isTimeValid) {
                 setIsSubmitting(false);
                 return;
@@ -104,26 +107,30 @@ const JobInfomation = ({ selectedDate, hour, minute }) => {
                     .toString()
                     .padStart(2, '0')}:${minute.toString().padStart(2, '0')}:00`;
 
+            // Check if we have multiple services selected
+            const services = state.serviceDetails ?
+                state.serviceDetails.map(service => ({
+                    serviceId: service.serviceId,
+                    serviceDetailId: service.serviceDetailId,
+                    imageUrl: "http://example.com/room.jpg"
+                })) :
+                [{
+                    serviceId,
+                    serviceDetailId,
+                    imageUrl: "http://example.com/room.jpg"
+                }];
+
             const jobData = {
-                serviceId,
-                serviceDetailId,
-                jobTime: formattedJobTime,
                 customerAddressId,
-                imageUrl: "http://example.com/room.jpg",
+                jobTime: formattedJobTime,
+                services: services
             };
 
-            const response = await fetch(`http://localhost:8080/api/customer/${customerId}/createjob?customerId=${customerId}`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${localStorage.getItem("token")}`
-                },
-                body: JSON.stringify(jobData),
-            });
+            console.log("Job data being sent:", jobData); // Add this for debugging
 
-            const responseData = await response.json();
+            const responseData = await createJob(customerId, jobData);
 
-            if (response.ok && responseData.status === "OPEN") {
+            if (responseData.status === "OPEN") {
                 console.log("Job created successfully");
                 message.success("Đăng việc thành công!");
                 navigate('/ordersuccess');
@@ -140,53 +147,74 @@ const JobInfomation = ({ selectedDate, hour, minute }) => {
     };
 
     return (
-        <div className={styles.jobInfoContainer}>
-            <Title level={5} className={styles.infoTitle}>Thời gian làm việc</Title>
-            <Paragraph className={styles.infoRow}>
-                <Text>Ngày làm việc</Text>
-                <Text>{selectedDate
-                    ? `${selectedDate.getDate().toString().padStart(2, '0')} - ${(selectedDate.getMonth() + 1).toString().padStart(2, '0')} - ${selectedDate.getFullYear()}`
-                    : "Chưa chọn"}</Text>
-            </Paragraph>
-            <Paragraph className={styles.infoRow}>
-                <Text>Thời gian làm việc</Text>
-                <Text>
-                    {selectedDate
-                        ? `${hour.toString().padStart(2, '0')} : ${minute.toString().padStart(2, '0')}`
-                        : "Chưa chọn"}
-                </Text>
-            </Paragraph>
-            <Title level={5} className={styles.infoTitle}>Chi tiết</Title>
-            <Paragraph className={styles.infoRow}>
-                <Text>Loại dịch vụ</Text>
-                <Text>{state?.serviceName}</Text>
-            </Paragraph>
-            <Paragraph className={styles.infoRow}>
-                <Text>Địa điểm</Text>
-                <Text>
-                    {state.address}
-                </Text>
-            </Paragraph>
-            <Paragraph className={styles.infoRow}>
-                <Text>Khối lượng công việc</Text>
-                <Text>
-                    {state?.selectedSize || 0}m² - {state?.maxSize || 0}m²
-                </Text>
-            </Paragraph>
-            <Paragraph className={styles.infoRow}>
-                <Text>Số nhân công</Text>
-                <Text>1 người</Text>
-            </Paragraph>
-            <div className={styles.divider}></div>
+        <>
+            <div className={styles.jobInfoContainer}>
+                <Title level={5} className={styles.infoTitle}>Thời gian làm việc</Title>
+                <Paragraph className={styles.infoRow}>
+                    <Text>Ngày làm việc</Text>
+                    <Text>{selectedDate
+                        ? `${selectedDate.getDate().toString().padStart(2, '0')} - ${(selectedDate.getMonth() + 1).toString().padStart(2, '0')} - ${selectedDate.getFullYear()}`
+                        : "Chưa chọn"}</Text>
+                </Paragraph>
+                <Paragraph className={styles.infoRow}>
+                    <Text>Thời gian làm việc</Text>
+                    <Text>
+                        {selectedDate
+                            ? `${hour.toString().padStart(2, '0')} : ${minute.toString().padStart(2, '0')}`
+                            : "Chưa chọn"}
+                    </Text>
+                </Paragraph>
+                <Title level={5} className={styles.infoTitle}>Chi tiết</Title>
+                <Paragraph className={styles.infoRow}>
+                    <Text>Loại dịch vụ</Text>
+                    {state?.serviceDetails ? (
+                        <Text className={styles.serviceTags}>
+                            {state.serviceDetails.map((service, index) => (
+                                <Text key={index} className={styles.serviceTag}>
+                                    {service.serviceName}
+                                </Text>
+                            ))}
+                        </Text>
+                    ) : (
+                        <Text>{state.serviceName || "Chưa chọn"}</Text>
+                    )}
+                </Paragraph>
 
-            <div className={styles.totalContainer}>
-                <Text>Tổng thanh toán</Text>
-                <Title level={4} className={styles.totalPrice}>
-                    {state.price?.toLocaleString() || 0} VNĐ
-                </Title>
+                <Paragraph className={styles.infoRow}>
+                    <Text>Địa điểm</Text>
+                    <Text>
+                        {state.address}
+                    </Text>
+                </Paragraph>
+                <Paragraph className={styles.infoRow}>
+                    <Text>Khối lượng công việc</Text>
+                    {/* <Text>
+                        {state?.selectedSize || 0}m² - {state?.maxSize || 0}m²
+                    </Text> */}
+                    <Text className={styles.serviceTags}>
+                        {state?.serviceDetails?.map((service, index) => (
+                            <Text key={index} className={styles.serviceTag}>
+                                {service.serviceName} | {service.selectedSize}m² - {service.maxSize}m²
+                            </Text>
+                        ))}
+                    </Text>
+                </Paragraph>
+                <Paragraph className={styles.infoRow}>
+                    <Text>Số nhân công</Text>
+                    <Text>1 người</Text>
+                </Paragraph>
+                <div className={styles.divider}></div>
+
+                <div className={styles.totalContainer}>
+                    <Text>Tổng thanh toán</Text>
+                    <Title level={4} className={styles.totalPrice}>
+                        {state.price?.toLocaleString() || 0} VNĐ
+                    </Title>
+                </div>
+
+
             </div>
-
-            <div style={{ marginBottom: '16px' }}>
+            <div style={{ margin: '16px 0px' }}>
                 <Checkbox
                     checked={termsAccepted}
                     onChange={(e) => setTermsAccepted(e.target.checked)}
@@ -214,7 +242,7 @@ const JobInfomation = ({ selectedDate, hour, minute }) => {
                     {isSubmitting ? 'Đang xử lý...' : 'Đăng việc'}
                 </div>
             </div>
-        </div>
+        </>
     );
 };
 

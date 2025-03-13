@@ -6,6 +6,14 @@ import { FaRegCommentAlt } from "react-icons/fa";
 import { MdCalendarToday, MdLocationOn, MdAccessTime } from "react-icons/md";
 import axios from "axios";
 import { AuthContext } from "../../context/AuthContext";
+import {
+    fetchCleanerApplications,
+    fetchCleanerDetail,
+    hireCleaner,
+    startJob,
+    completeJob,
+    deleteJobPosting
+} from "../../services/owner/StatusJobAPI";
 
 export const ActivityCard = ({ data, onDelete }) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -32,59 +40,30 @@ export const ActivityCard = ({ data, onDelete }) => {
     };
     const getStatusText = (status) => {
         switch (status) {
-            case "OPEN": return "Đang mở";
+            case "OPEN": return "Đang chờ người nhận";
             case "PENDING_APPROVAL": return "Chờ phê duyệt";
-            case "IN_PROGRESS": return "Đang thực hiện";
-            case "ARRIVED": return "Đã đến nơi";
-            case "STARTED": return "Đã bắt đầu";
-            case "COMPLETED": return "Đã hoàn thành";
+            case "IN_PROGRESS": return "Người nhận việc đang tới";
+            case "ARRIVED": return "Người nhận việc đã tới";
+            case "STARTED": return "Người nhận việc đang làm";
+            case "COMPLETED": return "Người nhận việc đã hoàn thành";
             case "CANCELLED": return "Đã hủy";
-            case "DONE": return "Hoàn tất";
+            case "DONE": return "Hoàn tất công việc";
             case "BOOKED": return "Đã đặt lịch";
             default: return "Không xác định";
         }
     };
 
-    //  API LIST CLEARN
+    // Fetch cleaner applications
     const fetchCleaners = async (jobId) => {
         setLoading(true);
         try {
-            const token = localStorage.getItem("token");
-            const response = await axios.get(`http://localhost:8080/api/customer/applications/${customerId}/${jobId}`, {
-                headers: {
-                    "Authorization": `Bearer ${token}`,
-                    "Content-Type": "application/json",
-                },
-            });
-
-            const data = response.data;
-
-            // Check if the response contains an error message
-            if (Array.isArray(data) && data.length === 1 && data[0].message && data[0].message.includes("No applications found")) {
-                // This is the error case, set empty list
-                setCleanerList([]);
-                setApplicationsCount(prev => ({
-                    ...prev,
-                    [jobId]: 0
-                }));
-            } else if (Array.isArray(data)) {
-                // Valid data
-                setCleanerList(data);
-                setApplicationsCount(prev => ({
-                    ...prev,
-                    [jobId]: data.length
-                }));
-            } else {
-                // Handle unexpected response format
-                console.error("Unexpected response format:", data);
-                setCleanerList([]);
-                setApplicationsCount(prev => ({
-                    ...prev,
-                    [jobId]: 0
-                }));
-            }
+            const data = await fetchCleanerApplications(customerId, jobId);
+            setCleanerList(data);
+            setApplicationsCount(prev => ({
+                ...prev,
+                [jobId]: data.length
+            }));
         } catch (error) {
-            console.error("Lỗi khi lấy danh sách cleaner:", error);
             message.error("Không thể tải danh sách Cleaner");
             setCleanerList([]);
             setApplicationsCount(prev => ({
@@ -101,27 +80,10 @@ export const ActivityCard = ({ data, onDelete }) => {
             data.forEach(async (activity) => {
                 if (activity.status === "OPEN") {
                     try {
-                        const token = localStorage.getItem("token");
-                        const response = await axios.get(`http://localhost:8080/api/customer/applications/${customerId}/${activity.jobId}`, {
-                            headers: {
-                                "Authorization": `Bearer ${token}`,
-                                "Content-Type": "application/json",
-                            },
-                        });
-
-                        const responseData = response.data;
-
-                        // Check if the response is an error message
-                        const count = Array.isArray(responseData) &&
-                            responseData.length === 1 &&
-                            responseData[0].message &&
-                            responseData[0].message.includes("No applications found")
-                            ? 0
-                            : responseData.length;
-
+                        const applications = await fetchCleanerApplications(customerId, activity.jobId);
                         setApplicationsCount(prev => ({
                             ...prev,
-                            [activity.jobId]: count
+                            [activity.jobId]: applications.length
                         }));
                     } catch (error) {
                         console.error("Lỗi khi lấy số lượng ứng viên:", error);
@@ -135,20 +97,13 @@ export const ActivityCard = ({ data, onDelete }) => {
         }
     }, [data, customerId]);
 
-    //  API DETAILS
-    const fetchCleanerDetail = async (cleanerId) => {
+    // Fetch cleaner details
+    const handleFetchCleanerDetail = async (cleanerId) => {
         setLoading(true);
         try {
-            const token = localStorage.getItem("token");
-            const response = await axios.get(`http://localhost:8080/api/customer/viewdetailcleaner/${cleanerId}`, {
-                headers: {
-                    "Authorization": `Bearer ${token}`,
-                    "Content-Type": "application/json",
-                },
-            });
-            setSelectedCleaner(response.data);
+            const data = await fetchCleanerDetail(cleanerId);
+            setSelectedCleaner(data);
         } catch (error) {
-            console.error("Lỗi khi lấy thông tin cleaner:", error);
             message.error("Không thể tải thông tin Cleaner");
             setSelectedCleaner(null);
         }
@@ -161,7 +116,7 @@ export const ActivityCard = ({ data, onDelete }) => {
         setSelectedJobId(jobId);
     };
 
-    //  API THUE
+    // Hire a cleaner
     const handleHireCleaner = async (jobId, cleanerId, customerId) => {
         if (!jobId) {
             console.error("Không tìm thấy jobId!");
@@ -169,17 +124,7 @@ export const ActivityCard = ({ data, onDelete }) => {
         }
 
         try {
-            const token = localStorage.getItem("token");
-            await axios.post(
-                `http://localhost:8080/api/customer/accept-job/${jobId}/cleaner/${cleanerId}/customer/${customerId}`,
-                {},
-                {
-                    headers: {
-                        "Authorization": `Bearer ${token}`,
-                        "Content-Type": "application/json",
-                    },
-                }
-            );
+            await hireCleaner(jobId, cleanerId, customerId);
             console.log("✅ Thuê cleaner thành công!", { jobId, cleanerId, customerId });
             message.success("✅ Thuê cleaner thành công!");
             setIsModalOpen(false);
@@ -189,21 +134,10 @@ export const ActivityCard = ({ data, onDelete }) => {
         }
     };
 
-    //  API BAT DAU LAM VIEC
+    // Start a job
     const handleStartJob = async (jobId) => {
         try {
-            const token = localStorage.getItem("token");
-            const customerId = localStorage.getItem("customerId");
-            await axios.post(
-                `http://localhost:8080/api/customer/job/start/${jobId}/${customerId}`,
-                {},
-                {
-                    headers: {
-                        "Authorization": `Bearer ${token}`,
-                        "Accept": "application/json",
-                    },
-                }
-            );
+            await startJob(jobId, customerId);
             message.success("✅ Công việc đã bắt đầu!");
         } catch (error) {
             console.error("❌ Lỗi khi bắt đầu công việc:", error);
@@ -211,25 +145,28 @@ export const ActivityCard = ({ data, onDelete }) => {
         }
     };
 
+    // Complete a job
     const handleCompleteJob = async (jobId) => {
         try {
-            const token = localStorage.getItem("token");
-            await axios.post(
-                `http://localhost:8080/api/customer/job/done/customer/${jobId}`,
-                {},
-                {
-                    headers: {
-                        "Authorization": `Bearer ${token}`,
-                        "Accept": "application/json",
-                    },
-                }
-            );
+            await completeJob(jobId);
             message.success("✅ Công việc đã hoàn thành!");
         } catch (error) {
             console.error("❌ Lỗi khi hoàn thành công việc:", error);
             message.error("❌ Không thể hoàn thành công việc.");
         }
     };
+
+    // Handle delete job posting
+    // const handleDeleteJobPosting = async (jobId) => {
+    //     try {
+    //         await deleteJobPosting(jobId);
+    //         onDelete(jobId);
+    //         message.success("✅ Xóa bài đăng thành công!");
+    //     } catch (error) {
+    //         console.error("❌ Lỗi khi xóa bài đăng:", error);
+    //         message.error("❌ Không thể xóa bài đăng.");
+    //     }
+    // };
 
     const columns = [
         {
@@ -284,16 +221,28 @@ export const ActivityCard = ({ data, onDelete }) => {
                     <div key={index} className={styles.card}>
                         <div className={styles.cardContent}>
                             <div className={styles.header}>
-                                <h3>{activity.serviceName}</h3>
+                                {activity.services && activity.services.map((service, idx) => (
+                                    <div key={idx} className={styles.serviceItem}>
+                                        <h3>{service.serviceName}</h3>
+                                    </div>
+                                ))}
+
                             </div>
 
                             <p><MdCalendarToday className={styles.icon} /> {new Date(activity.scheduledTime).toLocaleDateString("vi-VN")}</p>
                             <p><MdAccessTime className={styles.icon} /> {new Date(activity.scheduledTime).toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" })}</p>
 
+
                             <div className={styles.location}>
                                 <MdLocationOn className={styles.icon} /> {activity.customerAddress}
                             </div>
-
+                            <div className={styles.services}>
+                                {activity.services && activity.services.map((service, idx) => (
+                                    <div key={idx} className={styles.serviceItem}>
+                                        <p><strong>{service.serviceName}</strong> - {service.serviceDetailAreaRange}</p>
+                                    </div>
+                                ))}
+                            </div>
                             <div className={styles.deleteButton} onClick={() => onDelete(activity.jobId)}>
                                 <b>Xóa bài đăng</b>
                             </div>

@@ -3,6 +3,13 @@ import { Link } from "react-router-dom";
 import styles from "./JobUpload.module.css";
 
 const JobUploadCard = ({ id, icon, title, description, onComboSelect }) => {
+    // Handle click for service with ID 5 (Combo service)
+    const handleServiceClick = () => {
+        if (id === 5) {
+            onComboSelect();
+        }
+    };
+
     return (
         <div className={styles.serviceCard}>
             <div className={styles.iconWrapper}>
@@ -12,7 +19,7 @@ const JobUploadCard = ({ id, icon, title, description, onComboSelect }) => {
                 <h3 className={styles.serviceTitle}>{title}</h3>
                 <p className={styles.serviceDescription}>{description}</p>
                 {id === 5 ? (
-                    <button className={styles.serviceButton} onClick={onComboSelect}>
+                    <button className={styles.serviceButton} onClick={handleServiceClick}>
                         Đăng việc
                     </button>
                 ) : (

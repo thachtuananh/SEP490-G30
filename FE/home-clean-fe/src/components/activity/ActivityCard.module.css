@@ -260,7 +260,19 @@ h3 {
     cursor: pointer;
 }
 
+.services {
+    margin-bottom: 10px;
+}
 
+.serviceItem {
+    margin-bottom: 4px;
+    padding: 4px 0;
+    border-bottom: 1px dashed #eee;
+}
+
+.serviceItem:last-child {
+    border-bottom: none;
+}
 
 
 @media (max-width: 768px) {
