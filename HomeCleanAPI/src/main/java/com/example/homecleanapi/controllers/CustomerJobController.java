@@ -5,7 +5,7 @@ import com.example.homecleanapi.dtos.CleanerSessionInfo;
 import com.example.homecleanapi.models.CustomerAddresses;
 import com.example.homecleanapi.services.CleanerJobService;
 import com.example.homecleanapi.services.JobService;
-import com.example.homecleanapi.utils.UserStatusWebSocketHandler;
+
 
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -153,26 +153,9 @@ public class CustomerJobController {
 //
 //        return ResponseEntity.ok(onlineCleaners);
 //    }
-	@GetMapping("/cleaners/online")
-	public ResponseEntity<List<Map<String, Object>>> getOnlineCleaners() {
-	    Map<String, CleanerSessionInfo> onlineCleanersMap = UserStatusWebSocketHandler.getOnlineCleaners();
+	
 
-	    if (onlineCleanersMap.isEmpty()) {
-	        return ResponseEntity.status(404).body(List.of(Map.of("message", "No online cleaners found")));
-	    }
 
-	    List<Map<String, Object>> onlineCleanersList = onlineCleanersMap.entrySet().stream()
-	        .map(entry -> {
-	            Map<String, Object> cleanerInfo = new HashMap<String, Object>();
-	            cleanerInfo.put("id", entry.getKey());
-	            cleanerInfo.put("name", entry.getValue().getCleanerName());
-	            cleanerInfo.put("profileImage", entry.getValue().getProfileImage());
-	            return cleanerInfo;
-	        })
-	        .toList();
-
-	    return ResponseEntity.ok(onlineCleanersList);
-	}
 
 	
 	@GetMapping("/viewdetailcleaneron/{cleanerId}")
