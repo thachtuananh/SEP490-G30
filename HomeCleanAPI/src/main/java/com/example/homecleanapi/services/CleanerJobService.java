@@ -790,6 +790,7 @@ public class CleanerJobService {
 	public Map<String, Object> getJobsByService() {
 	    Map<String, Object> jobsByService = new HashMap<>();
 	    Map<String, Object> comboJobs = new HashMap<>();  // Dành cho các công việc combo (chỉ đếm số lượng)
+	    String comboKey = "combo";  // Sử dụng một ID duy nhất cho combo
 
 	    List<Services> services = serviceRepository.findAll();  // Lấy tất cả các dịch vụ
 
@@ -798,10 +799,12 @@ public class CleanerJobService {
 	    // Duyệt qua tất cả các dịch vụ
 	    for (Services service : services) {
 	        String serviceName = service.getName();  // Lấy tên dịch vụ
+	        Long serviceId = service.getId(); // Lấy ID dịch vụ
 
 	        // Nếu dịch vụ chưa tồn tại trong danh sách, tạo mới
 	        if (!jobsByService.containsKey(serviceName)) {
 	            Map<String, Object> serviceInfo = new HashMap<>();
+	            serviceInfo.put("serviceId", serviceId);  // Thêm serviceId vào service info
 	            serviceInfo.put("serviceName", serviceName);
 	            serviceInfo.put("jobCount", 0);  // Bắt đầu đếm số lượng công việc
 	            jobsByService.put(serviceName, serviceInfo);
@@ -826,14 +829,15 @@ public class CleanerJobService {
 	                    // Nếu job có nhiều dịch vụ thì đếm là combo
 	                    if (jobServiceDetailsForJob.size() > 1) {
 	                        // Nếu combo chưa được đếm
-	                        if (!comboJobs.containsKey("combo")) {
+	                        if (!comboJobs.containsKey(comboKey)) {
 	                            Map<String, Object> comboInfo = new HashMap<>();
 	                            comboInfo.put("jobCount", 0);  
-	                            comboJobs.put("combo", comboInfo);
+	                            comboInfo.put("id", comboKey);  // Sử dụng một ID duy nhất cho combo
+	                            comboJobs.put(comboKey, comboInfo);
 	                        }
 
 	                        // Lấy thông tin combo và tăng số lượng combo
-	                        Map<String, Object> comboInfo = (Map<String, Object>) comboJobs.get("combo");
+	                        Map<String, Object> comboInfo = (Map<String, Object>) comboJobs.get(comboKey);
 	                        int comboCount = (int) comboInfo.get("jobCount");
 	                        comboInfo.put("jobCount", comboCount + 1);  
 	                    } else {
@@ -850,7 +854,7 @@ public class CleanerJobService {
 	    }
 
 	    // Kết hợp kết quả của comboJobs với jobsByService
-	    jobsByService.put("combo", comboJobs.get("combo"));
+	    jobsByService.put("combo", comboJobs.get(comboKey));  // Chỉ giữ 1 ID duy nhất cho combo
 
 	    // Đảm bảo nếu dịch vụ không có công việc nào thì hiển thị jobCount là 0
 	    for (String serviceName : jobsByService.keySet()) {
@@ -862,6 +866,8 @@ public class CleanerJobService {
 
 	    return jobsByService;  // Trả về danh sách các công việc phân loại theo dịch vụ, bao gồm cả combo
 	}
+
+
 
 
 
