@@ -24,24 +24,20 @@ public class CleanerController {
 
     @MessageMapping("/cleaner-online")
     public void handleCleanerOnline(String cleanerId) {
-        // Log thông tin cleaner đăng nhập trước khi cập nhật trạng thái
+        // Log để kiểm tra xem backend có nhận được cleanerId không
         System.out.println("Received cleaner login request with cleanerId: " + cleanerId);
 
-        // Cập nhật trạng thái cleaner là online trong DB
+        // Tiến hành cập nhật trạng thái online trong DB
         Optional<Employee> cleanerOpt = cleanerRepository.findById(Long.valueOf(cleanerId));
         cleanerOpt.ifPresent(cleaner -> {
-            // Log trước khi cập nhật trạng thái trong DB
-            System.out.println("Updating cleaner status to online in DB for cleanerId: " + cleanerId);
-            cleaner.setStatus(true); // Đánh dấu cleaner là online
-            cleanerRepository.save(cleaner); // Cập nhật vào DB
+            cleaner.setStatus(true);  // Đánh dấu cleaner là online
+            cleanerRepository.save(cleaner);  // Cập nhật vào DB
             System.out.println("Cleaner " + cleanerId + " is now online in DB.");
         });
 
-        // Gửi thông tin log này lại cho frontend để frontend biết
+        // Gửi thông báo về trạng thái online cho frontend
         messagingTemplate.convertAndSend("/topic/cleaner-status", 
             "Cleaner with ID " + cleanerId + " is now online.");
-
-        // Log thông báo gửi thông điệp thành công
-        System.out.println("Sent cleaner online status to frontend for cleanerId: " + cleanerId);
     }
+
 }
