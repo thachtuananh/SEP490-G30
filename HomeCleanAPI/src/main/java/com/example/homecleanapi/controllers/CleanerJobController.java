@@ -108,9 +108,9 @@ public class CleanerJobController {
 
 
     // list job theo service và số lượng 
-    @GetMapping("/{cleanerId}/jobs/by-service")
-    public ResponseEntity<Map<String, Object>> getJobsByService(@PathVariable Long cleanerId) {
-        Map<String, Object> jobsByService = cleanerJobService.getJobsByService(cleanerId);
+    @GetMapping("/jobs/by-service")
+    public ResponseEntity<Map<String, Object>> getJobsByService() {
+        Map<String, Object> jobsByService = cleanerJobService.getJobsByService();
 
         if (jobsByService.isEmpty()) {
             jobsByService.put("message", "No jobs found by service");
@@ -119,7 +119,6 @@ public class CleanerJobController {
 
         return ResponseEntity.ok(jobsByService);
     }
-
     
     // xem job thuộc filter service
     @GetMapping("/jobs/details/by-service/{serviceId}")

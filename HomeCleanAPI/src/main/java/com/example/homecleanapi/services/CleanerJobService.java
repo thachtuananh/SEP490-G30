@@ -784,17 +784,13 @@ public class CleanerJobService {
 
 
 	// list job theo service và số lượng
-	public Map<String, Object> getJobsByService(Long cleanerId) {
+	public Map<String, Object> getJobsByService() {
 	    Map<String, Object> jobsByService = new HashMap<>();
-	    Map<String, Object> comboJobs = new HashMap<>(); 
+	    Map<String, Object> comboJobs = new HashMap<>();  // Dành cho các công việc combo (chỉ đếm số lượng)
 
-	    
-	    
-	    List<Services> services = serviceRepository.findAll();  
+	    List<Services> services = serviceRepository.findAll();  // Lấy tất cả các dịch vụ
 
-	    Set<Long> countedJobIds = new HashSet<Long>();  
-	    
-	    
+	    Set<Long> countedJobIds = new HashSet<Long>();  // Set để theo dõi các job_id đã đếm
 
 	    // Duyệt qua tất cả các dịch vụ
 	    for (Services service : services) {
