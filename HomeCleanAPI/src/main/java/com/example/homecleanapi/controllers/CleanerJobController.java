@@ -26,11 +26,12 @@ public class CleanerJobController {
     private CleanerJobService cleanerJobService;
 
     // Xem danh sách các công việc "Open"
-    @GetMapping(value = "/jobs")
-    public ResponseEntity<List<JobSummaryDTO>> getOpenJobs() {
-        List<JobSummaryDTO> openJobs = cleanerJobService.getOpenJobs();
+    @GetMapping(value = "/jobs/{cleanerId}")
+    public ResponseEntity<List<JobSummaryDTO>> getOpenJobs(@PathVariable Long cleanerId) {
+        List<JobSummaryDTO> openJobs = cleanerJobService.getOpenJobs(cleanerId);
         return ResponseEntity.ok(openJobs);
     }
+
 
     // Xem chi tiết công việc
     @GetMapping(value = "/job/{jobId}")
