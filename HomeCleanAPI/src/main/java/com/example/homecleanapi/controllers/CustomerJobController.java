@@ -1,9 +1,11 @@
 package com.example.homecleanapi.controllers;
 
 import com.example.homecleanapi.dtos.BookJobRequest;
+import com.example.homecleanapi.dtos.CleanerSessionInfo;
 import com.example.homecleanapi.models.CustomerAddresses;
 import com.example.homecleanapi.services.CleanerJobService;
 import com.example.homecleanapi.services.JobService;
+import com.example.homecleanapi.utils.UserStatusWebSocketHandler;
 
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -13,6 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -152,14 +155,23 @@ public class CustomerJobController {
 //    }
 	@GetMapping("/cleaners/online")
 	public ResponseEntity<List<Map<String, Object>>> getOnlineCleaners() {
-	    // Lấy thông tin các cleaner đang online từ WebSocket handler
-	    List<Map<String, Object>> onlineCleaners = cleanerJobService.getOnlineCleaners();
+	    Map<String, CleanerSessionInfo> onlineCleanersMap = UserStatusWebSocketHandler.getOnlineCleaners();
 
-	    if (onlineCleaners.isEmpty()) {
+	    if (onlineCleanersMap.isEmpty()) {
 	        return ResponseEntity.status(404).body(List.of(Map.of("message", "No online cleaners found")));
 	    }
 
-	    return ResponseEntity.ok(onlineCleaners);
+	    List<Map<String, Object>> onlineCleanersList = onlineCleanersMap.entrySet().stream()
+	        .map(entry -> {
+	            Map<String, Object> cleanerInfo = new HashMap<String, Object>();
+	            cleanerInfo.put("id", entry.getKey());
+	            cleanerInfo.put("name", entry.getValue().getCleanerName());
+	            cleanerInfo.put("profileImage", entry.getValue().getProfileImage());
+	            return cleanerInfo;
+	        })
+	        .toList();
+
+	    return ResponseEntity.ok(onlineCleanersList);
 	}
 
 	
