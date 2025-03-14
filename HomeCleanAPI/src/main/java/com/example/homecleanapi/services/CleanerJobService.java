@@ -39,9 +39,11 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -777,6 +779,205 @@ public class CleanerJobService {
 	    }
 
 	    return appliedJobs;  // Trả về danh sách các công việc đã ứng tuyển
+	}
+
+
+
+	// list job theo service và số lượng
+	public Map<String, Object> getJobsByService() {
+	    Map<String, Object> jobsByService = new HashMap<>();
+	    Map<String, Object> comboJobs = new HashMap<>();  // Dành cho các công việc combo (chỉ đếm số lượng)
+
+	    List<Services> services = serviceRepository.findAll();  // Lấy tất cả các dịch vụ
+
+	    // Duyệt qua tất cả các dịch vụ
+	    for (Services service : services) {
+	        String serviceName = service.getName();  // Lấy tên dịch vụ
+
+	        // Nếu dịch vụ chưa tồn tại trong danh sách, tạo mới
+	        if (!jobsByService.containsKey(serviceName)) {
+	            Map<String, Object> serviceInfo = new HashMap<>();
+	            serviceInfo.put("serviceName", serviceName);
+	            serviceInfo.put("jobCount", 0);  // Bắt đầu đếm số lượng công việc
+	            jobsByService.put(serviceName, serviceInfo);
+	        }
+
+	        // Lấy tất cả các JobServiceDetail cho dịch vụ này
+	        List<JobServiceDetail> jobServiceDetailsForService = jobServiceDetailRepository.findByServiceId(service.getId());
+
+	        Set<Long> countedJobIds = new HashSet<Long>();  // Set để theo dõi các job_id đã đếm
+
+	        // Duyệt qua các JobServiceDetail liên kết với dịch vụ này
+	        for (JobServiceDetail jobServiceDetail : jobServiceDetailsForService) {
+	            Job job = jobServiceDetail.getJob();
+
+	            if (job != null && job.getStatus() == JobStatus.OPEN) {  
+	                // Kiểm tra nếu job chưa được đếm
+	                if (!countedJobIds.contains(job.getId())) {
+	                    Map<String, Object> serviceInfo = (Map<String, Object>) jobsByService.get(serviceName);
+
+
+	                    List<JobServiceDetail> jobServiceDetailsForJob = jobServiceDetailRepository.findByJobId(job.getId());
+	                    if (jobServiceDetailsForJob.size() > 1) {
+	                        String comboKey = "combo";  
+	                        if (!comboJobs.containsKey(comboKey)) {
+	                            Map<String, Object> comboInfo = new HashMap<>();
+	                            comboInfo.put("jobCount", 0);  
+	                            comboJobs.put(comboKey, comboInfo);
+	                        }
+
+	                        // Lấy thông tin combo
+	                        Map<String, Object> comboInfo = (Map<String, Object>) comboJobs.get(comboKey);
+
+	                        // Tăng số lượng công việc trong combo
+	                        int comboCount = (int) comboInfo.get("jobCount");
+	                        comboInfo.put("jobCount", comboCount + 1);  
+	                    } else {
+	                        // Nếu job chỉ có một dịch vụ thì đếm vào dịch vụ
+	                        int jobCount = (int) serviceInfo.get("jobCount");
+	                        serviceInfo.put("jobCount", jobCount + 1);  
+	                    }
+
+	                    countedJobIds.add(job.getId()); 
+	                }
+	            }
+	        }
+	    }
+
+	    jobsByService.put("combo", comboJobs.get("combo"));
+	    for (String serviceName : jobsByService.keySet()) {
+	        Map<String, Object> serviceInfo = (Map<String, Object>) jobsByService.get(serviceName);
+	        if (serviceInfo.get("jobCount") == null) {
+	            serviceInfo.put("jobCount", 0);  
+	        }
+	    }
+
+	    return jobsByService;  
+	}
+
+
+	// xem các job thuộc phần filter service
+	public List<Map<String, Object>> getJobsDetailsByService(Long serviceId) {
+	    List<Map<String, Object>> jobDetailsList = new ArrayList<>();
+
+	    // Lấy danh sách các JobServiceDetail liên quan đến serviceId
+	    List<JobServiceDetail> jobServiceDetails = jobServiceDetailRepository.findByServiceId(serviceId);
+
+	    // Duyệt qua các JobServiceDetail để lấy chi tiết job
+	    for (JobServiceDetail jobServiceDetail : jobServiceDetails) {
+	        Job job = jobServiceDetail.getJob();
+	        if (job != null && job.getStatus() == JobStatus.OPEN) {
+	            Map<String, Object> jobInfo = new HashMap<>();
+	            jobInfo.put("jobId", job.getId());
+	            jobInfo.put("serviceName", jobServiceDetail.getService().getName());
+	            jobInfo.put("status", job.getStatus());
+	            jobInfo.put("scheduledTime", job.getScheduledTime());
+	            jobInfo.put("totalPrice", job.getTotalPrice());
+	            jobInfo.put("createdAt", job.getCreatedAt());
+
+	            // Thêm thông tin về customer đã book job
+	            Customers customer = job.getCustomer();
+	            if (customer != null) {
+	                jobInfo.put("customerId", customer.getId());
+	                jobInfo.put("customerName", customer.getFull_name());
+	                jobInfo.put("customerPhone", customer.getPhone());
+	            }
+
+	            // Thêm thông tin về địa chỉ của customer
+	            CustomerAddresses customerAddress = job.getCustomerAddress();
+	            if (customerAddress != null) {
+	                jobInfo.put("customerAddressId", customerAddress.getId());
+	                jobInfo.put("customerAddress", customerAddress.getAddress());
+	                jobInfo.put("latitude", customerAddress.getLatitude());
+	                jobInfo.put("longitude", customerAddress.getLongitude());
+	            }
+
+	            // Lấy tất cả các JobServiceDetail cho job này
+	            List<JobServiceDetail> jobServiceDetailsForJob = jobServiceDetailRepository.findByJobId(job.getId());
+	            List<Map<String, String>> services = new ArrayList<>();
+	            for (JobServiceDetail jobServiceDetailForJob : jobServiceDetailsForJob) {
+	                Map<String, String> serviceInfo = new HashMap<>();
+	                Services service = jobServiceDetailForJob.getService();
+	                serviceInfo.put("serviceName", service.getName());
+	                serviceInfo.put("serviceDescription", service.getDescription());
+	                services.add(serviceInfo);
+	            }
+
+	            jobInfo.put("services", services);
+	            jobDetailsList.add(jobInfo);
+	        }
+	    }
+
+	    return jobDetailsList;
+	}
+
+	
+	// lấy cac job đang là combo
+	public List<Map<String, Object>> getComboJobs() {
+	    List<Map<String, Object>> comboJobs = new ArrayList<>();
+
+	    // Lấy tất cả các JobServiceDetail
+	    List<JobServiceDetail> jobServiceDetails = jobServiceDetailRepository.findAll();
+
+	    // Set để theo dõi các job_id đã đếm
+	    Set<Long> countedJobIds = new HashSet<>();
+
+	    // Duyệt qua các JobServiceDetail để xác định các job combo
+	    for (JobServiceDetail jobServiceDetail : jobServiceDetails) {
+	        Job job = jobServiceDetail.getJob();
+	        if (job != null && job.getStatus() == JobStatus.OPEN) {  // Kiểm tra job có trạng thái OPEN
+	            // Kiểm tra nếu job chưa được đếm
+	            if (!countedJobIds.contains(job.getId())) {
+	                // Lấy tất cả các JobServiceDetail liên quan đến job này
+	                List<JobServiceDetail> jobServiceDetailsForJob = jobServiceDetailRepository.findByJobId(job.getId());
+
+	                // Nếu job có nhiều dịch vụ, tính là combo
+	                if (jobServiceDetailsForJob.size() > 1) {
+	                    Map<String, Object> jobInfo = new HashMap<>();
+	                    jobInfo.put("jobId", job.getId());
+	                    jobInfo.put("status", job.getStatus());
+	                    jobInfo.put("scheduledTime", job.getScheduledTime());
+	                    jobInfo.put("totalPrice", job.getTotalPrice());
+	                    jobInfo.put("createdAt", job.getCreatedAt());
+
+	                    // Thêm thông tin về customer đã book job
+	                    Customers customer = job.getCustomer();
+	                    if (customer != null) {
+	                        jobInfo.put("customerId", customer.getId());
+	                        jobInfo.put("customerName", customer.getFull_name());
+	                        jobInfo.put("customerPhone", customer.getPhone());
+	                    }
+
+	                    // Thêm thông tin về địa chỉ của customer
+	                    CustomerAddresses customerAddress = job.getCustomerAddress();
+	                    if (customerAddress != null) {
+	                        jobInfo.put("customerAddressId", customerAddress.getId());
+	                        jobInfo.put("customerAddress", customerAddress.getAddress());
+	                        jobInfo.put("latitude", customerAddress.getLatitude());
+	                        jobInfo.put("longitude", customerAddress.getLongitude());
+	                    }
+
+	                    // Lấy tất cả các dịch vụ liên quan đến job này
+	                    List<JobServiceDetail> jobServiceDetailsForCombo = jobServiceDetailRepository.findByJobId(job.getId());
+	                    List<Map<String, String>> services = new ArrayList<>();
+	                    for (JobServiceDetail jobServiceDetailForCombo : jobServiceDetailsForCombo) {
+	                        Map<String, String> serviceInfo = new HashMap<>();
+	                        Services service = jobServiceDetailForCombo.getService();
+	                        serviceInfo.put("serviceName", service.getName());
+	                        serviceInfo.put("serviceDescription", service.getDescription());
+	                        services.add(serviceInfo);
+	                    }
+
+	                    jobInfo.put("services", services);
+	                    comboJobs.add(jobInfo);
+	                }
+
+	                countedJobIds.add(job.getId());  // Đánh dấu job này đã được đếm
+	            }
+	        }
+	    }
+
+	    return comboJobs;
 	}
 
 

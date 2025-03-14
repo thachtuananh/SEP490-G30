@@ -12,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -106,7 +107,48 @@ public class CleanerJobController {
     }
 
 
+    // list job theo service và số lượng 
+    @GetMapping("/jobs/by-service")
+    public ResponseEntity<Map<String, Object>> getJobsByService() {
+        Map<String, Object> jobsByService = cleanerJobService.getJobsByService();
+
+        if (jobsByService.isEmpty()) {
+            jobsByService.put("message", "No jobs found by service");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(jobsByService);
+        }
+
+        return ResponseEntity.ok(jobsByService);
+    }
     
+    // xem job thuộc filter service
+    @GetMapping("/jobs/details/by-service/{serviceId}")
+    public ResponseEntity<List<Map<String, Object>>> getJobsDetailsByService(@PathVariable Long serviceId) {
+        List<Map<String, Object>> jobDetails = cleanerJobService.getJobsDetailsByService(serviceId);
+        
+        if (jobDetails.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(List.of(Map.of("message", "No jobs found for this service")));
+        }
+
+        return ResponseEntity.ok(jobDetails);
+    }
+    
+    
+    // lấy job đang là combo
+    @GetMapping("/jobs/combo")
+    public ResponseEntity<List<Map<String, Object>>> getComboJobs() {
+        List<Map<String, Object>> comboJobs = cleanerJobService.getComboJobs();
+        
+        if (comboJobs.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(List.of(Map.of("message", "No combo jobs found")));
+        }
+
+        return ResponseEntity.ok(comboJobs);
+    }
+
+
+
+
+
 
     
 
