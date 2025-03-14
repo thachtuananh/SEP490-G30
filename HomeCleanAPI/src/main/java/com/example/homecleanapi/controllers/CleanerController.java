@@ -69,8 +69,7 @@ public class CleanerController {
             onlineCleaners.put(cleanerId, true);
 
             // Gửi thông báo về trạng thái online cho frontend
-            messagingTemplate.convertAndSend("/topic/cleaner-status", 
-                "Cleaner with ID " + cleanerId + " is now online.");
+            messagingTemplate.convertAndSend("/topic/onlineCleaners", cleanerId);
 
         } catch (Exception e) {
             System.err.println("Error processing cleaner login: " + e.getMessage());
@@ -103,8 +102,7 @@ public class CleanerController {
             onlineCleaners.remove(cleanerId);
 
             // Gửi thông báo về trạng thái offline cho frontend
-            messagingTemplate.convertAndSend("/topic/cleaner-status", 
-                "Cleaner with ID " + cleanerId + " is now offline.");
+            messagingTemplate.convertAndSend("/topic/oflineCleaners", cleanerId);
 
         } catch (Exception e) {
             System.err.println("Error processing cleaner logout: " + e.getMessage());
