@@ -790,6 +790,8 @@ public class CleanerJobService {
 
 	    List<Services> services = serviceRepository.findAll();  // Lấy tất cả các dịch vụ
 
+	    Set<Long> countedJobIds = new HashSet<Long>();  // Set để theo dõi các job_id đã đếm
+
 	    // Duyệt qua tất cả các dịch vụ
 	    for (Services service : services) {
 	        String serviceName = service.getName();  // Lấy tên dịch vụ
@@ -805,31 +807,30 @@ public class CleanerJobService {
 	        // Lấy tất cả các JobServiceDetail cho dịch vụ này
 	        List<JobServiceDetail> jobServiceDetailsForService = jobServiceDetailRepository.findByServiceId(service.getId());
 
-	        Set<Long> countedJobIds = new HashSet<Long>();  // Set để theo dõi các job_id đã đếm
-
 	        // Duyệt qua các JobServiceDetail liên kết với dịch vụ này
 	        for (JobServiceDetail jobServiceDetail : jobServiceDetailsForService) {
 	            Job job = jobServiceDetail.getJob();
 
-	            if (job != null && job.getStatus() == JobStatus.OPEN) {  
+	            if (job != null && job.getStatus() == JobStatus.OPEN) {  // Kiểm tra job có trạng thái OPEN
 	                // Kiểm tra nếu job chưa được đếm
 	                if (!countedJobIds.contains(job.getId())) {
+	                    // Lấy thông tin dịch vụ từ Map jobsByService
 	                    Map<String, Object> serviceInfo = (Map<String, Object>) jobsByService.get(serviceName);
 
-
+	                    // Kiểm tra nếu job có nhiều dịch vụ (tức là combo)
 	                    List<JobServiceDetail> jobServiceDetailsForJob = jobServiceDetailRepository.findByJobId(job.getId());
+
+	                    // Nếu job có nhiều dịch vụ thì đếm là combo
 	                    if (jobServiceDetailsForJob.size() > 1) {
-	                        String comboKey = "combo";  
-	                        if (!comboJobs.containsKey(comboKey)) {
+	                        // Nếu combo chưa được đếm
+	                        if (!comboJobs.containsKey("combo")) {
 	                            Map<String, Object> comboInfo = new HashMap<>();
 	                            comboInfo.put("jobCount", 0);  
-	                            comboJobs.put(comboKey, comboInfo);
+	                            comboJobs.put("combo", comboInfo);
 	                        }
 
-	                        // Lấy thông tin combo
-	                        Map<String, Object> comboInfo = (Map<String, Object>) comboJobs.get(comboKey);
-
-	                        // Tăng số lượng công việc trong combo
+	                        // Lấy thông tin combo và tăng số lượng combo
+	                        Map<String, Object> comboInfo = (Map<String, Object>) comboJobs.get("combo");
 	                        int comboCount = (int) comboInfo.get("jobCount");
 	                        comboInfo.put("jobCount", comboCount + 1);  
 	                    } else {
@@ -838,22 +839,30 @@ public class CleanerJobService {
 	                        serviceInfo.put("jobCount", jobCount + 1);  
 	                    }
 
+	                    // Đánh dấu job này đã được đếm
 	                    countedJobIds.add(job.getId()); 
 	                }
 	            }
 	        }
 	    }
 
+	    // Kết hợp kết quả của comboJobs với jobsByService
 	    jobsByService.put("combo", comboJobs.get("combo"));
+
+	    // Đảm bảo nếu dịch vụ không có công việc nào thì hiển thị jobCount là 0
 	    for (String serviceName : jobsByService.keySet()) {
 	        Map<String, Object> serviceInfo = (Map<String, Object>) jobsByService.get(serviceName);
 	        if (serviceInfo.get("jobCount") == null) {
-	            serviceInfo.put("jobCount", 0);  
+	            serviceInfo.put("jobCount", 0);  // Nếu không có công việc, đặt jobCount là 0
 	        }
 	    }
 
-	    return jobsByService;  
+	    return jobsByService;  // Trả về danh sách các công việc phân loại theo dịch vụ, bao gồm cả combo
 	}
+
+
+
+
 
 
 	// xem các job thuộc phần filter service
