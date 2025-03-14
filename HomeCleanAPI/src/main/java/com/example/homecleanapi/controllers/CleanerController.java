@@ -1,17 +1,31 @@
 package com.example.homecleanapi.controllers;
 
 import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
+
+
 
 @Controller
 public class CleanerController {
 
-    // Lắng nghe thông điệp từ frontend gửi đến /app/cleaner-online
+    private final SimpMessagingTemplate messagingTemplate;
+
+    public CleanerController(SimpMessagingTemplate messagingTemplate) {
+        this.messagingTemplate = messagingTemplate;
+    }
+
     @MessageMapping("/cleaner-online")
     public void handleCleanerOnline(String cleanerId) {
-        // In ra cleanerId khi nhận được thông điệp
+        // Log thông tin cleaner đăng nhập
         System.out.println("Cleaner with ID " + cleanerId + " is now online.");
 
-        // Bạn có thể gọi service hoặc cập nhật database tại đây
+        // Gửi thông tin log này lại cho frontend để frontend biết
+        messagingTemplate.convertAndSend("/topic/cleaner-status", 
+            "Cleaner with ID " + cleanerId + " is now online.");
+
+        // Cập nhật trạng thái hoặc thực hiện các công việc cần thiết khác
+        // Cập nhật database hay trạng thái của cleaner...
     }
 }
+
