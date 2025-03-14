@@ -27,17 +27,34 @@ public class CleanerController {
         // Log để kiểm tra xem backend có nhận được cleanerId không
         System.out.println("Received cleaner login request with cleanerId: " + cleanerId);
 
-        // Tiến hành cập nhật trạng thái online trong DB
-        Optional<Employee> cleanerOpt = cleanerRepository.findById(Long.valueOf(cleanerId));
-        cleanerOpt.ifPresent(cleaner -> {
-            cleaner.setStatus(true);  // Đánh dấu cleaner là online
-            cleanerRepository.save(cleaner);  // Cập nhật vào DB
-            System.out.println("Cleaner " + cleanerId + " is now online in DB.");
-        });
+        // Kiểm tra xem cleanerId có hợp lệ không trước khi thực hiện các hành động tiếp theo
+        if (cleanerId == null || cleanerId.isEmpty()) {
+            System.out.println("❌ Cleaner ID is invalid");
+            return;  // Dừng quá trình nếu cleanerId không hợp lệ
+        }
 
-        // Gửi thông báo về trạng thái online cho frontend
-        messagingTemplate.convertAndSend("/topic/cleaner-status", 
-            "Cleaner with ID " + cleanerId + " is now online.");
+        // Tiến hành tìm kiếm cleaner trong cơ sở dữ liệu
+        Optional<Employee> cleanerOpt = cleanerRepository.findById(Long.valueOf(cleanerId));
+        
+        // Kiểm tra nếu cleaner tồn tại
+        if (cleanerOpt.isPresent()) {
+            Employee cleaner = cleanerOpt.get();
+            System.out.println("✅ Found cleaner with ID: " + cleanerId);
+
+            // Đánh dấu cleaner là online và cập nhật vào DB
+            cleaner.setStatus(true);
+            cleanerRepository.save(cleaner);
+
+            // Log quá trình cập nhật vào DB
+            System.out.println("Cleaner " + cleanerId + " is now online in DB.");
+            
+            // Gửi thông báo về trạng thái online cho frontend
+            messagingTemplate.convertAndSend("/topic/cleaner-status", 
+                "Cleaner with ID " + cleanerId + " is now online.");
+            System.out.println("📡 Sent cleaner status update to frontend: " + cleanerId);
+        } else {
+            System.out.println("❌ Cleaner with ID " + cleanerId + " not found in DB.");
+        }
     }
 
 }
