@@ -42,8 +42,8 @@ const services = [
   {
     id: 5,
     image: iconSk,
-    title: "Dọn dẹp sau tiệc/tổ chức sự kiện",
-    description: "Lau sàn, hút bụi, lau bàn ghế, cửa kính",
+    title: "Dọn dẹp theo Combo",
+    description: "Chọn nhiều dịch vụ cùng 1 lúc",
     count: "0 việc làm",
 
   },
@@ -66,7 +66,7 @@ const services = [
   {
     id: 8,
     image: iconDinhKy,
-    title: "Dọn dẹp nhà theo định kỳ (Hàng tuần, hàng tháng)",
+    title: "Dọn dẹp nhà theo định kỳ",
     description: "Lau sàn, hút bụi, lau bàn ghế, cửa kính",
     count: "3 việc làm",
 

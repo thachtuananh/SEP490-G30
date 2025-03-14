@@ -12,7 +12,8 @@ import {
     hireCleaner,
     startJob,
     completeJob,
-    deleteJobPosting
+    deleteJobPosting,
+    rejectCleaner
 } from "../../services/owner/StatusJobAPI";
 
 export const ActivityCard = ({ data, onDelete }) => {
@@ -134,6 +135,20 @@ export const ActivityCard = ({ data, onDelete }) => {
         }
     };
 
+    // Handle reject cleaner
+    const handleRejectCleaner = async (jobId, cleanerId, customerId) => {
+        try {
+            await rejectCleaner(jobId, cleanerId, customerId);
+            console.log("✅ Từ chối cleaner thành công!", { jobId, cleanerId, customerId });
+            message.success("✅ Từ chối cleaner thành công!");
+            // Refresh cleaner list
+            fetchCleaners(jobId);
+        } catch (error) {
+            console.error("❌ Lỗi khi từ chối cleaner:", error);
+            message.error("❌ Lỗi khi từ chối cleaner");
+        }
+    };
+
     // Start a job
     const handleStartJob = async (jobId) => {
         try {
@@ -188,7 +203,7 @@ export const ActivityCard = ({ data, onDelete }) => {
             render: (_, record) => (
                 <Button
                     type="default"
-                    onClick={() => fetchCleanerDetail(record.cleanerId)}
+                    onClick={() => handleFetchCleanerDetail(record.cleanerId)}
                     disabled={!record.cleanerId}
                 >
                     Xem
@@ -208,7 +223,13 @@ export const ActivityCard = ({ data, onDelete }) => {
                     >
                         Thuê
                     </Button>
-                    <Button danger>Từ chối</Button>
+                    <Button
+                        danger
+                        onClick={() => handleRejectCleaner(selectedJobId, record.cleanerId, customerId)}
+                        disabled={!record.cleanerId}
+                    >
+                        Từ chối
+                    </Button>
                 </>
             ),
         }
