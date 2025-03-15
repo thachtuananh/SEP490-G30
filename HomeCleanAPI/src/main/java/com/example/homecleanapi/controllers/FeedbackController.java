@@ -50,4 +50,10 @@ public class FeedbackController {
 
         return ResponseEntity.ok(feedbacks); 
     }
+    
+    @GetMapping("/{customerId}/job/{jobId}/feedback")
+    public ResponseEntity<Map<String, Object>> getFeedbackDetails(@PathVariable Long customerId, @PathVariable Long jobId) {
+        Map<String, Object> response = feedbackService.getFeedbackDetails(customerId, jobId);
+        return new ResponseEntity<>(response, (HttpStatus) response.get("status"));
+    }
 }

@@ -169,6 +169,47 @@ public class FeedbackService {
     }
     
     
+    public Map<String, Object> getFeedbackDetails(Long customerId, Long jobId) {
+        Map<String, Object> response = new HashMap<>();
+
+        // Kiểm tra xem job có tồn tại không
+        Optional<Job> jobOpt = jobRepository.findById(jobId);
+        if (!jobOpt.isPresent()) {
+            response.put("message", "Job not found");
+            response.put("status", HttpStatus.NOT_FOUND);
+            return response;
+        }
+
+        // Kiểm tra xem customer có phải là người tạo công việc này không
+        Job job = jobOpt.get();
+        if (job.getCustomer().getId().longValue() != customerId.longValue()) {
+            response.put("message", "You are not authorized to view feedback for this job");
+            response.put("status", HttpStatus.FORBIDDEN);
+            return response;
+        }
+
+        // Lấy feedback cho job này của customer
+        Optional<Feedback> feedbackOpt = feedbackRepository.findByJob_IdAndJob_Customer_Id(jobId, customerId);
+        if (!feedbackOpt.isPresent()) {
+            response.put("message", "Feedback not found");
+            response.put("status", HttpStatus.NOT_FOUND);
+            return response;
+        }
+
+        Feedback feedback = feedbackOpt.get();
+
+        // Tạo response với thông tin feedback
+        Map<String, Object> feedbackInfo = new HashMap<>();
+        feedbackInfo.put("jobId", job.getId());
+        feedbackInfo.put("rating", feedback.getRating());
+        feedbackInfo.put("comment", feedback.getComment());
+
+        response.put("feedback", feedbackInfo);
+        response.put("status", HttpStatus.OK);
+        return response;
+    }
+    
+    
 }
 
 
