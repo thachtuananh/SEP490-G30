@@ -3,7 +3,9 @@ package com.example.homecleanapi.services;
 import com.example.homecleanapi.dtos.FeedbackRequest;
 import com.example.homecleanapi.models.Feedback;
 import com.example.homecleanapi.models.Job;
+import com.example.homecleanapi.models.JobApplication;
 import com.example.homecleanapi.repositories.FeedbackRepository;
+import com.example.homecleanapi.repositories.JobApplicationRepository;
 import com.example.homecleanapi.repositories.JobRepository;
 import com.example.homecleanapi.enums.JobStatus; // Import Enum JobStatus
 
@@ -11,7 +13,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -23,6 +27,9 @@ public class FeedbackService {
 
     @Autowired
     private JobRepository jobRepository;
+    
+    @Autowired
+    private JobApplicationRepository jobApplicationRepository;
 
     // Kiểm tra xem customer đã đánh giá cho công việc này chưa
     private boolean checkIfAlreadyReviewed(Long customerId, Long jobId) {
@@ -113,10 +120,18 @@ public class FeedbackService {
             return response;
         }
 
-        // Cập nhật feedback
+        // Lấy feedback hiện tại
         Feedback existingFeedback = existingFeedbackOpt.get();
-        existingFeedback.setRating(feedbackRequest.getRating());
-        existingFeedback.setComment(feedbackRequest.getComment());
+
+        // Cập nhật rating nếu có giá trị mới
+        if (feedbackRequest.getRating() != null) {
+            existingFeedback.setRating(feedbackRequest.getRating());
+        }
+
+        // Cập nhật comment nếu có giá trị mới
+        if (feedbackRequest.getComment() != null && !feedbackRequest.getComment().isEmpty()) {
+            existingFeedback.setComment(feedbackRequest.getComment());
+        }
 
         // Lưu feedback cập nhật vào cơ sở dữ liệu
         feedbackRepository.save(existingFeedback);
@@ -126,4 +141,38 @@ public class FeedbackService {
         response.put("status", HttpStatus.OK);
         return response;
     }
+
+    
+    public List<Map<String, Object>> getFeedbacksByCustomerId(Long customerId) {
+        // Tìm tất cả các job mà customer đã thực hiện
+        List<JobApplication> jobApplications = jobApplicationRepository.findByJob_Customer_Id(customerId);
+        List<Map<String, Object>> feedbackList = new ArrayList<Map<String,Object>>();
+
+        // Duyệt qua các job mà customer đã thực hiện và lấy các feedback
+        for (JobApplication jobApplication : jobApplications) {
+            Job job = jobApplication.getJob(); // Lấy Job từ JobApplication
+
+            // Lấy các feedback cho Job này
+            List<Feedback> feedbacks = feedbackRepository.findByJobId(job.getId());
+
+            // Lấy thông tin feedback
+            for (Feedback feedback : feedbacks) {
+                Map<String, Object> feedbackInfo = new HashMap<>();
+                feedbackInfo.put("jobId", job.getId());
+                feedbackInfo.put("rating", feedback.getRating());
+                feedbackInfo.put("comment", feedback.getComment());
+                feedbackList.add(feedbackInfo);
+            }
+        }
+
+        return feedbackList;
+    }
+    
+    
 }
+
+
+
+
+
+

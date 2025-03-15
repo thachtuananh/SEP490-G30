@@ -34,6 +34,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import java.text.DecimalFormat;
 import java.time.DayOfWeek;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -1022,56 +1023,61 @@ public class CleanerJobService {
 
 	// xem detail cleaner không cần đk
 	public Map<String, Object> getCleanerDetailnone(Long cleanerId) {
-		// Tìm cleaner theo cleanerId
-		Optional<Employee> cleanerOpt = cleanerRepository.findById(cleanerId);
-		if (!cleanerOpt.isPresent()) {
-			return Map.of("message", "Cleaner not found");
-		}
+	    // Tìm cleaner theo cleanerId
+	    Optional<Employee> cleanerOpt = cleanerRepository.findById(cleanerId);
+	    if (!cleanerOpt.isPresent()) {
+	        return Map.of("message", "Cleaner not found");
+	    }
 
-		Employee cleaner = cleanerOpt.get();
+	    Employee cleaner = cleanerOpt.get();
 
-		// Tạo map chứa thông tin của cleaner
-		Map<String, Object> cleanerInfo = new HashMap<>();
-		cleanerInfo.put("cleanerId", cleaner.getId());
-		cleanerInfo.put("cleanerName", cleaner.getName());
-		cleanerInfo.put("profileImage", cleaner.getProfile_image());
+	    // Tạo map chứa thông tin của cleaner
+	    Map<String, Object> cleanerInfo = new HashMap<>();
+	    cleanerInfo.put("cleanerId", cleaner.getId());
+	    cleanerInfo.put("cleanerName", cleaner.getName());
+	    cleanerInfo.put("profileImage", cleaner.getProfile_image());
 
-		// Lấy tất cả các Job mà cleaner đã làm từ JobApplication
-		List<JobApplication> jobApplications = jobApplicationRepository.findByCleanerId(cleanerId);
-		if (jobApplications.isEmpty()) {
-			cleanerInfo.put("feedbacks", "No feedback yet");
-			cleanerInfo.put("averageRating", 0);
-			return cleanerInfo;
-		}
+	    // Lấy tất cả các Job mà cleaner đã làm từ JobApplication
+	    List<JobApplication> jobApplications = jobApplicationRepository.findByCleanerId(cleanerId);
+	    if (jobApplications.isEmpty()) {
+	        cleanerInfo.put("feedbacks", "No feedback yet");
+	        cleanerInfo.put("averageRating", 0);
+	        return cleanerInfo;
+	    }
 
-		// Lấy tất cả feedbacks từ các job mà cleaner đã làm
-		List<Map<String, Object>> feedbackList = new ArrayList<>();
-		int totalRating = 0;
-		int feedbackCount = 0;
+	    // Lấy tất cả feedbacks từ các job mà cleaner đã làm
+	    List<Map<String, Object>> feedbackList = new ArrayList<>();
+	    int totalRating = 0;
+	    int feedbackCount = 0;
 
-		for (JobApplication jobApplication : jobApplications) {
-			Job job = jobApplication.getJob(); // Lấy Job từ JobApplication
+	    for (JobApplication jobApplication : jobApplications) {
+	        Job job = jobApplication.getJob(); // Lấy Job từ JobApplication
 
-			// Lấy feedbacks cho Job này
-			List<Feedback> feedbacks = feedbackRepository.findByJobId(job.getId());
-			for (Feedback feedback : feedbacks) {
-				Map<String, Object> feedbackInfo = new HashMap<>();
-				feedbackInfo.put("rating", feedback.getRating());
-				feedbackInfo.put("comment", feedback.getComment());
-				feedbackList.add(feedbackInfo);
+	        // Lấy feedbacks cho Job này
+	        List<Feedback> feedbacks = feedbackRepository.findByJobId(job.getId());
+	        for (Feedback feedback : feedbacks) {
+	            Map<String, Object> feedbackInfo = new HashMap<>();
+	            feedbackInfo.put("rating", feedback.getRating());
+	            feedbackInfo.put("comment", feedback.getComment());
+	            feedbackList.add(feedbackInfo);
 
-				totalRating += feedback.getRating(); // Cộng dồn rating
-				feedbackCount++;
-			}
-		}
+	            totalRating += feedback.getRating(); // Cộng dồn rating
+	            feedbackCount++;
+	        }
+	    }
 
-		// Tính trung bình rating nếu có feedback
-		double averageRating = feedbackCount > 0 ? (double) totalRating / feedbackCount : 0;
+	    // Tính trung bình rating nếu có feedback
+	    double averageRating = feedbackCount > 0 ? (double) totalRating / feedbackCount : 0;
 
-		cleanerInfo.put("averageRating", averageRating); // Thêm trung bình rating vào thông tin cleaner
-		cleanerInfo.put("feedbacks", feedbackList); // Thêm danh sách feedbacks vào thông tin cleaner
+	    // Định dạng trung bình rating chỉ với 1 chữ số sau dấu phẩy
+	    DecimalFormat df = new DecimalFormat("#.#");
+	    String formattedAverageRating = df.format(averageRating);
 
-		return cleanerInfo;
+	    // Thêm thông tin vào map cleanerInfo
+	    cleanerInfo.put("averageRating", formattedAverageRating); // Thêm trung bình rating vào thông tin cleaner
+	    cleanerInfo.put("feedbacks", feedbackList); // Thêm danh sách feedbacks vào thông tin cleaner
+
+	    return cleanerInfo;
 	}
 
 	public Map<String, Object> getCleanerDetails(Long cleanerId) {

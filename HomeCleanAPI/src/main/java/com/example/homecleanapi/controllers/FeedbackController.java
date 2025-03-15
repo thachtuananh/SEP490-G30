@@ -11,6 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -36,5 +37,17 @@ public class FeedbackController {
 
         Map<String, Object> response = feedbackService.updateFeedback(customerId, jobId, feedbackRequest);
         return new ResponseEntity<>(response, (HttpStatus) response.get("status"));
+    }
+    
+    
+    @GetMapping("/{customerId}/feedbacks")
+    public ResponseEntity<List<Map<String, Object>>> getCustomerFeedbacks(@PathVariable Long customerId) {
+        List<Map<String, Object>> feedbacks = feedbackService.getFeedbacksByCustomerId(customerId);
+
+        if (feedbacks.isEmpty()) {
+            return ResponseEntity.noContent().build();  
+        }
+
+        return ResponseEntity.ok(feedbacks); 
     }
 }
