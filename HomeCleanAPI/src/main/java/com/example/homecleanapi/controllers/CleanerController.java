@@ -108,9 +108,22 @@ public class CleanerController {
 
 
     @GetMapping("/cleaners/online")
-    public ResponseEntity<List<Long>> getOnlineCleaners() {
-        // Trả về danh sách các cleanerId đang online
-        List<Long> onlineCleanersList = onlineCleaners.keySet().stream().collect(Collectors.toList());
+    public ResponseEntity<List<Map<String, Object>>> getOnlineCleaners() {
+        List<Map<String, Object>> onlineCleanersList = onlineCleaners.keySet().stream()
+                .map(cleanerId -> {
+                    Map<String, Object> cleanerMap = new HashMap<>();
+                    cleanerMap.put("cleanerId", cleanerId); 
+
+                    Optional<Employee> cleanerOpt = cleanerRepository.findById(cleanerId);
+                    if (cleanerOpt.isPresent()) {
+                        Employee cleaner = cleanerOpt.get();
+                        cleanerMap.put("name", cleaner.getName()); 
+                        cleanerMap.put("profile_image", cleaner.getProfile_image()); 
+                    }
+
+                    return cleanerMap;
+                })
+                .collect(Collectors.toList());
 
         // Ghi log kết quả
         System.out.println("Online Cleaners List: " + onlineCleanersList);
@@ -122,4 +135,6 @@ public class CleanerController {
 
         return ResponseEntity.ok(onlineCleanersList);
     }
+
+
 }
