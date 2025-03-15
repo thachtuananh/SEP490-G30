@@ -46,18 +46,14 @@ public class CleanerController {
     @MessageMapping("/cleaner-online")
     public void handleCleanerOnline(String message) {
         try {
-            // Phân tích JSON để lấy cleanerId
             ObjectMapper objectMapper = new ObjectMapper();
-            JsonNode jsonNode = objectMapper.readTree(message);  // Phân tích JSON
-            String cleanerIdStr = jsonNode.get("cleanerId").asText();  // Lấy cleanerId từ JSON
-
-            // Chuyển cleanerId từ chuỗi sang Long	
+            JsonNode jsonNode = objectMapper.readTree(message);  
+            String cleanerIdStr = jsonNode.get("cleanerId").asText(); 
+	
             Long cleanerId = Long.valueOf(cleanerIdStr);
 
-            // Log để kiểm tra cleanerId đã được trích xuất đúng chưa
             System.out.println("Received cleaner login request with cleanerId: " + cleanerId);
 
-            // Tiến hành cập nhật trạng thái online trong DB
             Optional<Employee> cleanerOpt = cleanerRepository.findById(cleanerId);
             cleanerOpt.ifPresent(cleaner -> {
                 cleaner.setStatus(true);  // Đánh dấu cleaner là online
@@ -65,12 +61,8 @@ public class CleanerController {
                 System.out.println("Cleaner " + cleanerId + " is now online in DB.");
             });
 
-            // Lưu cleanerId vào danh sách onlineCleaners
             onlineCleaners.put(cleanerId, true);
-
-            // Gửi thông báo về trạng thái online cho frontend
             messagingTemplate.convertAndSend("/topic/onlineCleaners", cleanerId);
-
         } catch (Exception e) {
             System.err.println("Error processing cleaner login: " + e.getMessage());
         }
@@ -81,16 +73,13 @@ public class CleanerController {
         try {
             // Phân tích JSON để lấy cleanerId
             ObjectMapper objectMapper = new ObjectMapper();
-            JsonNode jsonNode = objectMapper.readTree(message);  // Phân tích JSON
-            String cleanerIdStr = jsonNode.get("cleanerId").asText();  // Lấy cleanerId từ JSON
+            JsonNode jsonNode = objectMapper.readTree(message);  
+            String cleanerIdStr = jsonNode.get("cleanerId").asText(); 
 
-            // Chuyển cleanerId từ chuỗi sang Long	
             Long cleanerId = Long.valueOf(cleanerIdStr);
 
-            // Log khi cleaner ngắt kết nối
             System.out.println("Received cleaner logout request with cleanerId: " + cleanerId);
 
-            // Cập nhật trạng thái offline trong DB
             Optional<Employee> cleanerOpt = cleanerRepository.findById(cleanerId);
             cleanerOpt.ifPresent(cleaner -> {
                 cleaner.setStatus(false);  // Đánh dấu cleaner là offline
