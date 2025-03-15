@@ -49,7 +49,7 @@ public class CleanerController {
             ObjectMapper objectMapper = new ObjectMapper();
             JsonNode jsonNode = objectMapper.readTree(message);  
             String cleanerIdStr = jsonNode.get("cleanerId").asText(); 
-	
+
             Long cleanerId = Long.valueOf(cleanerIdStr);
 
             System.out.println("Received cleaner login request with cleanerId: " + cleanerId);
@@ -58,7 +58,10 @@ public class CleanerController {
             cleanerOpt.ifPresent(cleaner -> {
                 cleaner.setStatus(true);  // Đánh dấu cleaner là online
                 cleanerRepository.save(cleaner);  // Cập nhật vào DB
-                System.out.println("Cleaner " + cleanerId + " is now online in DB.");
+
+                System.out.println("Cleaner " + cleanerId + " (" + cleaner.getName() + ") is now online in DB.");
+                System.out.println("Cleaner Profile Image: " + cleaner.getProfile_image());
+                System.out.println("Cleaner Status: " + cleaner.getStatus());
             });
 
             onlineCleaners.put(cleanerId, true);
@@ -67,6 +70,7 @@ public class CleanerController {
             System.err.println("Error processing cleaner login: " + e.getMessage());
         }
     }
+
 
     @MessageMapping("/cleaner-offline")
     public void handleCleanerOffline(String message) {
@@ -84,7 +88,11 @@ public class CleanerController {
             cleanerOpt.ifPresent(cleaner -> {
                 cleaner.setStatus(false);  // Đánh dấu cleaner là offline
                 cleanerRepository.save(cleaner);  // Cập nhật vào DB
-                System.out.println("Cleaner " + cleanerId + " is now offline in DB.");
+
+                // In ra thông tin đầy đủ của cleaner khi logout
+                System.out.println("Cleaner " + cleanerId + " (" + cleaner.getName() + ") is now offline in DB.");
+                System.out.println("Cleaner Profile Image: " + cleaner.getProfile_image());
+                System.out.println("Cleaner Status: " + cleaner.getStatus());
             });
 
             // Xóa cleanerId khỏi danh sách onlineCleaners
@@ -97,6 +105,7 @@ public class CleanerController {
             System.err.println("Error processing cleaner logout: " + e.getMessage());
         }
     }
+
 
     @GetMapping("/cleaners/online")
     public ResponseEntity<List<Long>> getOnlineCleaners() {
