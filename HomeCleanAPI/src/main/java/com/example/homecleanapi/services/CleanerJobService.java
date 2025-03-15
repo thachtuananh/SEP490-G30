@@ -1040,13 +1040,11 @@ public class CleanerJobService {
 	    // Lấy tất cả các Job mà cleaner đã làm từ JobApplication
 	    List<JobApplication> jobApplications = jobApplicationRepository.findByCleanerId(cleanerId);
 	    if (jobApplications.isEmpty()) {
-	        cleanerInfo.put("feedbacks", "No feedback yet");
-	        cleanerInfo.put("averageRating", 0);
+	        cleanerInfo.put("averageRating", 0); // Nếu không có công việc nào, trả về trung bình rating là 0
 	        return cleanerInfo;
 	    }
 
-	    // Lấy tất cả feedbacks từ các job mà cleaner đã làm
-	    List<Map<String, Object>> feedbackList = new ArrayList<>();
+	    // Tính toán trung bình rating từ các feedbacks của các job mà cleaner đã làm
 	    int totalRating = 0;
 	    int feedbackCount = 0;
 
@@ -1056,11 +1054,6 @@ public class CleanerJobService {
 	        // Lấy feedbacks cho Job này
 	        List<Feedback> feedbacks = feedbackRepository.findByJobId(job.getId());
 	        for (Feedback feedback : feedbacks) {
-	            Map<String, Object> feedbackInfo = new HashMap<>();
-	            feedbackInfo.put("rating", feedback.getRating());
-	            feedbackInfo.put("comment", feedback.getComment());
-	            feedbackList.add(feedbackInfo);
-
 	            totalRating += feedback.getRating(); // Cộng dồn rating
 	            feedbackCount++;
 	        }
@@ -1075,10 +1068,10 @@ public class CleanerJobService {
 
 	    // Thêm thông tin vào map cleanerInfo
 	    cleanerInfo.put("averageRating", formattedAverageRating); // Thêm trung bình rating vào thông tin cleaner
-	    cleanerInfo.put("feedbacks", feedbackList); // Thêm danh sách feedbacks vào thông tin cleaner
 
 	    return cleanerInfo;
 	}
+
 
 	public Map<String, Object> getCleanerDetails(Long cleanerId) {
 		// Tìm cleaner theo cleanerId

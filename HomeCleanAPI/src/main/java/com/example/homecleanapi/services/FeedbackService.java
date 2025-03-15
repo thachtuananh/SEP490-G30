@@ -215,9 +215,13 @@ public class FeedbackService {
         List<JobApplication> jobApplications = jobApplicationRepository.findByCleanerId(cleanerId);
 
         for (JobApplication jobApplication : jobApplications) {
-            Job job = jobApplication.getJob(); 
+            Job job = jobApplication.getJob();
 
-            // Lấy tất cả feedbacks cho Job này
+
+            if (!jobApplication.getStatus().equals("Accepted")) {
+                continue; 
+            }
+
             List<Feedback> feedbacks = feedbackRepository.findByJobId(job.getId());
 
             // Lấy thông tin feedback
@@ -232,6 +236,7 @@ public class FeedbackService {
 
         return feedbackList;
     }
+
     
     
 }
