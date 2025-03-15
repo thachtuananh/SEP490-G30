@@ -209,6 +209,30 @@ public class FeedbackService {
         return response;
     }
     
+    public List<Map<String, Object>> getAllFeedbacksForCleaner(Long cleanerId) {
+        List<Map<String, Object>> feedbackList = new ArrayList<>();
+
+        List<JobApplication> jobApplications = jobApplicationRepository.findByCleanerId(cleanerId);
+
+        for (JobApplication jobApplication : jobApplications) {
+            Job job = jobApplication.getJob(); 
+
+            // Lấy tất cả feedbacks cho Job này
+            List<Feedback> feedbacks = feedbackRepository.findByJobId(job.getId());
+
+            // Lấy thông tin feedback
+            for (Feedback feedback : feedbacks) {
+                Map<String, Object> feedbackInfo = new HashMap<>();
+                feedbackInfo.put("jobId", job.getId());
+                feedbackInfo.put("rating", feedback.getRating());
+                feedbackInfo.put("comment", feedback.getComment());
+                feedbackList.add(feedbackInfo);
+            }
+        }
+
+        return feedbackList;
+    }
+    
     
 }
 

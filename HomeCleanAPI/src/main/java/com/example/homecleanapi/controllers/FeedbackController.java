@@ -56,4 +56,17 @@ public class FeedbackController {
         Map<String, Object> response = feedbackService.getFeedbackDetails(customerId, jobId);
         return new ResponseEntity<>(response, (HttpStatus) response.get("status"));
     }
+    
+    @GetMapping("/cleaners/{cleanerId}/feedbacks")
+    public ResponseEntity<List<Map<String, Object>>> getFeedbacksOfCleaner(@PathVariable Long cleanerId) {
+        List<Map<String, Object>> feedbacks = feedbackService.getAllFeedbacksForCleaner(cleanerId);
+        if (feedbacks.isEmpty()) {
+            return ResponseEntity.noContent().build(); 
+        }
+
+        return ResponseEntity.ok(feedbacks); 
+    }
 }
+
+
+
