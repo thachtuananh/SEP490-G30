@@ -54,6 +54,9 @@ public class JobService {
     @Autowired
     private JobServiceDetailRepository jobServiceDetailRepository; 
     
+    @Autowired
+    private WalletRepository walletRepository;
+    
 
     
   
@@ -91,11 +94,10 @@ public class JobService {
         if (!existingJobs.isEmpty()) {
             // Kiểm tra trùng dịch vụ
             for (Job existingJob : existingJobs) {
-                // Kiểm tra xem có dịch vụ và service detail trùng không
                 for (JobServiceDetail jobServiceDetail : existingJob.getJobServiceDetails()) {
                     for (ServiceRequest serviceRequest : request.getServices()) {
                         if (jobServiceDetail.getService().getId().equals(serviceRequest.getServiceId()) &&
-                                jobServiceDetail.getServiceDetail().getId().equals(serviceRequest.getServiceDetailId())) {
+                            jobServiceDetail.getServiceDetail().getId().equals(serviceRequest.getServiceDetailId())) {
                             response.put("message", "There is already a job booked at this time, address, and service.");
                             return response;
                         }
@@ -110,6 +112,7 @@ public class JobService {
         job.setCustomerAddress(customerAddress);
         job.setStatus(JobStatus.OPEN);
         job.setScheduledTime(jobTime);
+        job.setPaymentMethod(request.getPaymentMethod());  // Lưu phương thức thanh toán của customer
 
         // Lưu Job vào cơ sở dữ liệu trước
         job = jobRepository.save(job);
@@ -166,7 +169,6 @@ public class JobService {
             jobServiceDetail.setService(service);
             jobServiceDetail.setServiceDetail(serviceDetail);
 
-            // Thêm JobServiceDetail vào danh sách
             jobServiceDetails.add(jobServiceDetail);
         }
 
@@ -185,6 +187,8 @@ public class JobService {
 
         return response;
     }
+
+
 
 
 
@@ -282,13 +286,56 @@ public class JobService {
             return response;
         }
 
+        // Kiểm tra xem có cleaner nào đã ứng tuyển và được chấp nhận cho công việc này
+        JobApplication jobApplication = jobApplicationRepository.findByJobIdAndStatus(jobId, "Accepted");
+
+        if (jobApplication == null) {
+            response.put("message", "No cleaner assigned to this job");
+            return response;
+        }
+
+        // Lấy cleaner từ jobApplication
+        Employee cleaner = jobApplication.getCleaner();
+
         // Chuyển trạng thái công việc sang "DONE"
         job.setStatus(JobStatus.DONE);
         jobRepository.save(job);
 
+        // Nếu phương thức thanh toán là "Cash", tiến hành trừ tiền hoa hồng từ ví của cleaner
+        if (job.getPaymentMethod().equalsIgnoreCase("Cash")) {
+            // Lấy thông tin ví của cleaner
+            Optional<Wallet> walletOpt = walletRepository.findByCleanerId(cleaner.getId());
+            if (!walletOpt.isPresent()) {
+                response.put("message", "Cleaner wallet not found");
+                return response;
+            }
+
+            Wallet wallet = walletOpt.get();
+
+            // Tính hoa hồng (20% của tổng giá)
+            double commission = 0.2 * job.getTotalPrice();
+
+            // Kiểm tra số dư ví của cleaner có đủ để trừ hoa hồng không
+            if (wallet.getBalance() < commission) {
+                response.put("message", "Insufficient balance in cleaner's wallet to cover the commission");
+                return response;
+            }
+
+            // Trừ đi hoa hồng từ ví của cleaner
+            wallet.setBalance(wallet.getBalance() - commission);
+            walletRepository.save(wallet);
+
+            response.put("message", "Commission deducted from cleaner's wallet");
+        }
+
         response.put("message", "Job status updated to DONE");
         return response;
     }
+
+
+
+
+
     
     // list tất cả job đã book
     public List<Map<String, Object>> getBookedJobsForCustomer(Long customerId) {

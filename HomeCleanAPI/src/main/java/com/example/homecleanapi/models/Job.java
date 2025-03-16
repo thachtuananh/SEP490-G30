@@ -48,6 +48,9 @@ public class Job {
     private LocalDateTime createdAt;
 
     private Double totalPrice;
+    
+    @Column(name = "payment_method", nullable = false)
+    private String paymentMethod;
 
     @Enumerated(EnumType.STRING)
     private JobStatus status;  // Import JobStatus ở đây 
@@ -59,7 +62,15 @@ public class Job {
         return id;
     }
 
-    public List<JobServiceDetail> getJobServiceDetails() {
+    public String getPaymentMethod() {
+		return paymentMethod;
+	}
+
+	public void setPaymentMethod(String paymentMethod) {
+		this.paymentMethod = paymentMethod;
+	}
+
+	public List<JobServiceDetail> getJobServiceDetails() {
 		return jobServiceDetails;
 	}
 

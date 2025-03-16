@@ -99,8 +99,9 @@ public class CleanerController {
             onlineCleaners.remove(cleanerId);
 
             // Gửi thông báo về trạng thái offline cho frontend
+            System.out.println("here1");
             messagingTemplate.convertAndSend("/topic/oflineCleaners", cleanerId);
-
+            System.out.println("here2");
         } catch (Exception e) {
             System.err.println("Error processing cleaner logout: " + e.getMessage());
         }
