@@ -1,7 +1,7 @@
 export async function fetchCleanerDetails(cleanerId) {
     try {
         const token = localStorage.getItem("token");
-        const response = await fetch(`http://localhost:8080/api/customer/viewdetailcleaneron/${cleanerId}`, {
+        const response = await fetch(`http://localhost:8080/api/customer/viewdetailcleaner/${cleanerId}`, {
             headers: {
                 "Authorization": `Bearer ${token}`,
                 "Content-Type": "application/json",
@@ -16,6 +16,7 @@ export async function fetchCleanerDetails(cleanerId) {
 
         return {
             cleanerName: data.cleanerName,
+            averageRating: data.averageRating,
             profileImage: data.profileImage
                 ? `data:image/png;base64,${data.profileImage}`
                 : null,

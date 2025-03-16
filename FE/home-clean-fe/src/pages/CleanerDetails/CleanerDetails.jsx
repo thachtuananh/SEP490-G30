@@ -11,7 +11,6 @@ import styles from "../../components/cleaner-details/styles.module.css";
 export const CleanerDetails = () => {
   const { cleanerId } = useParams();
   const [cleaner, setCleaner] = useState(null);
-  console.log("Cleaner ID từ URL:", cleanerId); // Kiểm tra giá trị
 
   useEffect(() => {
     if (!cleanerId) {
@@ -34,8 +33,14 @@ export const CleanerDetails = () => {
       <div className={styles.mainContainer}>
         <ImageGallery image={cleaner?.profileImage} />
         <div className={styles.rightSection}>
-          <ServiceInfo cleanerName={cleaner?.cleanerName} />
-          <PriceSection />
+          <ServiceInfo
+            cleanerName={cleaner?.cleanerName}
+            averageRating={cleaner?.averageRating}
+          />
+          <PriceSection
+            cleanerId={cleanerId}  // Pass cleanerId here
+            cleanerName={cleaner?.cleanerName}  // Pass cleanerName here
+          />
         </div>
       </div>
       <TabsSection />

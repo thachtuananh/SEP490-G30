@@ -1,16 +1,22 @@
-import { BrowserRouter as Router } from "react-router-dom"
-import Layout from "./layouts/Layout"
+import { BrowserRouter as Router } from "react-router-dom";
+import Layout from "./layouts/Layout";
 import { AuthContextProvider } from "./context/AuthContext";
+import { WebSocketProvider } from "./context/WebSocketContext";
+import CleanerWebSocket from "./context/CleanerWebSocket";
 
 function App() {
+  const cleaner = JSON.parse(localStorage.getItem("cleaner"));
+
   return (
     <AuthContextProvider>
-      <Router>
-        <Layout />
-      </Router>
+      <WebSocketProvider>
+        <Router>
+          {cleaner && <CleanerWebSocket />}
+          <Layout />
+        </Router>
+      </WebSocketProvider>
     </AuthContextProvider>
-
-  )
+  );
 }
 
-export default App
+export default App;
