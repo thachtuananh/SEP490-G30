@@ -1,0 +1,53 @@
+.modalContent {
+    padding: 10px 0;
+}
+
+.feedbackDisplay {
+    margin-bottom: 20px;
+}
+
+.ratingDisplay {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.ratingLabel {
+    font-weight: bold;
+    margin-right: 10px;
+    font-size: 16px;
+}
+
+.commentDisplay {
+    margin-top: 15px;
+}
+
+.commentLabel {
+    font-weight: bold;
+    margin-bottom: 8px;
+    font-size: 16px;
+}
+
+.commentText {
+    background-color: #f5f5f5;
+    padding: 12px;
+    border-radius: 4px;
+    min-height: 60px;
+}
+
+.loadingContainer {
+    text-align: center;
+    padding: 30px 0;
+}
+
+.actionButtons {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 20px;
+}
+
+.formButtons {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 15px;
+}

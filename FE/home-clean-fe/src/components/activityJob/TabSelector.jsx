@@ -5,16 +5,22 @@ const TabSelector = ({ activeTab, onTabChange }) => {
   return (
     <nav className={styles.tabs}>
       <button
-        className={activeTab === "active" ? styles.tabactive : styles.tab}
-        onClick={() => onTabChange("active")}
+        className={activeTab === "doing" ? styles.tabactive : styles.tab}
+        onClick={() => onTabChange("doing")}
       >
         Công việc đang làm
       </button>
       <button
-        className={activeTab === "completed" ? styles.tabactive : styles.tab}
-        onClick={() => onTabChange("completed")}
+        className={activeTab === "done" ? styles.tabactive : styles.tab}
+        onClick={() => onTabChange("done")}
       >
         Công việc đã làm
+      </button>
+      <button
+        className={activeTab === "applied" ? styles.tabactive : styles.tab}
+        onClick={() => onTabChange("applied")}
+      >
+        Công việc đã nhận
       </button>
     </nav>
   );

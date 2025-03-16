@@ -12,8 +12,10 @@ import {
     hireCleaner,
     startJob,
     completeJob,
-    deleteJobPosting
+    deleteJobPosting,
+    rejectCleaner
 } from "../../services/owner/StatusJobAPI";
+import { FeedbackModal } from "../../components/activity/FeedbackModal"; // Import the new FeedbackModal component
 
 export const ActivityCard = ({ data, onDelete }) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -23,6 +25,8 @@ export const ActivityCard = ({ data, onDelete }) => {
     const { customerId } = useContext(AuthContext);
     const [selectedJobId, setSelectedJobId] = useState(null);
     const [applicationsCount, setApplicationsCount] = useState({});
+    const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false); // New state for feedback modal
+    const [selectedJobIdForFeedback, setSelectedJobIdForFeedback] = useState(null); // New state for selected job ID for feedback
 
     const getStatusColor = (status) => {
         switch (status) {
@@ -110,10 +114,23 @@ export const ActivityCard = ({ data, onDelete }) => {
         setLoading(false);
     };
 
+    // Open cleaner modal
     const openModal = (jobId) => {
         setIsModalOpen(true);
         fetchCleaners(jobId);
         setSelectedJobId(jobId);
+    };
+
+    // Open feedback modal
+    const openFeedbackModal = (jobId) => {
+        setSelectedJobIdForFeedback(jobId);
+        setIsFeedbackModalOpen(true);
+    };
+
+    // Close feedback modal
+    const closeFeedbackModal = () => {
+        setIsFeedbackModalOpen(false);
+        setSelectedJobIdForFeedback(null);
     };
 
     // Hire a cleaner
@@ -131,6 +148,20 @@ export const ActivityCard = ({ data, onDelete }) => {
         } catch (error) {
             console.error("❌ Lỗi khi thuê cleaner:", error);
             message.error("❌ Lỗi khi thuê cleaner");
+        }
+    };
+
+    // Handle reject cleaner
+    const handleRejectCleaner = async (jobId, cleanerId, customerId) => {
+        try {
+            await rejectCleaner(jobId, cleanerId, customerId);
+            console.log("✅ Từ chối cleaner thành công!", { jobId, cleanerId, customerId });
+            message.success("✅ Từ chối cleaner thành công!");
+            // Refresh cleaner list
+            fetchCleaners(jobId);
+        } catch (error) {
+            console.error("❌ Lỗi khi từ chối cleaner:", error);
+            message.error("❌ Lỗi khi từ chối cleaner");
         }
     };
 
@@ -156,18 +187,6 @@ export const ActivityCard = ({ data, onDelete }) => {
         }
     };
 
-    // Handle delete job posting
-    // const handleDeleteJobPosting = async (jobId) => {
-    //     try {
-    //         await deleteJobPosting(jobId);
-    //         onDelete(jobId);
-    //         message.success("✅ Xóa bài đăng thành công!");
-    //     } catch (error) {
-    //         console.error("❌ Lỗi khi xóa bài đăng:", error);
-    //         message.error("❌ Không thể xóa bài đăng.");
-    //     }
-    // };
-
     const columns = [
         {
             title: "Ảnh",
@@ -188,7 +207,7 @@ export const ActivityCard = ({ data, onDelete }) => {
             render: (_, record) => (
                 <Button
                     type="default"
-                    onClick={() => fetchCleanerDetail(record.cleanerId)}
+                    onClick={() => handleFetchCleanerDetail(record.cleanerId)}
                     disabled={!record.cleanerId}
                 >
                     Xem
@@ -208,7 +227,13 @@ export const ActivityCard = ({ data, onDelete }) => {
                     >
                         Thuê
                     </Button>
-                    <Button danger>Từ chối</Button>
+                    <Button
+                        danger
+                        onClick={() => handleRejectCleaner(selectedJobId, record.cleanerId, customerId)}
+                        disabled={!record.cleanerId}
+                    >
+                        Từ chối
+                    </Button>
                 </>
             ),
         }
@@ -257,11 +282,16 @@ export const ActivityCard = ({ data, onDelete }) => {
                         <div className={styles.footer}>
                             <b style={{ color: getStatusColor(activity.status) }}>{getStatusText(activity.status)}</b>
 
-                            {activity.status === "DONE" && (
-                                <div className={styles.reviewButton}>
-                                    <FaRegCommentAlt className={styles.reviewIcon} />
-                                    <span>Thêm đánh giá</span>
-                                </div>
+                            {(activity.status === "DONE" || activity.status === "COMPLETED") && (
+                                <Button
+                                    className={styles.reviewButton}
+                                    onClick={() => openFeedbackModal(activity.jobId)}
+                                >
+                                    <FaRegCommentAlt />
+                                    <span>
+                                        {activity.status === "DONE" ? "Xem đánh giá" : "Đánh giá"}
+                                    </span>
+                                </Button>
                             )}
 
                             {activity.status === "OPEN" && (
@@ -289,6 +319,7 @@ export const ActivityCard = ({ data, onDelete }) => {
                 ))}
             </div>
 
+            {/* Cleaner List Modal */}
             <Modal
                 title="Danh sách Cleaner"
                 open={isModalOpen}
@@ -327,6 +358,14 @@ export const ActivityCard = ({ data, onDelete }) => {
                     )
                 )}
             </Modal>
+
+            {/* Feedback Modal */}
+            <FeedbackModal
+                visible={isFeedbackModalOpen}
+                jobId={selectedJobIdForFeedback}
+                customerId={customerId}
+                onClose={closeFeedbackModal}
+            />
         </div>
     );
 };

@@ -1,4 +1,3 @@
-
 function JobCard({ image, title, description, count }) {
     return (
         <div className="service-card job-card">
@@ -9,7 +8,6 @@ function JobCard({ image, title, description, count }) {
                 <h3 className="service-title">{title}</h3>
                 <p className="service-description">{description}</p>
                 <h3 className="service-title job-count">{count}</h3>
-
             </div>
         </div>
     );

@@ -100,10 +100,10 @@ h3 {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
+    /* gap: 8px; */
     color: white;
     background: #039855;
-    padding: 9px;
+    /* padding: 9px; */
     border-radius: 8px;
     cursor: pointer;
     font-weight: bold;

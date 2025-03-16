@@ -56,7 +56,7 @@ const JobCard = ({ job }) => {
 };
 
 function JobList() {
-    const { token } = useContext(AuthContext);
+    const { token, cleanerId } = useContext(AuthContext);
     const [jobs, setJobs] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -67,7 +67,7 @@ function JobList() {
             return;
         }
 
-        fetch("http://localhost:8080/api/cleaner/jobs", {
+        fetch(`http://localhost:8080/api/cleaner/jobs/${cleanerId}`, {
             method: "GET",
             headers: {
                 "Accept": "application/json",
