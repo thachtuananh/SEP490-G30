@@ -3,6 +3,7 @@ package com.example.homecleanapi.controllers;
 import com.example.homecleanapi.dtos.ChatMessage;
 
 import com.example.homecleanapi.services.MessageSyncService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.*;
 
+@Tag(name = "Message API")
 @RestController
 @RequestMapping("/api/messages")
 public class MessageController {

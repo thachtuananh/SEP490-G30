@@ -26,7 +26,7 @@ public class RedisConfig {
         return new Jackson2JsonRedisSerializer<>(objectMapper, ChatMessage.class);
     }
 
-    @Bean
+    @Bean(name = "chatMessageRedisTemplate")
     public RedisTemplate<String, ChatMessage> redisTemplate(RedisConnectionFactory connectionFactory) {
         RedisTemplate<String, ChatMessage> template = new RedisTemplate<>();
         template.setConnectionFactory(connectionFactory);
@@ -40,6 +40,24 @@ public class RedisConfig {
         Jackson2JsonRedisSerializer<ChatMessage> serializer = new Jackson2JsonRedisSerializer<>(objectMapper, ChatMessage.class);
 
         // Cấu hình Serializer
+        template.setKeySerializer(new StringRedisSerializer());
+        template.setValueSerializer(serializer);
+        template.setHashKeySerializer(new StringRedisSerializer());
+        template.setHashValueSerializer(serializer);
+        template.afterPropertiesSet();
+
+        return template;
+    }
+
+    // RedisTemplate dùng chung cho Object
+    @Bean(name = "commonRedisTemplate")
+    public RedisTemplate<String, Object> commonRedisTemplate(RedisConnectionFactory connectionFactory,
+                                                             ObjectMapper objectMapper) {
+        RedisTemplate<String, Object> template = new RedisTemplate<>();
+        template.setConnectionFactory(connectionFactory);
+
+        Jackson2JsonRedisSerializer<Object> serializer = new Jackson2JsonRedisSerializer<>(objectMapper, Object.class);
+
         template.setKeySerializer(new StringRedisSerializer());
         template.setValueSerializer(serializer);
         template.setHashKeySerializer(new StringRedisSerializer());
