@@ -112,7 +112,7 @@ public class JobService {
         job.setCustomerAddress(customerAddress);
         job.setStatus(JobStatus.OPEN);
         job.setScheduledTime(jobTime);
-        job.setPaymentMethod(request.getPaymentMethod());  // Lưu phương thức thanh toán của customer
+        job.setPaymentMethod(request.getPaymentMethod()); 
 
         // Lưu Job vào cơ sở dữ liệu trước
         job = jobRepository.save(job);

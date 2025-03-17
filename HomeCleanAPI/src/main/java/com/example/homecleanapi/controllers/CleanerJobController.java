@@ -158,7 +158,7 @@ public class CleanerJobController {
     // LUỒNG 2 
     
     @GetMapping(value = "/{cleanerId}/jobs")
-    public ResponseEntity<List<Map<String, Object>>> getJobsBookedForCleaner(@RequestParam Long cleanerId) {
+    public ResponseEntity<List<Map<String, Object>>> getJobsBookedForCleaner(@PathVariable Long cleanerId) {
         List<Map<String, Object>> jobs = cleanerJobService.getJobsBookedForCleaner(cleanerId);
         if (jobs.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(List.of(Map.of("message", "No jobs found for cleaner")));

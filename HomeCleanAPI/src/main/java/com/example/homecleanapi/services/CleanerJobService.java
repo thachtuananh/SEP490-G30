@@ -1274,7 +1274,7 @@ public class CleanerJobService {
 
 
 
-	public List<Map<String, Object>> getJobsBookedForCleaner(@RequestParam Long cleanerId) {
+	public List<Map<String, Object>> getJobsBookedForCleaner(@PathVariable Long cleanerId) {
 		List<Map<String, Object>> responseList = new ArrayList<>();
 
 		// Tìm cleaner theo cleanerId
