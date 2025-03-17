@@ -1286,10 +1286,10 @@ public class CleanerJobService {
 
 	    Employee cleaner = cleanerOpt.get();
 
-	    // Tìm tất cả các job mà cleaner đã được gán
-	    List<Job> jobs = jobRepository.findByCleanerId(cleanerId);
+	    // Tìm tất cả các job mà cleaner đã được gán với trạng thái "BOOKED"
+	    List<Job> jobs = jobRepository.findByCleanerIdAndStatus(cleanerId, JobStatus.BOOKED);
 	    if (jobs.isEmpty()) {
-	        responseList.add(Map.of("message", "No jobs found for cleaner with cleanerId: " + cleanerId));
+	        responseList.add(Map.of("message", "No booked jobs found for cleaner with cleanerId: " + cleanerId));
 	        return responseList;
 	    }
 
@@ -1361,6 +1361,7 @@ public class CleanerJobService {
 
 	    return responseList;
 	}
+
 
 
 	public Map<String, Object> acceptOrRejectJob(Long jobId, String action) {
