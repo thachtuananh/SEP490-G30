@@ -148,7 +148,6 @@ public class CleanerJobController {
 
 
 
-    
 
 
 
@@ -161,7 +160,7 @@ public class CleanerJobController {
     @GetMapping(value = "/{cleanerId}/jobs")
     public ResponseEntity<List<Map<String, Object>>> getJobsBookedForCleaner(@PathVariable Long cleanerId) {
         List<Map<String, Object>> jobs = cleanerJobService.getJobsBookedForCleaner(cleanerId);
-        if (jobs.isEmpty()) {
+        if (jobs.isEmpty()) { 
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(List.of(Map.of("message", "No jobs found for cleaner")));
         }
         return ResponseEntity.ok(jobs);

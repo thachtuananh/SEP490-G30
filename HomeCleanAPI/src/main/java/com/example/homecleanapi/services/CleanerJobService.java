@@ -1288,10 +1288,7 @@ public class CleanerJobService {
 
 	    // Tìm tất cả các job mà cleaner đã được gán với trạng thái "BOOKED"
 	    List<Job> jobs = jobRepository.findByCleanerIdAndStatus(cleanerId, JobStatus.BOOKED);
-	    if (jobs.isEmpty()) {
-	        responseList.add(Map.of("message", "No booked jobs found for cleaner with cleanerId: " + cleanerId));
-	        return responseList;
-	    }
+	
 
 	    // Lấy thông tin các job mà cleaner được book
 	    for (Job job : jobs) {
