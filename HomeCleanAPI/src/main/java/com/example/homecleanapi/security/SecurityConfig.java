@@ -115,6 +115,9 @@ public class SecurityConfig {
         configuration.setAllowedOriginPatterns(Arrays.asList("http://localhost:8080",
                 "http://localhost:3000",
                 "http://34.121.192.129:8080",
+                "https://house-clean-platform.web.app",
+                "https://house-clean-platform.firebaseapp.com",
+                "https://costume-lithuania-parameter-bathrooms.trycloudflare.com")); // 🔥 Thêm domain frontend của bạn
                 "http://34.136.232.226:8080",
                 "https://house-clean-platform.web.app",
                 "https://house-clean-platform.firebaseapp.com",
