@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Modal, List, Button, Table, message } from "antd";
 import styles from "./JobList.module.css";
+import { BASE_URL } from "../../utils/config";
 
 const getStatusColor = (status) => {
   const normalizedStatus = status.toUpperCase();
@@ -32,34 +33,78 @@ const getStatusLabel = (status) => {
   return statusMap[status.toUpperCase()] || "Không xác định";
 };
 
-const JobCard = ({ job }) => {
+const JobCard = ({ job, refreshJobs }) => {
 
   const [currentStatus, setCurrentStatus] = useState(job.status.toUpperCase());
+  const [loading, setLoading] = useState(false);
 
   const handleStatusUpdate = (newStatus) => {
     Modal.confirm({
       title: "Xác nhận",
       content: `Bạn có chắc muốn cập nhật trạng thái thành '${getStatusLabel(newStatus)}' không?`,
       onOk: () => {
+        setLoading(true); // Hiển thị trạng thái loading
         const token = localStorage.getItem("token");
-        fetch(`http://localhost:8080/api/cleaner/job/${newStatus}/${job.jobId}`, {
+        fetch(`${BASE_URL}/cleaner/job/${newStatus}/${job.jobId}`, {
           method: "POST",
           headers: {
             "Accept": "application/json",
             "Authorization": `Bearer ${token}`,
           },
         })
-          .then((response) => response.json())
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error(`API responded with status: ${response.status}`);
+            }
+            return response.json();
+          })
           .then((data) => {
             console.log("Status updated:", data);
             setCurrentStatus(newStatus.toUpperCase());
+            message.success(`Đã cập nhật trạng thái thành ${getStatusLabel(newStatus)}`);
+            if (refreshJobs) refreshJobs();
           })
-          .catch((error) => console.error("Error updating status:", error));
+          .catch((error) => {
+            console.error("Error updating status:", error);
+            message.error("Không thể cập nhật trạng thái. Vui lòng thử lại sau.");
+          })
+          .finally(() => {
+            setLoading(false); // Tắt trạng thái loading
+          });
       },
     });
   };
 
+  const handleJobAction = (action) => {
+    setLoading(true);
+    const token = localStorage.getItem("token");
 
+    fetch(`${BASE_URL}/cleaner/job/${job.jobId}/accept-reject?action=${action}`, {
+      method: "PUT",
+      headers: {
+        "Accept": "application/json",
+        "Authorization": `Bearer ${token}`,
+      },
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`API responded with status: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then((data) => {
+        console.log(`Job ${action}ed:`, data);
+        message.success(action === 'accept' ? 'Đã chấp nhận công việc' : 'Đã từ chối công việc');
+        if (refreshJobs) refreshJobs();
+      })
+      .catch((error) => {
+        console.error(`Error ${action}ing job:`, error);
+        message.error(`Không thể ${action === 'accept' ? 'chấp nhận' : 'từ chối'} công việc. Vui lòng thử lại sau.`);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  };
 
 
   return (
@@ -169,12 +214,31 @@ const JobCard = ({ job }) => {
           <Button type="primary">Hủy công việc</Button>
         )}
         {job.status === "IN_PROGRESS" && (
-          <Button type="primary" onClick={() => handleStatusUpdate("arrived")}>Đã tới</Button>
+          <Button type="primary" onClick={() => handleStatusUpdate("arrived")} loading={loading}>Đã tới</Button>
         )}
         {job.status === "STARTED" && (
-          <Button type="primary" onClick={() => handleStatusUpdate("completed")}>Hoàn thành công việc</Button>
+          <Button type="primary" onClick={() => handleStatusUpdate("completed")} loading={loading}>Hoàn thành công việc</Button>
         )}
-
+        {job.status === "BOOKED" && (
+          <div className={styles.buttonGroup}>
+            <Button
+              type="primary"
+              onClick={() => handleJobAction('accept')}
+              loading={loading}
+              style={{ marginRight: '10px' }}
+            >
+              Chấp nhận
+            </Button>
+            <Button
+              type="primary"
+              danger
+              onClick={() => handleJobAction('reject')}
+              loading={loading}
+            >
+              Từ chối
+            </Button>
+          </div>
+        )}
       </footer>
     </article>
   );

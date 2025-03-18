@@ -187,7 +187,12 @@ export const Address = () => {
             if (response.ok) {
                 message.success("Đã đặt địa chỉ mặc định!");
                 setDefaultAddress(`home${addressId}`);
-                fetchAddresses(); // Refresh the addresses list
+
+                // Update the local state directly instead of calling fetchAddresses()
+                setAddresses(prevAddresses => prevAddresses.map(address => ({
+                    ...address,
+                    isDefault: address.id === addressId
+                })));
             } else {
                 message.error("Không thể đặt địa chỉ mặc định.");
             }
@@ -195,6 +200,7 @@ export const Address = () => {
             message.error("Lỗi máy chủ, vui lòng thử lại sau.");
         }
     };
+
     return (
         <div className="address-container">
             <div className="address-header">

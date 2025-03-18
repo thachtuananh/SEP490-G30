@@ -7,7 +7,6 @@ import { message } from "antd";
 
 export const PersonaInformation = () => {
     const { user, dispatch } = useContext(AuthContext);
-    const navigate = useNavigate();
 
     // State cho từng trường thông tin
     const [customerName, setName] = useState(user?.customerName || "");
@@ -23,12 +22,7 @@ export const PersonaInformation = () => {
         message.success(`${field} đã được cập nhật!`);
     };
 
-    // Đăng xuất
-    const handleLogout = () => {
-        dispatch({ type: "LOGOUT" });
-        message.success("Đăng xuất thành công!");
-        navigate("/");
-    };
+
 
     // Đảm bảo dữ liệu được cập nhật sau khi context thay đổi
     useEffect(() => {
@@ -85,9 +79,7 @@ export const PersonaInformation = () => {
                 <button className="save-button" type="button" onClick={() => handleSave("name", customerName)}>
                     Lưu
                 </button>
-                <button className="save-button logout-button" type="button" onClick={handleLogout}>
-                    Đăng xuất
-                </button>
+
             </div>
         </div>
     );

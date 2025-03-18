@@ -7,7 +7,6 @@ import { message } from "antd";
 
 export const PersonaInformation = () => {
     const { cleaner, dispatch } = useContext(AuthContext);
-    const navigate = useNavigate();
 
 
     const [cleanerName, setName] = useState(cleaner?.cleanerName || "");
@@ -27,12 +26,6 @@ export const PersonaInformation = () => {
 
     };
 
-    // Đăng xuất
-    const handleLogout = () => {
-        dispatch({ type: "LOGOUT" });
-        message.success("Đăng xuất thành công!");
-        navigate("/homeclean");
-    };
 
     useEffect(() => {
         if (cleaner) {
@@ -116,9 +109,6 @@ export const PersonaInformation = () => {
             <div className="button-group">
                 <button className="save-button" type="button" onClick={handleSave}>
                     Lưu
-                </button>
-                <button className="save-button logout-button" type="button" onClick={handleLogout}>
-                    Đăng xuất
                 </button>
             </div>
         </div>

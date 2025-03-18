@@ -97,10 +97,10 @@ export const PriceSection = ({ cleanerId, cleanerName }) => {
   return (
     <section className={styles.priceSection}>
       <div className={styles.actionButtons}>
-        <button className={styles.chatButton}>
+        {/* <button className={styles.chatButton}>
           <ChatIcon />
           <span>Chat ngay</span>
-        </button>
+        </button> */}
         <button className={styles.hireButton} onClick={showServiceModal}>Thuê ngay</button>
       </div>
 

@@ -8,7 +8,7 @@ import { createJobToCleaner } from "../../services/owner/OwnerAPI"; // Import AP
 
 const { Title, Text, Paragraph } = Typography;
 
-const JobInfomation = ({ selectedDate, hour, minute }) => {
+const JobInfomation = ({ selectedDate, hour, minute, paymentMethod }) => {
     const location = useLocation();
     const navigate = useNavigate();
     const state = location.state || {};
@@ -120,6 +120,7 @@ const JobInfomation = ({ selectedDate, hour, minute }) => {
                 customerAddressId,
                 jobTime: formattedJobTime,
                 services: services,
+                paymentMethod: paymentMethod
             };
 
             console.log("Job data being sent:", jobData);
@@ -210,7 +211,16 @@ const JobInfomation = ({ selectedDate, hour, minute }) => {
                     <Text>{state.cleanerName || "Chưa chọn nhân công"}</Text>
                 </Paragraph>
                 <div className={styles.divider}></div>
-
+                <Paragraph className={styles.infoRow}>
+                    <Text>Phương thức thanh toán</Text>
+                    <Text>
+                        {paymentMethod === 'cash' && 'Thanh toán tiền mặt'}
+                        {paymentMethod === 'bank' && 'Thanh toán chuyển khoản'}
+                        {paymentMethod === 'momo' && 'Thanh toán qua ví điện tử'}
+                        {paymentMethod === 'zalo' && 'Thanh toán ZaloPay'}
+                        {!paymentMethod && 'Chưa chọn'}
+                    </Text>
+                </Paragraph>
                 <div className={styles.totalContainer}>
                     <Text>Tổng thanh toán</Text>
                     <Title level={4} className={styles.totalPrice}>
