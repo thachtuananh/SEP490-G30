@@ -4,6 +4,7 @@ import TabSelector from "../components/activityJob/TabSelector";
 import JobCard from "../components/activityJob/JobCard";
 import Navbar from "../components/Home/Cleaner/Navbar";
 import Footer from "../components/Home/Cleaner/Footer";
+import { BASE_URL } from "../utils/config";
 
 const ActivityJob = () => {
     const [activeTab, setActiveTab] = useState("doing");
@@ -32,19 +33,19 @@ const ActivityJob = () => {
         let endpoint = "";
         switch (tabType) {
             case "doing":
-                endpoint = `http://localhost:8080/api/cleaner/${cleanerId}/jobs/doing`;
+                endpoint = `${BASE_URL}/cleaner/${cleanerId}/jobs/doing`;
                 break;
             case "done":
-                endpoint = `http://localhost:8080/api/cleaner/${cleanerId}/jobs/done`;
+                endpoint = `${BASE_URL}/cleaner/${cleanerId}/jobs/done`;
                 break;
             case "applied":
-                endpoint = `http://localhost:8080/api/cleaner/${cleanerId}/jobs/applied`;
+                endpoint = `${BASE_URL}/cleaner/${cleanerId}/jobs/applied`;
                 break;
             case "booked":
-                endpoint = `http://localhost:8080/api/cleaner/${cleanerId}/jobs`;
+                endpoint = `${BASE_URL}/cleaner/${cleanerId}/jobs`;
                 break;
             default:
-                endpoint = `http://localhost:8080/api/cleaner/${cleanerId}/jobs/doing`;
+                endpoint = `${BASE_URL}/cleaner/${cleanerId}/jobs/doing`;
         }
 
         fetch(endpoint, {
@@ -82,7 +83,7 @@ const ActivityJob = () => {
             case "done":
                 return "Danh sách công việc đã làm";
             case "applied":
-                return "Danh sách công việc đã nhận";
+                return "Danh sách công việc đã ứng tuyển";
             case "booked":
                 return "Danh sách công việc đã được đặt";
             default:
@@ -97,7 +98,7 @@ const ActivityJob = () => {
             case "done":
                 return "Xem những công việc mà bạn đã hoàn thành";
             case "applied":
-                return "Xem những công việc mà bạn đã nhận";
+                return "Xem những công việc mà bạn đã ứng tuyển";
             case "booked":
                 return "Xem những công việc mà bạn đã được đặt";
             default:
@@ -113,7 +114,7 @@ const ActivityJob = () => {
             case "done":
                 return "Không có công việc nào đã hoàn thành";
             case "applied":
-                return "Không có công việc nào đã nhận";
+                return "Không có công việc nào đã ứng tuyển";
             case "booked":
                 return "Không có công việc nào đã được đặt";
             default:

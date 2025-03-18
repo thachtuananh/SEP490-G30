@@ -1,7 +1,9 @@
+import { BASE_URL } from "../../utils/config";
+
 export async function fetchCleanerDetails(cleanerId) {
     try {
         const token = localStorage.getItem("token");
-        const response = await fetch(`http://localhost:8080/api/customer/viewdetailcleaner/${cleanerId}`, {
+        const response = await fetch(`${BASE_URL}/customer/viewdetailcleaner/${cleanerId}`, {
             headers: {
                 "Authorization": `Bearer ${token}`,
                 "Content-Type": "application/json",

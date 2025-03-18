@@ -4,6 +4,7 @@ import ServiceContent from "../../components/service-details/ServiceContent";
 import ServiceDescription from "../../components/service-details/ServiceDescription";
 import SelectLocationModal from "../../components/service-details/SelectLocationModal";
 import { AuthContext } from "../../context/AuthContext";
+import { BASE_URL } from "../../utils/config";
 
 const ServiceDetails = () => {
   const [isShowLocationModal, setIsShowLocationModal] = useState(false);
@@ -16,7 +17,7 @@ const ServiceDetails = () => {
     const fetchDefaultAddress = async () => {
       try {
         if (!token) return;
-        const response = await fetch(`http://localhost:8080/api/customer/${customerId}/addresses`, {
+        const response = await fetch(`${BASE_URL}/customer/${customerId}/addresses`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },

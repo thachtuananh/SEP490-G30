@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Modal, List, Button, Table, message } from "antd";
 import styles from "./JobList.module.css";
+import { BASE_URL } from "../../utils/config";
 
 const getStatusColor = (status) => {
   const normalizedStatus = status.toUpperCase();
@@ -44,7 +45,7 @@ const JobCard = ({ job, refreshJobs }) => {
       onOk: () => {
         setLoading(true); // Hiển thị trạng thái loading
         const token = localStorage.getItem("token");
-        fetch(`http://localhost:8080/api/cleaner/job/${newStatus}/${job.jobId}`, {
+        fetch(`${BASE_URL}/cleaner/job/${newStatus}/${job.jobId}`, {
           method: "POST",
           headers: {
             "Accept": "application/json",
@@ -78,7 +79,7 @@ const JobCard = ({ job, refreshJobs }) => {
     setLoading(true);
     const token = localStorage.getItem("token");
 
-    fetch(`http://localhost:8080/api/cleaner/job/${job.jobId}/accept-reject?action=${action}`, {
+    fetch(`${BASE_URL}/cleaner/job/${job.jobId}/accept-reject?action=${action}`, {
       method: "PUT",
       headers: {
         "Accept": "application/json",

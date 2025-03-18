@@ -310,7 +310,7 @@ export const ActivityCard = ({ data, onDelete }) => {
                                 || activity.status === "ARRIVED") &&
                                 (
                                     <div className={styles.deleteButton} onClick={() => handleDeleteJob(activity.jobId)}>
-                                        <b>Xóa bài đăng</b>
+                                        <b>Huỳ việc</b>
                                     </div>
                                 )}
 

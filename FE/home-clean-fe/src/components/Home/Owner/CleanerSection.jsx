@@ -3,6 +3,8 @@ import { WebSocketContext } from "../../../context/WebSocketContext";
 import axios from "axios";
 import CleanerCard from "./CleanerCard";
 import AuthContext from "../../../context/AuthContext"
+import { BASE_URL } from "../../../utils/config";
+
 function CleanerSection() {
   const [cleaners, setCleaners] = useState([]); // Danh sách tất cả các cleaner
   const [onlineCleanerIds, setOnlineCleanerIds] = useState([]); // Danh sách các cleaner đang online
@@ -13,7 +15,7 @@ function CleanerSection() {
   const fetchAllCleaners = async () => {
     try {
       // console.log("🔄 Calling API to fetch all cleaners...");
-      const res = await axios.get("http://localhost:8080/api/customer/cleaners/online");
+      const res = await axios.get(`${BASE_URL}/customer/cleaners/online`);
 
       setCleaners(res.data); // Cập nhật danh sách cleaners
       const ids = res.data.map((cleaner) => cleaner.cleanerId);

@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useRef, useState } from "react";
 import { Client } from "@stomp/stompjs";
 import SockJS from "sockjs-client";
 import { AuthContext } from "../context/AuthContext";
+import { URL_WEB_SOCKET } from "../utils/config"
 
 export const WebSocketContext = createContext(null);
 
@@ -13,7 +14,7 @@ export const WebSocketProvider = ({ children }) => {
     useEffect(() => {
         if (!token) return;
 
-        const socket = new SockJS("http://localhost:8080/websocket-chat");
+        const socket = new SockJS(`${URL_WEB_SOCKET}/websocket-chat`);
         const client = new Client({
             webSocketFactory: () => socket,
             connectHeaders: {
