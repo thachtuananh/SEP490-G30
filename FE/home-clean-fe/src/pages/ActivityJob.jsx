@@ -40,6 +40,9 @@ const ActivityJob = () => {
             case "applied":
                 endpoint = `http://localhost:8080/api/cleaner/${cleanerId}/jobs/applied`;
                 break;
+            case "booked":
+                endpoint = `http://localhost:8080/api/cleaner/${cleanerId}/jobs`;
+                break;
             default:
                 endpoint = `http://localhost:8080/api/cleaner/${cleanerId}/jobs/doing`;
         }
@@ -67,6 +70,10 @@ const ActivityJob = () => {
             });
     };
 
+    const refreshJobs = () => {
+        fetchJobs(activeTab);
+    };
+
     // Get dynamic header content based on active tab
     const getHeaderTitle = () => {
         switch (activeTab) {
@@ -76,6 +83,8 @@ const ActivityJob = () => {
                 return "Danh sách công việc đã làm";
             case "applied":
                 return "Danh sách công việc đã nhận";
+            case "booked":
+                return "Danh sách công việc đã được đặt";
             default:
                 return "Danh sách công việc";
         }
@@ -89,6 +98,8 @@ const ActivityJob = () => {
                 return "Xem những công việc mà bạn đã hoàn thành";
             case "applied":
                 return "Xem những công việc mà bạn đã nhận";
+            case "booked":
+                return "Xem những công việc mà bạn đã được đặt";
             default:
                 return "Xem những công việc mà bạn đã và đang làm";
         }
@@ -103,6 +114,8 @@ const ActivityJob = () => {
                 return "Không có công việc nào đã hoàn thành";
             case "applied":
                 return "Không có công việc nào đã nhận";
+            case "booked":
+                return "Không có công việc nào đã được đặt";
             default:
                 return "Không có công việc nào";
         }
@@ -140,13 +153,16 @@ const ActivityJob = () => {
                         </div>
                     )}
 
-                    {error && (
-                        // <div className={styles.emptyState}>
-                        //     <div className={styles.errorIcon}>
-                        //         <i className="ti ti-alert-circle"></i>
-                        //     </div>
-                        //     <p className={styles.errorMessage}>{error}</p>
-                        // </div>
+                    {/* {!loading && error && (
+                        <div className={styles.emptyState}>
+                            <div className={styles.errorIcon}>
+                                <i className="ti ti-alert-circle"></i>
+                            </div>
+                            <p className={styles.errorMessage}>{error}</p>
+                        </div>
+                    )} */}
+
+                    {!loading && error && (
                         <div className={styles.emptyState}>
                             <div className={styles.emptyIcon}>
                                 <i className="ti ti-clipboard-list"></i>
@@ -155,19 +171,10 @@ const ActivityJob = () => {
                         </div>
                     )}
 
-                    {/* {!loading && !error && jobs.length === 0 && (
-                        <div className={styles.emptyState}>
-                            <div className={styles.emptyIcon}>
-                                <i className="ti ti-clipboard-list"></i>
-                            </div>
-                            <p className={styles.emptyMessage}>{getEmptyStateMessage()}</p>
-                        </div>
-                    )} */}
-
                     {!loading && !error && jobs.length > 0 && (
                         <>
                             {jobs.map((job) => (
-                                <JobCard key={job.jobId} job={job} />
+                                <JobCard key={job.jobId} job={job} refreshJobs={refreshJobs} />
                             ))}
                         </>
                     )}

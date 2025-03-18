@@ -7,7 +7,7 @@ function CleanerCard({ cleanerId, cleanerImg, cleanerName, rating, reviews, isOn
         <div className="card-image">
           {/* Đối với hình ảnh base64, cần thêm tiền tố data:image định dạng;base64, */}
           <img
-            src={cleanerImg.startsWith('data:') ? cleanerImg : `data:image/jpeg;base64,${cleanerImg}`}
+            src={cleanerImg ? (cleanerImg.startsWith('data:') ? cleanerImg : `data:image/jpeg;base64,${cleanerImg}`) : ''}
             alt={cleanerName}
           />
         </div>
