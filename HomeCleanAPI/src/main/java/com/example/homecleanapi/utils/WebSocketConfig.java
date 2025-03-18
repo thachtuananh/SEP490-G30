@@ -14,10 +14,14 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         // Chat service
         stompEndpointRegistry.addEndpoint("/websocket-chat")
                 .setAllowedOrigins("http://localhost:3000/")
+                .setAllowedOrigins("https://house-clean-platform.firebaseapp.com")
+                .setAllowedOrigins("https://house-clean-platform.web.app")
                 .withSockJS();
         // Notification service
         stompEndpointRegistry.addEndpoint("/websocket-notifications")
                 .setAllowedOrigins("http://localhost:3000")
+                .setAllowedOrigins("https://house-clean-platform.firebaseapp.com")
+                .setAllowedOrigins("https://house-clean-platform.web.app")
                 .withSockJS();
     }
     
