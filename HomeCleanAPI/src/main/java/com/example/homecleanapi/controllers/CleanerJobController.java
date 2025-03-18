@@ -162,6 +162,7 @@ public class CleanerJobController {
         List<Map<String, Object>> jobs = cleanerJobService.getJobsBookedForCleaner(cleanerId);
         if (jobs.isEmpty()) { 
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(List.of(Map.of("message", "No jobs found for cleaner")));
+          
         }
         return ResponseEntity.ok(jobs);
     }
