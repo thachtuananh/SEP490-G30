@@ -96,7 +96,8 @@ public class SecurityConfig {
                 "http://34.121.192.129:8080",
                 "https://house-clean-platform.web.app",
                 "https://house-clean-platform.firebaseapp.com",
-                "https://costume-lithuania-parameter-bathrooms.trycloudflare.com")); // 🔥 Thêm domain frontend của bạn
+                "https://costume-lithuania-parameter-bathrooms.trycloudflare.com",
+                "https://during-scripting-assessments-fare.trycloudflare.com")); // 🔥 Thêm domain frontend của bạn
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type"));
         configuration.setAllowCredentials(true);
