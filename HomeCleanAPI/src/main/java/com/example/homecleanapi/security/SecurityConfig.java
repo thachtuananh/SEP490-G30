@@ -112,14 +112,14 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:8080",
+        configuration.setAllowedOriginPatterns(Arrays.asList("http://localhost:8080",
                 "http://localhost:3000",
                 "http://34.121.192.129:8080",
                 "http://10.128.0.4:8080",
                 "https://house-clean-platform.web.app",
                 "https://house-clean-platform.firebaseapp.com",
                 "https://costume-lithuania-parameter-bathrooms.trycloudflare.com",
-                "https://during-scripting-assessments-fare.trycloudflare.com"));
+                "https://pike-armor-ms-hampton.trycloudflare.com"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type"));
         configuration.setAllowCredentials(true);
