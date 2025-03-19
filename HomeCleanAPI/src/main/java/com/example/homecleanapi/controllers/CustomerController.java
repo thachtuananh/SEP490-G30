@@ -13,7 +13,7 @@ import java.io.IOException;
 import java.util.Map;
 
 
-@Tag(name = "Customer API")
+@Tag(name = "Customer Profile API")
 @RestController
 @RequestMapping("/api/customer")
 public class CustomerController {

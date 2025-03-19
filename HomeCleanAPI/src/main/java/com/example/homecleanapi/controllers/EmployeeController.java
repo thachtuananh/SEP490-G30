@@ -39,10 +39,10 @@ public class EmployeeController {
         return employeeService.employeeCreateAddress(request, employeeId);
     }
 
-    @PutMapping(value = "/{employeeId}/update-address", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Map<String, Object>> updateEmployeeAddress(@RequestBody EmployeeLocationsDTO request, @PathVariable int employeeId) throws IOException {
+    @PutMapping(value = "/{employeeId}/{addressId}/update-address", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Map<String, Object>> updateEmployeeAddress(@RequestBody EmployeeLocationsDTO request, @PathVariable int employeeId, @PathVariable int addressId) throws IOException {
         // Gọi service để xử lý update địa chỉ
-        return employeeService.updateEmployeeAddress(request, employeeId);
+        return employeeService.updateEmployeeAddress(request, employeeId, addressId);
     }
 
     // API xóa địa chỉ theo locationId
