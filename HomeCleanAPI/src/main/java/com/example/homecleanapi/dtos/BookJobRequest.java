@@ -4,13 +4,22 @@ import java.util.List;
 
 public class BookJobRequest {
 
-    private Integer customerAddressId;  
-    private String jobTime;  
-    private List<ServiceRequest> services;  
+    private Integer customerAddressId;
+    private String jobTime;
+    private List<ServiceRequest> services;
+    private String paymentMethod;
 
     // Getter và Setter cho customerAddressId
     public Integer getCustomerAddressId() {
         return customerAddressId;
+    }
+
+    public String getPaymentMethod() {
+        return paymentMethod;
+    }
+
+    public void setPaymentMethod(String paymentMethod) {
+        this.paymentMethod = paymentMethod;
     }
 
     public void setCustomerAddressId(Integer customerAddressId) {
@@ -37,9 +46,9 @@ public class BookJobRequest {
 
     // Đối tượng đại diện cho một dịch vụ và chi tiết dịch vụ
     public static class ServiceRequest {
-        private Long serviceId;  // ID dịch vụ
-        private Long serviceDetailId;  // ID chi tiết dịch vụ
-        private String imageUrl;  // Link ảnh liên quan đến dịch vụ
+        private Long serviceId;
+        private Long serviceDetailId;
+        private String imageUrl;
 
         // Getter và Setter cho serviceId
         public Long getServiceId() {
