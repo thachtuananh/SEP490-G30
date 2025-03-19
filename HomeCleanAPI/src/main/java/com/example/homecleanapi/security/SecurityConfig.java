@@ -91,7 +91,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOriginPatterns(Arrays.asList("http://localhost:8080",
+        configuration.setAllowedOrigins(Arrays.asList("http://localhost:8080",
                 "http://localhost:3000",
                 "http://34.121.192.129:8080",
                 "https://house-clean-platform.web.app",
