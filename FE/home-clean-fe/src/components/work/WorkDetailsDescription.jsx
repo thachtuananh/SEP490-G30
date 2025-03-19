@@ -24,6 +24,8 @@ import {
 } from "@ant-design/icons";
 import { AuthContext } from "../../context/AuthContext";
 import "../../assets/CSS/work/WorkDetailsDescription.module.css"
+import { BASE_URL } from "../../utils/config";
+
 const { Title, Text, Paragraph } = Typography;
 
 const WorkDetailsDescription = () => {
@@ -47,7 +49,7 @@ const WorkDetailsDescription = () => {
 
   useEffect(() => {
     setLoading(true);
-    fetch(`http://localhost:8080/api/cleaner/job/${jobId}`, {
+    fetch(`${BASE_URL}/cleaner/job/${jobId}`, {
       method: "GET",
       headers: {
         "Accept": "application/json",
@@ -72,7 +74,7 @@ const WorkDetailsDescription = () => {
       return;
     }
 
-    fetch(`http://localhost:8080/api/cleaner/apply-job/${jobId}`, {
+    fetch(`${BASE_URL}/cleaner/apply-job/${jobId}`, {
       method: "POST",
       headers: {
         "Accept": "application/json",

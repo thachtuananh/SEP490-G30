@@ -11,17 +11,24 @@ const TabSelector = ({ activeTab, onTabChange }) => {
         Công việc đang làm
       </button>
       <button
-        className={activeTab === "done" ? styles.tabactive : styles.tab}
-        onClick={() => onTabChange("done")}
+        className={activeTab === "booked" ? styles.tabactive : styles.tab}
+        onClick={() => onTabChange("booked")}
       >
-        Công việc đã làm
+        Công việc đã được đặt
       </button>
       <button
         className={activeTab === "applied" ? styles.tabactive : styles.tab}
         onClick={() => onTabChange("applied")}
       >
-        Công việc đã nhận
+        Công việc đã ứng tuyển
       </button>
+      <button
+        className={activeTab === "done" ? styles.tabactive : styles.tab}
+        onClick={() => onTabChange("done")}
+      >
+        Công việc đã làm
+      </button>
+
     </nav>
   );
 };

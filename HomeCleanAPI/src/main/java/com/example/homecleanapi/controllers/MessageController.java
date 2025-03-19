@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.*;
 
-@Tag(name = "Message API")
+@Tag(name = "Messages API")
 @RestController
 @RequestMapping("/api/messages")
 public class MessageController {

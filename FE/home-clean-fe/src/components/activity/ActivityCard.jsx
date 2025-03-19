@@ -18,6 +18,7 @@ import {
 import { FeedbackModal } from "../../components/activity/FeedbackModal"; // Import the new FeedbackModal component
 
 export const ActivityCard = ({ data, onDelete }) => {
+    const [activities, setActivities] = useState([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [cleanerList, setCleanerList] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -27,6 +28,13 @@ export const ActivityCard = ({ data, onDelete }) => {
     const [applicationsCount, setApplicationsCount] = useState({});
     const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false); // New state for feedback modal
     const [selectedJobIdForFeedback, setSelectedJobIdForFeedback] = useState(null); // New state for selected job ID for feedback
+
+    // Initialize activities from props
+    useEffect(() => {
+        if (data) {
+            setActivities(data);
+        }
+    }, [data]);
 
     const getStatusColor = (status) => {
         switch (status) {
@@ -80,8 +88,8 @@ export const ActivityCard = ({ data, onDelete }) => {
 
     // Fetch application counts for all OPEN jobs on component mount
     useEffect(() => {
-        if (data && data.length > 0) {
-            data.forEach(async (activity) => {
+        if (activities && activities.length > 0) {
+            activities.forEach(async (activity) => {
                 if (activity.status === "OPEN") {
                     try {
                         const applications = await fetchCleanerApplications(customerId, activity.jobId);
@@ -99,7 +107,7 @@ export const ActivityCard = ({ data, onDelete }) => {
                 }
             });
         }
-    }, [data, customerId]);
+    }, [activities, customerId]);
 
     // Fetch cleaner details
     const handleFetchCleanerDetail = async (cleanerId) => {
@@ -133,6 +141,17 @@ export const ActivityCard = ({ data, onDelete }) => {
         setSelectedJobIdForFeedback(null);
     };
 
+    // Update activity status locally
+    const updateActivityStatus = (jobId, newStatus) => {
+        setActivities(prevActivities =>
+            prevActivities.map(activity =>
+                activity.jobId === jobId
+                    ? { ...activity, status: newStatus }
+                    : activity
+            )
+        );
+    };
+
     // Hire a cleaner
     const handleHireCleaner = async (jobId, cleanerId, customerId) => {
         if (!jobId) {
@@ -144,6 +163,7 @@ export const ActivityCard = ({ data, onDelete }) => {
             await hireCleaner(jobId, cleanerId, customerId);
             console.log("✅ Thuê cleaner thành công!", { jobId, cleanerId, customerId });
             message.success("✅ Thuê cleaner thành công!");
+            updateActivityStatus(jobId, "BOOKED");
             setIsModalOpen(false);
         } catch (error) {
             console.error("❌ Lỗi khi thuê cleaner:", error);
@@ -170,6 +190,7 @@ export const ActivityCard = ({ data, onDelete }) => {
         try {
             await startJob(jobId, customerId);
             message.success("✅ Công việc đã bắt đầu!");
+            updateActivityStatus(jobId, "STARTED");
         } catch (error) {
             console.error("❌ Lỗi khi bắt đầu công việc:", error);
             message.error("❌ Không thể bắt đầu công việc.");
@@ -181,9 +202,23 @@ export const ActivityCard = ({ data, onDelete }) => {
         try {
             await completeJob(jobId);
             message.success("✅ Công việc đã hoàn thành!");
+            updateActivityStatus(jobId, "DONE");
         } catch (error) {
             console.error("❌ Lỗi khi hoàn thành công việc:", error);
             message.error("❌ Không thể hoàn thành công việc.");
+        }
+    };
+
+    // Handle delete job posting with local state update
+    const handleDeleteJob = async (jobId) => {
+        try {
+            await onDelete(jobId);
+            // Remove deleted job from local state
+            setActivities(prevActivities =>
+                prevActivities.filter(activity => activity.jobId !== jobId)
+            );
+        } catch (error) {
+            console.error("❌ Lỗi khi xóa công việc:", error);
         }
     };
 
@@ -242,7 +277,7 @@ export const ActivityCard = ({ data, onDelete }) => {
     return (
         <div className={styles.cardlist}>
             <div className={styles.container}>
-                {data.map((activity, index) => (
+                {activities.map((activity, index) => (
                     <div key={index} className={styles.card}>
                         <div className={styles.cardContent}>
                             <div className={styles.header}>
@@ -268,9 +303,16 @@ export const ActivityCard = ({ data, onDelete }) => {
                                     </div>
                                 ))}
                             </div>
-                            <div className={styles.deleteButton} onClick={() => onDelete(activity.jobId)}>
-                                <b>Xóa bài đăng</b>
-                            </div>
+
+                            {(activity.status === "OPEN"
+                                || activity.status === "BOOKED"
+                                || activity.status === "IN_PROGRESS"
+                                || activity.status === "ARRIVED") &&
+                                (
+                                    <div className={styles.deleteButton} onClick={() => handleDeleteJob(activity.jobId)}>
+                                        <b>Huỳ việc</b>
+                                    </div>
+                                )}
 
                             <div className={styles.price}>
                                 <b>{activity.totalPrice.toLocaleString("vi-VN")} VNĐ</b>
@@ -282,7 +324,7 @@ export const ActivityCard = ({ data, onDelete }) => {
                         <div className={styles.footer}>
                             <b style={{ color: getStatusColor(activity.status) }}>{getStatusText(activity.status)}</b>
 
-                            {(activity.status === "DONE" || activity.status === "COMPLETED") && (
+                            {(activity.status === "DONE") && (
                                 <Button
                                     className={styles.reviewButton}
                                     onClick={() => openFeedbackModal(activity.jobId)}
@@ -294,7 +336,7 @@ export const ActivityCard = ({ data, onDelete }) => {
                                 </Button>
                             )}
 
-                            {activity.status === "OPEN" && (
+                            {(activity.status === "OPEN" || activity.status === "BOOKED") && (
                                 <Badge count={applicationsCount[activity.jobId] || 0} size="small">
                                     <Button type="primary" className={styles.statusButton}
                                         onClick={() => openModal(activity.jobId)}>

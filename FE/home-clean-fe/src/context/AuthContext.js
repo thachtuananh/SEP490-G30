@@ -37,15 +37,19 @@ const AuthReducer = (state, action) => {
             return { ...state, user: null, loading: true, error: null };
 
         case "LOGIN_SUCCESS_CUSTOMER":
-            const { name, token, customerId, phone } = action.payload;
-            localStorage.setItem("user", JSON.stringify({ name, phone }));
-            localStorage.setItem("token", token);
-            localStorage.setItem("customerId", customerId);
+            const customerLogin = {
+                name: action.payload.name,
+                phone: action.payload.phone,
+                token: action.payload.token,
+                customerId: action.payload.customerId,
+                // role: action.payload.role
+            };
+            localStorage.setItem("user", JSON.stringify(customerLogin));
             return {
                 ...state,
-                user: { name, phone },
-                token,
-                customerId,
+                user: customerLogin,
+                token: action.payload.token,
+                customerId: action.payload.customerId,
                 loading: false,
                 error: null
             };
@@ -112,10 +116,11 @@ const AuthReducer = (state, action) => {
         case "LOGOUT":
             localStorage.removeItem("user");
             localStorage.removeItem("cleaner");
+            localStorage.removeItem("name");
             localStorage.removeItem("token");
+            localStorage.removeItem("role");
             localStorage.removeItem("customerId");
             localStorage.removeItem("cleanerId");
-
             return {
                 ...state,
                 user: null,
@@ -123,6 +128,8 @@ const AuthReducer = (state, action) => {
                 token: null,
                 customerId: null,
                 cleanerId: null,
+                name: null,
+                role: null,
                 loading: false,
                 error: null
             };

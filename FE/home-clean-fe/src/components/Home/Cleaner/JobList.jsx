@@ -2,6 +2,7 @@ import React, { useState, useEffect, useContext } from "react";
 import { FaMapMarkerAlt, FaClock, FaCalendarAlt } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import { AuthContext } from "../../../context/AuthContext"; // Import AuthContext
+import { BASE_URL } from "../../../utils/config";
 
 // Hàm format ngày theo yêu cầu
 const formatDate = (dateString) => {
@@ -67,7 +68,7 @@ function JobList() {
             return;
         }
 
-        fetch(`http://localhost:8080/api/cleaner/jobs/${cleanerId}`, {
+        fetch(`${BASE_URL}/cleaner/jobs/${cleanerId}`, {
             method: "GET",
             headers: {
                 "Accept": "application/json",

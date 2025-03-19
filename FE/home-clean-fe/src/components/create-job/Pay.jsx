@@ -10,12 +10,16 @@ import styles from "../../assets/CSS/createjob/Pay.module.css";
 
 const { Title, Text } = Typography;
 
-const Pay = () => {
+const Pay = ({ onPaymentMethodChange }) => {
     const [selectedMethod, setSelectedMethod] = useState("cash");
-    // const [termsAccepted, setTermsAccepted] = useState(false);
 
     const handleMethodChange = (e) => {
-        setSelectedMethod(e.target.value);
+        const method = e.target.value;
+        setSelectedMethod(method);
+        // Pass the selected method to parent component
+        if (onPaymentMethodChange) {
+            onPaymentMethodChange(method);
+        }
     };
 
     return (
@@ -51,7 +55,7 @@ const Pay = () => {
                                 </Space>
                             </Col>
                             <Col>
-                                <Radio value="cash" />
+                                <Radio value="Cash" />
                             </Col>
                         </Row>
                     </div>
@@ -75,7 +79,7 @@ const Pay = () => {
                                 </Space>
                             </Col>
                             <Col>
-                                <Radio value="bank" />
+                                <Radio value="Bank" />
                             </Col>
                         </Row>
                     </div>
@@ -99,7 +103,7 @@ const Pay = () => {
                                 </Space>
                             </Col>
                             <Col>
-                                <Radio value="momo" />
+                                <Radio value="Momo" />
                             </Col>
                         </Row>
                     </div>
@@ -123,23 +127,12 @@ const Pay = () => {
                                 </Space>
                             </Col>
                             <Col>
-                                <Radio value="zalo" />
+                                <Radio value="Zalo" />
                             </Col>
                         </Row>
                     </div>
                 </Space>
             </Radio.Group>
-
-            {/* <div style={{ marginTop: '16px' }}>
-                <Checkbox
-                    checked={termsAccepted}
-                    onChange={(e) => setTermsAccepted(e.target.checked)}
-                >
-                    <Text style={{ fontSize: '14px' }}>
-                        Tôi đồng ý với <Text strong>Điều khoản và dịch vụ</Text> của HouseClean
-                    </Text>
-                </Checkbox>
-            </div> */}
         </Card>
     );
 };

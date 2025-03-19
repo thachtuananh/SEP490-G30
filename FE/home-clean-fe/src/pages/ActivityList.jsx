@@ -3,6 +3,7 @@ import { ActivityCard } from "../components/activity/ActivityCard";
 import styles from "../components/activity/ActivityList.module.css";
 import { AuthContext } from "../context/AuthContext";
 import { Modal } from "antd";
+import { BASE_URL } from "../utils/config";
 
 export const ActivityList = () => {
     const [data, setData] = useState([]);
@@ -11,7 +12,7 @@ export const ActivityList = () => {
 
     //API GET
     useEffect(() => {
-        fetch(`http://localhost:8080/api/customer/${customerId}/listjobsbook`, {
+        fetch(`${BASE_URL}/customer/${customerId}/listjobsbook`, {
             method: "GET",
             headers: {
                 "Authorization": `Bearer ${token}`,
@@ -31,7 +32,7 @@ export const ActivityList = () => {
             okText: "Xóa",
             cancelText: "Hủy",
             onOk: () => {
-                fetch(`http://localhost:8080/api/customer/${customerId}/cancel-job/${jobId}`, {
+                fetch(`${BASE_URL}/customer/${customerId}/cancel-job/${jobId}`, {
                     method: "POST",
                     headers: {
                         "Authorization": `Bearer ${token}`,
