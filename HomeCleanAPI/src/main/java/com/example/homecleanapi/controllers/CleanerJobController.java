@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@Tag(name = "Employee API")
+@Tag(name = "Employee Jobs API")
 @SecurityRequirement(name = "BearerAuth")
 @RequestMapping("/api/cleaner")
 public class CleanerJobController {
