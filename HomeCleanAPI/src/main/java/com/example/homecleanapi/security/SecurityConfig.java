@@ -7,7 +7,6 @@ import com.example.homecleanapi.services.CustomAdminUserDetailsService;
 import com.example.homecleanapi.services.CustomCustomerUserDetailsService;
 import com.example.homecleanapi.services.CustomEmployeeUserDetailsService;
 import com.example.homecleanapi.utils.JwtUtils;
-import io.netty.handler.codec.http.HttpMethod;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -73,7 +72,6 @@ public class SecurityConfig {
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
                         .requestMatchers("/api-docs").permitAll()
                         .requestMatchers("/api/admin/customers/**").hasAnyRole("Admin", "Manager")
-                        .requestMatchers("/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -110,12 +108,20 @@ public class SecurityConfig {
     }
 
 
+
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:8080", "http://localhost:3000", "http://localhost:5432")); // 🔥 Thêm domain frontend của bạn
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "PATCH"));
-        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "Accept", "Origin", "X-Requested-With"));
+        configuration.setAllowedOriginPatterns(Arrays.asList("http://localhost:8080",
+                "http://localhost:3000",
+                "http://34.121.192.129:8080",
+                "http://10.128.0.4:8080",
+                "https://house-clean-platform.web.app",
+                "https://house-clean-platform.firebaseapp.com",
+                "https://costume-lithuania-parameter-bathrooms.trycloudflare.com",
+                "https://pike-armor-ms-hampton.trycloudflare.com"));
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type"));
         configuration.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
