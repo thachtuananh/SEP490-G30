@@ -4,6 +4,7 @@ import com.example.homecleanapi.dtos.*;
 import com.example.homecleanapi.services.CustomerAuthService;
 import com.example.homecleanapi.services.CustomerService;
 import com.example.homecleanapi.utils.JwtUtils;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +17,7 @@ import java.util.Map;
 @Tag(name = "Customer Profile API")
 @RestController
 @RequestMapping("/api/customer")
+@SecurityRequirement(name = "BearerAuth")
 public class CustomerController {
 
     private JwtUtils jwtUtils;
