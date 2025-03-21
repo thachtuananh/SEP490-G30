@@ -30,6 +30,8 @@ public interface JobRepository extends JpaRepository<Job, Long> {
 
 
     List<Job> findByCleanerIdAndStatusIn(Long cleanerId, List<String> statuses);
+    
+    Optional<Job> findByTxnRef(String txnRef); 
 
 
 

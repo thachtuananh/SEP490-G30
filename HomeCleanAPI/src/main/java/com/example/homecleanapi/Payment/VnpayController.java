@@ -1,18 +1,26 @@
 package com.example.homecleanapi.Payment;
 
+import java.util.Optional;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import com.example.homecleanapi.enums.JobStatus;
+import com.example.homecleanapi.models.Job;
+import com.example.homecleanapi.repositories.JobRepository;
+
 
 
 @RestController
-@RequestMapping("/api/vnpay")
+@RequestMapping("/api/vnpayment")
 public class VnpayController {
 
+    @Autowired
+    private JobRepository jobRepository;
     private final VnpayService vnpayService;
 
-    // Constructor để khởi tạo vnpayService
     public VnpayController(VnpayService vnpayService) {
         this.vnpayService = vnpayService;
     }
@@ -30,8 +38,32 @@ public class VnpayController {
     }
 
     @GetMapping("/return")
-    public ResponseEntity<String> returnPayment(@RequestParam("vnp_ResponseCode") String responseCode) {
-        return vnpayService.handlePaymentReturn(responseCode);
+    public ResponseEntity<String> returnPayment(@RequestParam("vnp_ResponseCode") String responseCode,
+                                                @RequestParam("vnp_TxnRef") String txnRef) {
+        if ("00".equals(responseCode)) {
+            Optional<Job> jobOpt = jobRepository.findByTxnRef(txnRef);  
+            System.out.println("Ở đây này: " + txnRef);
+            System.out.println("Ở đây này ver 2: " + jobOpt);
+
+            if (jobOpt.isPresent()) {
+                Job job = jobOpt.get();
+                job.setStatus(JobStatus.PAID);  
+                jobRepository.save(job);  
+
+                return ResponseEntity.ok("Thanh toán thành công! Job đã được xác nhận.");
+            } else {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Job không tồn tại.");
+            }
+        } else {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Thanh toán thất bại! Mã lỗi: " + responseCode);
+        }
     }
+
+
+
+
+
 }
+
+
 

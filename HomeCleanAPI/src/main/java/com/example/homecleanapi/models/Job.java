@@ -54,15 +54,27 @@ public class Job {
 
     @Enumerated(EnumType.STRING)
     private JobStatus status;  // Import JobStatus ở đây 
+    
+    @Column(name = "txn_ref")
+    private String txnRef;
 
     // Getters and Setters
+    
     
     
     public Long getId() {
         return id;
     }
 
-    public String getPaymentMethod() {
+    public String getTxnRef() {
+		return txnRef;
+	}
+
+	public void setTxnRef(String txnRef) {
+		this.txnRef = txnRef;
+	}
+
+	public String getPaymentMethod() {
 		return paymentMethod;
 	}
 

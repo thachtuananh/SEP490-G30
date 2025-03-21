@@ -2,6 +2,9 @@ package com.example.homecleanapi.services;
 
 
 
+import com.example.homecleanapi.Payment.VnpayConfig;
+import com.example.homecleanapi.Payment.VnpayRequest;
+import com.example.homecleanapi.Payment.VnpayService;
 import com.example.homecleanapi.dtos.BookJobRequest;
 import com.example.homecleanapi.dtos.BookJobRequest.ServiceRequest;
 import com.example.homecleanapi.enums.JobStatus;
@@ -57,6 +60,9 @@ public class JobService {
     @Autowired
     private WalletRepository walletRepository;
     
+    @Autowired
+    private VnpayService vnpayService;
+    
 
     
   
@@ -89,52 +95,26 @@ public class JobService {
             return response;
         }
 
-        // Kiểm tra trùng lịch và địa chỉ
-        List<Job> existingJobs = jobRepository.findByScheduledTimeAndCustomerAddress(jobTime, customerAddress);
-        if (!existingJobs.isEmpty()) {
-            // Kiểm tra trùng dịch vụ
-            for (Job existingJob : existingJobs) {
-                for (JobServiceDetail jobServiceDetail : existingJob.getJobServiceDetails()) {
-                    for (ServiceRequest serviceRequest : request.getServices()) {
-                        if (jobServiceDetail.getService().getId().equals(serviceRequest.getServiceId()) &&
-                            jobServiceDetail.getServiceDetail().getId().equals(serviceRequest.getServiceDetailId())) {
-                            response.put("message", "There is already a job booked at this time, address, and service.");
-                            return response;
-                        }
-                    }
-                }
-            }
-        }
-
         // Tạo Job và gán các thuộc tính cần thiết
         Job job = new Job();
         job.setCustomer(customer);
         job.setCustomerAddress(customerAddress);
         job.setStatus(JobStatus.OPEN);
         job.setScheduledTime(jobTime);
-        job.setPaymentMethod(request.getPaymentMethod()); 
+        job.setPaymentMethod(request.getPaymentMethod());
 
-        // Lưu Job vào cơ sở dữ liệu trước
+        // Lưu Job vào cơ sở dữ liệu
         job = jobRepository.save(job);
 
         // Tính tổng giá cho tất cả các dịch vụ
         double totalPrice = 0;
-
-        // Danh sách lưu các JobServiceDetail sẽ được tạo
-        List<JobServiceDetail> jobServiceDetails = new ArrayList<>();
-
-        // Duyệt qua các dịch vụ mà customer đã chọn
         for (ServiceRequest serviceRequest : request.getServices()) {
-
-            // Kiểm tra dịch vụ có tồn tại không
             Optional<Services> serviceOpt = serviceRepository.findById(serviceRequest.getServiceId());
             if (!serviceOpt.isPresent()) {
                 response.put("message", "Service not found with serviceId: " + serviceRequest.getServiceId());
                 return response;
             }
             Services service = serviceOpt.get();
-
-            // Kiểm tra chi tiết dịch vụ có tồn tại không
             Optional<ServiceDetail> serviceDetailOpt = serviceDetailRepository.findById(serviceRequest.getServiceDetailId());
             if (!serviceDetailOpt.isPresent()) {
                 response.put("message", "Service Detail not found for serviceId: " + serviceRequest.getServiceDetailId());
@@ -142,44 +122,43 @@ public class JobService {
             }
             ServiceDetail serviceDetail = serviceDetailOpt.get();
 
-            // Tính toán giá cho dịch vụ
-            double serviceDetailPrice = serviceDetail.getPrice();
-            double additionalPrice = serviceDetail.getAdditionalPrice();
-            double finalPrice = serviceDetailPrice + additionalPrice;
-
-            // Tính toán các phụ phí (giờ cao điểm, cuối tuần, chiết khấu...)
-            double peakTimeFee = 0;
-            if (job.getScheduledTime() != null) {
-                if (job.getScheduledTime().getDayOfWeek() == DayOfWeek.SATURDAY || job.getScheduledTime().getDayOfWeek() == DayOfWeek.SUNDAY) {
-                    peakTimeFee = 0.1 * finalPrice; // Phụ phí cuối tuần
-                }
-                if (job.getScheduledTime().getHour() >= 18 && job.getScheduledTime().getHour() <= 22) {
-                    peakTimeFee += 0.2 * finalPrice; // Phụ phí giờ cao điểm
-                }
-            }
-
-            finalPrice += peakTimeFee;
-
-            // Cộng tổng giá dịch vụ
-            totalPrice += finalPrice;
-
-            // Tạo JobServiceDetail và lưu vào cơ sở dữ liệu
-            JobServiceDetail jobServiceDetail = new JobServiceDetail();
-            jobServiceDetail.setJob(job);
-            jobServiceDetail.setService(service);
-            jobServiceDetail.setServiceDetail(serviceDetail);
-
-            jobServiceDetails.add(jobServiceDetail);
+            // Tính toán giá dịch vụ
+            totalPrice += serviceDetail.getPrice() + serviceDetail.getAdditionalPrice();
         }
 
-        // Lưu các JobServiceDetail vào cơ sở dữ liệu
-        jobServiceDetailRepository.saveAll(jobServiceDetails);
-
-        // Cập nhật tổng giá và lưu lại Job
+        // Cập nhật tổng giá cho job
         job.setTotalPrice(totalPrice);
         jobRepository.save(job);
 
-        // Trả về thông tin công việc đã tạo
+        // Nếu chọn phương thức thanh toán VNPay
+        if ("vnpay".equalsIgnoreCase(request.getPaymentMethod())) {
+            try {
+                // Tạo VNPay Request với số tiền thanh toán
+                VnpayRequest vnpayRequest = new VnpayRequest();
+                long amount = (long) (totalPrice);  // Đảm bảo chuyển đổi tổng tiền thành đơn vị tiền tệ hợp lệ
+                vnpayRequest.setAmount(String.valueOf(amount)); // Gửi số tiền đã được nhân với 100
+
+                // Tạo URL thanh toán VNPay
+                String paymentUrl = vnpayService.createPayment(vnpayRequest);
+
+                // Lấy txnRef từ URL của VNPay
+                String txnRef = extractTxnRefFromUrl(paymentUrl);  // Lấy txnRef từ URL của VNPay
+                System.out.println("TxnRef: " + txnRef);
+
+                // Lưu txnRef vào Job ngay sau khi tạo paymentUrl
+                job.setTxnRef(txnRef);  // Lưu txnRef vào Job
+                jobRepository.save(job);  // Lưu cập nhật txnRef vào database
+
+                // Trả về URL thanh toán cho người dùng
+                response.put("paymentUrl", paymentUrl);
+                return response;
+            } catch (Exception e) {
+                response.put("message", "Failed to create payment through VNPay: " + e.getMessage());
+                return response;
+            }
+        }
+
+        // Nếu chọn phương thức thanh toán tiền mặt, hoàn tất tạo job
         response.put("message", "Job booked successfully");
         response.put("jobId", job.getId());
         response.put("status", job.getStatus());
@@ -187,6 +166,28 @@ public class JobService {
 
         return response;
     }
+
+    // Hàm để trích xuất txnRef từ URL trả về của VNPay
+    private String extractTxnRefFromUrl(String paymentUrl) {
+        try {
+            // Trích xuất txnRef từ URL
+            String[] urlParts = paymentUrl.split("\\?");
+            for (String part : urlParts[1].split("&")) {
+                if (part.startsWith("vnp_TxnRef")) {
+                    return part.split("=")[1];
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+
+
+
+
+
 
 
 
