@@ -79,4 +79,10 @@ public class CustomerController {
     public ResponseEntity<Map<String, Object>> getAllEmployeeAddresses(@PathVariable int employeeId) {
         return customerService.getAllCusomterAddresses(employeeId);
     }
+
+    // API xóa account
+    @DeleteMapping(value = "/{customer_id}/delete_account", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Map<String, Object>> deleteAccount(@PathVariable int customer_id) {
+        return customerService.deleteCustomerAccount(customer_id);
+    }
 }
