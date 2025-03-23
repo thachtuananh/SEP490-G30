@@ -32,13 +32,15 @@ import java.util.stream.Collectors;
 public class CustomerService {
 
     private final ConvertAddressToLatLong convertAddressToLatLong;
+    private final CustomerAuthService customerAuthService;
     private CustomerRepository customerRepository;
     private CustomerAddressRepository customerAddressRepository;
 
-    public CustomerService(CustomerRepository customerRepository, CustomerAddressRepository customerAddressRepository, ConvertAddressToLatLong convertAddressToLatLong) {
+    public CustomerService(CustomerRepository customerRepository, CustomerAddressRepository customerAddressRepository, ConvertAddressToLatLong convertAddressToLatLong, CustomerAuthService customerAuthService) {
         this.customerRepository = customerRepository;
         this.customerAddressRepository = customerAddressRepository;
         this.convertAddressToLatLong = convertAddressToLatLong;
+        this.customerAuthService = customerAuthService;
     }
 
     // Xem thông tin profile của khách hàng
@@ -195,17 +197,17 @@ public class CustomerService {
     }
 
     // Lấy tất cả địa chỉ của employee theo employeeId
-    public ResponseEntity<Map<String, Object>> getAllCusomterAddresses(@PathVariable int employeeId) {
+    public ResponseEntity<Map<String, Object>> getAllCusomterAddresses(@PathVariable int customer_id) {
         Map<String, Object> response = new HashMap<>();
 
         // Kiểm tra xem employee có tồn tại không
-        if (!customerAddressRepository.existsById(employeeId)) {
+        if (!customerAddressRepository.existsById(customer_id)) {
             response.put("message", "Employee not found");
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         }
 
         // Lấy danh sách địa chỉ của employee
-        List<Map<String, Object>> addresses = customerAddressRepository.findCustomerAddressesByCustomer_Id(employeeId)
+        List<Map<String, Object>> addresses = customerAddressRepository.findCustomerAddressesByCustomer_Id(customer_id)
                 .stream()
                 .map(location -> {
                     Map<String, Object> addressMap = new HashMap<>();
@@ -217,5 +219,21 @@ public class CustomerService {
 
         response.put("data", addresses);
         return ResponseEntity.ok(response);
+    }
+
+    // Delete account
+    public ResponseEntity<Map<String, Object>> deleteCustomerAccount(@PathVariable int customer_id) {
+        Map<String, Object> response = new HashMap<>();
+        if (!customerAddressRepository.existsById(customer_id)) {
+            response.put("message", "Employee not found");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        }
+
+        Customers customer = customerRepository.findById(customer_id);
+
+        customer.setIs_deleted(true);
+        customerRepository.save(customer);
+        response.put("status", "Delete customer successfully");
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 }

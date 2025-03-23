@@ -1,5 +1,7 @@
 package com.example.homecleanapi.services;
 
+import com.example.homecleanapi.dtos.CleanerRegisterRequest;
+import com.example.homecleanapi.dtos.CleanerUpdateProfile;
 import com.example.homecleanapi.dtos.EmployeeLocationsDTO;
 import com.example.homecleanapi.models.Employee;
 import com.example.homecleanapi.models.EmployeeLocations;
@@ -15,10 +17,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -190,10 +189,25 @@ public class EmployeeService {
     }
 
     // Update Employee Profile
-//    public ResponseEntity<Map<String, Object>> updateEmployeeInfomation(@RequestBody ) {
-//        Map<String, Object> response = new HashMap<>();
-//
-//
-//        return ResponseEntity.status(HttpStatus.OK).body(response);
-//    }
+    public ResponseEntity<Map<String, Object>> updateEmployeeInformation(CleanerUpdateProfile request, Integer employeeId) {
+        Employee employee = employeeRepository.findById(employeeId)
+                .orElseThrow(() -> new RuntimeException("Employee not found"));
+
+        // Cập nhật thông tin employee
+        employee.updateProfile(request);
+        employeeRepository.save(employee);
+
+        return ResponseEntity.ok(Collections.singletonMap("status", "Update success"));
+    }
+
+    // Delete Employee
+    public ResponseEntity<Map<String, Object>> deleteEmployeeAccount(@PathVariable int employeeId) {
+        Employee employee = employeeRepository.findById(employeeId)
+                .orElseThrow(() -> new RuntimeException("Employee not found"));
+
+        employee.setStatus(true);
+        employeeRepository.save(employee);
+
+        return ResponseEntity.ok(Collections.singletonMap("status", "Delete success"));
+    }
 }
