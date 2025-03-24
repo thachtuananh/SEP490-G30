@@ -1,5 +1,5 @@
 //package com.example.homecleanapi.controllers;
-
+//
 //
 //import com.example.homecleanapi.dtos.CustomerProfileRequest;
 //import com.example.homecleanapi.services.CustomerProfileService;
@@ -20,11 +20,11 @@
 //    private CustomerProfileService customerProfileService;
 //
 //    @Autowired
-//    private JwtUtils jwtUtils;  
-//    
+//    private JwtUtils jwtUtils;
+//
 //    @GetMapping("/profile")
 //    public ResponseEntity<Map<String, Object>> getProfile(@RequestHeader("Authorization") String authorizationHeader) {
-//        String token = authorizationHeader.substring(7);  
+//        String token = authorizationHeader.substring(7);
 //
 //        if (!jwtUtils.validateToken(token)) {
 //            return ResponseEntity.status(403).body(Map.of("message", "Unauthorized"));
@@ -35,7 +35,7 @@
 //            return ResponseEntity.status(403).body(Map.of("message", "Unauthorized"));
 //        }
 //
-//        String phone = jwtUtils.getUsernameFromToken(token); 
+//        String phone = jwtUtils.getUsernameFromToken(token);
 //
 //        return customerProfileService.getProfile(phone);
 //    }
@@ -44,23 +44,23 @@
 //
 //
 //    @PutMapping("/profile")
-//    public ResponseEntity<Map<String, Object>> updateProfile(@RequestHeader("Authorization") String authorizationHeader, 
+//    public ResponseEntity<Map<String, Object>> updateProfile(@RequestHeader("Authorization") String authorizationHeader,
 //                                                              @RequestBody CustomerProfileRequest request) {
-//        String token = authorizationHeader.substring(7);  
+//        String token = authorizationHeader.substring(7);
 //
 //        if (!jwtUtils.validateToken(token)) {
 //            return ResponseEntity.status(403).body(Map.of("message", "Unauthorized"));
 //        }
 //
-//        String phone = jwtUtils.getUsernameFromToken(token); 
+//        String phone = jwtUtils.getUsernameFromToken(token);
 //        return customerProfileService.updateProfile(phone, request);
 //    }
-//        
 //
-//    
+//
+//
 //
 //
 //}
 //
 //
-
+//
