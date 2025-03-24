@@ -97,10 +97,8 @@ public class NotificationService {
         }
     }
 
-    public void clearNotifications(String role, String userId) {
-        String key = role.equals("CUSTOMER") ?
-                "notifications:customers:" + userId :
-                "notifications:cleaners:" + userId;
+    public void clearNotifications(String role, Integer userId) {
+        String key = generateRedisKey(role, userId);
 
         redisTemplate.delete(key);
     }
