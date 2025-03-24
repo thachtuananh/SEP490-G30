@@ -6,7 +6,7 @@ import "../owner/profile.css";
 
 export const Address = () => {
     const { user, dispatch } = useContext(AuthContext);
-    const [defaultAddress, setDefaultAddress] = useState("home1");
+    const [defaultAddress, setDefaultAddress] = useState("");
 
     const [addresses, setAddresses] = useState([]);
     const [isModalVisible, setIsModalVisible] = useState(false);
