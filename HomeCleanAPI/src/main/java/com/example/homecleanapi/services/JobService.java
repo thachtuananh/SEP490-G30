@@ -99,12 +99,9 @@ public class JobService {
         Job job = new Job();
         job.setCustomer(customer);
         job.setCustomerAddress(customerAddress);
-        job.setStatus(JobStatus.OPEN);
+        job.setStatus(JobStatus.PAID);
         job.setScheduledTime(jobTime);
         job.setPaymentMethod(request.getPaymentMethod());
-
-        // Lưu Job vào cơ sở dữ liệu
-        job = jobRepository.save(job);
 
         // Tính tổng giá cho tất cả các dịch vụ
         double totalPrice = 0;
@@ -126,7 +123,13 @@ public class JobService {
             totalPrice += serviceDetail.getPrice() + serviceDetail.getAdditionalPrice();
         }
 
-        // Cập nhật tổng giá cho job
+        // Kiểm tra nếu totalPrice lớn hơn 1 triệu và phương thức thanh toán là tiền mặt
+        if (totalPrice > 1000000 && "cash".equalsIgnoreCase(request.getPaymentMethod())) {
+            response.put("message", "Total price exceeds 1 million. Cash payment is not allowed.");
+            return response;  // Dừng lại và trả về phản hồi, không tạo job
+        }
+
+        // Lưu Job vào cơ sở dữ liệu
         job.setTotalPrice(totalPrice);
         jobRepository.save(job);
 
@@ -167,6 +170,8 @@ public class JobService {
         return response;
     }
 
+
+
     // Hàm để trích xuất txnRef từ URL trả về của VNPay
     private String extractTxnRefFromUrl(String paymentUrl) {
         try {
@@ -182,15 +187,6 @@ public class JobService {
         }
         return null;
     }
-
-
-
-
-
-
-
-
-
 
 
 

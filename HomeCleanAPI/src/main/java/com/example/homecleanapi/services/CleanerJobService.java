@@ -209,8 +209,11 @@ public class CleanerJobService {
 	        return response;
 	    }
 
+
 	    // Kiểm tra phương thức thanh toán của job
-	    if (job.getPaymentMethod().equals("Cash")) {
+	    if (job.getPaymentMethod().trim().equalsIgnoreCase("Cash")) {
+	    	
+	    	
 	        // Kiểm tra ví của cleaner để kiểm tra số dư trước khi ứng tuyển
 	        Optional<Wallet> walletOpt = walletRepository.findByCleanerId(cleaner.getId());
 	        if (!walletOpt.isPresent()) {
@@ -223,9 +226,9 @@ public class CleanerJobService {
 	        double commission = 0.2 * job.getTotalPrice();
 
 	        // Kiểm tra số dư ví của cleaner có đủ để trừ hoa hồng không
-	        if (wallet.getBalance() < commission) {
-	            response.put("message", "số dư không đủ");
-	            return response;
+	        if (wallet.getBalance() - commission < -200000) {  
+	            response.put("message", "Your balance is not sufficient. You can only owe up to 200,000 VND.");
+	            return response;  // Return immediately to prevent job application creation
 	        }
 	    }
 
@@ -244,6 +247,9 @@ public class CleanerJobService {
 
 	    return response;
 	}
+
+
+
 
 
 

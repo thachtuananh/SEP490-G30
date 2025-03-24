@@ -47,7 +47,7 @@ public class VnpayController {
 
             if (jobOpt.isPresent()) {
                 Job job = jobOpt.get();
-                job.setStatus(JobStatus.PAID);  
+                job.setStatus(JobStatus.OPEN);  
                 jobRepository.save(job);  
 
                 return ResponseEntity.ok("Thanh toán thành công! Job đã được xác nhận.");
