@@ -48,7 +48,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             if ("Customer".equals(role)) {
                 userDetails = customerUserDetailsService.loadUserByUsername(phone);
-            } else if ("Employee".equals(role)) {
+            } else if ("Cleaner".equals(role)) {
                 userDetails = employeeUserDetailsService.loadUserByUsername(phone);
             }
 
