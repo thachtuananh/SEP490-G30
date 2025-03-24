@@ -72,7 +72,7 @@ const AddressSelectionModal = ({
                             </div>
                         ))}
                     </div>
-                    <div className={styles.addAddressButtonContainer}>
+                    {/* <div className={styles.addAddressButtonContainer}>
                         <Button
                             type="primary"
                             className={styles.addAddressButton}
@@ -87,7 +87,7 @@ const AddressSelectionModal = ({
                         >
                             Thêm địa chỉ mới
                         </Button>
-                    </div>
+                    </div> */}
                 </>
             )}
         </Modal>
