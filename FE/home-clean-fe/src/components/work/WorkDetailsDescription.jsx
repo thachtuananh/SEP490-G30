@@ -127,7 +127,7 @@ const WorkDetailsDescription = () => {
   // Xử lý hiển thị tên dịch vụ, lấy từ service đầu tiên nếu có
   const serviceName = job.services && job.services.length > 0
     ? job.services[0].serviceName
-    : job.serviceName || "Dịch vụ vệ sinh";
+    : job.serviceName;
 
   // Xử lý hiển thị mô tả dịch vụ, lấy từ service đầu tiên nếu có
   const serviceDescription = job.services && job.services.length > 0
@@ -152,7 +152,21 @@ const WorkDetailsDescription = () => {
             alignItems: isMobile ? 'flex-start' : 'center',
             marginBottom: 16
           }}>
-            <Title level={4} style={{ margin: isMobile ? '0 0 8px 0' : 0 }}>{serviceName}</Title>
+            <div style={{ display: 'flex', flexWrap: 'wrap' }}>
+              {job.services && job.services.length > 0 ? (
+                job.services.map((service, index) => (
+                  <React.Fragment key={index}>
+                    <Title level={4} style={{ margin: isMobile ? '0 0 8px 0' : 0 }}>
+                      {service.serviceName}
+                    </Title>
+                    {index < job.services.length - 1 && <Title level={4} style={{ margin: isMobile ? '0 0 8px 0' : '0 5px' }}>& </Title>}
+                  </React.Fragment>
+                ))
+              ) : (
+                <Title level={4} style={{ margin: isMobile ? '0 0 8px 0' : 0 }}>{serviceName}</Title>
+              )}
+            </div>
+
             <Tag color={job.status === "OPEN" ? "green" : "default"} style={{ marginTop: isMobile ? 8 : 0 }}>
               {job.status === "OPEN" ? "Đang mở" : "Đã đóng"}
             </Tag>
@@ -221,31 +235,37 @@ const WorkDetailsDescription = () => {
         <Card bodyStyle={{ padding: isMobile ? 16 : 24 }}>
           <Title level={4}>Thông tin chung</Title>
 
-          <Title level={5}>Mô tả công việc</Title>
-          <Paragraph>{serviceDescription}</Paragraph>
-
           <Title level={5}>Loại dịch vụ</Title>
-          <List
-            size={isMobile ? "small" : "default"}
-            bordered
-            style={{ marginBottom: 16 }}
-            dataSource={job.services && job.services.length > 0 ? job.services : (job.serviceDetails || [])}
-            renderItem={item => (
-              <List.Item>
-                <Typography.Text>
-                  {item.serviceDetailName || item.name} {item.description}
-                  {item.areaRange && ` (${item.areaRange})`}
+          <ul style={{ listStyleType: 'disc', paddingLeft: '20px', margin: '0' }}>
+            {(job.services && job.services.length > 0 ? job.services : job.serviceDetails || []).map((item, index) => (
+              <li key={index} style={{ border: 'none', padding: '8px 0' }}>
+                <Typography.Text style={{ marginRight: '5px' }}>
+                  {item.serviceDetailName || item.name}
                 </Typography.Text>
-              </List.Item>
-            )}
-          />
+                <Typography.Text>
+                  {item.areaRange && `(${item.areaRange})`}
+                </Typography.Text>
+              </li>
+            ))}
+          </ul>
 
-          <Title level={5}>Ưu đãi</Title>
+          <Title level={5}>Mô tả công việc</Title>
+          <ul style={{ listStyleType: 'disc', paddingLeft: '20px', margin: '0' }}>
+            {(job.services && job.services.length > 0 ? job.services : job.serviceDetails || []).map((item, index) => (
+              <li key={index} style={{ border: 'none', padding: '8px 0' }}>
+                <Typography.Text>
+                  {item.serviceDescription}
+                </Typography.Text>
+              </li>
+            ))}
+          </ul>
+
+          {/* <Title level={5}>Ưu đãi</Title>
           <Paragraph>
             {job.services && job.services.length > 0 && job.services[0].discounts
               ? job.services[0].discounts
               : "Không có ưu đãi"}
-          </Paragraph>
+          </Paragraph> */}
 
           <Title level={5}>Khách hàng</Title>
           <Space direction="vertical" size="small" style={{ width: '100%' }}>
@@ -255,15 +275,18 @@ const WorkDetailsDescription = () => {
               marginBottom: isMobile ? 8 : 0
             }}>
               <div style={{
-                width: isMobile ? '100%' : '150px',
+                width: isMobile ? '100%' : '120px',
                 flexShrink: 0,
-                marginBottom: isMobile ? 4 : 0
+                marginBottom: isMobile ? 4 : 0,
+                fontSize: '16px'
               }}>
                 Tên khách hàng:
               </div>
-              <div>{job.customerName}</div>
+              <div style={{
+                fontSize: '16px'
+              }}>{job.customerName}</div>
             </div>
-            <div style={{
+            {/* <div style={{
               display: 'flex',
               flexDirection: isMobile ? 'column' : 'row'
             }}>
@@ -275,7 +298,7 @@ const WorkDetailsDescription = () => {
                 Số điện thoại:
               </div>
               <div>{job.customerPhone}</div>
-            </div>
+            </div> */}
           </Space>
         </Card>
       </Col>

@@ -30,7 +30,7 @@ import OrderSuccess from "../pages/order_success/OrderSuccess"
 import ApplySuccess from "../pages/order_success/ApplySuccess"
 import WorkDetail from "../pages/work/WorkDetail"
 import ActivityJob from "../pages/ActivityJob"
-
+import JobListFilter from "../pages/JobListFilter"
 import ServiceDetailsCombo from './../pages/ServiceDetails/ServiceDetailsCombo';
 import ServiceDetailsCleaner from './../pages/CleanerDetails/ServiceDetail';
 
@@ -73,6 +73,7 @@ const Routers = () => {
             <Route path="/service-details-combo" element={<ServiceDetailsCombo />} />
             <Route path="/service-details-cleaner" element={<ServiceDetailsCleaner />} />
 
+            <Route path="/job-list" element={<JobListFilter />} />
         </Routes>
     )
 }

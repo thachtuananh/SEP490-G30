@@ -15,7 +15,7 @@
   border-color: #027a44 !important;
 }
 
-.hero,
+/* .hero,
 .service-section,
 .service-section,
 .testimonial-section,
@@ -24,7 +24,7 @@
 .infomation-container,
 .contact-container {
   animation: fadeSlideIn 1.2s ease-in-out;
-}
+} */
 
 html,
 body {
@@ -1164,6 +1164,10 @@ body {
   .service-card {
     flex: 1 1 calc(25% - 0.5rem);
   }
+
+  .Container {
+    padding: 0 24px;
+  }
 }
 
 @media (max-width: 1024px) {
@@ -1208,6 +1212,13 @@ body {
     padding: 10px 40px;
   }
 
+  .Container {
+    padding: 0 24px;
+  }
+
+  .hero-stats {
+    gap: 1rem;
+  }
 }
 
 @media (max-width: 768px) {
@@ -1317,6 +1328,12 @@ body {
   .team-member {
     max-width: 400px;
     margin: 0 auto;
+  }
+
+  .job-list-section {
+    padding: 2rem;
+    display: grid;
+    grid-auto-rows: auto;
   }
 }
 

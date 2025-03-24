@@ -6,14 +6,16 @@ import Notification from "../../Notification/Notification";
 import styles from "../../../assets/CSS/Notification/Notification.module.css";
 import { message, Button, Dropdown, Avatar, Badge, Popover } from "antd";
 import { UserOutlined, LogoutOutlined, BellOutlined } from "@ant-design/icons";
+import { getUnreadNotificationCount } from "../../../services/NotificationService";
 
 function Navbar() {
-    const { cleaner, dispatch } = useContext(AuthContext); // Lấy thông tin từ context (user)
+    const { cleaner, dispatch } = useContext(AuthContext);
     const navigate = useNavigate();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isPopupNotification, setIsPopupNotification] = useState(false);
-    const [notificationCount, setNotificationCount] = useState(5);
+    const [notificationCount, setNotificationCount] = useState(0);
     const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+    const [isLoading, setIsLoading] = useState(false);
 
     // Track screen size changes
     useEffect(() => {
@@ -24,6 +26,33 @@ function Navbar() {
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
     }, []);
+
+    // Fetch notification count when component mounts and when user changes
+    useEffect(() => {
+        const fetchNotificationCount = async () => {
+            if (cleaner) {
+                try {
+                    setIsLoading(true);
+                    const count = await getUnreadNotificationCount();
+                    setNotificationCount(count);
+                } catch (error) {
+                    console.error("Failed to fetch notification count:", error);
+                    message.error("Không thể tải số lượng thông báo. Vui lòng thử lại sau!");
+                } finally {
+                    setIsLoading(false);
+                }
+            } else {
+                setNotificationCount(0);
+            }
+        };
+
+        fetchNotificationCount();
+
+        // Set up polling to refresh notification count every minute
+        const intervalId = setInterval(fetchNotificationCount, 60000);
+
+        return () => clearInterval(intervalId);
+    }, [cleaner]);
 
     // Close the menu when notification popup is opened on mobile
     useEffect(() => {
@@ -54,7 +83,22 @@ function Navbar() {
         }
     };
 
-    // Lấy tên của cleaner từ user trong AuthContext hoặc localStorage nếu không có trong context
+    // Refresh notifications manually
+    const refreshNotifications = async () => {
+        if (cleaner) {
+            try {
+                setIsLoading(true);
+                const count = await getUnreadNotificationCount();
+                setNotificationCount(count);
+            } catch (error) {
+                console.error("Failed to refresh notifications:", error);
+            } finally {
+                setIsLoading(false);
+            }
+        }
+    };
+
+    // Lấy tên user từ localStorage nếu chưa có trong context
     const getCleanerName = () => {
         if (cleaner && cleaner.name) {
             return cleaner.name;
@@ -95,6 +139,7 @@ function Navbar() {
                 <BellOutlined
                     className={`${styles.notification_icon} ${notificationCount > 0 ? styles.notification_active : ''}`}
                     style={{ fontSize: '20px' }}
+                    spin={isLoading}
                 />
             </div>
         </Badge>
@@ -107,7 +152,14 @@ function Navbar() {
                 className={styles.mobile_notification_container}
                 onClick={(e) => e.stopPropagation()}
             >
-                <Notification onClose={() => setIsPopupNotification(false)} />
+                <Notification
+                    onClose={() => setIsPopupNotification(false)}
+                    onViewAll={() => {
+                        setIsPopupNotification(false);
+                        // Navigate to full notification page if you have one
+                        // navigate("/notifications");
+                    }}
+                />
             </div>
         </div>
     ) : null;
@@ -118,10 +170,25 @@ function Navbar() {
     ) : (
         cleaner ? (
             <Popover
-                content={<Notification onClose={() => setIsPopupNotification(false)} />}
+                content={
+                    <Notification
+                        onClose={() => setIsPopupNotification(false)}
+                        onViewAll={() => {
+                            setIsPopupNotification(false);
+                            // Navigate to full notification page if you have one
+                            // navigate("/notifications");
+                        }}
+                    />
+                }
                 trigger="click"
                 open={isPopupNotification}
-                onOpenChange={setIsPopupNotification}
+                onOpenChange={(visible) => {
+                    setIsPopupNotification(visible);
+                    if (visible) {
+                        // Refresh notification count when opening the popover
+                        refreshNotifications();
+                    }
+                }}
                 placement="bottomRight"
                 overlayClassName={styles.notification_popover}
             >
@@ -139,7 +206,6 @@ function Navbar() {
             </div>
         </Dropdown>
     );
-
     // Login and Register buttons
     const authButtons = (
         <div style={{ display: 'flex', gap: '10px' }}>
@@ -176,8 +242,7 @@ function Navbar() {
                         <li><Link to="/homeclean" className="nav-link">Tin tức</Link></li>
                         <li><Link to="/homeclean" className="nav-link">Bảng giá dịch vụ</Link></li>
 
-
-                        {/* Phần mobile-login đã được sửa theo Ant Design */}
+                        {/* Only show these elements on mobile */}
                         <li className="mobile-login">
                             {isMobile && (
                                 <>
@@ -193,7 +258,7 @@ function Navbar() {
                     </ul>
                 </div>
 
-                {/* Phần desktop-login đã được sửa theo Ant Design */}
+                {/* Only show these elements on desktop */}
                 <div className="desktop-login">
                     {!isMobile && (
                         <>
@@ -208,8 +273,8 @@ function Navbar() {
                 </div>
             </nav>
 
+            {/* Render mobile notification panel outside navbar structure */}
             {mobileNotificationContent}
-
         </div>
     );
 }

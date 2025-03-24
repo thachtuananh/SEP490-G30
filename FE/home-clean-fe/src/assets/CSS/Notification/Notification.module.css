@@ -232,6 +232,7 @@
 @media (max-width: 768px) {
     .mobile_notification_container {
         margin-top: 10px;
+        padding: 10px;
     }
 }
 
@@ -239,5 +240,6 @@
     .mobile_notification_container {
         width: 95%;
         max-height: 70vh;
+        padding: 10px;
     }
 }

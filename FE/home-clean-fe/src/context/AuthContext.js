@@ -79,7 +79,6 @@ const AuthReducer = (state, action) => {
                 phone: action.payload.phone,
                 token: action.payload.token,
                 cleanerId: action.payload.cleanerId,
-                role: action.payload.role
             };
 
             localStorage.setItem("cleaner", JSON.stringify(cleanerLogin));
