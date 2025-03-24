@@ -1,109 +1,106 @@
-import React from "react";
-import { List, Avatar, Button, Space, Typography, Badge } from "antd";
-import { BellOutlined, CloseOutlined } from "@ant-design/icons";
-import anhdaidien from "../../assets/bgintroduce.png";
+import React, { useState, useEffect } from 'react';
+import { List, Typography, Spin, Empty, Button } from 'antd';
+import { getNotifications } from '../../services/NotificationService';
+import styles from "../../assets/CSS/Notification/Notification.module.css";
 
 const { Text, Title } = Typography;
 
-const Notification = ({ onClose }) => {
-    // Sample data
-    let data = [
-        { id: 1, tittle: "Công việc bạn đăng đã có người nhận", time: "14:56", day: "Thứ tư", name: "Nguyễn Văn A", phone: "0987654321" },
-        { id: 2, tittle: "Hết hạn đăng tải công việc", time: "14:56", day: "Thứ 4" },
-        { id: 3, tittle: "Công việc bạn đăng đã có người nhận", time: "14:56", day: "Thứ tư" },
-        { id: 4, tittle: "Công việc bạn đăng đã có người nhận", time: "14:56", day: "Thứ tư" },
-        { id: 5, tittle: "Công việc bạn đăng đã có người nhận", time: "14:56", day: "Thứ tư" },
-        { id: 6, tittle: "Công việc bạn đăng đã có người nhận", time: "14:56", day: "Thứ tư" },
-    ];
+const Notification = () => {
+    const [notifications, setNotifications] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
-    // Sắp xếp data theo ID giảm dần (mới nhất lên trên)
-    data = data.sort((a, b) => b.id - a.id);
+    // Fetch notifications when component mounts
+    useEffect(() => {
+        fetchNotifications();
+    }, []);
 
-    // ID lớn nhất (mới nhất)
-    const latestId = data[0].id;
+    // Function to fetch notifications
+    const fetchNotifications = async () => {
+        try {
+            setLoading(true);
+            const data = await getNotifications();
+            setNotifications(data || []);
+            setError(null);
+        } catch (error) {
+            console.error("Error fetching notifications:", error);
+            setError("Không thể tải thông báo. Vui lòng thử lại sau.");
+        } finally {
+            setLoading(false);
+        }
+    };
 
-    // Check if running on mobile
-    const isMobile = window.innerWidth < 768;
+    // Format date for display
+    const formatDate = (dateString) => {
+        if (!dateString) return '';
+
+        try {
+            const date = new Date(dateString);
+            return date.toLocaleString('vi-VN', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                // hour: '2-digit',
+                // minute: '2-digit'
+            });
+        } catch (error) {
+            console.error("Error formatting date:", error);
+            return dateString;
+        }
+    };
 
     return (
-        <div style={{ width: isMobile ? '100%' : '320px', maxHeight: '400px', overflowY: 'auto' }}>
-            <div style={{
-                padding: '10px',
-                borderBottom: '1px solid #f0f0f0',
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center'
-            }}>
+        <div className={styles.notification_container} style={{ width: '250px' }}>
+            <div className={styles.notification_header}>
                 <Title level={5} style={{ margin: 0 }}>Thông báo</Title>
-                {isMobile && (
-                    <Button
-                        type="text"
-                        icon={<CloseOutlined />}
-                        onClick={onClose}
-                        size="small"
+                {/* {onClose && (
+                    <Button type="text" onClick={onClose} className={styles.close_button}>
+                        ×
+                    </Button>
+                )} */}
+            </div>
+
+            <div className={styles.notification_content} style={{ maxHeight: '400px', overflowY: 'scroll', scrollbarWidth: 'none' }}>
+                {loading ? (
+                    <div className={styles.loading_container}>
+                        <Spin size="large" />
+                    </div>
+                ) : error ? (
+                    <div className={styles.error_container}>
+                        <Text type="danger">{error}</Text>
+                        <br />
+                        <Button type="primary" onClick={fetchNotifications} className={styles.retry_button}>
+                            Thử lại
+                        </Button>
+                    </div>
+                ) : notifications.length === 0 ? (
+                    <Empty description="Không có thông báo" />
+                ) : (
+                    <List
+                        dataSource={notifications} // Hiển thị tất cả thông báo
+                        renderItem={(item) => (
+                            <List.Item
+                                className={`${styles.notification_item} ${!item.isRead ? styles.unread : ''}`}
+                            >
+                                <List.Item.Meta
+                                    title={
+                                        <div className={styles.notification_title}>
+                                            {!item.isRead && <span className={styles.unread_indicator} />}
+                                            {/* <Text strong={!item.isRead}>{item.title || 'Thông báo'}</Text> */}
+                                        </div>
+                                    }
+                                    description={
+                                        <>
+                                            <div className={styles.notification_message}>{item.message}</div>
+                                            <div className={styles.notification_time}>{formatDate(item.timestamp)}</div>
+                                        </>
+                                    }
+                                />
+                            </List.Item>
+                        )}
                     />
                 )}
             </div>
-
-            <List
-                itemLayout="horizontal"
-                dataSource={data.slice(0, 5)}
-                renderItem={(item) => (
-                    <List.Item
-                        style={{ padding: '12px 16px' }}
-                        extra={
-                            item.id === latestId && (
-                                <Button type="primary" size="small">
-                                    Xem
-                                </Button>
-                            )
-                        }
-                    >
-                        <List.Item.Meta
-                            avatar={
-                                <Avatar icon={<BellOutlined />} style={{ backgroundColor: '#1890ff' }} />
-                            }
-                            title={<Text strong>{item.tittle}</Text>}
-                            description={
-                                <Space direction="vertical" size={0} style={{ width: '100%' }}>
-                                    <Text type="secondary" style={{ fontSize: '12px' }}>
-                                        {item.day}: {item.time}
-                                    </Text>
-
-                                    {item.id === latestId && (
-                                        <div style={{
-                                            marginTop: '8px',
-                                            padding: '8px',
-                                            backgroundColor: '#f5f5f5',
-                                            borderRadius: '4px',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            flexWrap: isMobile ? 'wrap' : 'nowrap'
-                                        }}>
-                                            <Avatar
-                                                src={anhdaidien}
-                                                size={40}
-                                                style={{ marginRight: '8px' }}
-                                            />
-                                            <div style={{ width: isMobile ? '100%' : 'auto', marginTop: isMobile ? '8px' : '0' }}>
-                                                <Text strong>{item.name}</Text>
-                                                <div>Dọn phòng ngủ</div>
-                                                <Text type="secondary">{item.phone}</Text>
-                                            </div>
-                                        </div>
-                                    )}
-                                </Space>
-                            }
-                        />
-                    </List.Item>
-                )}
-                footer={
-                    <div style={{ textAlign: 'center', padding: '8px' }}>
-                        <Button type="link">Xem thêm</Button>
-                    </div>
-                }
-                locale={{ emptyText: 'Không có thông báo' }}
-            />
         </div>
     );
 };

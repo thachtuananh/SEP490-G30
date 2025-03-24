@@ -22,6 +22,7 @@ const Layout = () => {
         "/infomationcleaner",
         "/activityjob",
         "/applysuccess",
+        "/job-list"
     ].includes(location.pathname) || location.pathname.startsWith("/workdetail/")
 
     return (

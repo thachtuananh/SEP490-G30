@@ -138,7 +138,7 @@ const JobInfomation = ({ selectedDate, hour, minute, paymentMethod }) => {
             if (responseData.status === "BOOKED") {
                 console.log("Job created successfully");
                 message.success("Đăng việc thành công!");
-                navigate('/ordersuccess');
+                navigate('/');
             } else {
                 console.error("Lỗi khi tạo job:", responseData);
                 message.error(responseData.message || "Tạo job thất bại, vui lòng thử lại!");

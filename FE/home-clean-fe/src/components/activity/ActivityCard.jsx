@@ -336,14 +336,16 @@ export const ActivityCard = ({ data, onDelete }) => {
                                 </Button>
                             )}
 
-                            {(activity.status === "OPEN" || activity.status === "BOOKED") && (
-                                <Badge count={applicationsCount[activity.jobId] || 0} size="small">
-                                    <Button type="primary" className={styles.statusButton}
-                                        onClick={() => openModal(activity.jobId)}>
-                                        Xem thông tin Cleaner
-                                    </Button>
-                                </Badge>
-                            )}
+                            {(activity.status === "OPEN" || activity.status === "BOOKED") &&
+                                (applicationsCount[activity.jobId] > 0) && (
+                                    <Badge count={applicationsCount[activity.jobId]} size="small">
+                                        <Button type="primary" className={styles.statusButton}
+                                            onClick={() => openModal(activity.jobId)}>
+                                            Xem thông tin Cleaner
+                                        </Button>
+                                    </Badge>
+                                )}
+
                             {activity.status === "ARRIVED" && (
                                 <Button type="primary" className={styles.statusButton}
                                     onClick={() => handleStartJob(activity.jobId)}>

@@ -6,14 +6,16 @@ import Notification from "../../Notification/Notification";
 import styles from "../../../assets/CSS/Notification/Notification.module.css";
 import { message, Button, Dropdown, Avatar, Badge, Popover } from "antd";
 import { UserOutlined, LogoutOutlined, BellOutlined } from "@ant-design/icons";
+import { getUnreadNotificationCount } from "../../../services/NotificationService";
 
 function Navbar() {
   const { user, dispatch } = useContext(AuthContext);
   const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isPopupNotification, setIsPopupNotification] = useState(false);
-  const [notificationCount, setNotificationCount] = useState(5);
+  const [notificationCount, setNotificationCount] = useState(0);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const [isLoading, setIsLoading] = useState(false);
 
   // Track screen size changes
   useEffect(() => {
@@ -24,6 +26,32 @@ function Navbar() {
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+
+  // Fetch notification count when component mounts and when user changes
+  useEffect(() => {
+    const fetchNotificationCount = async () => {
+      if (user) {
+        try {
+          setIsLoading(true);
+          const count = await getUnreadNotificationCount();
+          setNotificationCount(count);
+        } catch (error) {
+          console.error("Failed to fetch notification count:", error);
+        } finally {
+          setIsLoading(false);
+        }
+      } else {
+        setNotificationCount(0);
+      }
+    };
+
+    fetchNotificationCount();
+
+    // Set up polling to refresh notification count every minute
+    const intervalId = setInterval(fetchNotificationCount, 60000);
+
+    return () => clearInterval(intervalId);
+  }, [user]);
 
   // Close the menu when notification popup is opened on mobile
   useEffect(() => {
@@ -51,6 +79,21 @@ function Navbar() {
     // Close menu when toggling notification on mobile
     if (isMobile && isMenuOpen) {
       setIsMenuOpen(false);
+    }
+  };
+
+  // Refresh notifications manually
+  const refreshNotifications = async () => {
+    if (user) {
+      try {
+        setIsLoading(true);
+        const count = await getUnreadNotificationCount();
+        setNotificationCount(count);
+      } catch (error) {
+        console.error("Failed to refresh notifications:", error);
+      } finally {
+        setIsLoading(false);
+      }
     }
   };
 
@@ -95,6 +138,7 @@ function Navbar() {
         <BellOutlined
           className={`${styles.notification_icon} ${notificationCount > 0 ? styles.notification_active : ''}`}
           style={{ fontSize: '20px' }}
+          spin={isLoading}
         />
       </div>
     </Badge>
@@ -107,7 +151,14 @@ function Navbar() {
         className={styles.mobile_notification_container}
         onClick={(e) => e.stopPropagation()}
       >
-        <Notification onClose={() => setIsPopupNotification(false)} />
+        <Notification
+          onClose={() => setIsPopupNotification(false)}
+          onViewAll={() => {
+            setIsPopupNotification(false);
+            // Navigate to full notification page if you have one
+            // navigate("/notifications");
+          }}
+        />
       </div>
     </div>
   ) : null;
@@ -118,10 +169,25 @@ function Navbar() {
   ) : (
     user ? (
       <Popover
-        content={<Notification onClose={() => setIsPopupNotification(false)} />}
+        content={
+          <Notification
+            onClose={() => setIsPopupNotification(false)}
+            onViewAll={() => {
+              setIsPopupNotification(false);
+              // Navigate to full notification page if you have one
+              // navigate("/notifications");
+            }}
+          />
+        }
         trigger="click"
         open={isPopupNotification}
-        onOpenChange={setIsPopupNotification}
+        onOpenChange={(visible) => {
+          setIsPopupNotification(visible);
+          if (visible) {
+            // Refresh notification count when opening the popover
+            refreshNotifications();
+          }
+        }}
         placement="bottomRight"
         overlayClassName={styles.notification_popover}
       >
