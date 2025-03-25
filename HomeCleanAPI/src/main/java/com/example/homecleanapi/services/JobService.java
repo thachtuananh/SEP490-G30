@@ -105,6 +105,9 @@ public class JobService {
 
         // Tính tổng giá cho tất cả các dịch vụ
         double totalPrice = 0;
+        // Danh sách lưu các JobServiceDetail sẽ được tạo
+        List<JobServiceDetail> jobServiceDetails = new ArrayList<>();
+
         for (ServiceRequest serviceRequest : request.getServices()) {
             Optional<Services> serviceOpt = serviceRepository.findById(serviceRequest.getServiceId());
             if (!serviceOpt.isPresent()) {
@@ -121,17 +124,23 @@ public class JobService {
 
             // Tính toán giá dịch vụ
             totalPrice += serviceDetail.getPrice() + serviceDetail.getAdditionalPrice();
-        }
 
-        // Kiểm tra nếu totalPrice lớn hơn 1 triệu và phương thức thanh toán là tiền mặt
-        if (totalPrice > 1000000 && "cash".equalsIgnoreCase(request.getPaymentMethod())) {
-            response.put("message", "Total price exceeds 1 million. Cash payment is not allowed.");
-            return response;  // Dừng lại và trả về phản hồi, không tạo job
+            // Tạo JobServiceDetail và lưu vào danh sách
+            JobServiceDetail jobServiceDetail = new JobServiceDetail();
+            jobServiceDetail.setJob(job);
+            jobServiceDetail.setService(service);
+            jobServiceDetail.setServiceDetail(serviceDetail);
+
+            // Thêm JobServiceDetail vào danh sách
+            jobServiceDetails.add(jobServiceDetail);
         }
 
         // Lưu Job vào cơ sở dữ liệu
         job.setTotalPrice(totalPrice);
-        jobRepository.save(job);
+        job = jobRepository.save(job);
+
+        // Lưu các JobServiceDetail vào cơ sở dữ liệu
+        jobServiceDetailRepository.saveAll(jobServiceDetails);
 
         // Nếu chọn phương thức thanh toán VNPay
         if ("vnpay".equalsIgnoreCase(request.getPaymentMethod())) {
@@ -169,6 +178,7 @@ public class JobService {
 
         return response;
     }
+
 
 
 
