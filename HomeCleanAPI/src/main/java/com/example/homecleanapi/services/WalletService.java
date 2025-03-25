@@ -11,6 +11,8 @@ import org.springframework.stereotype.Service;
 
 import com.example.homecleanapi.Payment.VnpayRequest;
 import com.example.homecleanapi.Payment.VnpayService;
+import com.example.homecleanapi.PaymentForWallets.VnpayRequestWallet;
+import com.example.homecleanapi.PaymentForWallets.VnpayServiceWallet;
 import com.example.homecleanapi.models.Employee;
 import com.example.homecleanapi.models.Wallet;
 import com.example.homecleanapi.repositories.CleanerRepository;
@@ -26,7 +28,7 @@ public class WalletService {
     private CleanerRepository cleanerRepository; 
     
     @Autowired
-    private VnpayService vnpayService; 
+    private VnpayServiceWallet vnpayServiceWallet; 
 
     public Map<String, Object> getWalletBalance(Long cleanerId) {
         Map<String, Object> response = new HashMap<>();
@@ -70,11 +72,11 @@ public class WalletService {
             long paymentAmount = (long) (amount);
 
             // Tạo VNPay Request với số tiền thanh toán
-            VnpayRequest vnpayRequest = new VnpayRequest();
+            VnpayRequestWallet vnpayRequest = new VnpayRequestWallet();
             vnpayRequest.setAmount(String.valueOf(paymentAmount));
 
             // Tạo URL thanh toán VNPay
-            String paymentUrl = vnpayService.createPayment(vnpayRequest);
+            String paymentUrl = vnpayServiceWallet.createPayment(vnpayRequest);
 
             // Tạo txnRef từ VNPay để theo dõi giao dịch
             String txnRef = extractTxnRefFromUrl(paymentUrl);  // Lấy txnRef từ URL của VNPay
