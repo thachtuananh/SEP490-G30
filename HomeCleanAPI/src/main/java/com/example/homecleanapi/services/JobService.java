@@ -99,15 +99,19 @@ public class JobService {
         Job job = new Job();
         job.setCustomer(customer);
         job.setCustomerAddress(customerAddress);
-        job.setStatus(JobStatus.PAID);
         job.setScheduledTime(jobTime);
+
+        // Kiểm tra phương thức thanh toán
+        if ("cash".equalsIgnoreCase(request.getPaymentMethod())) {
+            job.setStatus(JobStatus.OPEN);  // Nếu thanh toán bằng tiền mặt, đặt status là OPEN
+        } else if ("vnpay".equalsIgnoreCase(request.getPaymentMethod())) {
+            job.setStatus(JobStatus.PAID);  // Nếu thanh toán qua VNPay, đặt status là PAID
+        }
+
         job.setPaymentMethod(request.getPaymentMethod());
 
         // Tính tổng giá cho tất cả các dịch vụ
         double totalPrice = 0;
-        // Danh sách lưu các JobServiceDetail sẽ được tạo
-        List<JobServiceDetail> jobServiceDetails = new ArrayList<>();
-
         for (ServiceRequest serviceRequest : request.getServices()) {
             Optional<Services> serviceOpt = serviceRepository.findById(serviceRequest.getServiceId());
             if (!serviceOpt.isPresent()) {
@@ -124,6 +128,33 @@ public class JobService {
 
             // Tính toán giá dịch vụ
             totalPrice += serviceDetail.getPrice() + serviceDetail.getAdditionalPrice();
+        }
+
+        // Kiểm tra nếu totalPrice lớn hơn 1 triệu và phương thức thanh toán là tiền mặt
+        if (totalPrice > 1000000 && "cash".equalsIgnoreCase(request.getPaymentMethod())) {
+            response.put("message", "Total price exceeds 1 million. Cash payment is not allowed.");
+            return response;  // Dừng lại và trả về phản hồi, không tạo job
+        }
+
+        // Lưu Job vào cơ sở dữ liệu
+        job.setTotalPrice(totalPrice);
+        job = jobRepository.save(job);
+
+        // Lưu các JobServiceDetail nếu có
+        List<JobServiceDetail> jobServiceDetails = new ArrayList<>();
+        for (ServiceRequest serviceRequest : request.getServices()) {
+            Optional<Services> serviceOpt = serviceRepository.findById(serviceRequest.getServiceId());
+            if (!serviceOpt.isPresent()) {
+                response.put("message", "Service not found with serviceId: " + serviceRequest.getServiceId());
+                return response;
+            }
+            Services service = serviceOpt.get();
+            Optional<ServiceDetail> serviceDetailOpt = serviceDetailRepository.findById(serviceRequest.getServiceDetailId());
+            if (!serviceDetailOpt.isPresent()) {
+                response.put("message", "Service Detail not found for serviceId: " + serviceRequest.getServiceDetailId());
+                return response;
+            }
+            ServiceDetail serviceDetail = serviceDetailOpt.get();
 
             // Tạo JobServiceDetail và lưu vào danh sách
             JobServiceDetail jobServiceDetail = new JobServiceDetail();
@@ -131,13 +162,8 @@ public class JobService {
             jobServiceDetail.setService(service);
             jobServiceDetail.setServiceDetail(serviceDetail);
 
-            // Thêm JobServiceDetail vào danh sách
             jobServiceDetails.add(jobServiceDetail);
         }
-
-        // Lưu Job vào cơ sở dữ liệu
-        job.setTotalPrice(totalPrice);
-        job = jobRepository.save(job);
 
         // Lưu các JobServiceDetail vào cơ sở dữ liệu
         jobServiceDetailRepository.saveAll(jobServiceDetails);
@@ -155,7 +181,6 @@ public class JobService {
 
                 // Lấy txnRef từ URL của VNPay
                 String txnRef = extractTxnRefFromUrl(paymentUrl);  // Lấy txnRef từ URL của VNPay
-                System.out.println("TxnRef: " + txnRef);
 
                 // Lưu txnRef vào Job ngay sau khi tạo paymentUrl
                 job.setTxnRef(txnRef);  // Lưu txnRef vào Job
@@ -178,6 +203,7 @@ public class JobService {
 
         return response;
     }
+
 
 
 
