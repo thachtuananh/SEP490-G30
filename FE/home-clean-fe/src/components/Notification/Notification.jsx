@@ -91,6 +91,7 @@ const Notification = () => {
                                     }
                                     description={
                                         <>
+                                            {/* <div className={styles.notification_message}>{item.type}</div> */}
                                             <div className={styles.notification_message}>{item.message}</div>
                                             <div className={styles.notification_time}>{formatDate(item.timestamp)}</div>
                                         </>

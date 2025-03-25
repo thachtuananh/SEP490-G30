@@ -25,6 +25,7 @@ import {
 import { AuthContext } from "../../context/AuthContext";
 import "../../assets/CSS/work/WorkDetailsDescription.module.css"
 import { BASE_URL } from "../../utils/config";
+import { sendNotification } from "../../services/NotificationService"; // Import the sendNotification function
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -68,33 +69,41 @@ const WorkDetailsDescription = () => {
       });
   }, [jobId, token]);
 
-  const handleApplyJob = () => {
+  const handleApplyJob = async () => {
     if (!token) {
       message.error("Bạn cần đăng nhập để nhận việc!");
       return;
     }
 
-    fetch(`${BASE_URL}/cleaner/apply-job/${jobId}`, {
-      method: "POST",
-      headers: {
-        "Accept": "application/json",
-        "Authorization": `Bearer ${token}`
-      }
-    })
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error("Không thể nhận việc!");
+    try {
+      const response = await fetch(`${BASE_URL}/cleaner/apply-job/${jobId}`, {
+        method: "POST",
+        headers: {
+          "Accept": "application/json",
+          "Authorization": `Bearer ${token}`
         }
-        return response.json();
-      })
-      .then(() => {
-        navigate("/applysuccess");
-        setIsModalOpen(false);
-      })
-      .catch((error) => {
-        console.error("Lỗi khi nhận việc:", error);
-        message.error("Nhận việc thất bại, vui lòng thử lại!");
       });
+
+      if (!response.ok) {
+        throw new Error("Không thể nhận việc!");
+      }
+
+      const data = await response.json();
+
+      // Send notification to the customer
+      await sendNotification(
+        job.customerId,
+        `Bạn đã nhận việc: ${job.services[0]?.serviceName || 'Dọn dẹp'}`,
+        'job_application'
+      );
+
+      message.success("Nhận việc thành công");
+      navigate("/homeclean");
+      setIsModalOpen(false);
+    } catch (error) {
+      console.error("Lỗi khi nhận việc:", error);
+      message.error("Nhận việc thất bại, vui lòng thử lại!");
+    }
   };
 
   if (loading) {
@@ -236,7 +245,7 @@ const WorkDetailsDescription = () => {
           <Title level={4}>Thông tin chung</Title>
 
           <Title level={5}>Loại dịch vụ</Title>
-          <ul style={{ listStyleType: 'disc', paddingLeft: '20px', margin: '0' }}>
+          <ul style={{ listStyleType: 'disclosure-closed', paddingLeft: '20px', margin: '0' }}>
             {(job.services && job.services.length > 0 ? job.services : job.serviceDetails || []).map((item, index) => (
               <li key={index} style={{ border: 'none', padding: '8px 0' }}>
                 <Typography.Text style={{ marginRight: '5px' }}>
@@ -250,7 +259,7 @@ const WorkDetailsDescription = () => {
           </ul>
 
           <Title level={5}>Mô tả công việc</Title>
-          <ul style={{ listStyleType: 'disc', paddingLeft: '20px', margin: '0' }}>
+          <ul style={{ listStyleType: 'disclosure-closed', paddingLeft: '20px', margin: '0' }}>
             {(job.services && job.services.length > 0 ? job.services : job.serviceDetails || []).map((item, index) => (
               <li key={index} style={{ border: 'none', padding: '8px 0' }}>
                 <Typography.Text>

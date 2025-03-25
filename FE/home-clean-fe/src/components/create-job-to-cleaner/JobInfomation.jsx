@@ -215,8 +215,7 @@ const JobInfomation = ({ selectedDate, hour, minute, paymentMethod }) => {
                     <Text>Phương thức thanh toán</Text>
                     <Text>
                         {paymentMethod === 'cash' && 'Thanh toán tiền mặt'}
-                        {paymentMethod === 'bank' && 'Thanh toán chuyển khoản'}
-                        {paymentMethod === 'momo' && 'Thanh toán qua ví điện tử'}
+                        {paymentMethod === 'vnpay' && 'Thanh toán VNPay'}
                         {paymentMethod === 'zalo' && 'Thanh toán ZaloPay'}
                         {!paymentMethod && 'Chưa chọn'}
                     </Text>

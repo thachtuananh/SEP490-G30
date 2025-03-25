@@ -7,10 +7,9 @@ const getStatusColor = (status) => {
   const normalizedStatus = status.toUpperCase();
   switch (normalizedStatus) {
     case "OPEN": return "#3498db";
+    case "PAID": return "#5dade2";
     case "PENDING_APPROVAL": return "#f1c40f";
     case "IN_PROGRESS": return "#e67e22";
-    case "ARRIVED": return "#9b59b6";
-    case "STARTED": return "#2980b9";
     case "COMPLETED": return "#2ecc71";
     case "CANCELLED": return "#e74c3c";
     case "DONE": return "#27ae60";
@@ -21,10 +20,9 @@ const getStatusColor = (status) => {
 const getStatusLabel = (status) => {
   const statusMap = {
     OPEN: "Đang mở",
+    PAID: "Đang chờ thanh toán",
     PENDING_APPROVAL: "Chờ phê duyệt",
     IN_PROGRESS: "Đang đến ",
-    ARRIVED: "Đã đến nơi",
-    STARTED: "Bắt đầu làm việc",
     COMPLETED: "Đã hoàn thành công việc",
     CANCELLED: "Đã hủy",
     DONE: "Hoàn tất công việc",
@@ -259,11 +257,9 @@ const JobCard = ({ job, refreshJobs }) => {
           <Button type="primary">Hủy công việc</Button>
         )}
         {job.status === "IN_PROGRESS" && (
-          <Button type="primary" onClick={() => handleStatusUpdate("arrived")} loading={loading}>Đã tới</Button>
+          <Button type="primary" onClick={() => handleStatusUpdate("completed")} loading={loading}>Đã hoàn thành</Button>
         )}
-        {job.status === "STARTED" && (
-          <Button type="primary" onClick={() => handleStatusUpdate("completed")} loading={loading}>Hoàn thành công việc</Button>
-        )}
+
         {job.status === "BOOKED" && (
           <div className={styles.buttonGroup}>
             <Button

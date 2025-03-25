@@ -36,13 +36,13 @@ export const ActivityCard = ({ data, onDelete }) => {
         }
     }, [data]);
 
+
     const getStatusColor = (status) => {
         switch (status) {
             case "OPEN": return "#3498db";
+            case "PAID": return "#5dade2";
             case "PENDING_APPROVAL": return "#f1c40f";
             case "IN_PROGRESS": return "#e67e22";
-            case "ARRIVED": return "#9b59b6";
-            case "STARTED": return "#2980b9";
             case "COMPLETED": return "#2ecc71";
             case "CANCELLED": return "#e74c3c";
             case "DONE": return "#27ae60";
@@ -53,10 +53,9 @@ export const ActivityCard = ({ data, onDelete }) => {
     const getStatusText = (status) => {
         switch (status) {
             case "OPEN": return "Đang chờ người nhận";
+            case "PAID": return "Đang chờ thanh toán qua VNPay";
             case "PENDING_APPROVAL": return "Chờ phê duyệt";
             case "IN_PROGRESS": return "Người nhận việc đang tới";
-            case "ARRIVED": return "Người nhận việc đã tới";
-            case "STARTED": return "Người nhận việc đang làm";
             case "COMPLETED": return "Người nhận việc đã hoàn thành";
             case "CANCELLED": return "Đã hủy";
             case "DONE": return "Hoàn tất công việc";
@@ -163,7 +162,7 @@ export const ActivityCard = ({ data, onDelete }) => {
             await hireCleaner(jobId, cleanerId, customerId);
             console.log("✅ Thuê cleaner thành công!", { jobId, cleanerId, customerId });
             message.success("✅ Thuê cleaner thành công!");
-            updateActivityStatus(jobId, "BOOKED");
+            updateActivityStatus(jobId, "IN_PROGRESS");
             setIsModalOpen(false);
         } catch (error) {
             console.error("❌ Lỗi khi thuê cleaner:", error);
@@ -306,8 +305,7 @@ export const ActivityCard = ({ data, onDelete }) => {
 
                             {(activity.status === "OPEN"
                                 || activity.status === "BOOKED"
-                                || activity.status === "IN_PROGRESS"
-                                || activity.status === "ARRIVED") &&
+                                || activity.status === "IN_PROGRESS") &&
                                 (
                                     <div className={styles.deleteButton} onClick={() => handleDeleteJob(activity.jobId)}>
                                         <b>Huỳ việc</b>
@@ -346,12 +344,7 @@ export const ActivityCard = ({ data, onDelete }) => {
                                     </Badge>
                                 )}
 
-                            {activity.status === "ARRIVED" && (
-                                <Button type="primary" className={styles.statusButton}
-                                    onClick={() => handleStartJob(activity.jobId)}>
-                                    Bắt đầu làm việc
-                                </Button>
-                            )}
+
                             {activity.status === "COMPLETED" && (
                                 <Button type="primary" className={styles.statusButton}
                                     onClick={() => handleCompleteJob(activity.jobId)}>
