@@ -67,9 +67,11 @@ public class WalletService {
         }
 
         try {
+            long paymentAmount = (long) (amount);
+
             // Tạo VNPay Request với số tiền thanh toán
             VnpayRequest vnpayRequest = new VnpayRequest();
-            vnpayRequest.setAmount(String.valueOf(amount));
+            vnpayRequest.setAmount(String.valueOf(paymentAmount));
 
             // Tạo URL thanh toán VNPay
             String paymentUrl = vnpayService.createPayment(vnpayRequest);
@@ -104,6 +106,7 @@ public class WalletService {
         }
     }
 
+
     // Hàm để trích xuất txnRef từ URL trả về của VNPay
     private String extractTxnRefFromUrl(String paymentUrl) {
         try {
@@ -119,6 +122,30 @@ public class WalletService {
         }
         return null;
     }
+    
+    public void updateWalletBalance(String txnRef, double depositAmount) {
+        // Tìm ví theo txnRef
+        Optional<Wallet> walletOpt = walletRepository.findByTxnRef(txnRef);
+
+        if (walletOpt.isPresent()) {
+            Wallet wallet = walletOpt.get();
+
+            System.out.println("đây là tiền ban đầu" + wallet.getBalance());
+            System.out.println("đây là tiền muốn cộng" + depositAmount);
+            // Cập nhật số dư ví của cleaner
+            double newBalance = wallet.getBalance() + depositAmount;  
+            wallet.setBalance(newBalance);  
+            walletRepository.save(wallet);  // Lưu cập nhật số dư ví
+
+            
+            
+        } else {
+            // Xử lý trường hợp không tìm thấy giao dịch ví theo txnRef
+            throw new RuntimeException("Wallet not found for txnRef: " + txnRef);
+        }
+    }
+
+    
 
 
     

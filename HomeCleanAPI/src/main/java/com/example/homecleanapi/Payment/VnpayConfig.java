@@ -22,6 +22,7 @@ public class VnpayConfig {
 
     public static String vnp_PayUrl = "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
     public static String vnp_ReturnUrl = "http://localhost:8080/api/vnpayment/return";      // trang phía client
+    //public static String vnp_ReturnUrl = "http://localhost:8080/api/cleaner/return";
     // #vnpay
     public static String vnp_TmnCode = "900XO632";
     public static String secretKey = "VFH4K4F21GJQMFPLW7SMEVSG7Z0VPV6M";

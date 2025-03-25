@@ -42,8 +42,6 @@ public class VnpayController {
                                                 @RequestParam("vnp_TxnRef") String txnRef) {
         if ("00".equals(responseCode)) {
             Optional<Job> jobOpt = jobRepository.findByTxnRef(txnRef);  
-            System.out.println("Ở đây này: " + txnRef);
-            System.out.println("Ở đây này ver 2: " + jobOpt);
 
             if (jobOpt.isPresent()) {
                 Job job = jobOpt.get();

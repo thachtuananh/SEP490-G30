@@ -56,17 +56,22 @@ public class WalletController {
     }
 
     // API trả về kết quả thanh toán VNPay
-    @GetMapping("/return")
-    public ResponseEntity<String> returnPayment(@RequestParam("vnp_ResponseCode") String responseCode,
-                                                @RequestParam("vnp_TxnRef") String txnRef) {
-        // Trực tiếp xử lý cập nhật số dư ví sau khi thanh toán thành công
-        if ("00".equals(responseCode)) {
-            // Cập nhật ví trong WalletService
-            walletService.updateWalletBalance(txnRef);
-            return ResponseEntity.ok("Thanh toán thành công! Số dư ví đã được cập nhật.");
-        } else {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Thanh toán thất bại! Mã lỗi: " + responseCode);
-        }
-    }
+	@GetMapping("/return")
+	public ResponseEntity<String> returnPayment(@RequestParam("vnp_ResponseCode") String responseCode,
+	                                            @RequestParam("vnp_TxnRef") String txnRef,
+	                                            @RequestParam("vnp_Amount") String amount) {  
+	    if ("00".equals(responseCode)) {
+	        
+	        double depositAmount = Double.parseDouble(amount) / 100;  
+
+	        // Cập nhật ví trong WalletService
+	        walletService.updateWalletBalance(txnRef, depositAmount);
+
+	        return ResponseEntity.ok("Thanh toán thành công! Số dư ví đã được cập nhật.");
+	    } else {
+	        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Thanh toán thất bại! Mã lỗi: " + responseCode);
+	    }
+	}
+
 
 }
