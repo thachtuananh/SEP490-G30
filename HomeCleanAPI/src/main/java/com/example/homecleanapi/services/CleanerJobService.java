@@ -458,7 +458,7 @@ public class CleanerJobService {
 		}
 
 		// Kiểm tra trạng thái của công việc
-		if (!job.getStatus().equals(JobStatus.STARTED)) {
+		if (!job.getStatus().equals(JobStatus.IN_PROGRESS)) {
 			response.put("message", "Job is not in 'STARTED' state");
 			return response;
 		}
