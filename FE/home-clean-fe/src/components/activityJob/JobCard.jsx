@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Modal, List, Button, Table, message } from "antd";
 import styles from "./JobList.module.css";
+import { BASE_URL } from "../../utils/config";
 
 const getStatusColor = (status) => {
   const normalizedStatus = status.toUpperCase();
@@ -32,46 +33,94 @@ const getStatusLabel = (status) => {
   return statusMap[status.toUpperCase()] || "Không xác định";
 };
 
-const JobCard = ({ job }) => {
+const JobCard = ({ job, refreshJobs }) => {
 
   const [currentStatus, setCurrentStatus] = useState(job.status.toUpperCase());
+  const [loading, setLoading] = useState(false);
 
   const handleStatusUpdate = (newStatus) => {
     Modal.confirm({
       title: "Xác nhận",
       content: `Bạn có chắc muốn cập nhật trạng thái thành '${getStatusLabel(newStatus)}' không?`,
       onOk: () => {
+        setLoading(true); // Hiển thị trạng thái loading
         const token = localStorage.getItem("token");
-        fetch(`http://localhost:8080/api/cleaner/job/${newStatus}/${job.jobId}`, {
+        fetch(`${BASE_URL}/cleaner/job/${newStatus}/${job.jobId}`, {
           method: "POST",
           headers: {
             "Accept": "application/json",
             "Authorization": `Bearer ${token}`,
           },
         })
-          .then((response) => response.json())
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error(`API responded with status: ${response.status}`);
+            }
+            return response.json();
+          })
           .then((data) => {
             console.log("Status updated:", data);
             setCurrentStatus(newStatus.toUpperCase());
+            message.success(`Đã cập nhật trạng thái thành ${getStatusLabel(newStatus)}`);
+            if (refreshJobs) refreshJobs();
           })
-          .catch((error) => console.error("Error updating status:", error));
+          .catch((error) => {
+            console.error("Error updating status:", error);
+            message.error("Không thể cập nhật trạng thái. Vui lòng thử lại sau.");
+          })
+          .finally(() => {
+            setLoading(false); // Tắt trạng thái loading
+          });
       },
     });
   };
 
+  const handleJobAction = (action) => {
+    setLoading(true);
+    const token = localStorage.getItem("token");
 
+    fetch(`${BASE_URL}/cleaner/job/${job.jobId}/accept-reject?action=${action}`, {
+      method: "PUT",
+      headers: {
+        "Accept": "application/json",
+        "Authorization": `Bearer ${token}`,
+      },
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`API responded with status: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then((data) => {
+        console.log(`Job ${action}ed:`, data);
+        message.success(action === 'accept' ? 'Đã chấp nhận công việc' : 'Đã từ chối công việc');
+        if (refreshJobs) refreshJobs();
+      })
+      .catch((error) => {
+        console.error(`Error ${action}ing job:`, error);
+        message.error(`Không thể ${action === 'accept' ? 'chấp nhận' : 'từ chối'} công việc. Vui lòng thử lại sau.`);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  };
 
 
   return (
     <article className={styles.jobCard}>
       <header className={styles.jobHeader}>
-        <h2 className={styles.jobTitle}>
-          {job.services
-            ? (Array.isArray(job.services)
-              ? job.services.map(service => service.serviceName).join(", ")
-              : job.services.serviceName || "Unnamed Service")
-            : "Unnamed Service"}
-        </h2>
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
+          <h2 className={styles.jobTitle}>
+            {job.services
+              ? (Array.isArray(job.services)
+                ? job.services.map(service => service.serviceName).join(" & ")
+                : job.services.serviceName || "Unnamed Service")
+              : "Unnamed Service"}
+          </h2>
+          <span className={styles.detailValue}>Tên khách hàng: {job.customerName}</span>
+          <span className={styles.detailValue}>SĐT khách hàng: {job.customerPhone}</span>
+        </div>
         <span className={styles.status} style={{ color: getStatusColor(currentStatus) }}>
           {getStatusLabel(currentStatus)}
         </span>
@@ -107,6 +156,47 @@ const JobCard = ({ job }) => {
           <div className={styles.detailContent}>
             <span className={styles.detailLabel}>Thù lao</span>
             <strong className={styles.detailValue}>{job.totalPrice.toLocaleString()} VND</strong>
+          </div>
+        </div>
+
+        <div className={styles.detailItem}>
+          <div>
+            <svg width="51" height="51" viewBox="0 0 51 51" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path
+                d="M25.5 2L49 25.5L25.5 49L2 25.5L25.5 2Z"
+                fill="#E6F6EE"
+                stroke="#039855"
+                stroke-width="2"
+              />
+
+              <path
+                d="M25.5 8L43 25.5L25.5 43L8 25.5L25.5 8Z"
+                fill="#CCE9DD"
+                stroke="#039855"
+                stroke-width="1.5"
+              />
+
+              <path
+                d="M25.5 14L37 25.5L25.5 37L14 25.5L25.5 14Z"
+                fill="#99D4BB"
+                stroke="#039855"
+                stroke-width="1.5"
+              />
+
+              <path
+                d="M25.5 20L31 25.5L25.5 31L20 25.5L25.5 20Z"
+                fill="#039855"
+              />
+            </svg>
+          </div>
+          <div className={styles.detailContent}>
+            <span className={styles.detailLabel}>Diện tích</span>
+            <strong className={styles.detailValue}>{job.services
+              ? (Array.isArray(job.services)
+                ? job.services.map(service => service.areaRange).join(" & ")
+                : job.services.areaRange || "Unnamed Service")
+              : "Unnamed Service"}
+            </strong>
           </div>
         </div>
 
@@ -169,12 +259,31 @@ const JobCard = ({ job }) => {
           <Button type="primary">Hủy công việc</Button>
         )}
         {job.status === "IN_PROGRESS" && (
-          <Button type="primary" onClick={() => handleStatusUpdate("arrived")}>Đã tới</Button>
+          <Button type="primary" onClick={() => handleStatusUpdate("arrived")} loading={loading}>Đã tới</Button>
         )}
         {job.status === "STARTED" && (
-          <Button type="primary" onClick={() => handleStatusUpdate("completed")}>Hoàn thành công việc</Button>
+          <Button type="primary" onClick={() => handleStatusUpdate("completed")} loading={loading}>Hoàn thành công việc</Button>
         )}
-
+        {job.status === "BOOKED" && (
+          <div className={styles.buttonGroup}>
+            <Button
+              type="primary"
+              onClick={() => handleJobAction('accept')}
+              loading={loading}
+              style={{ marginRight: '10px' }}
+            >
+              Chấp nhận
+            </Button>
+            <Button
+              type="primary"
+              danger
+              onClick={() => handleJobAction('reject')}
+              loading={loading}
+            >
+              Từ chối
+            </Button>
+          </div>
+        )}
       </footer>
     </article>
   );

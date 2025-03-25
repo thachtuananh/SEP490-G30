@@ -1,23 +1,25 @@
 import styles from "./styles.module.css";
+import { StarRating } from "./StarRating";
 
-export const ServiceInfo = ({ cleanerName }) => {
+export const ServiceInfo = ({ cleanerName, averageRating }) => {
   return (
     <section className={styles.infoSection}>
       <header className={styles.header}>
         <div>
           <h1 className={styles.title}>{cleanerName || "Tên cleaner"}</h1>
-          <div className={styles.category}>
+          {averageRating && <StarRating rating={averageRating} />}
+          {/* <div className={styles.category}>
             <p className={styles.categoryText}>
               <span className={styles.bold}>Danh mục: </span>
               <span>Dọn nhà, Dọn theo yêu cầu</span>
             </p>
             <div className={styles.divider} />
-          </div>
+          </div> */}
         </div>
-        <button className={styles.reportLink}>Tố cáo</button>
+        {/* <button className={styles.reportLink}>Tố cáo</button> */}
       </header>
 
-      <div className={styles.statsContainer}>
+      {/* <div className={styles.statsContainer}>
         <div className={styles.statBox}>
           <span className={styles.statLabel}>Số người theo dõi</span>
           <span className={styles.statValue}>29 người</span>
@@ -34,9 +36,9 @@ export const ServiceInfo = ({ cleanerName }) => {
           <span className={styles.statLabel}>Đánh giá</span>
           <span className={styles.statValue}>25 đánh giá</span>
         </div>
-      </div>
+      </div> */}
 
-      <div className={styles.serviceSection}>
+      {/* <div className={styles.serviceSection}>
         <div className={styles.sectionHeader}>
           <h2 className={styles.sectionTitle}>Loại dịch vụ</h2>
           <p className={styles.sectionSubtitle}>Hãy chọn dịch vụ mà bạn muốn</p>
@@ -53,9 +55,9 @@ export const ServiceInfo = ({ cleanerName }) => {
           <button className={styles.tag}>Tổng vệ sinh toàn nhà</button>
           <button className={styles.tag}>Giặt sofa, thảm</button>
         </div>
-      </div>
+      </div> */}
 
-      <div className={styles.areaSection}>
+      {/* <div className={styles.areaSection}>
         <div className={styles.sectionHeader}>
           <h2 className={styles.sectionTitle}>Diện tích</h2>
           <p className={styles.sectionSubtitle}>Diện tích không gian của bạn</p>
@@ -67,7 +69,7 @@ export const ServiceInfo = ({ cleanerName }) => {
           </button>
           <button className={styles.tag}>&gt; 40m2</button>
         </div>
-      </div>
+      </div> */}
     </section>
   );
 };

@@ -1,7 +1,9 @@
 package com.example.homecleanapi.controllers;
 
 
+import com.example.homecleanapi.dtos.EmployeeDTO;
 import com.example.homecleanapi.dtos.ServiceDTO;
+import com.example.homecleanapi.services.FindCleanerService;
 import com.example.homecleanapi.services.ServiceDisplayService;
 
 import java.util.List;
@@ -9,20 +11,19 @@ import java.util.List;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-@Tag(name = "Customer API")
+@Tag(name = "Customer Service API")
 @RestController
 @RequestMapping("/api/services")
 public class ServiceController {
 
     @Autowired
     private ServiceDisplayService serviceDisplayService;
+    @Autowired
+    private FindCleanerService findCleanerService;
 
-    
+
     // api lấy ra hết dịch vụ ở trang homepage
 
     @GetMapping("/all")
@@ -45,8 +46,15 @@ public class ServiceController {
         return ResponseEntity.ok(serviceDTO);
     }
 
+    @GetMapping("/nearby")
+    public ResponseEntity<List<EmployeeDTO>> getNearbyEmployees(
+            @RequestParam double latitude,
+            @RequestParam double longitude,
+//            @RequestParam(defaultValue = "20000") double radius,
+            @RequestParam(defaultValue = "10") int limit) {
 
-
-
+        List<EmployeeDTO> employees = findCleanerService.findNearbyEmployees(latitude, longitude, 15000, limit);
+        return ResponseEntity.ok(employees);
+    }
 
 }

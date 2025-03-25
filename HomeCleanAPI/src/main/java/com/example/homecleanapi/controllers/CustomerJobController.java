@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@Tag(name = "Customer API")
+@Tag(name = "Customer Job API")
 @SecurityRequirement(name = "BearerAuth")
 @RequestMapping("/api/customer")
 public class CustomerJobController {

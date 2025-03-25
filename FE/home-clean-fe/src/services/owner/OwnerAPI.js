@@ -78,3 +78,27 @@ export async function createJob(customerId, jobData) {
         throw error;
     }
 }
+
+// Create job
+export async function createJobToCleaner(customerId, cleanerId, jobData) {
+    try {
+        const token = localStorage.getItem("token");
+
+        if (!token) {
+            throw new Error("No authentication token found");
+        }
+        const response = await fetch(`${BASE_URL}/customer/${customerId}/bookjob/${cleanerId}`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+            },
+            body: JSON.stringify(jobData),
+        });
+
+        return await response.json();
+    } catch (error) {
+        console.error('Error creating job:', error);
+        throw error;
+    }
+}

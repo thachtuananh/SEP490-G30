@@ -85,7 +85,7 @@
 
 .more {
     color: rgb(180, 175, 175);
-    text-align:  center;
+    text-align: center;
     cursor: pointer;
 }
 
@@ -94,10 +94,11 @@
     background: white;
     right: 20%;
     box-shadow: 2px 8px 10px gray;
-    transition:  all 0.5s ease;
+    transition: all 0.5s ease;
     position: absolute;
 }
-.overlayContainer{
+
+.overlayContainer {
     position: fixed;
     width: 100vw;
     height: 100%;
@@ -105,6 +106,7 @@
     left: 0;
     z-index: -10;
 }
+
 .nav_link_notification {
     text-decoration: none;
     color: #333;
@@ -113,6 +115,131 @@
     cursor: pointer;
     position: relative;
 }
+
 .nav_link_notification:hover {
     color: #00a651;
+}
+
+/* Notification badge */
+.notification_badge {
+    transition: all 0.3s ease;
+}
+
+/* Notification icon wrapper */
+.notification_icon_wrapper {
+    cursor: pointer;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Notification icon */
+.notification_icon {
+    font-size: 20px;
+    transition: all 0.3s ease;
+}
+
+/* Notification active animation */
+.notification_active {
+    animation: bellShake 0.8s cubic-bezier(0.36, 0.07, 0.19, 0.97) infinite;
+}
+
+@keyframes bellShake {
+    0% {
+        transform: rotate(0);
+    }
+
+    15% {
+        transform: rotate(8deg);
+    }
+
+    30% {
+        transform: rotate(-8deg);
+    }
+
+    45% {
+        transform: rotate(6deg);
+    }
+
+    60% {
+        transform: rotate(-6deg);
+    }
+
+    75% {
+        transform: rotate(4deg);
+    }
+
+    85% {
+        transform: rotate(-4deg);
+    }
+
+    92% {
+        transform: rotate(2deg);
+    }
+
+    100% {
+        transform: rotate(0);
+    }
+}
+
+/* Notification popover for desktop */
+.notification_popover {
+    z-index: 1050;
+}
+
+/* Mobile notification styles */
+.mobile_notification_overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 2000;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    overflow-y: auto;
+    padding-top: 60px;
+}
+
+.mobile_notification_container {
+    background-color: white;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 320px;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        transform: translateY(-20px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .mobile_notification_container {
+        margin-top: 10px;
+        padding: 10px;
+    }
+}
+
+@media (max-width: 480px) {
+    .mobile_notification_container {
+        width: 95%;
+        max-height: 70vh;
+        padding: 10px;
+    }
 }

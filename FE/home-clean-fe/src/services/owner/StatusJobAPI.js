@@ -175,3 +175,31 @@ export async function deleteJobPosting(jobId) {
         throw error;
     }
 }
+
+// Add this function to OwnerAPI.js
+export async function rejectCleaner(jobId, cleanerId, customerId) {
+    try {
+        const token = localStorage.getItem("token");
+
+        if (!token) {
+            throw new Error("No authentication token found");
+        }
+
+        const response = await fetch(`${BASE_URL}/customer/reject-job/${jobId}/cleaner/${cleanerId}/customer/${customerId}`, {
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${token}`,
+                "Content-Type": "application/json",
+            },
+        });
+
+        if (!response.ok) {
+            throw new Error(`Error: ${response.status}`);
+        }
+
+        return await response.json();
+    } catch (error) {
+        console.error('Error rejecting cleaner:', error);
+        throw error;
+    }
+}

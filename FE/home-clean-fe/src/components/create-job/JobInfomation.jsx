@@ -8,7 +8,7 @@ import { createJob } from "../../services/owner/OwnerAPI"; // Import API functio
 
 const { Title, Text, Paragraph } = Typography;
 
-const JobInfomation = ({ selectedDate, hour, minute }) => {
+const JobInfomation = ({ selectedDate, hour, minute, paymentMethod }) => {
     const location = useLocation();
     const navigate = useNavigate();
     const state = location.state || {};
@@ -81,6 +81,12 @@ const JobInfomation = ({ selectedDate, hour, minute }) => {
             message.error("Vui lòng đồng ý với Điều khoản và dịch vụ để tiếp tục!");
             return;
         }
+
+        if (!paymentMethod) {
+            message.error("Vui lòng chọn phương thức thanh toán!");
+            return;
+        }
+
         setIsSubmitting(true);
 
         try {
@@ -120,7 +126,8 @@ const JobInfomation = ({ selectedDate, hour, minute }) => {
             const jobData = {
                 customerAddressId,
                 jobTime: formattedJobTime,
-                services: services
+                services: services,
+                paymentMethod: paymentMethod // Add payment method to job data
             };
 
             console.log("Job data being sent:", jobData); // Add this for debugging
@@ -130,7 +137,7 @@ const JobInfomation = ({ selectedDate, hour, minute }) => {
             if (responseData.status === "OPEN") {
                 console.log("Job created successfully");
                 message.success("Đăng việc thành công!");
-                navigate('/ordersuccess');
+                navigate('/');
             } else {
                 console.error("Lỗi khi tạo job:", responseData);
                 message.error(responseData.message || "Tạo job thất bại, vui lòng thử lại!");
@@ -196,11 +203,20 @@ const JobInfomation = ({ selectedDate, hour, minute }) => {
                             ))}
                         </Text>
                     )}
-
                 </Paragraph>
-                <Paragraph className={styles.infoRow}>
+                {/* <Paragraph className={styles.infoRow}>
                     <Text>Số nhân công</Text>
                     <Text>1 người</Text>
+                </Paragraph> */}
+                <Paragraph className={styles.infoRow}>
+                    <Text>Phương thức thanh toán</Text>
+                    <Text>
+                        {paymentMethod === 'cash' && 'Thanh toán tiền mặt'}
+                        {paymentMethod === 'bank' && 'Thanh toán chuyển khoản'}
+                        {paymentMethod === 'momo' && 'Thanh toán qua ví điện tử'}
+                        {paymentMethod === 'zalo' && 'Thanh toán ZaloPay'}
+                        {!paymentMethod && 'Chưa chọn'}
+                    </Text>
                 </Paragraph>
                 <div className={styles.divider}></div>
 
@@ -210,8 +226,6 @@ const JobInfomation = ({ selectedDate, hour, minute }) => {
                         {state.price?.toLocaleString() || 0} VNĐ
                     </Title>
                 </div>
-
-
             </div>
             <div style={{ margin: '16px 0px' }}>
                 <Checkbox

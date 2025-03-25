@@ -99,22 +99,26 @@ const Time = ({ onTimeChange }) => {
     return (
         <div className={styles.container}>
             <Title level={5}>Thời gian làm việc</Title>
-            <Paragraph>Chọn thời gian</Paragraph>
+            <div className={styles.selectedDate}>
 
-            <Card className={styles.card}>
+                <Paragraph>Chọn thời gian</Paragraph>
+                <DatePicker
+                    format="DD/MM/YYYY"
+                    onChange={handleDateChange}
+                    disabledDate={disabledDate}
+                    placeholder="Chọn ngày"
+                    className={styles.datePicker}
+                    size="large"
+                    value={dayjs(selectedDate)}
+                    showNow={false}
+                />
+            </div>
+            {/* <Card className={styles.card}>
                 <div className={styles.selectedDate}>
                     <Paragraph>Chọn ngày làm</Paragraph>
-                    <DatePicker
-                        format="DD/MM/YYYY"
-                        onChange={handleDateChange}
-                        disabledDate={disabledDate}
-                        placeholder="Chọn ngày"
-                        className={styles.datePicker}
-                        size="large"
-                        value={dayjs(selectedDate)}
-                    />
+
                 </div>
-            </Card>
+            </Card> */}
 
             <div className={styles.timeSelection}>
                 <div className={styles.timeHeader}>
@@ -132,6 +136,7 @@ const Time = ({ onTimeChange }) => {
                         hideDisabledOptions={true}
                         use12Hours={false}
                         allowClear={false}
+                        showNow={false}
                     />
                     {/* <Button
                         icon={<ClockCircleOutlined />}

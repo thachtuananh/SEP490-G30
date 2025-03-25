@@ -2,6 +2,7 @@ package com.example.homecleanapi.services;
 
 import com.example.homecleanapi.dtos.ChatMessage;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -18,7 +19,7 @@ public class MessageSyncService {
     private static final String MESSAGE_CACHE_PREFIX = "conversation:";
 
     @Autowired
-    public MessageSyncService(RedisTemplate<String, ChatMessage> redisTemplate) {
+    public MessageSyncService(@Qualifier("chatMessageRedisTemplate") RedisTemplate<String, ChatMessage> redisTemplate) {
         this.redisTemplate = redisTemplate;
     }
 
