@@ -1,9 +1,9 @@
 name: Deploy Frontend to Firebase
 
-on: 
-   push:
+on:
+  push:
     branches:
-      - main 
+      - main
     paths:
       - "FE/**"
 
@@ -11,29 +11,29 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
 
-    steps: 
+    steps:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-         node-version: 18
+          node-version: 18
 
-     - name: Install dependencies
-       run: |
-        cd FE
-        npm install 
-     
-     - name: Build project
-       run: |
-        cd FE
-        npm run build
+      - name: Install dependencies
+        run: |
+          cd FE
+          npm install 
 
-     - name: Deploy to Firebase
-       uses: w9jds/firebase-action@v12
-       with: 
-         args: deploy --only hosting
-       env:
+      - name: Build project
+        run: |
+          cd FE
+          npm run build
+
+      - name: Deploy to Firebase
+        uses: w9jds/firebase-action@v12
+        with: 
+          args: deploy --only hosting
+        env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
-       working-directory: FE 
+
