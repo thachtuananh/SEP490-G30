@@ -39,13 +39,13 @@ public class NotificationController {
     }
 
     @GetMapping(value = "/{role}/{userId}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<NotificationDTO>> getUnreadNotifications(@PathVariable String role, @PathVariable String userId) {
-        return  ResponseEntity.ok(notificationService.getUnreadNotifications(userId, role));
+    public ResponseEntity<List<NotificationDTO>> getUnreadNotifications(@PathVariable String role, @PathVariable Integer userId) {
+        return  ResponseEntity.ok(notificationService.getUnreadNotifications(role, userId));
     }
 
     @DeleteMapping(value = "/{role}/{userId}")
-    public ResponseEntity<Void> clearNotifications(@PathVariable String role, @PathVariable String userId) {
-        notificationService.clearNotifications(userId, role);
+    public ResponseEntity<Void> clearNotifications(@PathVariable String role, @PathVariable Integer userId) {
+        notificationService.clearNotifications(role, userId);
         return ResponseEntity.noContent().build();
     }
 }

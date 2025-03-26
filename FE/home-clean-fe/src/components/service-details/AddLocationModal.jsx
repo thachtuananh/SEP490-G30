@@ -1,10 +1,11 @@
 import { useRef, useState } from "react";
 import useClickOutside from "../../hooks/useClickOutside";
 import styles from "../../assets/CSS/Service/AddLocationModal.module.css";
-
-const AddLocationModal = ({ setIsShowAddLocationModal }) => {
-  const [address, setAddress] = useState("Văn phòng");
-  const addressType = ["Văn phòng", "Nhà riêng"];
+import { BASE_URL } from "../../utils/config";
+import { message } from "antd";
+const AddLocationModal = ({ setIsShowAddLocationModal, onAddressAdded }) => {
+  const [newAddress, setNewAddress] = useState("");
+  const [loading, setLoading] = useState(false);
   const addLocationRef = useRef(null);
 
   useClickOutside({
@@ -12,49 +13,78 @@ const AddLocationModal = ({ setIsShowAddLocationModal }) => {
     refElm: addLocationRef,
   });
 
+  const handleAddAddress = async () => {
+    if (!newAddress.trim()) {
+      message.error("Vui lòng nhập địa chỉ.");
+      return;
+    }
+
+    setLoading(true);
+    const token = localStorage.getItem("token");
+    const customerId = localStorage.getItem("customerId");
+
+    try {
+      const response = await fetch(`${BASE_URL}/customer/${customerId}/create-address`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({ address: newAddress })
+      });
+
+      if (response.ok) {
+        message.success("Thêm địa chỉ mới thành công!");
+        setNewAddress("");
+
+        // Gọi lại hàm để cập nhật danh sách địa chỉ
+        onAddressAdded();
+
+        setIsShowAddLocationModal(false);
+      } else {
+        message.error("Không thể thêm địa chỉ mới.");
+      }
+    } catch (error) {
+      message.error("Lỗi máy chủ, vui lòng thử lại sau.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className={styles.modalContainer} ref={addLocationRef}>
       <h3>Thêm địa chỉ</h3>
-      <select className={styles.select}>
-        <option value="1">Bà Rịa - Vũng Tàu, Huyện Côn Đảo, Xã Côn Đảo</option>
-        <option value="2">
-          Bà Rịa 2 - Vũng Tàu, Huyện Côn Đảo, Xã Côn Đảo
-        </option>
-      </select>
-      <textarea className={styles.textarea} rows="3">
-        Số 36 Đường Tôn Đức Thắng, Khu 2, Thị trấn Côn Đảo, Huyện Côn Đảo, Tỉnh
-        Bà Rịa - Vũng Tàu, Việt Nam.
-      </textarea>
-      <iframe
+
+      <textarea
+        className={styles.textarea}
+        rows="3"
+        placeholder="Nhập địa chỉ mới"
+        value={newAddress}
+        onChange={(e) => setNewAddress(e.target.value)}
+      />
+      {/* <iframe
         width="100%"
         height="300"
         loading="lazy"
         allowFullScreen
-        src="https://www.google.com/maps?q=Côn+Đảo,Vietnam&output=embed"
-      ></iframe>
-      <div className={styles.addressTypeContainer}>
-        <p>Loại địa chỉ:</p>
-        <div className={styles.addressTypeOptions}>
-          {addressType.map((type) => (
-            <div
-              key={type}
-              className={`${styles.addressTypeItem} ${address === type ? styles.active : ""
-                }`}
-              onClick={() => setAddress(type)}
-            >
-              {type}
-            </div>
-          ))}
-        </div>
-      </div>
+        src={`https://www.google.com/maps?q=${encodeURIComponent(location)}&output=embed`}
+      ></iframe> */}
       <div className={styles.buttonGroup}>
         <button
           className={styles.cancelButton}
           onClick={() => setIsShowAddLocationModal(false)}
+          disabled={loading}
         >
           Trở lại
         </button>
-        <button className={styles.confirmButton}>Hoàn thành</button>
+        <button
+          className={styles.confirmButton}
+          onClick={handleAddAddress}
+          disabled={loading}
+        >
+          {loading ? "Đang xử lý..." : "Hoàn thành"}
+        </button>
       </div>
     </div>
   );

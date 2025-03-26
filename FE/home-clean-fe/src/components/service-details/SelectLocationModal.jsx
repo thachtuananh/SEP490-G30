@@ -58,6 +58,18 @@ const SelectLocationModal = ({ isShowLocationModal, setIsShowLocationModal, setC
     }
   };
 
+  const handleAddressAdded = () => {
+    if (!customerId) return;
+
+    fetchCustomerAddresses(customerId)
+      .then(data => {
+        setLocations(data);
+      })
+      .catch(error => {
+        console.error("Lỗi khi lấy danh sách địa chỉ", error);
+      });
+  };
+
 
   return (
     <div className={styles.overlay}>
@@ -118,7 +130,10 @@ const SelectLocationModal = ({ isShowLocationModal, setIsShowLocationModal, setC
         </div>
       )}
 
-      {isShowAddLocationModal && <AddLocationModal setIsShowAddLocationModal={setIsShowAddLocationModal} />}
+      {isShowAddLocationModal &&
+        <AddLocationModal
+          setIsShowAddLocationModal={setIsShowAddLocationModal}
+          onAddressAdded={handleAddressAdded} />}
     </div>
   );
 };

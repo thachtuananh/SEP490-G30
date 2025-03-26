@@ -110,13 +110,17 @@ const JobCard = ({ job, refreshJobs }) => {
   return (
     <article className={styles.jobCard}>
       <header className={styles.jobHeader}>
-        <h2 className={styles.jobTitle}>
-          {job.services
-            ? (Array.isArray(job.services)
-              ? job.services.map(service => service.serviceName).join(", ")
-              : job.services.serviceName || "Unnamed Service")
-            : "Unnamed Service"}
-        </h2>
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
+          <h2 className={styles.jobTitle}>
+            {job.services
+              ? (Array.isArray(job.services)
+                ? job.services.map(service => service.serviceName).join(" & ")
+                : job.services.serviceName || "Unnamed Service")
+              : "Unnamed Service"}
+          </h2>
+          <span className={styles.detailValue}>Tên khách hàng: {job.customerName}</span>
+          <span className={styles.detailValue}>SĐT khách hàng: {job.customerPhone}</span>
+        </div>
         <span className={styles.status} style={{ color: getStatusColor(currentStatus) }}>
           {getStatusLabel(currentStatus)}
         </span>
@@ -152,6 +156,47 @@ const JobCard = ({ job, refreshJobs }) => {
           <div className={styles.detailContent}>
             <span className={styles.detailLabel}>Thù lao</span>
             <strong className={styles.detailValue}>{job.totalPrice.toLocaleString()} VND</strong>
+          </div>
+        </div>
+
+        <div className={styles.detailItem}>
+          <div>
+            <svg width="51" height="51" viewBox="0 0 51 51" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path
+                d="M25.5 2L49 25.5L25.5 49L2 25.5L25.5 2Z"
+                fill="#E6F6EE"
+                stroke="#039855"
+                stroke-width="2"
+              />
+
+              <path
+                d="M25.5 8L43 25.5L25.5 43L8 25.5L25.5 8Z"
+                fill="#CCE9DD"
+                stroke="#039855"
+                stroke-width="1.5"
+              />
+
+              <path
+                d="M25.5 14L37 25.5L25.5 37L14 25.5L25.5 14Z"
+                fill="#99D4BB"
+                stroke="#039855"
+                stroke-width="1.5"
+              />
+
+              <path
+                d="M25.5 20L31 25.5L25.5 31L20 25.5L25.5 20Z"
+                fill="#039855"
+              />
+            </svg>
+          </div>
+          <div className={styles.detailContent}>
+            <span className={styles.detailLabel}>Diện tích</span>
+            <strong className={styles.detailValue}>{job.services
+              ? (Array.isArray(job.services)
+                ? job.services.map(service => service.areaRange).join(" & ")
+                : job.services.areaRange || "Unnamed Service")
+              : "Unnamed Service"}
+            </strong>
           </div>
         </div>
 

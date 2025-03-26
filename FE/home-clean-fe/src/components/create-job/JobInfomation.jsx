@@ -137,7 +137,7 @@ const JobInfomation = ({ selectedDate, hour, minute, paymentMethod }) => {
             if (responseData.status === "OPEN") {
                 console.log("Job created successfully");
                 message.success("Đăng việc thành công!");
-                navigate('/ordersuccess');
+                navigate('/');
             } else {
                 console.error("Lỗi khi tạo job:", responseData);
                 message.error(responseData.message || "Tạo job thất bại, vui lòng thử lại!");
@@ -204,10 +204,10 @@ const JobInfomation = ({ selectedDate, hour, minute, paymentMethod }) => {
                         </Text>
                     )}
                 </Paragraph>
-                <Paragraph className={styles.infoRow}>
+                {/* <Paragraph className={styles.infoRow}>
                     <Text>Số nhân công</Text>
                     <Text>1 người</Text>
-                </Paragraph>
+                </Paragraph> */}
                 <Paragraph className={styles.infoRow}>
                     <Text>Phương thức thanh toán</Text>
                     <Text>
