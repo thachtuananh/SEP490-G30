@@ -27,7 +27,7 @@ jobs:
 
       - name: Build project
         run: |
-          cd FE//home-clean-fe
+          cd FE/home-clean-fe
           npm run build
 
       - name: Deploy to Firebase
