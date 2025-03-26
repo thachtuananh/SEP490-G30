@@ -67,7 +67,7 @@ function Login() {
 
         dispatch({
           type: 'LOGIN_SUCCESS_CUSTOMER',
-          payload: { name, token, customerId }
+          payload: { name, token, customerId, phone }
         });
 
         message.success('Đăng nhập thành công!');

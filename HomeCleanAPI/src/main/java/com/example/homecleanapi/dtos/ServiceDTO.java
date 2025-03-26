@@ -7,11 +7,9 @@ public class ServiceDTO {
     private String serviceName;
     private String description;
     private Double basePrice;
-    private String serviceType;
-    private List<ServiceDetailDTO> serviceDetails;
+    private List<ServiceDetailDTO> serviceDetails;  // List of service details
 
     // Getters and Setters
-
     public Long getServiceId() {
         return serviceId;
     }
@@ -44,14 +42,6 @@ public class ServiceDTO {
         this.basePrice = basePrice;
     }
 
-    public String getServiceType() {
-        return serviceType;
-    }
-
-    public void setServiceType(String serviceType) {
-        this.serviceType = serviceType;
-    }
-
     public List<ServiceDetailDTO> getServiceDetails() {
         return serviceDetails;
     }
@@ -64,6 +54,10 @@ public class ServiceDTO {
         private Long serviceDetailId;
         private String name;
         private Double additionalPrice;
+        private String description;
+        private Double price;          // Thêm cột giá
+        private Integer minRoomSize;  // Thêm cột minRoomSize
+        private Integer maxRoomSize;  // Thêm cột maxRoomSize
 
         // Getters and Setters
         public Long getServiceDetailId() {
@@ -89,9 +83,43 @@ public class ServiceDTO {
         public void setAdditionalPrice(Double additionalPrice) {
             this.additionalPrice = additionalPrice;
         }
+
+        public String getDescription() {
+            return description;
+        }
+
+        public void setDescription(String description) {
+            this.description = description;
+        }
+
+        public Double getPrice() {
+            return price;
+        }
+
+        public void setPrice(Double price) {
+            this.price = price;
+        }
+
+        public Integer getMinRoomSize() {
+            return minRoomSize;
+        }
+
+        public void setMinRoomSize(Integer minRoomSize) {
+            this.minRoomSize = minRoomSize;
+        }
+
+        public Integer getMaxRoomSize() {
+            return maxRoomSize;
+        }
+
+        public void setMaxRoomSize(Integer maxRoomSize) {
+            this.maxRoomSize = maxRoomSize;
+        }
     }
 
 }
+
+
 
 
 

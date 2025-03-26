@@ -12,7 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
+
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -73,30 +73,34 @@ public class EmployeeService {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    public ResponseEntity<Map<String, Object>> updateEmployeeAddress(EmployeeLocationsDTO request, @PathVariable int employeeId) throws IOException {
+    public ResponseEntity<Map<String, Object>> updateEmployeeAddress(
+            EmployeeLocationsDTO request,
+            @PathVariable int employeeId,
+            @PathVariable int addressId) throws IOException {
+
         Map<String, Object> response = new HashMap<>();
 
         // Tìm employee từ database theo ID
         Employee employee = employeeRepository.findById(employeeId)
                 .orElseThrow(() -> new RuntimeException("Employee not found"));
 
-        // Tìm địa chỉ hiện tại của employee
-        List<EmployeeLocations> employeeLocations = employeeAddressRepository.findEmployeeLocationsByEmployee_Id(employee.getId());
+        // Tìm địa chỉ của employee theo addressId
+        EmployeeLocations existingLocation = employeeAddressRepository.findById(addressId)
+                .orElseThrow(() -> new RuntimeException("Address not found for this employee"));
 
-        // Nếu không có địa chỉ nào, trả về thông báo lỗi
-        if (employeeLocations.isEmpty()) {
-            throw new RuntimeException("No existing address found for this employee");
+        // Kiểm tra xem địa chỉ có thuộc về employee không
+        if (existingLocation.getEmployee().getId() != employeeId) {
+            throw new RuntimeException("Address does not belong to the specified employee");
         }
-
-        // Tìm địa chỉ đầu tiên của employee (giả sử chỉ có một địa chỉ hiện tại)
-        EmployeeLocations existingLocation = employeeLocations.get(0);
 
         // Cập nhật các trường thông tin theo input từ request (JSON)
         existingLocation.setAddress(request.getAddress());
+
+        // Chuyển đổi địa chỉ thành tọa độ lat-long
         String data = convertAddressToLatLong.convertAddressToLatLong(request.getAddress());
         JSONObject jsonObject = new JSONObject(data);
-
         JSONArray resultsArray = jsonObject.getJSONArray("results");
+
         if (!resultsArray.isEmpty()) {
             JSONObject firstResult = resultsArray.getJSONObject(0);
             JSONObject geometry = firstResult.getJSONObject("geometry");
@@ -108,7 +112,9 @@ public class EmployeeService {
         } else {
             System.out.println("Không tìm thấy kết quả trong JSON!");
         }
-        existingLocation.setIs_current(false); // Đánh dấu địa chỉ này là hiện tại
+
+        // Đánh dấu địa chỉ này là hiện tại
+        existingLocation.setIs_current(false);
 
         // Lưu địa chỉ đã được cập nhật
         employeeAddressRepository.save(existingLocation);
@@ -117,6 +123,7 @@ public class EmployeeService {
         response.put("message", "Employee address successfully updated");
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
+
 
     // Xóa địa chỉ của employee theo locationId
     public ResponseEntity<Map<String, Object>> deleteEmployeeAddress(int locationId) {

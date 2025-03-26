@@ -1,14 +1,14 @@
 import React from "react";
 import styles from "../activity/InfoCleanerCard.module.css";
 
-export const InfoCleanerCard = () => {
+export const InfoCleanerCard = ({ cleaner }) => {
     return (
         <div className={styles.cardContainer}>
             <div className={styles.cardContent}>
                 {/* Thông tin cơ bản */}
                 <div className={styles.basicInfo}>
                     <img src="logo192.png" alt="ảnh đại diện" className={styles.avatar} />
-                    <strong>Tên :</strong>
+                    <strong>Tên : {cleaner.cleanerName}</strong>
                     <p>Chuyên môn :</p>
                     <div className={styles.divider}></div>
                     <p>Năm sinh :</p>
@@ -62,14 +62,14 @@ export const InfoCleanerCard = () => {
             </div>
 
             {/* các button */}
-            <div className={styles.actionButtons}>
+            {/* <div className={styles.actionButtons}>
                 <div className={styles.rejectButton}>
                     <strong>Từ chối</strong>
                 </div>
                 <div className={styles.acceptButton}>
                     <strong>Chấp nhận</strong>
                 </div>
-            </div>
+            </div> */}
         </div>
     );
 };

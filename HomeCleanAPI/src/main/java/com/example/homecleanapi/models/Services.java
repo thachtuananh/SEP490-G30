@@ -3,27 +3,35 @@ package com.example.homecleanapi.models;
 import jakarta.persistence.*;
 import java.util.List;
 
-import com.example.homecleanapi.enums.ServiceType;
 
 @Entity
 @Table(name = "services")
-public class Services {  // Đổi tên từ HomeCleanService thành Services
+public class Services {  
 
-    @Id
+	@Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String name;
     private String description;
-    private Double basePrice;
+    private Double basePrice;         
+    private Integer minArea;          
+    private Integer maxArea;          
+    private String unit;              
+    private Boolean isPeakTimeFee;    
+    private String specialDiscount;   
 
-    @Enumerated(EnumType.STRING)
-    private ServiceType serviceType;
 
-    @OneToMany(mappedBy = "service", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+
+    @OneToMany(mappedBy = "service", cascade = CascadeType.ALL)
     private List<ServiceDetail> serviceDetails;
+    
+    @OneToMany(mappedBy = "service", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<JobServiceDetail> jobServiceDetails; 
 
     // Getters and Setters
+    
+    
     public Long getId() {
         return id;
     }
@@ -56,13 +64,46 @@ public class Services {  // Đổi tên từ HomeCleanService thành Services
         this.basePrice = basePrice;
     }
 
-    public ServiceType getServiceType() {
-        return serviceType;
+    public Integer getMinArea() {
+        return minArea;
     }
 
-    public void setServiceType(ServiceType serviceType) {
-        this.serviceType = serviceType;
+    public void setMinArea(Integer minArea) {
+        this.minArea = minArea;
     }
+
+    public Integer getMaxArea() {
+        return maxArea;
+    }
+
+    public void setMaxArea(Integer maxArea) {
+        this.maxArea = maxArea;
+    }
+
+    public String getUnit() {
+        return unit;
+    }
+
+    public void setUnit(String unit) {
+        this.unit = unit;
+    }
+
+    public Boolean getIsPeakTimeFee() {
+        return isPeakTimeFee;
+    }
+
+    public void setIsPeakTimeFee(Boolean isPeakTimeFee) {
+        this.isPeakTimeFee = isPeakTimeFee;
+    }
+
+    public String getSpecialDiscount() {
+        return specialDiscount;
+    }
+
+    public void setSpecialDiscount(String specialDiscount) {
+        this.specialDiscount = specialDiscount;
+    }
+
 
     public List<ServiceDetail> getServiceDetails() {
         return serviceDetails;
@@ -71,4 +112,14 @@ public class Services {  // Đổi tên từ HomeCleanService thành Services
     public void setServiceDetails(List<ServiceDetail> serviceDetails) {
         this.serviceDetails = serviceDetails;
     }
+
+	public List<JobServiceDetail> getJobServiceDetails() {
+		return jobServiceDetails;
+	}
+
+	public void setJobServiceDetails(List<JobServiceDetail> jobServiceDetails) {
+		this.jobServiceDetails = jobServiceDetails;
+	}
+    
+    
 }

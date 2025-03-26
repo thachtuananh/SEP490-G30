@@ -6,6 +6,10 @@
     background: #fff;
 }
 
+.title {
+    margin-bottom: 10px;
+}
+
 .separator {
     height: 2px;
     width: 100%;
@@ -27,23 +31,29 @@
     border-radius: 5px;
     cursor: pointer;
     transition: 0.3s;
+    flex-wrap: wrap;
 }
 
 .paymentItem:hover {
     background: rgba(0, 0, 0, 0.05);
 }
 
-input[type="radio"] {
+.radioInput {
     accent-color: green;
     margin-right: 8px;
 }
 
 .icon {
     font-size: 18px;
+    display: inline-block;
+    width: 24px;
+    text-align: center;
 }
 
 .label {
     font-weight: 500;
+    flex: 1;
+    min-width: 170px;
 }
 
 .account {
@@ -54,8 +64,38 @@ input[type="radio"] {
 .terms {
     margin-top: 15px;
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: 10px;
     font-size: 14px;
+}
 
+.checkbox {
+    margin-top: 3px;
+}
+
+.termsLabel {
+    flex: 1;
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+    .paymentItem {
+        padding: 12px 8px;
+    }
+}
+
+@media (max-width: 480px) {
+    .container {
+        padding: 12px 10px;
+    }
+
+    .account {
+        width: 100%;
+        margin-left: 32px;
+        margin-top: 5px;
+    }
+
+    .terms {
+        font-size: 13px;
+    }
 }

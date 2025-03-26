@@ -64,11 +64,11 @@ function Login() {
                 localStorage.setItem("name", name);
                 localStorage.setItem("token", token);
                 localStorage.setItem("cleanerId", cleanerId);
+
                 dispatch({
                     type: 'LOGIN_SUCCESS_CLEANER',
-                    payload: { name, token, cleanerId }
+                    payload: { name, token, cleanerId, phone }
                 });
-
                 message.success('Đăng nhập thành công!');
                 navigate('/homeclean'); // Điều hướng đến trang Home của Cleaner
             } else {

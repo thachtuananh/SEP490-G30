@@ -18,7 +18,7 @@ public class Report {
 
     @ManyToOne
     @JoinColumn(name = "reported_user_id")
-    private Cleaner reportedUser;  
+    private Employee reportedUser;  
 
     @ManyToOne
     @JoinColumn(name = "job_id")
@@ -50,11 +50,11 @@ public class Report {
         this.reporter = reporter;
     }
 
-    public Cleaner getReportedUser() {
+    public Employee getReportedUser() {
         return reportedUser;
     }
 
-    public void setReportedUser(Cleaner reportedUser) {
+    public void setReportedUser(Employee reportedUser) {
         this.reportedUser = reportedUser;
     }
 

@@ -10,3 +10,37 @@ services:
       - SPRING_DATASOURCE_USERNAME=sep490
       - SPRING_DATASOURCE_PASSWORD=123456
 
+  rabbitmq:
+    image: "rabbitmq:3-management"
+    container_name: rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    ports:
+      - "5672:5672"   # Cổng giao tiếp AMQP
+      - "15672:15672" # RabbitMQ Management UI
+    networks:
+      - backend
+
+  redis:
+    image: "redis:latest"
+    container_name: redis
+    command: [ "redis-server", "--requirepass", "guest" ]
+    environment:
+      - REDIS_PASSWORD=guest
+    ports:
+      - "6379:6379"
+    networks:
+      - backend
+
+  redis_insight:
+    image: "redislabs/redisinsight:latest"
+    container_name: redis_insight
+    ports:
+      - "5540:5540"
+    networks:
+      - backend
+
+networks:
+  backend:
+

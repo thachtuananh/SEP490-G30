@@ -33,7 +33,7 @@ public class CustomerAuthenticationProvider implements AuthenticationProvider {
         if (customer == null || !password.equals(customer.getPassword_hash())) {
             throw new UsernameNotFoundException("Invalid username or password");
         }
-        return new UsernamePasswordAuthenticationToken(phone, password, AuthorityUtils.NO_AUTHORITIES);
+        return new UsernamePasswordAuthenticationToken(customer, password, AuthorityUtils.NO_AUTHORITIES);
     }
 
     @Override

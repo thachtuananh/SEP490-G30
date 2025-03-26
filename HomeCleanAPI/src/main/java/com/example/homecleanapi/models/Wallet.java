@@ -12,7 +12,7 @@ public class Wallet {
 
     @ManyToOne
     @JoinColumn(name = "cleaner_id", nullable = false)
-    private Cleaner cleaner; // Liên kết với bảng cleaner
+    private Employee cleaner; // Liên kết với bảng cleaner
 
     private Double balance;
 
@@ -25,11 +25,11 @@ public class Wallet {
         this.id = id;
     }
 
-    public Cleaner getCleaner() {
+    public Employee getCleaner() {
         return cleaner;
     }
 
-    public void setCleaner(Cleaner cleaner) {
+    public void setCleaner(Employee cleaner) {
         this.cleaner = cleaner;
     }
 

@@ -9,7 +9,10 @@
     padding: 20px;
     margin-bottom: 15px;
     position: relative;
+    max-width: 100%;
+    overflow: hidden;
 }
+
 
 .cardContent {
     display: flex;
@@ -40,7 +43,7 @@ h3 {
 .location {
     overflow: hidden;
     white-space: nowrap;
-    width: 500px;
+    max-width: 100%;
     text-overflow: ellipsis;
 }
 
@@ -54,10 +57,14 @@ h3 {
     right: 0;
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: center;
     gap: 8px;
     background: white;
     transition: all 0.3s ease;
+    white-space: nowrap;
+    min-width: 80px;
+    max-width: 120px;
+    text-align: center;
 }
 
 .deleteButton:hover {
@@ -83,23 +90,21 @@ h3 {
 }
 
 .footer {
-    position: relative;
-    height: 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
 }
 
 .reviewButton {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
+    /* gap: 8px; */
     color: white;
     background: #039855;
-    padding: 10px 15px;
-    min-width: 150px;
+    /* padding: 9px; */
     border-radius: 8px;
-    position: absolute;
-    top: 0;
-    right: 0;
     cursor: pointer;
     font-weight: bold;
     font-size: 14px;
@@ -107,7 +112,18 @@ h3 {
     box-shadow: 0px 3px 5px rgba(0, 0, 0, 0.2);
 }
 
+.statusButton {
+    box-shadow: 0px 3px 5px rgba(0, 0, 0, 0.2);
+    padding: 10px 15px;
+}
+
 .reviewButton:hover {
+    background: #027a44;
+    transform: scale(1.05);
+    transition-duration: 0.5s;
+}
+
+.statusButton:hover {
     background: #027a44;
     transform: scale(1.05);
     transition-duration: 0.5s;
@@ -148,13 +164,15 @@ h3 {
 .popup {
     top: 50%;
     left: 50%;
-    width: 1100px;
+    width: 90%;
+    max-width: 1100px;
+    max-height: 90vh;
+    overflow-y: auto;
     box-shadow: -2px 0px 8px rgb(60, 60, 60), 2px 8px 8px rgb(60, 60, 60);
     border-radius: 10px;
     position: fixed;
     transform: translate(-50%, -50%);
     z-index: 9999;
-
 }
 
 
@@ -175,6 +193,85 @@ h3 {
     top: 0;
     left: 0;
     opacity: 0.5;
+}
+
+.modal-cleaner .ant-modal-header {
+    background-color: #27ae60;
+    /* Xanh lá cây */
+    color: white;
+    font-size: 20px;
+    font-weight: bold;
+    text-align: center;
+    border-radius: 10px 10px 0 0;
+}
+
+.modal-cleaner .ant-modal-title {
+    color: white;
+}
+
+.modal-cleaner .ant-modal-content {
+    border-radius: 10px;
+    box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.3);
+    padding: 20px;
+}
+
+.modal-cleaner .ant-modal-body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+}
+
+.cleaner-list {
+    width: 100%;
+}
+
+.cleaner-item {
+    padding: 15px;
+    font-size: 18px;
+    text-align: center;
+    background: #f4f4f4;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    transition: background 0.3s, transform 0.2s;
+    cursor: pointer;
+}
+
+.cleaner-item:hover {
+    background: #2ecc71;
+    color: white;
+    transform: scale(1.05);
+}
+
+.back-btn {
+    background-color: #27ae60;
+    color: white;
+    font-weight: bold;
+    border-radius: 5px;
+    margin-top: 15px;
+}
+
+.back-btn:hover {
+    background-color: #219150;
+
+}
+
+.cleaner-item:hover {
+    cursor: pointer;
+}
+
+.services {
+    margin-bottom: 10px;
+}
+
+.serviceItem {
+    margin-bottom: 4px;
+    padding: 4px 0;
+    border-bottom: 1px dashed #eee;
+}
+
+.serviceItem:last-child {
+    border-bottom: none;
 }
 
 
@@ -198,7 +295,22 @@ h3 {
         width: 40px;
         height: 40px;
         padding: 0;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
         justify-content: center;
+        min-width: unset;
+        max-width: unset;
+    }
+
+    .deleteButton::before {
+        content: "";
+        display: block;
+        width: 15px;
+        height: 15px;
+        background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="100" height="100" viewBox="0 0 26 26" fill="%23FA5252"><path d="M 11 -0.03125 C 10.164063 -0.03125 9.34375 0.132813 8.75 0.71875 C 8.15625 1.304688 7.96875 2.136719 7.96875 3 L 4 3 C 3.449219 3 3 3.449219 3 4 L 2 4 L 2 6 L 24 6 L 24 4 L 23 4 C 23 3.449219 22.550781 3 22 3 L 18.03125 3 C 18.03125 2.136719 17.84375 1.304688 17.25 0.71875 C 16.65625 0.132813 15.835938 -0.03125 15 -0.03125 Z M 11 2.03125 L 15 2.03125 C 15.546875 2.03125 15.71875 2.160156 15.78125 2.21875 C 15.84375 2.277344 15.96875 2.441406 15.96875 3 L 10.03125 3 C 10.03125 2.441406 10.15625 2.277344 10.21875 2.21875 C 10.28125 2.160156 10.453125 2.03125 11 2.03125 Z M 4 7 L 4 23 C 4 24.652344 5.347656 26 7 26 L 19 26 C 20.652344 26 22 24.652344 22 23 L 22 7 Z M 8 10 L 10 10 L 10 22 L 8 22 Z M 12 10 L 14 10 L 14 22 L 12 22 Z M 16 10 L 18 10 L 18 22 L 16 22 Z"></path></svg>');
+        background-size: contain;
+        background-repeat: no-repeat;
     }
 
     .deleteButton b {
@@ -223,7 +335,6 @@ h3 {
     }
 
     .reviewButton {
-        width: 89%;
         text-align: center;
         position: relative;
     }
@@ -241,12 +352,7 @@ h3 {
         top: 0;
         border-radius: 0;
         box-shadow: none;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
         transform: none;
-
     }
 
     .exitButton {

@@ -4,8 +4,9 @@ import { useState, useEffect } from "react";
 import { Link, useLocation, useParams } from "react-router-dom";
 import { Spin } from "antd";
 import styles from '../../assets/CSS/Service/ServiceContent.module.css';
+import { fetchServiceDetails } from "../../services/owner/OwnerAPI"; // Import the API function
 
-const ServiceContent = ({ setIsShowLocationModal, setDescription, customerAddressId }) => {
+const ServiceContent = ({ setIsShowLocationModal, setDescription, customerAddressId, nameAddress }) => {
   const { id } = useParams();
   const [serviceData, setServiceData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -22,21 +23,16 @@ const ServiceContent = ({ setIsShowLocationModal, setDescription, customerAddres
   useEffect(() => {
     if (!id) return;
 
-    fetch(`http://localhost:8080/api/services/details/${id}`)
-      .then((res) => res.json())
+    fetchServiceDetails(id)
       .then((data) => {
-        const sortedDetails = Array.isArray(data?.serviceDetails)
-          ? [...data.serviceDetails].sort((a, b) => (a.minRoomSize || 0) - (b.minRoomSize || 0))
-          : [];
-
-        setServiceData({ ...data, serviceDetails: sortedDetails });
+        setServiceData(data);
         setDescription(data?.description || "Không có mô tả");
 
-        // Nếu có dữ liệu, chọn diện tích nhỏ nhất làm mặc định
-        if (sortedDetails.length > 0) {
-          setSelectedSize(sortedDetails[0]?.minRoomSize);
-          setPrice(sortedDetails[0]?.price || 0);
-          setSelectedServiceDetailId(sortedDetails[0]?.serviceDetailId); // Ghi lại serviceDetailId mặc định
+        // Set default size and price if data is available
+        if (data.serviceDetails.length > 0) {
+          setSelectedSize(data.serviceDetails[0]?.minRoomSize);
+          setPrice(data.serviceDetails[0]?.price || 0);
+          setSelectedServiceDetailId(data.serviceDetails[0]?.serviceDetailId);
         } else {
           setPrice(data?.basePrice || 0);
         }
@@ -98,7 +94,7 @@ const ServiceContent = ({ setIsShowLocationModal, setDescription, customerAddres
               <LocationIcon />
               Đổi địa chỉ
             </div>
-            <p style={{ maxWidth: "60%", color: "#B8B8B8" }}>{data}</p>
+            <p style={{ maxWidth: "60%", color: "#B8B8B8" }}>{nameAddress}</p>
           </div>
         </div>
 
@@ -152,7 +148,7 @@ const ServiceContent = ({ setIsShowLocationModal, setDescription, customerAddres
               price: price,
               serviceDetailId: selectedServiceDetailId, // Sử dụng state đã lưu serviceDetailId
               serviceId: state || null,
-              address: data,
+              address: nameAddress,
               serviceName: serviceData?.serviceName || "Dịch vụ",
               selectedSize: selectedSize,
               maxSize: serviceData?.serviceDetails?.find((detail) => detail?.minRoomSize === selectedSize)?.maxRoomSize || 0,

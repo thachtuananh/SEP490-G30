@@ -80,7 +80,7 @@ public class EmployeeAuthService {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
         }
 
-        String token = jwtUtils.generateToken(employee.getPhone(), employee.getName(), employee.getId().toString());
+        String token = jwtUtils.generateToken(employee.getPhone(), employee.getName(), employee.getId().toString(), "Cleaner");
 
         response.put("token", token);
         response.put("phone", employee.getPhone());

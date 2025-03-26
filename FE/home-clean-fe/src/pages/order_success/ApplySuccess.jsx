@@ -2,7 +2,8 @@ import React, { useEffect, useState } from "react";
 import { FaCheckCircle } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import { Spin } from "antd";
-
+import Navbar from "../../components/Home/Cleaner/Navbar";
+import Footer from "../../components/Home/Cleaner/Footer";
 
 const ApplySuccess = () => {
 
@@ -11,7 +12,7 @@ const ApplySuccess = () => {
     useEffect(() => {
         const timer = setTimeout(() => {
             setLoading(false);
-        }, 3000)
+        }, 2000)
 
         return () => clearTimeout(timer);
 
@@ -19,61 +20,65 @@ const ApplySuccess = () => {
 
 
     return (
-        <div
-            style={{
-                minHeight: 531,
-                textAlign: 'center',
-                alignContent: 'center',
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'center',
-                alignItems: 'center'
-            }}
-        >
-            {isLoading ? (
-                <Spin size="large" />
-            ) : (
-                <>
-                    <FaCheckCircle
-                        style={{
-                            fontSize: '100',
-                            color: 'rgb(81, 238, 133)'
-                        }}
-                    />
-                    <h1>Thành công</h1>
-                    <p>Bạn đã nhận việc với khách hàng thành công, Cảm</p>
-                    <p>ơn đã sử dụng dịch vụ</p>
-                    <Link
-                        to='/homeclean'
-                        style={{
-                            textDecoration: 'none',
-                            color: 'white',
-                            width: 200,
-                            marginTop: 30
-                        }}
-                    >
-                        <div
+        <>
+            <Navbar />
+            <div
+                style={{
+                    minHeight: 531,
+                    textAlign: 'center',
+                    alignContent: 'center',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'center',
+                    alignItems: 'center'
+                }}
+            >
+                {isLoading ? (
+                    <Spin size="large" />
+                ) : (
+                    <>
+                        <FaCheckCircle
                             style={{
-                                height: 40,
-                                width: 200,
-                                background: 'rgb(16, 112, 48)',
-                                cursor: 'pointer',
+                                fontSize: '100',
+                                color: 'rgb(81, 238, 133)'
+                            }}
+                        />
+                        <h1>Thành công</h1>
+                        <p>Bạn đã nhận việc với khách hàng thành công, Cảm</p>
+                        <p>ơn đã sử dụng dịch vụ</p>
+                        <Link
+                            to='/homeclean'
+                            style={{
                                 textDecoration: 'none',
-                                borderRadius: 5,
-                                alignContent: 'center'
+                                color: 'white',
+                                width: 200,
+                                marginTop: 30
                             }}
                         >
+                            <div
+                                style={{
+                                    height: 40,
+                                    width: 200,
+                                    background: 'rgb(16, 112, 48)',
+                                    cursor: 'pointer',
+                                    textDecoration: 'none',
+                                    borderRadius: 5,
+                                    alignContent: 'center'
+                                }}
+                            >
 
-                            Về trang chủ
+                                Về trang chủ
 
-                        </div>
-                    </Link>
-                </>
-            )
+                            </div>
+                        </Link>
+                    </>
+                )
 
-            }
+                }
 
-        </div>
+            </div>
+            <Footer />
+        </>
     )
 }
 

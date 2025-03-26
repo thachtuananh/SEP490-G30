@@ -1,14 +1,21 @@
 package com.example.homecleanapi.repositories;
 
+import java.util.List;
+import java.util.Optional;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import com.example.homecleanapi.models.Cleaner;
+import com.example.homecleanapi.models.Employee;
 
 @Repository
-public interface CleanerRepository extends JpaRepository<Cleaner, Long> {
-    Cleaner findByPhoneNumber(String phoneNumber); 
+public interface CleanerRepository extends JpaRepository<Employee, Long> {
+    Optional<Employee> findByPhone(String phone); 
 
-    Cleaner findByEmail(String email); 
+    Employee findByEmail(String email); 
+    
+    List<Employee> findByStatus(Boolean status);
+    
 }
+
 

@@ -1,9 +1,13 @@
 package com.example.homecleanapi.enums;
 
 public enum JobStatus {
-    Open,
+	OPEN,
     PENDING_APPROVAL,
     IN_PROGRESS,
-    COMPLETED,
-    CANCELLED
+    ARRIVED,       
+    STARTED,       
+    COMPLETED,     
+    CANCELLED,
+    DONE,
+    BOOKED
 }
