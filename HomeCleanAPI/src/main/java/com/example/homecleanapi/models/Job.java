@@ -57,6 +57,9 @@ public class Job {
     
     @Column(name = "txn_ref")
     private String txnRef;
+    
+    @Column(name = "reminder")
+    private String reminder;  
 
     // Getters and Setters
     
@@ -66,7 +69,15 @@ public class Job {
         return id;
     }
 
-    public String getTxnRef() {
+    public String getReminder() {
+		return reminder;
+	}
+
+	public void setReminder(String reminder) {
+		this.reminder = reminder;
+	}
+
+	public String getTxnRef() {
 		return txnRef;
 	}
 

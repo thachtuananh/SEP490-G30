@@ -8,6 +8,7 @@ public class BookJobRequest {
     private String jobTime;  
     private List<ServiceRequest> services; 
     private String paymentMethod;
+    private String reminder;
 
     // Getter và Setter cho customerAddressId
     
@@ -16,7 +17,15 @@ public class BookJobRequest {
         return customerAddressId;
     }
 
-    public String getPaymentMethod() {
+    public String getReminder() {
+		return reminder;
+	}
+
+	public void setReminder(String reminder) {
+		this.reminder = reminder;
+	}
+
+	public String getPaymentMethod() {
 		return paymentMethod;
 	}
 

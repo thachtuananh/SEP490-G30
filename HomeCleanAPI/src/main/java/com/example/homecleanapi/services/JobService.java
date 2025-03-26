@@ -100,6 +100,7 @@ public class JobService {
         job.setCustomer(customer);
         job.setCustomerAddress(customerAddress);
         job.setScheduledTime(jobTime);
+        job.setReminder(request.getReminder());
 
         // Kiểm tra phương thức thanh toán
         if ("cash".equalsIgnoreCase(request.getPaymentMethod())) {

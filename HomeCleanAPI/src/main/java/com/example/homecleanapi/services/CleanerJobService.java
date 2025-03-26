@@ -84,6 +84,9 @@ public class CleanerJobService {
 	@Autowired
     private WalletRepository walletRepository;
 
+	
+	
+
 	// Lấy danh sách các công việc đang mở
 	public List<JobSummaryDTO> getOpenJobs(Long cleanerId) {
 		// Lấy tất cả các Job có trạng thái OPEN
@@ -113,70 +116,75 @@ public class CleanerJobService {
 
 	// Lấy chi tiết công việc
 	public Map<String, Object> getJobDetails(Long jobId) {
-		Map<String, Object> jobDetails = new HashMap<>();
+	    Map<String, Object> jobDetails = new HashMap<>();
 
-		// Tìm job theo jobId
-		Job job = jobRepository.findById(jobId).orElse(null);
-		if (job != null) {
-			// Thêm thông tin về job
-			jobDetails.put("jobId", job.getId());
-			jobDetails.put("status", job.getStatus());
-			jobDetails.put("totalPrice", job.getTotalPrice());
-			jobDetails.put("scheduledTime", job.getScheduledTime());
+	    // Tìm job theo jobId
+	    Job job = jobRepository.findById(jobId).orElse(null);
+	    if (job != null) {
+	        // Thêm thông tin về job
+	        jobDetails.put("jobId", job.getId());
+	        jobDetails.put("status", job.getStatus());
+	        jobDetails.put("totalPrice", job.getTotalPrice());
+	        jobDetails.put("scheduledTime", job.getScheduledTime());
 
-			// Lấy tất cả các JobServiceDetail cho job này
-			List<JobServiceDetail> jobServiceDetails = jobServiceDetailRepository.findByJobId(jobId);
-			if (jobServiceDetails != null && !jobServiceDetails.isEmpty()) {
-				List<Map<String, Object>> serviceList = new ArrayList<>();
 
-				// Duyệt qua tất cả các dịch vụ trong bảng job_service_detail
-				for (JobServiceDetail jobServiceDetail : jobServiceDetails) {
-					Services service = jobServiceDetail.getService();
-					if (service != null) {
-						Map<String, Object> serviceInfo = new HashMap<>();
-						serviceInfo.put("serviceName", service.getName());
-						serviceInfo.put("serviceDescription", service.getDescription());
+	        if (job.getReminder() != null) {
+	            jobDetails.put("reminder", job.getReminder());  
+	        }
 
-						// Lấy các chi tiết dịch vụ
-						ServiceDetail serviceDetail = jobServiceDetail.getServiceDetail();
-						if (serviceDetail != null) {
-							serviceInfo.put("serviceDetailId", serviceDetail.getId());
-							serviceInfo.put("serviceDetailName", serviceDetail.getName());
-							serviceInfo.put("price", serviceDetail.getPrice());
-							serviceInfo.put("additionalPrice", serviceDetail.getAdditionalPrice());
-							serviceInfo.put("areaRange", serviceDetail.getAreaRange());
-							serviceInfo.put("description", serviceDetail.getDescription());
-							serviceInfo.put("discounts", serviceDetail.getDiscounts());
-						}
 
-						serviceList.add(serviceInfo);
-					}
-				}
+	        List<JobServiceDetail> jobServiceDetails = jobServiceDetailRepository.findByJobId(jobId);
+	        if (jobServiceDetails != null && !jobServiceDetails.isEmpty()) {
+	            List<Map<String, Object>> serviceList = new ArrayList<>();
 
-				// Thêm thông tin dịch vụ vào jobDetails
-				jobDetails.put("services", serviceList);
-			}
 
-			// Thêm thông tin về customer đã book job
-			Customers customer = job.getCustomer();
-			if (customer != null) {
-				jobDetails.put("customerId", customer.getId());
-				jobDetails.put("customerName", customer.getFull_name());
-				jobDetails.put("customerPhone", customer.getPhone());
-			}
+	            for (JobServiceDetail jobServiceDetail : jobServiceDetails) {
+	                Services service = jobServiceDetail.getService();
+	                if (service != null) {
+	                    Map<String, Object> serviceInfo = new HashMap<>();
+	                    serviceInfo.put("serviceName", service.getName());
+	                    serviceInfo.put("serviceDescription", service.getDescription());
 
-			// Thêm thông tin về địa chỉ của customer
-			CustomerAddresses customerAddress = job.getCustomerAddress();
-			if (customerAddress != null) {
-				jobDetails.put("customerAddressId", customerAddress.getId());
-				jobDetails.put("customerAddress", customerAddress.getAddress());
-				jobDetails.put("latitude", customerAddress.getLatitude());
-				jobDetails.put("longitude", customerAddress.getLongitude());
-			}
-		}
+	                    ServiceDetail serviceDetail = jobServiceDetail.getServiceDetail();
+	                    if (serviceDetail != null) {
+	                        serviceInfo.put("serviceDetailId", serviceDetail.getId());
+	                        serviceInfo.put("serviceDetailName", serviceDetail.getName());
+	                        serviceInfo.put("price", serviceDetail.getPrice());
+	                        serviceInfo.put("additionalPrice", serviceDetail.getAdditionalPrice());
+	                        serviceInfo.put("areaRange", serviceDetail.getAreaRange());
+	                        serviceInfo.put("description", serviceDetail.getDescription());
+	                        serviceInfo.put("discounts", serviceDetail.getDiscounts());
+	                    }
 
-		return jobDetails.isEmpty() ? null : jobDetails;
+	                    serviceList.add(serviceInfo);
+	                }
+	            }
+
+
+	            jobDetails.put("services", serviceList);
+	        }
+
+	        // Thêm thông tin về customer đã book job
+	        Customers customer = job.getCustomer();
+	        if (customer != null) {
+	            jobDetails.put("customerId", customer.getId());
+	            jobDetails.put("customerName", customer.getFull_name());
+	            jobDetails.put("customerPhone", customer.getPhone());
+	        }
+
+	        // Thêm thông tin về địa chỉ của customer
+	        CustomerAddresses customerAddress = job.getCustomerAddress();
+	        if (customerAddress != null) {
+	            jobDetails.put("customerAddressId", customerAddress.getId());
+	            jobDetails.put("customerAddress", customerAddress.getAddress());
+	            jobDetails.put("latitude", customerAddress.getLatitude());
+	            jobDetails.put("longitude", customerAddress.getLongitude());
+	        }
+	    }
+
+	    return jobDetails.isEmpty() ? null : jobDetails;
 	}
+
 
 	// Apply job
 	public Map<String, Object> applyForJob(Long jobId) {
