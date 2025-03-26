@@ -1,4 +1,3 @@
-version: "3.9"
 services:
   web:
     build: .
@@ -6,7 +5,7 @@ services:
       - "8080:8080"
     network_mode: host
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/SEP490_v1
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/sep490_v1
       - SPRING_DATASOURCE_USERNAME=sep490
       - SPRING_DATASOURCE_PASSWORD=123456
 
