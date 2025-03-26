@@ -2,3 +2,4 @@ hfkasdghfaskdfjhg
 Fix FE 1
 Update directory for Firebase deploy
 Minor fix 
+Rebuild
