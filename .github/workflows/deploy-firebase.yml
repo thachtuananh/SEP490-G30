@@ -22,12 +22,12 @@ jobs:
 
       - name: Install dependencies
         run: |
-          cd FE
+          cd FE/home-clean-fe
           npm install 
 
       - name: Build project
         run: |
-          cd FE
+          cd FE/home-clean-fe
           npm run build
 
       - name: Deploy to Firebase
