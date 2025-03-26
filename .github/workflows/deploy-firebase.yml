@@ -30,10 +30,10 @@ jobs:
         cd FE
         npm run build
 
-    - name: Deploy to Firebase
-      uses: w9jds/firebase-action@v12
-      with: 
-        args: deploy --only hosting
-      env:
-         FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
-      working-directory: FE 
+     - name: Deploy to Firebase
+       uses: w9jds/firebase-action@v12
+       with: 
+         args: deploy --only hosting
+       env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+       working-directory: FE 
