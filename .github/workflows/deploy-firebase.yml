@@ -31,9 +31,8 @@ jobs:
           npm run build
 
       - name: Deploy to Firebase
-        uses: w9jds/firebase-action@v12.8.0
-        with: 
-          args: deploy --only hosting
+        run: |
+          cd FE/home-clean-fe
+          npx firebase deploy --only hosting --token "$FIREBASE_TOKEN"
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
-        working-directory: FE/home-clean-fe
