@@ -16,6 +16,8 @@ import {
     rejectCleaner
 } from "../../services/owner/StatusJobAPI";
 import { FeedbackModal } from "../../components/activity/FeedbackModal"; // Import the new FeedbackModal component
+import { createConversation } from "../../services/ChatService";
+import { sendNotification } from "../../services/NotificationService";
 
 export const ActivityCard = ({ data, onDelete }) => {
     const [activities, setActivities] = useState([]);
@@ -159,14 +161,24 @@ export const ActivityCard = ({ data, onDelete }) => {
         }
 
         try {
+            // First, hire the cleaner
             await hireCleaner(jobId, cleanerId, customerId);
-            console.log("✅ Thuê cleaner thành công!", { jobId, cleanerId, customerId });
-            message.success("✅ Thuê cleaner thành công!");
+
+            // Then create a conversation
+            await createConversation(customerId, cleanerId);
+
+            console.log("Thuê cleaner thành công!", { jobId, cleanerId, customerId });
+            message.success("Thuê cleaner thành công!");
+            sendNotification(cleanerId,
+                `Người thuê ${localStorage.getItem('name')} đã chấp nhận công việc`,
+                'BOOKED',
+                'Cleaner'
+            )
             updateActivityStatus(jobId, "IN_PROGRESS");
             setIsModalOpen(false);
         } catch (error) {
-            console.error("❌ Lỗi khi thuê cleaner:", error);
-            message.error("❌ Lỗi khi thuê cleaner");
+            console.error("Lỗi khi thuê cleaner:", error);
+            message.error("Lỗi khi thuê cleaner");
         }
     };
 
@@ -174,13 +186,18 @@ export const ActivityCard = ({ data, onDelete }) => {
     const handleRejectCleaner = async (jobId, cleanerId, customerId) => {
         try {
             await rejectCleaner(jobId, cleanerId, customerId);
-            console.log("✅ Từ chối cleaner thành công!", { jobId, cleanerId, customerId });
-            message.success("✅ Từ chối cleaner thành công!");
+            console.log("Từ chối cleaner thành công!", { jobId, cleanerId, customerId });
+            message.success("Từ chối cleaner thành công!");
+            sendNotification(cleanerId,
+                `Người thuê ${localStorage.getItem('name')} từ chối công việc`,
+                'BOOKED',
+                'Cleaner'
+            )
             // Refresh cleaner list
             fetchCleaners(jobId);
         } catch (error) {
-            console.error("❌ Lỗi khi từ chối cleaner:", error);
-            message.error("❌ Lỗi khi từ chối cleaner");
+            console.error("Lỗi khi từ chối cleaner:", error);
+            message.error("Lỗi khi từ chối cleaner");
         }
     };
 
@@ -200,11 +217,12 @@ export const ActivityCard = ({ data, onDelete }) => {
     const handleCompleteJob = async (jobId) => {
         try {
             await completeJob(jobId);
-            message.success("✅ Công việc đã hoàn thành!");
+            message.success("Công việc đã hoàn thành!");
             updateActivityStatus(jobId, "DONE");
+
         } catch (error) {
-            console.error("❌ Lỗi khi hoàn thành công việc:", error);
-            message.error("❌ Không thể hoàn thành công việc.");
+            console.error("Lỗi khi hoàn thành công việc:", error);
+            message.error("Không thể hoàn thành công việc.");
         }
     };
 
@@ -216,8 +234,10 @@ export const ActivityCard = ({ data, onDelete }) => {
             setActivities(prevActivities =>
                 prevActivities.filter(activity => activity.jobId !== jobId)
             );
+            message.success("Huỷ việc thành công");
         } catch (error) {
             console.error("❌ Lỗi khi xóa công việc:", error);
+            message.error("Lỗi khi không huỷ được công việc");
         }
     };
 

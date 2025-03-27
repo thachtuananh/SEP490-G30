@@ -11,6 +11,7 @@ import { Stomp } from "@stomp/stompjs";
 import ChatWindow from "../../Chat/ChatWindow";
 import ConversationList from "../../Chat/ConversationList";
 import { getUnreadNotificationCount } from "../../../services/NotificationService";
+import { getUnreadMessageCount } from "../../../services/ChatService";
 import { BASE_URL } from "../../../utils/config";
 import { URL_WEB_SOCKET } from "../../../utils/config";
 
@@ -25,6 +26,7 @@ function Navbar() {
 
     const [isPopupMessage, setIsPopupMessage] = useState(false);
     const [messageCount, setMessageCount] = useState(0);
+    const [isMessageLoading, setIsMessageLoading] = useState(false);
 
     //Them phan khai báo Chat
     const roleStr = localStorage.getItem("role");
@@ -72,6 +74,33 @@ function Navbar() {
 
         return () => clearInterval(intervalId);
     }, [cleaner]);
+
+    // Fetch message count when component mounts and when user changes
+    useEffect(() => {
+        const fetchMessageCount = async () => {
+            if (cleaner) {
+                try {
+                    setIsMessageLoading(true);
+                    const count = await getUnreadMessageCount();
+                    setMessageCount(count);
+                } catch (error) {
+                    console.error("Failed to fetch message count:", error);
+                } finally {
+                    setIsMessageLoading(false);
+                }
+            } else {
+                setMessageCount(0);
+            }
+        };
+
+        fetchMessageCount();
+
+        // Set up polling to refresh message count every minute
+        const intervalId = setInterval(fetchMessageCount, 60000);
+
+        return () => clearInterval(intervalId);
+    }, [cleaner]);
+
 
     // Close the menu when notification popup is opened on mobile
     useEffect(() => {
@@ -247,7 +276,7 @@ function Navbar() {
         }
     };
 
-    // Message icon
+    // Message icon with loading and count
     const messageIcon = (
         <Badge
             count={messageCount}
@@ -262,16 +291,17 @@ function Navbar() {
                 <MessageOutlined
                     className={`${styles.message_icon} ${messageCount > 0 ? styles.message_active : ''}`}
                     style={{ fontSize: '20px' }}
+                    spin={isMessageLoading}
                 />
             </div>
         </Badge>
     );
 
 
-    // Them phần xử lý Chat
+    // WebSocket connection for real-time message updates
     useEffect(() => {
         if (!role || !userId) {
-            console.error("Thiếu thông tin role hoặc userId trong URL!");
+            console.error("Missing role or userId in URL!");
             return;
         }
 
@@ -285,7 +315,12 @@ function Navbar() {
             const queueName = `/queue/messages-${userId}`;
             client.subscribe(queueName, (message) => {
                 const msg = JSON.parse(message.body);
+
+                // Update messages
                 setMessages((prev) => [...prev, msg]);
+
+                // Increment message count for new unread message
+                setMessageCount(prevCount => prevCount + 1);
             });
         });
 
@@ -295,6 +330,21 @@ function Navbar() {
             }
         };
     }, [role, userId]);
+
+    // Refresh messages manually
+    const refreshMessages = async () => {
+        if (cleaner) {
+            try {
+                setIsMessageLoading(true);
+                const count = await getUnreadMessageCount();
+                setMessageCount(count);
+            } catch (error) {
+                console.error("Failed to refresh message count:", error);
+            } finally {
+                setIsMessageLoading(false);
+            }
+        }
+    };
 
     const handleConversationSelect = (conversation) => {
         console.log("🔍 Chọn cuộc trò chuyện:", conversation);
@@ -341,7 +391,7 @@ function Navbar() {
             setMessages((prev) => [...prev, { ...message, sentAt: new Date().toISOString() }]);
         }
     };
-    // Kết thúc xử lý Chat
+
 
     // Message popover component (for desktop)
     const messagePopover = isMobile ? (
@@ -357,21 +407,37 @@ function Navbar() {
                         <div className={styles.message__main}>
                             <div className={styles.message_sidebar}>
                                 <div className={styles.message_user_list}>
-                                    <ConversationList onSelect={handleConversationSelect} userId={userId} role={role} />
-
+                                    <ConversationList
+                                        onSelect={(conversation) => {
+                                            handleConversationSelect(conversation);
+                                            // Reset message count when a conversation is selected
+                                            setMessageCount(0);
+                                        }}
+                                        userId={userId}
+                                        role={role}
+                                    />
                                 </div>
                             </div>
                             <div className={styles.message_outlet}>
-                                <ChatWindow messages={messages} onSendMessage={sendMessage} conversation={selectedConversation} userId={userId} />
-
+                                <ChatWindow
+                                    messages={messages}
+                                    onSendMessage={sendMessage}
+                                    conversation={selectedConversation}
+                                    userId={userId}
+                                />
                             </div>
                         </div>
-
                     </div>
                 }
                 trigger="click"
                 open={isPopupMessage}
-                onOpenChange={setIsPopupMessage}
+                onOpenChange={(visible) => {
+                    setIsPopupMessage(visible);
+                    if (visible) {
+                        // Refresh message count when opening the popover
+                        refreshMessages();
+                    }
+                }}
                 placement="top"
                 overlayClassName={styles.message_popover}
                 getPopupContainer={() => document.querySelector(`.${styles.message_icon_wrapper}`)}

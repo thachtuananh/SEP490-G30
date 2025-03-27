@@ -7,12 +7,12 @@ export const InfoCleanerCard = ({ cleaner }) => {
             <div className={styles.cardContent}>
                 {/* Thông tin cơ bản */}
                 <div className={styles.basicInfo}>
-                    <img src="logo192.png" alt="ảnh đại diện" className={styles.avatar} />
+                    <img src={`data:image/png;base64,${cleaner.profileImage}`} alt="Avatar" style={{ borderRadius: "10px" }} />
                     <strong>Tên : {cleaner.cleanerName}</strong>
                     <p>Chuyên môn :</p>
                     <div className={styles.divider}></div>
-                    <p>Năm sinh :</p>
-                    <p>Giới tính :</p>
+                    <p>Năm sinh: </p>
+                    <p>Giới tính: </p>
                     <p>Số điện thoại :</p>
                     <p>Email :</p>
                 </div>

@@ -2,7 +2,8 @@ import React, { useState } from "react";
 import { Modal, List, Button, Table, message } from "antd";
 import styles from "./JobList.module.css";
 import { BASE_URL } from "../../utils/config";
-
+import { createConversation } from "../../services/ChatService";
+import { sendNotification } from "../../services/NotificationService";
 const getStatusColor = (status) => {
   const normalizedStatus = status.toUpperCase();
   switch (normalizedStatus) {
@@ -60,6 +61,11 @@ const JobCard = ({ job, refreshJobs }) => {
             console.log("Status updated:", data);
             setCurrentStatus(newStatus.toUpperCase());
             message.success(`Đã cập nhật trạng thái thành ${getStatusLabel(newStatus)}`);
+            sendNotification(job.customerId,
+              `Người dọn ${localStorage.getItem('name')} cập nhật trạng thái: ${getStatusLabel(newStatus) || 'Trạng thái'}`,
+              'STATUS',
+              'Customer'
+            )
             if (refreshJobs) refreshJobs();
           })
           .catch((error) => {
@@ -76,6 +82,7 @@ const JobCard = ({ job, refreshJobs }) => {
   const handleJobAction = (action) => {
     setLoading(true);
     const token = localStorage.getItem("token");
+    const cleanerId = localStorage.getItem("cleanerId");
 
     fetch(`${BASE_URL}/cleaner/job/${job.jobId}/accept-reject?action=${action}`, {
       method: "PUT",
@@ -92,6 +99,40 @@ const JobCard = ({ job, refreshJobs }) => {
       })
       .then((data) => {
         console.log(`Job ${action}ed:`, data);
+
+        // If job is accepted, create a conversation and send notification
+        if (action === 'accept') {
+          Promise.all([
+            createConversation(job.customerId, cleanerId),
+            sendNotification(job.customerId,
+              `Người dọn ${localStorage.getItem('name')} đã nhận dịch vụ: ${job.services[0]?.serviceName || 'Dọn dẹp'}`,
+              'BOOKED',
+              'Customer'
+            )
+          ])
+            .then(([conversationData, notificationData]) => {
+              console.log("Conversation created:", conversationData);
+              console.log("Notification sent:", notificationData);
+            })
+            .catch(error => {
+              console.error("Error in post-acceptance operations:", error);
+              message.error("Có lỗi xảy ra khi xử lý sau khi chấp nhận công việc.");
+            });
+        } else if (action === 'reject') {
+          sendNotification(job.customerId,
+            `Người dọn ${localStorage.getItem('name')} đã từ chối dịch vụ: ${job.services[0]?.serviceName || 'Dọn dẹp'}`,
+            'REJECTED',
+            'Customer'
+          )
+            .then(notificationData => {
+              console.log("Rejection notification sent:", notificationData);
+            })
+            .catch(error => {
+              console.error("Error in sending rejection notification:", error);
+              message.error("Có lỗi xảy ra khi gửi thông báo từ chối.");
+            });
+        }
+
         message.success(action === 'accept' ? 'Đã chấp nhận công việc' : 'Đã từ chối công việc');
         if (refreshJobs) refreshJobs();
       })

@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { List, Typography, Spin, Empty, Button } from 'antd';
-import { getNotifications } from '../../services/NotificationService';
+import { DeleteOutlined } from '@ant-design/icons';
+import { getNotifications, deleteAllNotifications } from '../../services/NotificationService';
 import styles from "../../assets/CSS/Notification/Notification.module.css";
+import jwt_decode from 'jwt-decode';
 
 const { Text, Title } = Typography;
 
@@ -9,6 +11,7 @@ const Notification = () => {
     const [notifications, setNotifications] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [clearLoading, setClearLoading] = useState(false);
 
     // Fetch notifications when component mounts
     useEffect(() => {
@@ -30,6 +33,28 @@ const Notification = () => {
         }
     };
 
+    // Function to clear all notifications
+    const handleClearAllNotifications = async () => {
+        try {
+            setClearLoading(true);
+            // Get role and userId from token
+            const token = localStorage.getItem('token');
+            const decodedToken = jwt_decode(token);
+            const { role, id } = decodedToken;
+
+            // Call API to delete all notifications
+            await deleteAllNotifications(role, id);
+
+            // Clear notifications in state
+            setNotifications([]);
+        } catch (error) {
+            console.error("Error clearing notifications:", error);
+            setError("Không thể xoá thông báo. Vui lòng thử lại sau.");
+        } finally {
+            setClearLoading(false);
+        }
+    };
+
     // Format date for display
     const formatDate = (dateString) => {
         if (!dateString) return '';
@@ -39,9 +64,7 @@ const Notification = () => {
             return date.toLocaleString('vi-VN', {
                 day: '2-digit',
                 month: '2-digit',
-                year: 'numeric',
-                // hour: '2-digit',
-                // minute: '2-digit'
+                year: 'numeric'
             });
         } catch (error) {
             console.error("Error formatting date:", error);
@@ -51,13 +74,22 @@ const Notification = () => {
 
     return (
         <div className={styles.notification_container} style={{ width: '250px' }}>
-            <div className={styles.notification_header}>
-                <Title level={5} style={{ margin: 0 }}>Thông báo</Title>
-                {/* {onClose && (
-                    <Button type="text" onClick={onClose} className={styles.close_button}>
-                        ×
-                    </Button>
-                )} */}
+            <div className={styles.notification_header}            >
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <Title level={5} style={{ margin: 0 }}>Thông báo</Title>
+                    {notifications.length > 0 && (
+                        <DeleteOutlined
+                            onClick={handleClearAllNotifications}
+                            style={{
+                                color: 'red',
+                                cursor: 'pointer',
+                                opacity: clearLoading ? 0.5 : 1
+                            }}
+                            spin={clearLoading}
+                        />
+                    )}
+
+                </div>
             </div>
 
             <div className={styles.notification_content} style={{ maxHeight: '400px', overflowY: 'scroll', scrollbarWidth: 'none' }}>
@@ -77,7 +109,7 @@ const Notification = () => {
                     <Empty description="Không có thông báo" />
                 ) : (
                     <List
-                        dataSource={notifications} // Hiển thị tất cả thông báo
+                        dataSource={notifications}
                         renderItem={(item) => (
                             <List.Item
                                 className={`${styles.notification_item} ${!item.isRead ? styles.unread : ''}`}
@@ -86,12 +118,10 @@ const Notification = () => {
                                     title={
                                         <div className={styles.notification_title}>
                                             {!item.isRead && <span className={styles.unread_indicator} />}
-                                            {/* <Text strong={!item.isRead}>{item.title || 'Thông báo'}</Text> */}
                                         </div>
                                     }
                                     description={
                                         <>
-                                            {/* <div className={styles.notification_message}>{item.type}</div> */}
                                             <div className={styles.notification_message}>{item.message}</div>
                                             <div className={styles.notification_time}>{formatDate(item.timestamp)}</div>
                                         </>

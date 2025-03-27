@@ -90,18 +90,15 @@ const WorkDetailsDescription = () => {
 
       const data = await response.json();
 
-      // Send notification to the customer
-      await sendNotification(
-        job.customerId,
-        `Bạn đã nhận việc: ${job.services[0]?.serviceName || 'Dọn dẹp'}`,
-        'job_application'
-      );
-
       message.success("Nhận việc thành công");
+      sendNotification(job.customerId,
+        `Người dọn ${localStorage.getItem('name')} đã nhận dịch vụ: ${job.services[0]?.serviceName || 'Dọn dẹp'}`,
+        'NHẬN VIỆC',
+        'Customer'
+      )
       navigate("/homeclean");
       setIsModalOpen(false);
     } catch (error) {
-      console.error("Lỗi khi nhận việc:", error);
       message.error("Nhận việc thất bại, vui lòng thử lại!");
     }
   };
