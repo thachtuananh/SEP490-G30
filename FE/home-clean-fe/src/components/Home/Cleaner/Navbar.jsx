@@ -5,8 +5,15 @@ import houseCleanLogo from '../../../assets/HouseClean_logo.png';
 import Notification from "../../Notification/Notification";
 import styles from "../../../assets/CSS/Notification/Notification.module.css";
 import { message, Button, Dropdown, Avatar, Badge, Popover } from "antd";
-import { UserOutlined, LogoutOutlined, BellOutlined } from "@ant-design/icons";
+import { UserOutlined, LogoutOutlined, BellOutlined, MessageOutlined } from "@ant-design/icons";
+import SockJS from "sockjs-client";
+import { Stomp } from "@stomp/stompjs";
+import ChatWindow from "../../Chat/ChatWindow";
+import ConversationList from "../../Chat/ConversationList";
 import { getUnreadNotificationCount } from "../../../services/NotificationService";
+import { getUnreadMessageCount } from "../../../services/ChatService";
+import { BASE_URL } from "../../../utils/config";
+import { URL_WEB_SOCKET } from "../../../utils/config";
 
 function Navbar() {
     const { cleaner, dispatch } = useContext(AuthContext);
@@ -16,6 +23,20 @@ function Navbar() {
     const [notificationCount, setNotificationCount] = useState(0);
     const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
     const [isLoading, setIsLoading] = useState(false);
+
+    const [isPopupMessage, setIsPopupMessage] = useState(false);
+    const [messageCount, setMessageCount] = useState(0);
+    const [isMessageLoading, setIsMessageLoading] = useState(false);
+
+    //Them phan khai báo Chat
+    const roleStr = localStorage.getItem("role");
+    const role = roleStr ? roleStr.toLowerCase() : null;
+    const userId = localStorage.getItem("cleanerId")
+
+    const [stompClient, setStompClient] = useState(null);
+    const [messages, setMessages] = useState([]);
+    const [selectedConversation, setSelectedConversation] = useState(null);
+    //Kết thúc phần khai báo cho Chat
 
     // Track screen size changes
     useEffect(() => {
@@ -53,6 +74,33 @@ function Navbar() {
 
         return () => clearInterval(intervalId);
     }, [cleaner]);
+
+    // Fetch message count when component mounts and when user changes
+    useEffect(() => {
+        const fetchMessageCount = async () => {
+            if (cleaner) {
+                try {
+                    setIsMessageLoading(true);
+                    const count = await getUnreadMessageCount();
+                    setMessageCount(count);
+                } catch (error) {
+                    console.error("Failed to fetch message count:", error);
+                } finally {
+                    setIsMessageLoading(false);
+                }
+            } else {
+                setMessageCount(0);
+            }
+        };
+
+        fetchMessageCount();
+
+        // Set up polling to refresh message count every minute
+        const intervalId = setInterval(fetchMessageCount, 60000);
+
+        return () => clearInterval(intervalId);
+    }, [cleaner]);
+
 
     // Close the menu when notification popup is opened on mobile
     useEffect(() => {
@@ -220,6 +268,185 @@ function Navbar() {
         </div >
     );
 
+    const toggleMessage = () => {
+        setIsPopupMessage(!isPopupMessage);
+        // Close menu when toggling message on mobile
+        if (isMobile && isMenuOpen) {
+            setIsMenuOpen(false);
+        }
+    };
+
+    // Message icon with loading and count
+    const messageIcon = (
+        <Badge
+            count={messageCount}
+            size="small"
+            offset={[-2, 6]}
+            className={styles.message_badge}
+        >
+            <div
+                className={styles.message_icon_wrapper}
+                onClick={isMobile ? toggleMessage : undefined}
+            >
+                <MessageOutlined
+                    className={`${styles.message_icon} ${messageCount > 0 ? styles.message_active : ''}`}
+                    style={{ fontSize: '20px' }}
+                    spin={isMessageLoading}
+                />
+            </div>
+        </Badge>
+    );
+
+
+    // WebSocket connection for real-time message updates
+    useEffect(() => {
+        if (!role || !userId) {
+            console.error("Missing role or userId in URL!");
+            return;
+        }
+
+        const socket = new SockJS(`${URL_WEB_SOCKET}/websocket-chat`);
+        const client = Stomp.over(socket);
+
+        client.connect({}, () => {
+            console.log(`User ${userId} (${role}) connected to WebSocket`);
+            setStompClient(client);
+
+            const queueName = `/queue/messages-${userId}`;
+            client.subscribe(queueName, (message) => {
+                const msg = JSON.parse(message.body);
+
+                // Update messages
+                setMessages((prev) => [...prev, msg]);
+
+                // Increment message count for new unread message
+                setMessageCount(prevCount => prevCount + 1);
+            });
+        });
+
+        return () => {
+            if (client && client.connected) {
+                client.disconnect();
+            }
+        };
+    }, [role, userId]);
+
+    // Refresh messages manually
+    const refreshMessages = async () => {
+        if (cleaner) {
+            try {
+                setIsMessageLoading(true);
+                const count = await getUnreadMessageCount();
+                setMessageCount(count);
+            } catch (error) {
+                console.error("Failed to refresh message count:", error);
+            } finally {
+                setIsMessageLoading(false);
+            }
+        }
+    };
+
+    const handleConversationSelect = (conversation) => {
+        console.log("🔍 Chọn cuộc trò chuyện:", conversation);
+
+        if (!conversation || !conversation.id) {
+            console.error("Lỗi: Cuộc trò chuyện không hợp lệ!", conversation);
+            return;
+        }
+
+        setSelectedConversation(conversation);
+
+        const apiUrl = `${BASE_URL}/messages/${conversation.id}`;
+
+        fetch(apiUrl)
+            .then((response) => response.json())
+            .then((data) => {
+                if (data && Array.isArray(data.messages)) {
+                    setMessages(data.messages);
+                } else {
+                    console.error("API không trả về mảng tin nhắn hợp lệ:", data);
+                    setMessages([]);
+                }
+            })
+            .catch((error) => {
+                console.error("Lỗi khi tải tin nhắn cũ:", error);
+                setMessages([]);
+            });
+    };
+
+    const sendMessage = (messageContent) => {
+        if (stompClient && selectedConversation) {
+            const message = {
+                content: messageContent,
+                senderId: userId,
+                conversationId: selectedConversation.id,
+            };
+
+            const headers = {
+                customerId: selectedConversation.customerId.toString(),
+                employeeId: selectedConversation.employeeId.toString(),
+            };
+
+            stompClient.send('/app/chat', headers, JSON.stringify(message));
+            setMessages((prev) => [...prev, { ...message, sentAt: new Date().toISOString() }]);
+        }
+    };
+
+
+    // Message popover component (for desktop)
+    const messagePopover = isMobile ? (
+        cleaner ? messageIcon : null
+    ) : (
+        cleaner ? (
+            <Popover
+                content={
+                    <div className={styles.message_container}>
+                        <div className={styles.message__title}>
+                            <h2>Tin nhắn</h2>
+                        </div>
+                        <div className={styles.message__main}>
+                            <div className={styles.message_sidebar}>
+                                <div className={styles.message_user_list}>
+                                    <ConversationList
+                                        onSelect={(conversation) => {
+                                            handleConversationSelect(conversation);
+                                            // Reset message count when a conversation is selected
+                                            setMessageCount(0);
+                                        }}
+                                        userId={userId}
+                                        role={role}
+                                    />
+                                </div>
+                            </div>
+                            <div className={styles.message_outlet}>
+                                <ChatWindow
+                                    messages={messages}
+                                    onSendMessage={sendMessage}
+                                    conversation={selectedConversation}
+                                    userId={userId}
+                                />
+                            </div>
+                        </div>
+                    </div>
+                }
+                trigger="click"
+                open={isPopupMessage}
+                onOpenChange={(visible) => {
+                    setIsPopupMessage(visible);
+                    if (visible) {
+                        // Refresh message count when opening the popover
+                        refreshMessages();
+                    }
+                }}
+                placement="top"
+                overlayClassName={styles.message_popover}
+                getPopupContainer={() => document.querySelector(`.${styles.message_icon_wrapper}`)}
+            >
+                {messageIcon}
+            </Popover>
+        ) : null
+    );
+
     return (
         <div className="Container">
             <nav className="navbar">
@@ -248,7 +475,8 @@ function Navbar() {
                                 <>
                                     {cleaner && (
                                         <li className="mobile-notification">
-                                            {notificationIcon}
+                                            {notificationPopover}
+                                            {messagePopover}
                                         </li>
                                     )}
                                     {cleaner ? cleanerProfile : authButtons}
@@ -263,8 +491,9 @@ function Navbar() {
                     {!isMobile && (
                         <>
                             {cleaner && (
-                                <div className="desktop-notification" style={{ marginRight: '20px' }}>
+                                <div className="desktop-notification" style={{ marginRight: '12px', display: 'flex', gap: 12, alignItems: 'center' }}>
                                     {notificationPopover}
+                                    {messagePopover}
                                 </div>
                             )}
                             {cleaner ? cleanerProfile : authButtons}

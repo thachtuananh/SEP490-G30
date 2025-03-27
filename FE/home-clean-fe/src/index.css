@@ -1168,6 +1168,10 @@ body {
   .Container {
     padding: 0 24px;
   }
+
+  .job-list-section {
+    padding: 2rem;
+  }
 }
 
 @media (max-width: 1024px) {

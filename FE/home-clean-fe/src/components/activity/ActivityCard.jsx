@@ -16,6 +16,8 @@ import {
     rejectCleaner
 } from "../../services/owner/StatusJobAPI";
 import { FeedbackModal } from "../../components/activity/FeedbackModal"; // Import the new FeedbackModal component
+import { createConversation } from "../../services/ChatService";
+import { sendNotification } from "../../services/NotificationService";
 
 export const ActivityCard = ({ data, onDelete }) => {
     const [activities, setActivities] = useState([]);
@@ -36,13 +38,13 @@ export const ActivityCard = ({ data, onDelete }) => {
         }
     }, [data]);
 
+
     const getStatusColor = (status) => {
         switch (status) {
             case "OPEN": return "#3498db";
+            case "PAID": return "#5dade2";
             case "PENDING_APPROVAL": return "#f1c40f";
             case "IN_PROGRESS": return "#e67e22";
-            case "ARRIVED": return "#9b59b6";
-            case "STARTED": return "#2980b9";
             case "COMPLETED": return "#2ecc71";
             case "CANCELLED": return "#e74c3c";
             case "DONE": return "#27ae60";
@@ -53,10 +55,9 @@ export const ActivityCard = ({ data, onDelete }) => {
     const getStatusText = (status) => {
         switch (status) {
             case "OPEN": return "Đang chờ người nhận";
+            case "PAID": return "Đang chờ thanh toán qua VNPay";
             case "PENDING_APPROVAL": return "Chờ phê duyệt";
             case "IN_PROGRESS": return "Người nhận việc đang tới";
-            case "ARRIVED": return "Người nhận việc đã tới";
-            case "STARTED": return "Người nhận việc đang làm";
             case "COMPLETED": return "Người nhận việc đã hoàn thành";
             case "CANCELLED": return "Đã hủy";
             case "DONE": return "Hoàn tất công việc";
@@ -160,14 +161,24 @@ export const ActivityCard = ({ data, onDelete }) => {
         }
 
         try {
+            // First, hire the cleaner
             await hireCleaner(jobId, cleanerId, customerId);
-            console.log("✅ Thuê cleaner thành công!", { jobId, cleanerId, customerId });
-            message.success("✅ Thuê cleaner thành công!");
-            updateActivityStatus(jobId, "BOOKED");
+
+            // Then create a conversation
+            await createConversation(customerId, cleanerId);
+
+            console.log("Thuê cleaner thành công!", { jobId, cleanerId, customerId });
+            message.success("Thuê cleaner thành công!");
+            sendNotification(cleanerId,
+                `Người thuê ${localStorage.getItem('name')} đã chấp nhận công việc`,
+                'BOOKED',
+                'Cleaner'
+            )
+            updateActivityStatus(jobId, "IN_PROGRESS");
             setIsModalOpen(false);
         } catch (error) {
-            console.error("❌ Lỗi khi thuê cleaner:", error);
-            message.error("❌ Lỗi khi thuê cleaner");
+            console.error("Lỗi khi thuê cleaner:", error);
+            message.error("Lỗi khi thuê cleaner");
         }
     };
 
@@ -175,13 +186,18 @@ export const ActivityCard = ({ data, onDelete }) => {
     const handleRejectCleaner = async (jobId, cleanerId, customerId) => {
         try {
             await rejectCleaner(jobId, cleanerId, customerId);
-            console.log("✅ Từ chối cleaner thành công!", { jobId, cleanerId, customerId });
-            message.success("✅ Từ chối cleaner thành công!");
+            console.log("Từ chối cleaner thành công!", { jobId, cleanerId, customerId });
+            message.success("Từ chối cleaner thành công!");
+            sendNotification(cleanerId,
+                `Người thuê ${localStorage.getItem('name')} từ chối công việc`,
+                'BOOKED',
+                'Cleaner'
+            )
             // Refresh cleaner list
             fetchCleaners(jobId);
         } catch (error) {
-            console.error("❌ Lỗi khi từ chối cleaner:", error);
-            message.error("❌ Lỗi khi từ chối cleaner");
+            console.error("Lỗi khi từ chối cleaner:", error);
+            message.error("Lỗi khi từ chối cleaner");
         }
     };
 
@@ -201,11 +217,12 @@ export const ActivityCard = ({ data, onDelete }) => {
     const handleCompleteJob = async (jobId) => {
         try {
             await completeJob(jobId);
-            message.success("✅ Công việc đã hoàn thành!");
+            message.success("Công việc đã hoàn thành!");
             updateActivityStatus(jobId, "DONE");
+
         } catch (error) {
-            console.error("❌ Lỗi khi hoàn thành công việc:", error);
-            message.error("❌ Không thể hoàn thành công việc.");
+            console.error("Lỗi khi hoàn thành công việc:", error);
+            message.error("Không thể hoàn thành công việc.");
         }
     };
 
@@ -217,8 +234,10 @@ export const ActivityCard = ({ data, onDelete }) => {
             setActivities(prevActivities =>
                 prevActivities.filter(activity => activity.jobId !== jobId)
             );
+            message.success("Huỷ việc thành công");
         } catch (error) {
             console.error("❌ Lỗi khi xóa công việc:", error);
+            message.error("Lỗi khi không huỷ được công việc");
         }
     };
 
@@ -306,8 +325,7 @@ export const ActivityCard = ({ data, onDelete }) => {
 
                             {(activity.status === "OPEN"
                                 || activity.status === "BOOKED"
-                                || activity.status === "IN_PROGRESS"
-                                || activity.status === "ARRIVED") &&
+                                || activity.status === "IN_PROGRESS") &&
                                 (
                                     <div className={styles.deleteButton} onClick={() => handleDeleteJob(activity.jobId)}>
                                         <b>Huỳ việc</b>
@@ -346,12 +364,7 @@ export const ActivityCard = ({ data, onDelete }) => {
                                     </Badge>
                                 )}
 
-                            {activity.status === "ARRIVED" && (
-                                <Button type="primary" className={styles.statusButton}
-                                    onClick={() => handleStartJob(activity.jobId)}>
-                                    Bắt đầu làm việc
-                                </Button>
-                            )}
+
                             {activity.status === "COMPLETED" && (
                                 <Button type="primary" className={styles.statusButton}
                                     onClick={() => handleCompleteJob(activity.jobId)}>

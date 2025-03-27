@@ -5,6 +5,7 @@ import { message, Typography, Modal, Checkbox } from "antd";
 import styles from "../../assets/CSS/createjob/JobInformation.module.css";
 import dayjs from "dayjs";
 import { createJobToCleaner } from "../../services/owner/OwnerAPI"; // Import API function
+import { sendNotification } from "../../services/NotificationService";
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -138,6 +139,11 @@ const JobInfomation = ({ selectedDate, hour, minute, paymentMethod }) => {
             if (responseData.status === "BOOKED") {
                 console.log("Job created successfully");
                 message.success("Đăng việc thành công!");
+                sendNotification(state.cleanerId,
+                    `Người thuê ${localStorage.getItem('name')} đã đặt dịch vụ trực tiếp với bạn`,
+                    'BOOKED',
+                    'Cleaner'
+                )
                 navigate('/');
             } else {
                 console.error("Lỗi khi tạo job:", responseData);
@@ -215,8 +221,7 @@ const JobInfomation = ({ selectedDate, hour, minute, paymentMethod }) => {
                     <Text>Phương thức thanh toán</Text>
                     <Text>
                         {paymentMethod === 'cash' && 'Thanh toán tiền mặt'}
-                        {paymentMethod === 'bank' && 'Thanh toán chuyển khoản'}
-                        {paymentMethod === 'momo' && 'Thanh toán qua ví điện tử'}
+                        {paymentMethod === 'vnpay' && 'Thanh toán VNPay'}
                         {paymentMethod === 'zalo' && 'Thanh toán ZaloPay'}
                         {!paymentMethod && 'Chưa chọn'}
                     </Text>

@@ -57,13 +57,14 @@ function Login() {
       });
 
       const result = await response.json();
-
+      console.log("Result Login", result);
       if (response.ok) {
-        const { token, customerId, name } = result;
+        const { token, customerId, name, role } = result;
 
         localStorage.setItem("name", name);
         localStorage.setItem("token", token);
         localStorage.setItem("customerId", customerId);
+        localStorage.setItem("role", role);
 
         dispatch({
           type: 'LOGIN_SUCCESS_CUSTOMER',
