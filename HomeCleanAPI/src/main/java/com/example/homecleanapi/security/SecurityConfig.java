@@ -51,7 +51,7 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
-                .cors(cors -> cors.configurationSource(corsConfigurationSource())) // 🔥 Sửa lỗi cú pháp CORS
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/customer/login").permitAll()
                         .requestMatchers("/api/customer/register").permitAll()
@@ -91,7 +91,8 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOriginPatterns(Arrays.asList("http://localhost:8080",
+        configuration.setAllowedOriginPatterns(Arrays.asList(
+                "http://localhost:8080",
                 "http://localhost:3000",
                 "http://34.121.192.129:8080",
                 "http://34.136.232.226:8080",
@@ -99,7 +100,7 @@ public class SecurityConfig {
                 "https://house-clean-platform.firebaseapp.com",
                 "https://costume-lithuania-parameter-bathrooms.trycloudflare.com",
                 "https://pike-armor-ms-hampton.trycloudflare.com"));
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type"));
         configuration.setAllowCredentials(true);
 
