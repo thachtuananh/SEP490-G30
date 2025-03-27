@@ -1,9 +1,13 @@
 package com.example.homecleanapi.models;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
 
+@Setter
+@Getter
 @Entity
 @Table(name = "conversations")
 public class Conversation {
@@ -11,36 +15,11 @@ public class Conversation {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "customer_id")
-    private Integer customerId;
+    @ManyToOne
+    @JoinColumn(name = "customer_id", referencedColumnName = "id")
+    private Customers customer;
 
-    @Column(name = "cleaner_id")
-    private Integer cleanerId;
-
-    public Conversation() {
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Integer getCustomerId() {
-        return customerId;
-    }
-
-    public void setCustomerId(Integer customerId) {
-        this.customerId = customerId;
-    }
-
-    public Integer getCleanerId() {
-        return cleanerId;
-    }
-
-    public void setCleanerId(Integer cleanerId) {
-        this.cleanerId = cleanerId;
-    }
+    @ManyToOne
+    @JoinColumn(name = "cleaner_id", referencedColumnName = "id")
+    private Employee cleaner;
 }
