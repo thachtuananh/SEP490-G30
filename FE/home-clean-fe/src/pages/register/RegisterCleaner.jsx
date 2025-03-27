@@ -54,7 +54,7 @@ function RegisterCleaner() {
             confirmPassword: validateConfirmPassword(password, confirmPassword),
             email: validateEmail(email),
             age: validateAge(age),
-            // identity_number: validateIdentityNumber(identity_number)
+            identity_number: validateIdentityNumber(identity_number)
         };
 
         if (!address.trim()) {

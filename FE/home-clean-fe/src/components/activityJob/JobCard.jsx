@@ -2,15 +2,15 @@ import React, { useState } from "react";
 import { Modal, List, Button, Table, message } from "antd";
 import styles from "./JobList.module.css";
 import { BASE_URL } from "../../utils/config";
-
+import { createConversation } from "../../services/ChatService";
+import { sendNotification } from "../../services/NotificationService";
 const getStatusColor = (status) => {
   const normalizedStatus = status.toUpperCase();
   switch (normalizedStatus) {
     case "OPEN": return "#3498db";
+    case "PAID": return "#5dade2";
     case "PENDING_APPROVAL": return "#f1c40f";
     case "IN_PROGRESS": return "#e67e22";
-    case "ARRIVED": return "#9b59b6";
-    case "STARTED": return "#2980b9";
     case "COMPLETED": return "#2ecc71";
     case "CANCELLED": return "#e74c3c";
     case "DONE": return "#27ae60";
@@ -21,10 +21,9 @@ const getStatusColor = (status) => {
 const getStatusLabel = (status) => {
   const statusMap = {
     OPEN: "Đang mở",
+    PAID: "Đang chờ thanh toán",
     PENDING_APPROVAL: "Chờ phê duyệt",
     IN_PROGRESS: "Đang đến ",
-    ARRIVED: "Đã đến nơi",
-    STARTED: "Bắt đầu làm việc",
     COMPLETED: "Đã hoàn thành công việc",
     CANCELLED: "Đã hủy",
     DONE: "Hoàn tất công việc",
@@ -62,6 +61,11 @@ const JobCard = ({ job, refreshJobs }) => {
             console.log("Status updated:", data);
             setCurrentStatus(newStatus.toUpperCase());
             message.success(`Đã cập nhật trạng thái thành ${getStatusLabel(newStatus)}`);
+            sendNotification(job.customerId,
+              `Người dọn ${localStorage.getItem('name')} cập nhật trạng thái: ${getStatusLabel(newStatus) || 'Trạng thái'}`,
+              'STATUS',
+              'Customer'
+            )
             if (refreshJobs) refreshJobs();
           })
           .catch((error) => {
@@ -78,6 +82,7 @@ const JobCard = ({ job, refreshJobs }) => {
   const handleJobAction = (action) => {
     setLoading(true);
     const token = localStorage.getItem("token");
+    const cleanerId = localStorage.getItem("cleanerId");
 
     fetch(`${BASE_URL}/cleaner/job/${job.jobId}/accept-reject?action=${action}`, {
       method: "PUT",
@@ -94,6 +99,40 @@ const JobCard = ({ job, refreshJobs }) => {
       })
       .then((data) => {
         console.log(`Job ${action}ed:`, data);
+
+        // If job is accepted, create a conversation and send notification
+        if (action === 'accept') {
+          Promise.all([
+            createConversation(job.customerId, cleanerId),
+            sendNotification(job.customerId,
+              `Người dọn ${localStorage.getItem('name')} đã nhận dịch vụ: ${job.services[0]?.serviceName || 'Dọn dẹp'}`,
+              'BOOKED',
+              'Customer'
+            )
+          ])
+            .then(([conversationData, notificationData]) => {
+              console.log("Conversation created:", conversationData);
+              console.log("Notification sent:", notificationData);
+            })
+            .catch(error => {
+              console.error("Error in post-acceptance operations:", error);
+              message.error("Có lỗi xảy ra khi xử lý sau khi chấp nhận công việc.");
+            });
+        } else if (action === 'reject') {
+          sendNotification(job.customerId,
+            `Người dọn ${localStorage.getItem('name')} đã từ chối dịch vụ: ${job.services[0]?.serviceName || 'Dọn dẹp'}`,
+            'REJECTED',
+            'Customer'
+          )
+            .then(notificationData => {
+              console.log("Rejection notification sent:", notificationData);
+            })
+            .catch(error => {
+              console.error("Error in sending rejection notification:", error);
+              message.error("Có lỗi xảy ra khi gửi thông báo từ chối.");
+            });
+        }
+
         message.success(action === 'accept' ? 'Đã chấp nhận công việc' : 'Đã từ chối công việc');
         if (refreshJobs) refreshJobs();
       })
@@ -259,11 +298,9 @@ const JobCard = ({ job, refreshJobs }) => {
           <Button type="primary">Hủy công việc</Button>
         )}
         {job.status === "IN_PROGRESS" && (
-          <Button type="primary" onClick={() => handleStatusUpdate("arrived")} loading={loading}>Đã tới</Button>
+          <Button type="primary" onClick={() => handleStatusUpdate("completed")} loading={loading}>Đã hoàn thành</Button>
         )}
-        {job.status === "STARTED" && (
-          <Button type="primary" onClick={() => handleStatusUpdate("completed")} loading={loading}>Hoàn thành công việc</Button>
-        )}
+
         {job.status === "BOOKED" && (
           <div className={styles.buttonGroup}>
             <Button

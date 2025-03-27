@@ -65,30 +65,6 @@ const Pay = ({ onPaymentMethodChange }) => {
                         <Row align="middle" justify="space-between" style={{ width: '100%' }}>
                             <Col>
                                 <Space>
-                                    <BankOutlined
-                                        style={{
-                                            color: '#00A67E',
-                                            fontSize: '18px',
-                                            marginRight: '8px'
-                                        }}
-                                    />
-                                    <Text>Thanh toán chuyển khoản</Text>
-                                    <Text type="secondary" style={{ fontSize: '12px', marginLeft: '8px' }}>
-                                        BIDV 4271****
-                                    </Text>
-                                </Space>
-                            </Col>
-                            <Col>
-                                <Radio value="Bank" />
-                            </Col>
-                        </Row>
-                    </div>
-
-                    {/* Thanh toán qua ví điện tử */}
-                    <div className={styles.paymentOption}>
-                        <Row align="middle" justify="space-between" style={{ width: '100%' }}>
-                            <Col>
-                                <Space>
                                     <WalletOutlined
                                         style={{
                                             color: '#00A67E',
@@ -96,17 +72,16 @@ const Pay = ({ onPaymentMethodChange }) => {
                                             marginRight: '8px'
                                         }}
                                     />
-                                    <Text>Thanh toán qua ví điện tử</Text>
-                                    <Text type="secondary" style={{ fontSize: '12px', marginLeft: '8px' }}>
-                                        *********687
-                                    </Text>
+                                    <Text>Thanh toán bằng VNPay</Text>
                                 </Space>
                             </Col>
                             <Col>
-                                <Radio value="Momo" />
+                                <Radio value="VNPay" />
                             </Col>
                         </Row>
                     </div>
+
+
 
                     {/* Thanh toán ZaloPay */}
                     <div className={styles.paymentOption}>
