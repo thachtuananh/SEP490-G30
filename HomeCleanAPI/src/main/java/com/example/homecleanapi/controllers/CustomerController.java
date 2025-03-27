@@ -47,23 +47,23 @@ public class CustomerController {
     }
 
     @PutMapping(value = "/{customer_id}/profile",  produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Map<String, Object>> updateProfile(@RequestBody CustomerProfileRequest request, @PathVariable int customer_id) {
+    public ResponseEntity<Map<String, Object>> updateProfile(@RequestBody CustomerProfileRequest request, @PathVariable Long customer_id) {
 
         return customerService.updateProfile(customer_id, request);
     }
 
     @GetMapping(value = "/{customer_id}/profile", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Map<String, Object>> getProfile(@PathVariable int customer_id) {
+    public ResponseEntity<Map<String, Object>> getProfile(@PathVariable long customer_id) {
         return customerService.getProfile(customer_id);
     }
 
     @PostMapping(value = "/{customer_id}/create-address",  produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Map<String, Object>> createAddress(@RequestBody CustomerAddressesDTO request, @PathVariable int customer_id) throws IOException {
+    public ResponseEntity<Map<String, Object>> createAddress(@RequestBody CustomerAddressesDTO request, @PathVariable Long customer_id) throws IOException {
         return customerService.addAddress(request, customer_id);
     }
 
     @PutMapping(value = "/{customer_id}/update-address", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Map<String, Object>> updateEmployeeAddress(@RequestBody CustomerAddressesDTO request, @PathVariable int employeeId) throws IOException {
+    public ResponseEntity<Map<String, Object>> updateEmployeeAddress(@RequestBody CustomerAddressesDTO request, @PathVariable Long employeeId) throws IOException {
         // Gọi service để xử lý update địa chỉ
         return customerService.updateCustomerAddress(request, employeeId);
     }
@@ -82,7 +82,7 @@ public class CustomerController {
 
     // API xóa account
     @DeleteMapping(value = "/{customer_id}/delete_account", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Map<String, Object>> deleteAccount(@PathVariable int customer_id) {
+    public ResponseEntity<Map<String, Object>> deleteAccount(@PathVariable Long customer_id) {
         return customerService.deleteCustomerAccount(customer_id);
     }
 }

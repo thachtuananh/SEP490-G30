@@ -44,10 +44,10 @@ public class CustomerService {
     }
 
     // Xem thông tin profile của khách hàng
-    public ResponseEntity<Map<String, Object>> getProfile(Integer customer_id) {
+    public ResponseEntity<Map<String, Object>> getProfile(Long customer_id) {
         Map<String, Object> response = new HashMap<>();
 
-        Customers customer = customerRepository.findById(customer_id);
+        Customers customer = customerRepository.findById(customer_id).orElseThrow(() -> new RuntimeException("Customer not found"));
         if (customer == null) {
             response.put("message", "Khách hàng không tồn tại!");
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
@@ -60,7 +60,7 @@ public class CustomerService {
     }
 
     // Cập nhật thông tin profile của khách hàng
-    public ResponseEntity<Map<String, Object>> updateProfile(Integer customer_id, CustomerProfileRequest request) {
+    public ResponseEntity<Map<String, Object>> updateProfile(Long customer_id, CustomerProfileRequest request) {
         Map<String, Object> response = new HashMap<>();
 
         
@@ -69,8 +69,8 @@ public class CustomerService {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
 
-        
-        Customers customer = customerRepository.findById(customer_id);
+
+        Customers customer = customerRepository.findById(customer_id).orElseThrow(() -> new RuntimeException("Customer not found"));
         if (customer == null) {
             response.put("message", "Khách hàng không tồn tại!");
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
@@ -87,22 +87,22 @@ public class CustomerService {
         return ResponseEntity.ok(response);
     }
 
-    public ResponseEntity<Map<String, Object>> addAddress(CustomerAddressesDTO request, @PathVariable Integer customer_id) throws IOException {
+    public ResponseEntity<Map<String, Object>> addAddress(CustomerAddressesDTO request, @PathVariable Long customer_id) throws IOException {
         Map<String, Object> response = new HashMap<>();
 
-        Customers customers = customerRepository.findById(customer_id);
-        if (customers == null) {
+        Customers customer = customerRepository.findById(customer_id).orElseThrow(() -> new RuntimeException("Customer not found"));
+        if (customer == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         }
 
-        List<CustomerAddresses> customerAddresses = customerAddressRepository.findCustomerAddressesByCustomer_Id(customers.getId());
+        List<CustomerAddresses> customerAddresses = customerAddressRepository.findCustomerAddressesByCustomer_Id(customer.getId());
 
         // Kiểm tra xem có địa chỉ nào có is_current = true không
         boolean hasCurrentAddress = customerAddresses.stream().anyMatch(CustomerAddresses::isIs_current);
 
         // Tạo địa chỉ mới
         CustomerAddresses newAddress = new CustomerAddresses();
-        newAddress.setCustomer(customers);
+        newAddress.setCustomer(customer);
         newAddress.setAddress(request.getAddress());
         String data = convertAddressToLatLong.convertAddressToLatLong(request.getAddress());
         JSONObject jsonObject = new JSONObject(data);
@@ -128,11 +128,11 @@ public class CustomerService {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    public ResponseEntity<Map<String, Object>> updateCustomerAddress(CustomerAddressesDTO request, @PathVariable int employeeId) throws IOException {
+    public ResponseEntity<Map<String, Object>> updateCustomerAddress(CustomerAddressesDTO request, @PathVariable Long customerId) throws IOException {
         Map<String, Object> response = new HashMap<>();
 
         // Tìm employee từ database theo ID
-        Customers customers = customerRepository.findById(employeeId);
+        Customers customers = customerRepository.findById(customerId).orElseThrow(() -> new RuntimeException("Customer not found"));
 //                .orElseThrow(() -> new RuntimeException("Employee not found"));
 
         // Tìm địa chỉ hiện tại của employee
@@ -222,14 +222,14 @@ public class CustomerService {
     }
 
     // Delete account
-    public ResponseEntity<Map<String, Object>> deleteCustomerAccount(@PathVariable int customer_id) {
+    public ResponseEntity<Map<String, Object>> deleteCustomerAccount(@PathVariable Long customerId) {
         Map<String, Object> response = new HashMap<>();
-        if (!customerAddressRepository.existsById(customer_id)) {
+        if (!customerAddressRepository.existsById(Math.toIntExact(customerId))) {
             response.put("message", "Employee not found");
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         }
 
-        Customers customer = customerRepository.findById(customer_id);
+        Customers customer = customerRepository.findById(customerId).orElseThrow(() -> new RuntimeException("Customer not found"));
 
         customer.setIs_deleted(true);
         customerRepository.save(customer);
