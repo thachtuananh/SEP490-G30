@@ -73,15 +73,19 @@ public class CustomerAuthService {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
         }
 
+        // Generate JWT token for the customer
         String token = jwtUtils.generateToken(customer.getPhone(), customer.getFull_name(), customer.getId().toString(), "Customer");
 
+        // Add role in the response
         response.put("token", token);
         response.put("phone", customer.getPhone());
         response.put("customerId", customer.getId());
         response.put("name", customer.getFull_name());
+        response.put("role", "Customer");  
 
         return ResponseEntity.ok(response);
     }
+
 
     public ResponseEntity<Map<String, Object>> customerForgotPassword(ForgotPasswordRequest request) {
         Customers customer = customerRepository.findByPhone(request.getPhone());

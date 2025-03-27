@@ -1,7 +1,7 @@
 const ServiceDescription = ({ description }) => {
   return (
     <div>
-      <div style={{ display: "flex", alignItems: "center", gap: 50 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 50, margin: '20px 0' }}>
         <div
           style={{
             fontSize: 20,

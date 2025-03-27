@@ -60,15 +60,17 @@ function Login() {
             const result = await response.json();
             console.log(result);
             if (response.ok) {
-                const { name, token, cleanerId } = result;
+                const { name, token, cleanerId, role } = result;
                 localStorage.setItem("name", name);
                 localStorage.setItem("token", token);
                 localStorage.setItem("cleanerId", cleanerId);
+                localStorage.setItem("role", role);
 
                 dispatch({
                     type: 'LOGIN_SUCCESS_CLEANER',
-                    payload: { name, token, cleanerId, phone }
+                    payload: { name, token, cleanerId, phone, role }
                 });
+
                 message.success('Đăng nhập thành công!');
                 navigate('/homeclean'); // Điều hướng đến trang Home của Cleaner
             } else {

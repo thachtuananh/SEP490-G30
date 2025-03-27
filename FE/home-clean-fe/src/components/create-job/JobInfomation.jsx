@@ -5,7 +5,7 @@ import { message, Typography, Modal, Checkbox } from "antd";
 import styles from "../../assets/CSS/createjob/JobInformation.module.css";
 import dayjs from "dayjs";
 import { createJob } from "../../services/owner/OwnerAPI"; // Import API function
-
+import { sendNotification } from "../../services/NotificationService"
 const { Title, Text, Paragraph } = Typography;
 
 const JobInfomation = ({ selectedDate, hour, minute, paymentMethod }) => {
@@ -135,8 +135,18 @@ const JobInfomation = ({ selectedDate, hour, minute, paymentMethod }) => {
             const responseData = await createJob(customerId, jobData);
 
             if (responseData.status === "OPEN") {
-                console.log("Job created successfully");
                 message.success("Đăng việc thành công!");
+                try {
+                    await sendNotification(customerId,
+                        `Bạn đã đăng việc thành công: ${state.serviceName ||
+                        (state.serviceDetails && state.serviceDetails[0]?.serviceName) ||
+                        'Dọn dẹp'
+                        }`,
+                        "Tạo việc"
+                    );
+                } catch (notifError) {
+                    console.error("Không thể gửi thông báo:", notifError);
+                }
                 navigate('/');
             } else {
                 console.error("Lỗi khi tạo job:", responseData);
@@ -212,8 +222,7 @@ const JobInfomation = ({ selectedDate, hour, minute, paymentMethod }) => {
                     <Text>Phương thức thanh toán</Text>
                     <Text>
                         {paymentMethod === 'cash' && 'Thanh toán tiền mặt'}
-                        {paymentMethod === 'bank' && 'Thanh toán chuyển khoản'}
-                        {paymentMethod === 'momo' && 'Thanh toán qua ví điện tử'}
+                        {paymentMethod === 'vnpay' && 'Thanh toán VNPay'}
                         {paymentMethod === 'zalo' && 'Thanh toán ZaloPay'}
                         {!paymentMethod && 'Chưa chọn'}
                     </Text>

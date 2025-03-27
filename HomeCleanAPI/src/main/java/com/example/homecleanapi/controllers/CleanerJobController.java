@@ -1,6 +1,7 @@
 package com.example.homecleanapi.controllers;
 
 import com.example.homecleanapi.dtos.JobSummaryDTO;
+import com.example.homecleanapi.enums.JobStatus;
 import com.example.homecleanapi.services.CleanerJobService;
 
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -14,6 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -27,11 +29,12 @@ public class CleanerJobController {
     private CleanerJobService cleanerJobService;
 
     // Xem danh sách các công việc "Open"
-    @GetMapping(value = "/jobs")
-    public ResponseEntity<List<JobSummaryDTO>> getOpenJobs() {
-        List<JobSummaryDTO> openJobs = cleanerJobService.getOpenJobs();
+    @GetMapping(value = "/jobs/{cleanerId}")
+    public ResponseEntity<List<JobSummaryDTO>> getOpenJobs(@PathVariable Long cleanerId) {
+        List<JobSummaryDTO> openJobs = cleanerJobService.getOpenJobs(cleanerId);
         return ResponseEntity.ok(openJobs);
     }
+
 
     // Xem chi tiết công việc
     @GetMapping(value = "/job/{jobId}")
@@ -74,13 +77,93 @@ public class CleanerJobController {
         }
         return ResponseEntity.ok(appliedJobs);
     }
+    
+    // danh sách các job đã hoàn thành 
+    @GetMapping(value = "/{cleanerId}/jobs/done")
+    public ResponseEntity<List<Map<String, Object>>> getCompletedJobs(@PathVariable Long cleanerId) {
+        List<Map<String, Object>> completedJobs = cleanerJobService.getCompletedJobs(cleanerId);
+
+        if (completedJobs.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(List.of(Map.of("message", "No completed jobs")));
+        }
+
+        return ResponseEntity.ok(completedJobs);
+    }
+    
+    // ds jobs đang làm
+    @GetMapping("/{cleanerId}/jobs/doing")
+    public ResponseEntity<List<Map<String, Object>>> getInProgressJobs(@PathVariable Long cleanerId) {
+        List<Map<String, Object>> inProgressJobs = cleanerJobService.getInProgressJobs(cleanerId);
+        if (inProgressJobs.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(List.of(Map.of("message", "No in-progress jobs")));
+        }
+        return ResponseEntity.ok(inProgressJobs);
+    }
+
+    // ds job mà cleaner đã apply
+    @GetMapping("/{cleanerId}/jobs/applied")
+    public ResponseEntity<List<Map<String, Object>>> getAppliedJobs2(@PathVariable Long cleanerId) {
+        List<Map<String, Object>> appliedJobs = cleanerJobService.getAppliedJobsForCleaner2(cleanerId);
+        if (appliedJobs.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(List.of(Map.of("message", "No applied jobs")));
+        }
+        return ResponseEntity.ok(appliedJobs);
+    }
+
+
+    // list job theo service và số lượng 
+    @GetMapping("/jobs/by-service")
+    public ResponseEntity<Map<String, Object>> getJobsByService() {
+        Map<String, Object> jobsByService = cleanerJobService.getJobsByService();
+
+        if (jobsByService.isEmpty()) {
+            jobsByService.put("message", "No jobs found by service");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(jobsByService);
+        }
+
+        return ResponseEntity.ok(jobsByService);
+    }
+    
+    // xem job thuộc filter service
+    @GetMapping("/jobs/details/by-service/{serviceId}")
+    public ResponseEntity<List<Map<String, Object>>> getJobsDetailsByService(@PathVariable Long serviceId) {
+        List<Map<String, Object>> jobDetails = cleanerJobService.getJobsDetailsByService(serviceId);
+        
+        if (jobDetails.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(List.of(Map.of("message", "No jobs found for this service")));
+        }
+
+        return ResponseEntity.ok(jobDetails);
+    }
+    
+    
+    // lấy job đang là combo
+    @GetMapping("/jobs/combo")
+    public ResponseEntity<List<Map<String, Object>>> getComboJobs() {
+        List<Map<String, Object>> comboJobs = cleanerJobService.getComboJobs();
+        
+        if (comboJobs.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(List.of(Map.of("message", "No combo jobs found")));
+        }
+
+        return ResponseEntity.ok(comboJobs);
+    }
+
+
+
+
+
+
+    
     // LUỒNG 2
+
     
     @GetMapping(value = "/{cleanerId}/jobs")
-    public ResponseEntity<List<Map<String, Object>>> getJobsBookedForCleaner(@RequestParam Long cleanerId) {
+    public ResponseEntity<List<Map<String, Object>>> getJobsBookedForCleaner(@PathVariable Long cleanerId) {
         List<Map<String, Object>> jobs = cleanerJobService.getJobsBookedForCleaner(cleanerId);
-        if (jobs.isEmpty()) {
+        if (jobs.isEmpty()) { 
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(List.of(Map.of("message", "No jobs found for cleaner")));
+          
         }
         return ResponseEntity.ok(jobs);
     }

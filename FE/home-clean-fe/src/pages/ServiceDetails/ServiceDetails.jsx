@@ -51,9 +51,9 @@ const ServiceDetails = () => {
           customerAddressId={customerAddressId}
           nameAddress={nameAddress}
         />
-        <div style={{ height: 50 }}></div>
+        {/* <div style={{ height: 50 }}></div> */}
         <ServiceDescription description={description} />
-        <div style={{ height: 100 }}></div>
+        {/* <div style={{ height: 100 }}></div> */}
 
         {isShowLocationModal && (
           <SelectLocationModal
