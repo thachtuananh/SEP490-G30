@@ -12,9 +12,12 @@ public class Wallet {
 
     @ManyToOne
     @JoinColumn(name = "cleaner_id", nullable = false)
-    private Employee cleaner; // Liên kết với bảng cleaner
+    private Employee cleaner; 
 
     private Double balance;
+
+    @Column(name = "txn_ref")  
+    private String txnRef;  
 
     // Getters and Setters
     public Long getId() {
@@ -39,5 +42,13 @@ public class Wallet {
 
     public void setBalance(Double balance) {
         this.balance = balance;
+    }
+
+    public String getTxnRef() {
+        return txnRef;
+    }
+
+    public void setTxnRef(String txnRef) {
+        this.txnRef = txnRef;
     }
 }

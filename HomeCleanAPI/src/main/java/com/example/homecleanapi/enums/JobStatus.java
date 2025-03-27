@@ -9,5 +9,6 @@ public enum JobStatus {
     COMPLETED,     
     CANCELLED,
     DONE,
-    BOOKED
+    BOOKED,
+    PAID
 }

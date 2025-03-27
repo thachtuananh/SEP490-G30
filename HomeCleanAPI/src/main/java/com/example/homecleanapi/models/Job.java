@@ -48,18 +48,52 @@ public class Job {
     private LocalDateTime createdAt;
 
     private Double totalPrice;
+    
+    @Column(name = "payment_method", nullable = false)
+    private String paymentMethod;
 
     @Enumerated(EnumType.STRING)
     private JobStatus status;  // Import JobStatus ở đây 
+    
+    @Column(name = "txn_ref")
+    private String txnRef;
+    
+    @Column(name = "reminder")
+    private String reminder;  
 
     // Getters and Setters
+    
     
     
     public Long getId() {
         return id;
     }
 
-    public List<JobServiceDetail> getJobServiceDetails() {
+    public String getReminder() {
+		return reminder;
+	}
+
+	public void setReminder(String reminder) {
+		this.reminder = reminder;
+	}
+
+	public String getTxnRef() {
+		return txnRef;
+	}
+
+	public void setTxnRef(String txnRef) {
+		this.txnRef = txnRef;
+	}
+
+	public String getPaymentMethod() {
+		return paymentMethod;
+	}
+
+	public void setPaymentMethod(String paymentMethod) {
+		this.paymentMethod = paymentMethod;
+	}
+
+	public List<JobServiceDetail> getJobServiceDetails() {
 		return jobServiceDetails;
 	}
 
