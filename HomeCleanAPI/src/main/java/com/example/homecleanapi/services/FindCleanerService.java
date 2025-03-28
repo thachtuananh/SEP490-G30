@@ -145,7 +145,7 @@ public class FindCleanerService {
                 "        ST_Transform(ST_SetSRID(ST_MakePoint(:longitude, :latitude), 4326), 3857), " +
                 "        :radius) " +
                 "AND j.id NOT IN (" +
-                "    SELECT job_id FROM job_applications WHERE cleaner_id = :cleanerId AND status = 'Pending'" +
+                "    SELECT job_id FROM job_application WHERE cleaner_id = :cleanerId AND status = 'Pending'" +
                 ") " +
                 "ORDER BY distance_m ASC " +
                 "LIMIT :limit";
