@@ -1,11 +1,16 @@
 package com.example.homecleanapi.services;
 
 import com.example.homecleanapi.dtos.EmployeeDTO;
+import com.example.homecleanapi.dtos.JobSummaryDTO;
+import com.example.homecleanapi.models.EmployeeLocations;
+import com.example.homecleanapi.repositories.EmployeeAddressRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.Query;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,6 +19,9 @@ public class FindCleanerService {
 
     @PersistenceContext
     private EntityManager entityManager;
+
+    @Autowired
+    private EmployeeAddressRepository employeeAddressRepository;
 
     private List<EmployeeDTO> executeNearbyQuery(double latitude, double longitude, double radiusInMeters, int limit) {
         String query = "SELECT c.id, c.full_name, c.email, c.experience, c.phone_number, c.profile_image, " +
@@ -73,4 +81,86 @@ public class FindCleanerService {
 
         return employees; // Trả về danh sách nhân viên gần nhất
     }
+
+
+    // -----------------------------------------------------------
+    // phần lấy job đang open và gần nhất
+
+    public List<JobSummaryDTO> getNearbyOpenJobs(Long cleanerId, int limit) {
+        // Lấy thông tin địa chỉ của cleaner từ bảng cleaner_addresses
+        EmployeeLocations cleanerAddress = employeeAddressRepository.findByEmployee_IdAndIs_currentTrue(cleanerId);
+        if (cleanerAddress == null) {
+            throw new RuntimeException("Cleaner address not found.");
+        }
+
+        // Lấy tọa độ của cleaner từ cleanerAddress
+        double cleanerLatitude = cleanerAddress.getLatitude();
+        double cleanerLongitude = cleanerAddress.getLongitude();
+
+        // Các mức bán kính cần tìm kiếm (bạn có thể điều chỉnh bán kính này)
+        double[] radiusLevels = {15000, 30000, 60000};
+
+        List<JobSummaryDTO> jobSummaryList = new ArrayList<>();
+
+        // Lặp qua các mức bán kính để tìm kiếm job
+        for (double radius : radiusLevels) {
+            // Thực hiện truy vấn tìm các job gần cleaner
+            List<Object[]> results = executeNearbyJobQuery(cleanerId, cleanerLatitude, cleanerLongitude, radius, limit);
+
+            // Duyệt qua kết quả truy vấn
+            for (Object[] row : results) {
+                JobSummaryDTO dto = new JobSummaryDTO();
+                dto.setJobId(((Number) row[0]).longValue());  // jobId
+                dto.setServiceName((String) row[1]);  // serviceName
+                dto.setPrice((Double) row[2]);  // total_price
+                dto.setScheduledTime((LocalDateTime) row[3]);  // scheduled_time
+                dto.setDistance((Double) row[4]);  // distance_m
+
+                jobSummaryList.add(dto);
+            }
+
+            // Nếu số lượng job đạt giới hạn, dừng lại
+            if (jobSummaryList.size() >= limit) {
+                break;
+            }
+        }
+
+        return jobSummaryList;
+    }
+
+    private List<Object[]> executeNearbyJobQuery(Long cleanerId, double latitude, double longitude, double radiusInMeters, int limit) {
+        String query = "SELECT j.id, " +
+                "       (SELECT string_agg(s.name, ', ') FROM job_service_detail jsd " +
+                "           JOIN services s ON jsd.service_id = s.id WHERE jsd.job_id = j.id) AS service_name, " +
+                "       j.total_price, j.scheduled_time, " +
+                "       ST_Distance(" +
+                "               ST_Transform(ST_SetSRID(ST_MakePoint(ca.longitude, ca.latitude), 4326), 3857), " +
+                "               ST_Transform(ST_SetSRID(ST_MakePoint(:longitude, :latitude), 4326), 3857)" +
+                "       ) AS distance_m " +
+                "FROM jobs j " +
+                "JOIN customer_addresses ca ON j.customer_address_id = ca.id " +
+                "WHERE j.status = 'OPEN' " +
+                "AND ST_DWithin(" +
+                "        ca.geom, " +
+                "        ST_Transform(ST_SetSRID(ST_MakePoint(:longitude, :latitude), 4326), 3857), " +
+                "        :radius) " +
+                "AND j.id NOT IN (" +
+                "    SELECT job_id FROM job_applications WHERE cleaner_id = :cleanerId AND status = 'Pending'" +
+                ") " +
+                "ORDER BY distance_m ASC " +
+                "LIMIT :limit";
+
+        Query nativeQuery = entityManager.createNativeQuery(query)
+                .setParameter("latitude", latitude)
+                .setParameter("longitude", longitude)
+                .setParameter("radius", radiusInMeters)
+                .setParameter("limit", limit)
+                .setParameter("cleanerId", cleanerId);
+
+        return nativeQuery.getResultList();
+    }
+
+
+
+
 }

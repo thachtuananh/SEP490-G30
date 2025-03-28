@@ -84,35 +84,36 @@ public class CleanerJobService {
 	@Autowired
     private WalletRepository walletRepository;
 
-	
-	
+
+
+
 
 	// Lấy danh sách các công việc đang mở
-	public List<JobSummaryDTO> getOpenJobs(Long cleanerId) {
-		// Lấy tất cả các Job có trạng thái OPEN
-		List<Job> openJobs = jobRepository.findByStatus(JobStatus.OPEN);
-
-		// Lấy tất cả các jobId đã có ứng viên (cleaner) cho cleanerId
-		List<Long> appliedJobIds = jobApplicationRepository.findByCleanerIdAndStatus(cleanerId, "Pending").stream()
-				.map(jobApplication -> jobApplication.getJob().getId()).collect(Collectors.toList());
-
-		// Lọc ra các công việc mà cleaner này chưa ứng tuyển
-		List<Job> jobsWithoutCleaner = openJobs.stream().filter(job -> !appliedJobIds.contains(job.getId()))
-				.collect(Collectors.toList());
-
-		List<JobServiceDetail> jobServiceDetails = jobServiceDetailRepository
-				.findByJobIdIn(jobsWithoutCleaner.stream().map(Job::getId).collect(Collectors.toList()));
-
-		return jobsWithoutCleaner.stream().map(job -> {
-			List<String> serviceNames = jobServiceDetails.stream()
-					.filter(jobServiceDetail -> jobServiceDetail.getJob().getId().equals(job.getId()))
-					.map(jobServiceDetail -> jobServiceDetail.getService().getName()).collect(Collectors.toList());
-
-			String serviceName = serviceNames.isEmpty() ? "N/A" : String.join(", ", serviceNames);
-
-			return new JobSummaryDTO(job.getId(), serviceName, job.getTotalPrice(), job.getScheduledTime());
-		}).collect(Collectors.toList());
-	}
+//	public List<JobSummaryDTO> getOpenJobs(Long cleanerId) {
+//		// Lấy tất cả các Job có trạng thái OPEN
+//		List<Job> openJobs = jobRepository.findByStatus(JobStatus.OPEN);
+//
+//		// Lấy tất cả các jobId đã có ứng viên (cleaner) cho cleanerId
+//		List<Long> appliedJobIds = jobApplicationRepository.findByCleanerIdAndStatus(cleanerId, "Pending").stream()
+//				.map(jobApplication -> jobApplication.getJob().getId()).collect(Collectors.toList());
+//
+//		// Lọc ra các công việc mà cleaner này chưa ứng tuyển
+//		List<Job> jobsWithoutCleaner = openJobs.stream().filter(job -> !appliedJobIds.contains(job.getId()))
+//				.collect(Collectors.toList());
+//
+//		List<JobServiceDetail> jobServiceDetails = jobServiceDetailRepository
+//				.findByJobIdIn(jobsWithoutCleaner.stream().map(Job::getId).collect(Collectors.toList()));
+//
+//		return jobsWithoutCleaner.stream().map(job -> {
+//			List<String> serviceNames = jobServiceDetails.stream()
+//					.filter(jobServiceDetail -> jobServiceDetail.getJob().getId().equals(job.getId()))
+//					.map(jobServiceDetail -> jobServiceDetail.getService().getName()).collect(Collectors.toList());
+//
+//			String serviceName = serviceNames.isEmpty() ? "N/A" : String.join(", ", serviceNames);
+//
+//			return new JobSummaryDTO(job.getId(), serviceName, job.getTotalPrice(), job.getScheduledTime());
+//		}).collect(Collectors.toList());
+//	}
 
 	// Lấy chi tiết công việc
 	public Map<String, Object> getJobDetails(Long jobId) {
