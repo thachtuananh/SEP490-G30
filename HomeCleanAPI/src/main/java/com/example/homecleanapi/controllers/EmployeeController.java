@@ -64,9 +64,9 @@ public class EmployeeController {
         return cleanerAuthService.cleanerLogin(request);
     }
 
-    @PostMapping(value = "/forgot-password", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Map<String, Object>> forgotPassword(@RequestBody ForgotPasswordRequest request) {
-        return cleanerAuthService.cleanerForgotPassword(request);
+    @PostMapping(value = "/{employeeId}/forgot-password", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Map<String, Object>> forgotPassword(@RequestBody ForgotPasswordRequest request, @PathVariable Integer employeeId) {
+        return cleanerAuthService.cleanerForgotPassword(request, employeeId);
     }
 
     @PatchMapping(value = "/{employeeId}/update_profile", produces = MediaType.APPLICATION_JSON_VALUE)
