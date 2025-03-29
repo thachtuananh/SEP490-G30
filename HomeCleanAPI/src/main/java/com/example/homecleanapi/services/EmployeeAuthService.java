@@ -21,12 +21,14 @@ public class EmployeeAuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtUtils jwtUtils;
     private final AvatarService avatarService;
+    private final EmailService emailService;
 
-    public EmployeeAuthService(EmployeeRepository employeeRepository, PasswordEncoder passwordEncoder, JwtUtils jwtUtils, AvatarService avatarService) {
+    public EmployeeAuthService(EmployeeRepository employeeRepository, PasswordEncoder passwordEncoder, JwtUtils jwtUtils, AvatarService avatarService, EmailService emailService) {
         this.employeeRepository = employeeRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtUtils = jwtUtils;
         this.avatarService = avatarService;
+        this.emailService = emailService;
     }
 
     public ResponseEntity<Map<String, Object>> cleanerRegister(CleanerRegisterRequest request) {
@@ -90,8 +92,8 @@ public class EmployeeAuthService {
         return ResponseEntity.ok(response);
     }
 
-    public ResponseEntity<Map<String, Object>> cleanerForgotPassword(ForgotPasswordRequest request) {
-        Employee employee = employeeRepository.findByPhone(request.getPhone());
+    public ResponseEntity<Map<String, Object>> cleanerForgotPassword(ForgotPasswordRequest request, Integer employeeId) {
+        Employee employee = employeeRepository.findEmployeeById(employeeId);
 
         Map<String, Object> response = new HashMap<>();
 
@@ -103,12 +105,14 @@ public class EmployeeAuthService {
         String newPassword = UUID.randomUUID().toString().substring(0, 8);
         employee.setPassword(passwordEncoder.encode(newPassword));
         employeeRepository.save(employee);
-
+        String subject = "Password Reset Request";
+        String text = "<p>Your new password is: <strong>" + newPassword + "</strong></p>"
+                + "<p>Please change it after logging in.</p>";
+        emailService.sendEmail(request.getEmail(), subject, text, true);
         // Gửi mật khẩu mới qua SMS (giả lập)
-        System.out.println("Gửi mật khẩu mới: " + newPassword + " đến số điện thoại: " + request.getPhone());
+        System.out.println("Gửi mật khẩu mới: " + newPassword + " email: " + request.getEmail());
 
         response.put("message", "Mật khẩu mới đã được gửi!");
-        response.put("phone", request.getPhone());
         response.put("newPassword", newPassword); // Chỉ hiển thị trong môi trường phát triển, có thể ẩn trong production.
         return ResponseEntity.ok(response);
     }

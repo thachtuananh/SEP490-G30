@@ -41,9 +41,9 @@ public class CustomerController {
         return customerAuthService.customerLogin(request);
     }
 
-    @PostMapping(value = "/forgot-password",  produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Map<String, Object>> forgotPassword(@RequestBody ForgotPasswordRequest request) {
-        return customerAuthService.customerForgotPassword(request);
+    @PostMapping(value = "/{customerId}/forgot-password",  produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Map<String, Object>> forgotPassword(@RequestBody ForgotPasswordRequest request, @PathVariable Integer customerId) {
+        return customerAuthService.customerForgotPassword(request, customerId);
     }
 
     @PutMapping(value = "/{customer_id}/profile",  produces = MediaType.APPLICATION_JSON_VALUE)

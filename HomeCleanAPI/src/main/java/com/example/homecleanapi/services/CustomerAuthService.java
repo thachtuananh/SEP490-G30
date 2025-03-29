@@ -1,13 +1,12 @@
 package com.example.homecleanapi.services;
 
-import com.example.homecleanapi.dtos.ForgotPasswordRequest;
-import com.example.homecleanapi.dtos.LoginRequest;
-import com.example.homecleanapi.dtos.CustomerRegisterRequest;
+import com.example.homecleanapi.dtos.*;
 import com.example.homecleanapi.models.Customers;
 import com.example.homecleanapi.repositories.CustomerRepository;
 import com.example.homecleanapi.utils.JwtUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.mail.MailSender;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -21,11 +20,13 @@ public class CustomerAuthService {
     private final CustomerRepository customerRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtils jwtUtils;
+    private final EmailService emailService;
 
-    public CustomerAuthService(CustomerRepository customerRepository, PasswordEncoder passwordEncoder, JwtUtils jwtUtils) {
+    public CustomerAuthService(CustomerRepository customerRepository, PasswordEncoder passwordEncoder, JwtUtils jwtUtils, EmailService emailService) {
         this.customerRepository = customerRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtUtils = jwtUtils;
+        this.emailService = emailService;
     }
 
     public ResponseEntity<Map<String, Object>> customerRegister(CustomerRegisterRequest request) {
@@ -83,8 +84,8 @@ public class CustomerAuthService {
         return ResponseEntity.ok(response);
     }
 
-    public ResponseEntity<Map<String, Object>> customerForgotPassword(ForgotPasswordRequest request) {
-        Customers customer = customerRepository.findByPhone(request.getPhone());
+    public ResponseEntity<Map<String, Object>> customerForgotPassword(ForgotPasswordRequest request, Integer customerId) {
+        Customers customer = customerRepository.findCustomersById(customerId);
 
         Map<String, Object> response = new HashMap<>();
 
@@ -96,14 +97,31 @@ public class CustomerAuthService {
         String newPassword = UUID.randomUUID().toString().substring(0, 8);
         customer.setPassword_hash(passwordEncoder.encode(newPassword));
         customerRepository.save(customer);
+        String subject = "Password Reset Request";
+        String text = "<p>Your new password is: <strong>" + newPassword + "</strong></p>"
+                + "<p>Please change it after logging in.</p>";
+        emailService.sendEmail(request.getEmail(), subject, text, true);
 
-        // Gửi mật khẩu mới qua SMS (giả lập)
-        System.out.println("Gửi mật khẩu mới: " + newPassword + " đến số điện thoại: " + request.getPhone());
+        System.out.println("Gửi mật khẩu mới: " + newPassword + " đến số điện thoại: " + request.getEmail());
 
         response.put("message", "Mật khẩu mới đã được gửi!");
-        response.put("phone", request.getPhone());
-        response.put("newPassword", newPassword); // Chỉ hiển thị trong môi trường phát triển, có thể ẩn trong production.
+        response.put("newPassword", newPassword);
         return ResponseEntity.ok(response);
     }
 
+    public ResponseEntity<Map<String, String>> customerChangePassword(ChangePasswordRequest request, Integer customerId) {
+        Customers customer = customerRepository.findCustomersById(customerId);
+        if (customer == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", "Khách hàng không tồn tại"));
+        }
+
+        if (!passwordEncoder.matches(request.getOldPassword(), customer.getPassword_hash())) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", "Mật khẩu cũ không chính xác"));
+        }
+
+        customer.setPassword_hash(passwordEncoder.encode(request.getNewPassword()));
+        customerRepository.save(customer);
+
+        return ResponseEntity.ok(Map.of("message", "Mật khẩu đã được cập nhật thành công"));
+    }
 }
