@@ -33,8 +33,8 @@ public class CustomerService {
 
     private final ConvertAddressToLatLong convertAddressToLatLong;
     private final CustomerAuthService customerAuthService;
-    private CustomerRepository customerRepository;
-    private CustomerAddressRepository customerAddressRepository;
+    private final CustomerRepository customerRepository;
+    private final CustomerAddressRepository customerAddressRepository;
 
     public CustomerService(CustomerRepository customerRepository, CustomerAddressRepository customerAddressRepository, ConvertAddressToLatLong convertAddressToLatLong, CustomerAuthService customerAuthService) {
         this.customerRepository = customerRepository;
@@ -128,25 +128,18 @@ public class CustomerService {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    public ResponseEntity<Map<String, Object>> updateCustomerAddress(CustomerAddressesDTO request, @PathVariable Long customerId) throws IOException {
+    public ResponseEntity<Map<String, Object>> updateCustomerAddress(CustomerAddressesDTO request, Long customerId, Integer addressId) throws IOException {
         Map<String, Object> response = new HashMap<>();
 
         // Tìm employee từ database theo ID
         Customers customers = customerRepository.findById(customerId).orElseThrow(() -> new RuntimeException("Customer not found"));
-//                .orElseThrow(() -> new RuntimeException("Employee not found"));
 
-        // Tìm địa chỉ hiện tại của employee
-        List<CustomerAddresses> customerAddresses = customerAddressRepository.findCustomerAddressesByCustomer_Id(customers.getId());
-
-        // Nếu không có địa chỉ nào, trả về thông báo lỗi
-        if (customerAddresses.isEmpty()) {
-            throw new RuntimeException("No existing address found for this employee");
+        CustomerAddresses existingLocation = customerAddressRepository.findCustomerAddressesById(addressId);
+        if (existingLocation == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         }
 
-        // Tìm địa chỉ đầu tiên của employee (giả sử chỉ có một địa chỉ hiện tại)
-        CustomerAddresses existingLocation = customerAddresses.get(0);
-
-        // Cập nhật các trường thông tin theo input từ request (JSON)
+       // Cập nhật các trường thông tin theo input từ request (JSON)
         existingLocation.setAddress(request.getAddress());
         String data = convertAddressToLatLong.convertAddressToLatLong(request.getAddress());
         JSONObject jsonObject = new JSONObject(data);
@@ -163,7 +156,7 @@ public class CustomerService {
         } else {
             System.out.println("Không tìm thấy kết quả trong JSON!");
         }
-        existingLocation.setIs_current(false); // Đánh dấu địa chỉ này là hiện tại
+//        existingLocation.setIs_current(false);
 
         // Lưu địa chỉ đã được cập nhật
         customerAddressRepository.save(existingLocation);
@@ -174,7 +167,7 @@ public class CustomerService {
     }
 
     // Xóa địa chỉ của employee theo locationId
-    public ResponseEntity<Map<String, Object>> deleteCustomerAddress(int locationId) {
+    public ResponseEntity<Map<String, Object>> deleteCustomerAddress(Integer locationId) {
         Map<String, Object> response = new HashMap<>();
 
         // Kiểm tra xem địa chỉ có tồn tại không
@@ -197,20 +190,21 @@ public class CustomerService {
     }
 
     // Lấy tất cả địa chỉ của employee theo employeeId
-    public ResponseEntity<Map<String, Object>> getAllCusomterAddresses(@PathVariable int customer_id) {
+    public ResponseEntity<Map<String, Object>> getAllCustomerAddresses(Long customer_id) {
         Map<String, Object> response = new HashMap<>();
 
         // Kiểm tra xem employee có tồn tại không
-        if (!customerAddressRepository.existsById(customer_id)) {
-            response.put("message", "Employee not found");
+        if (!customerRepository.existsById(customer_id)) {
+            response.put("message", "Customer not found");
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         }
 
         // Lấy danh sách địa chỉ của employee
-        List<Map<String, Object>> addresses = customerAddressRepository.findCustomerAddressesByCustomer_Id(customer_id)
+        List<Map<String, Object>> addresses = customerAddressRepository.findCustomerAddressesByCustomer_Id(Math.toIntExact(customer_id))
                 .stream()
                 .map(location -> {
                     Map<String, Object> addressMap = new HashMap<>();
+                    addressMap.put("id", location.getId());
                     addressMap.put("address", location.getAddress());
                     addressMap.put("is_current", location.isIs_current());
                     return addressMap;
