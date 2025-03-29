@@ -36,7 +36,7 @@ public class EmployeeController {
         return employeeService.employeeCreateAddress(request, employeeId);
     }
 
-    @PutMapping(value = "/{employeeId}//update-address/{addressId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping(value = "/{employeeId}/update-address/{addressId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Map<String, Object>> updateEmployeeAddress(@RequestBody EmployeeLocationsDTO request, @PathVariable int employeeId, @PathVariable int addressId) throws IOException {
         // Gọi service để xử lý update địa chỉ
         return employeeService.updateEmployeeAddress(request, employeeId, addressId);
