@@ -46,7 +46,7 @@ public class CustomerController {
         return customerAuthService.customerForgotPassword(request, customerId);
     }
 
-    @PutMapping(value = "/{customer_id}/profile",  produces = MediaType.APPLICATION_JSON_VALUE)
+    @PatchMapping(value = "/{customer_id}/profile",  produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Map<String, Object>> updateProfile(@RequestBody CustomerProfileRequest request, @PathVariable Long customer_id) {
 
         return customerService.updateProfile(customer_id, request);
@@ -62,10 +62,10 @@ public class CustomerController {
         return customerService.addAddress(request, customer_id);
     }
 
-    @PutMapping(value = "/{customer_id}/update-address", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Map<String, Object>> updateEmployeeAddress(@RequestBody CustomerAddressesDTO request, @PathVariable Long employeeId) throws IOException {
+    @PutMapping(value = "/{customerId}/update-address/{addressId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Map<String, Object>> updateEmployeeAddress(@RequestBody CustomerAddressesDTO request, @PathVariable Long customerId, @PathVariable Integer addressId) throws IOException {
         // Gọi service để xử lý update địa chỉ
-        return customerService.updateCustomerAddress(request, employeeId);
+        return customerService.updateCustomerAddress(request, customerId, addressId);
     }
 
     // API xóa địa chỉ theo locationId
@@ -75,9 +75,9 @@ public class CustomerController {
     }
 
     // API lấy danh sách địa chỉ của employee theo employeeId
-    @GetMapping(value = "/{customer_id}/all-addresses",  produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Map<String, Object>> getAllEmployeeAddresses(@PathVariable int employeeId) {
-        return customerService.getAllCusomterAddresses(employeeId);
+    @GetMapping(value = "/{customerId}/all-addresses",  produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Map<String, Object>> getAllEmployeeAddresses(@PathVariable Long customerId) {
+        return customerService.getAllCustomerAddresses(customerId);
     }
 
     // API xóa account
