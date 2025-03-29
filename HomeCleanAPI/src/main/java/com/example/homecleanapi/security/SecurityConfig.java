@@ -112,19 +112,15 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:8080",
+        configuration.setAllowedOrigins(Arrays.asList(
+                "http://localhost:8080",
                 "http://localhost:3000",
                 "http://34.121.192.129:8080",
                 "http://34.136.232.226:8080",
                 "https://house-clean-platform.web.app",
                 "https://house-clean-platform.firebaseapp.com",
                 "https://costume-lithuania-parameter-bathrooms.trycloudflare.com",
-                "http://34.136.232.226:8080",
-                "https://house-clean-platform.web.app",
-                "https://house-clean-platform.firebaseapp.com",
-                "https://costume-lithuania-parameter-bathrooms.trycloudflare.com",
                 "https://pike-armor-ms-hampton.trycloudflare.com"));
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:8080", "http://localhost:3000", "http://34.121.192.129:8080", "https://house-clean-platform.web.app/", "https://house-clean-platform.firebaseapp.com/")); // 🔥 Thêm domain frontend của bạn
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "PATCH"));
         configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type"));
         configuration.setAllowCredentials(true);
