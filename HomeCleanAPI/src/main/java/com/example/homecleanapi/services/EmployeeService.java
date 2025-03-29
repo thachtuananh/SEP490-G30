@@ -162,6 +162,7 @@ public class EmployeeService {
                 .stream()
                 .map(location -> {
                     Map<String, Object> addressMap = new HashMap<>();
+                    addressMap.put("id", location.getId());
                     addressMap.put("address", location.getAddress());
                     addressMap.put("is_current", location.isIs_current());
                     return addressMap;
