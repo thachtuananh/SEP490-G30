@@ -2,7 +2,8 @@ package com.example.homecleanapi.models;
 
 import com.example.homecleanapi.enums.ReportStatus;  // Import đúng enum ReportStatus
 import jakarta.persistence.*;
-import java.time.LocalDateTime;
+
+import java.time.LocalDate;
 
 @Entity
 @Table(name = "reports")
@@ -12,26 +13,20 @@ public class Report {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "reporter_id")
-    private Customers reporter; 
+//    @ManyToOne
+//    @JoinColumn(name = "job_id")
+//    private Job job;
 
-    @ManyToOne
-    @JoinColumn(name = "reported_user_id")
-    private Employee reportedUser;  
-
-    @ManyToOne
-    @JoinColumn(name = "job_id")
-    private Job job; 
+    private long job_id;
 
     private String reportType;  
     private String description; 
 
     @Enumerated(EnumType.STRING)
     private ReportStatus status;  
-    private LocalDateTime createdAt = LocalDateTime.now();  
-    private LocalDateTime updatedAt = LocalDateTime.now(); 
-    private LocalDateTime resolvedAt;  
+    private LocalDate createdAt = LocalDate.now();
+    private LocalDate updatedAt = LocalDate.now();
+    private LocalDate resolvedAt;
     private String adminResponse; 
     // Getters and Setters
     public Long getId() {
@@ -42,28 +37,21 @@ public class Report {
         this.id = id;
     }
 
-    public Customers getReporter() {
-        return reporter;
+//    public Job getJob() {
+//        return job;
+//    }
+//
+//    public void setJob(Job job) {
+//        this.job = job;
+//    }
+
+
+    public long getJob_id() {
+        return job_id;
     }
 
-    public void setReporter(Customers reporter) {
-        this.reporter = reporter;
-    }
-
-    public Employee getReportedUser() {
-        return reportedUser;
-    }
-
-    public void setReportedUser(Employee reportedUser) {
-        this.reportedUser = reportedUser;
-    }
-
-    public Job getJob() {
-        return job;
-    }
-
-    public void setJob(Job job) {
-        this.job = job;
+    public void setJob_id(long job_id) {
+        this.job_id = job_id;
     }
 
     public String getReportType() {
@@ -90,27 +78,27 @@ public class Report {
         this.status = status;
     }
 
-    public LocalDateTime getCreatedAt() {
+    public LocalDate getCreatedAt() {
         return createdAt;
     }
 
-    public void setCreatedAt(LocalDateTime createdAt) {
+    public void setCreatedAt(LocalDate createdAt) {
         this.createdAt = createdAt;
     }
 
-    public LocalDateTime getUpdatedAt() {
+    public LocalDate getUpdatedAt() {
         return updatedAt;
     }
 
-    public void setUpdatedAt(LocalDateTime updatedAt) {
+    public void setUpdatedAt(LocalDate updatedAt) {
         this.updatedAt = updatedAt;
     }
 
-    public LocalDateTime getResolvedAt() {
+    public LocalDate getResolvedAt() {
         return resolvedAt;
     }
 
-    public void setResolvedAt(LocalDateTime resolvedAt) {
+    public void setResolvedAt(LocalDate resolvedAt) {
         this.resolvedAt = resolvedAt;
     }
 
