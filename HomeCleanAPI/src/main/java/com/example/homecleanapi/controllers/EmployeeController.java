@@ -26,31 +26,31 @@ public class EmployeeController {
         this.employeeService = employeeService;
     }
 
-    @GetMapping(value = "/{employeeId}/get-employee-profile", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Map<String, Object>> getEmployeeProfile(@PathVariable int employeeId) {
+    @GetMapping(value = "/{employeeId}/get_employee_profile", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Map<String, Object>> getEmployeeProfile(@PathVariable Integer employeeId) {
         return employeeService.getEmployeeInformation(employeeId);
     }
 
-    @PostMapping(value = "/{employeeId}/create-address", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Map<String, Object>> createEmployeeAddress(@RequestBody EmployeeLocationsDTO request, @PathVariable int employeeId) throws IOException {
+    @PostMapping(value = "/{employeeId}/create_address", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Map<String, Object>> createEmployeeAddress(@RequestBody EmployeeLocationsDTO request, @PathVariable Integer employeeId) throws IOException {
         return employeeService.employeeCreateAddress(request, employeeId);
     }
 
-    @PostMapping(value = "/{employeeId}/update-address/{addressId}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Map<String, Object>> updateEmployeeAddress(@RequestBody EmployeeLocationsDTO request, @PathVariable int employeeId, @PathVariable int addressId) throws IOException {
+    @PostMapping(value = "/{employeeId}/update_address/{addressId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Map<String, Object>> updateEmployeeAddress(@RequestBody EmployeeLocationsDTO request, @PathVariable Integer employeeId, @PathVariable int addressId) throws IOException {
         // Gọi service để xử lý update địa chỉ
         return employeeService.updateEmployeeAddress(request, employeeId, addressId);
     }
 
     // API xóa địa chỉ theo locationId
     @DeleteMapping(value = "/{locationId}/delete_address", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Map<String, Object>> deleteEmployeeAddress(@PathVariable int locationId) {
+    public ResponseEntity<Map<String, Object>> deleteEmployeeAddress(@PathVariable Integer locationId) {
         return employeeService.deleteEmployeeAddress(locationId);
     }
 
     // API lấy danh sách địa chỉ của employee theo employeeId
     @GetMapping(value = "/{employeeId}/all-addresses",  produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Map<String, Object>> getAllEmployeeAddresses(@PathVariable int employeeId) {
+    public ResponseEntity<Map<String, Object>> getAllEmployeeAddresses(@PathVariable Integer employeeId) {
         return employeeService.getAllEmployeeAddresses(employeeId);
     }
 
@@ -70,12 +70,12 @@ public class EmployeeController {
     }
 
     @PatchMapping(value = "/{employeeId}/update_profile", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Map<String, Object>> updateEmployeeProfile(@RequestBody CleanerUpdateProfile request, @PathVariable int employeeId) throws IOException {
+    public ResponseEntity<Map<String, Object>> updateEmployeeProfile(@RequestBody CleanerUpdateProfile request, @PathVariable Integer employeeId) throws IOException {
         return employeeService.updateEmployeeInformation(request, employeeId);
     }
 
     @DeleteMapping(value = "/{employeeId}/delete_account", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Map<String, Object>> deleteEmployeeAccount(@PathVariable int employeeId) throws IOException {
+    public ResponseEntity<Map<String, Object>> deleteEmployeeAccount(@PathVariable Integer employeeId) throws IOException {
         return employeeService.deleteEmployeeAccount(employeeId);
     }
 }

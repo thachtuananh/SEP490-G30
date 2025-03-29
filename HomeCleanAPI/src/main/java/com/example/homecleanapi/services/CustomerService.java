@@ -141,6 +141,7 @@ public class CustomerService {
 
        // Cập nhật các trường thông tin theo input từ request (JSON)
         existingLocation.setAddress(request.getAddress());
+
         String data = convertAddressToLatLong.convertAddressToLatLong(request.getAddress());
         JSONObject jsonObject = new JSONObject(data);
 
