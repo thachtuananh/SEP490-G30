@@ -153,73 +153,6 @@ function RegisterCleaner() {
                                 />
                             </div>
 
-                            <div className={`form-group ${errors.name ? 'error' : ''}`}>
-                                <label>Họ và tên</label>
-                                <input
-                                    type="text"
-                                    name="name"
-                                    placeholder="Nhập họ và tên"
-                                    value={formData.name}
-                                    onChange={handleChange}
-                                />
-                            </div>
-
-                            <div className={`form-group ${errors.email ? 'error' : ''}`}>
-                                <label>Email</label>
-                                <input
-                                    type="email"
-                                    name="email"
-                                    placeholder="Nhập email"
-                                    value={formData.email}
-                                    onChange={handleChange}
-                                />
-                            </div>
-
-                            <div className={`form-group ${errors.age ? 'error' : ''}`}>
-                                <label>Tuổi</label>
-                                <input
-                                    type="number"
-                                    name="age"
-                                    placeholder="Nhập tuổi"
-                                    value={formData.age}
-                                    onChange={handleChange}
-                                />
-                            </div>
-
-                            <div className={`form-group ${errors.address ? 'error' : ''}`}>
-                                <label>Địa chỉ</label>
-                                <input
-                                    type="text"
-                                    name="address"
-                                    placeholder="Nhập địa chỉ"
-                                    value={formData.address}
-                                    onChange={handleChange}
-                                />
-                            </div>
-
-                            <div className={`form-group ${errors.identity_number ? 'error' : ''}`}>
-                                <label>Số CMND/CCCD</label>
-                                <input
-                                    type="text"
-                                    name="identity_number"
-                                    placeholder="Nhập số CMND/CCCD"
-                                    value={formData.identity_number}
-                                    onChange={handleChange}
-                                />
-                            </div>
-
-                            <div className={`form-group ${errors.experience ? 'error' : ''}`}>
-                                <label>Kinh nghiệm</label>
-                                <textarea
-                                    name="experience"
-                                    placeholder="Mô tả kinh nghiệm làm việc của bạn"
-                                    value={formData.experience}
-                                    onChange={handleChange}
-                                    rows="3"
-                                    className="form-textarea"
-                                />
-                            </div>
-
                             <div className={`form-group ${errors.password ? 'error' : ''}`}>
                                 <label>Mật khẩu</label>
                                 <div className="password-input-container">
@@ -257,6 +190,75 @@ function RegisterCleaner() {
                                     </span>
                                 </div>
                             </div>
+
+                            <div className={`form-group ${errors.name ? 'error' : ''}`}>
+                                <label>Họ và tên</label>
+                                <input
+                                    type="text"
+                                    name="name"
+                                    placeholder="Nhập họ và tên"
+                                    value={formData.name}
+                                    onChange={handleChange}
+                                />
+                            </div>
+
+                            <div className={`form-group ${errors.email ? 'error' : ''}`}>
+                                <label>Email</label>
+                                <input
+                                    type="email"
+                                    name="email"
+                                    placeholder="Nhập email"
+                                    value={formData.email}
+                                    onChange={handleChange}
+                                />
+                            </div>
+
+                            <div className={`form-group ${errors.age ? 'error' : ''}`}>
+                                <label>Tuổi</label>
+                                <input
+                                    type="number"
+                                    name="age"
+                                    placeholder="Nhập tuổi"
+                                    value={formData.age}
+                                    onChange={handleChange}
+                                />
+                            </div>
+
+                            {/* <div className={`form-group ${errors.address ? 'error' : ''}`}>
+                                <label>Địa chỉ</label>
+                                <input
+                                    type="text"
+                                    name="address"
+                                    placeholder="Nhập địa chỉ"
+                                    value={formData.address}
+                                    onChange={handleChange}
+                                />
+                            </div> */}
+
+                            <div className={`form-group ${errors.identity_number ? 'error' : ''}`}>
+                                <label>Số CMND/CCCD</label>
+                                <input
+                                    type="text"
+                                    name="identity_number"
+                                    placeholder="Nhập số CMND/CCCD"
+                                    value={formData.identity_number}
+                                    onChange={handleChange}
+                                />
+                            </div>
+
+                            <div className={`form-group ${errors.experience ? 'error' : ''}`}>
+                                <label>Kinh nghiệm</label>
+                                <textarea
+                                    name="experience"
+                                    placeholder="Mô tả kinh nghiệm làm việc của bạn"
+                                    value={formData.experience}
+                                    onChange={handleChange}
+                                    rows="3"
+                                    className="form-textarea"
+                                />
+                            </div>
+
+
 
                             <div className="error-message-container">
                                 <div className={`error-message ${errorMessage ? 'show' : ''}`}>

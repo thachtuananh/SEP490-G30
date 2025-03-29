@@ -1,11 +1,30 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import '../index.css';
 import Footer from '../components/Home/Owner/Footer';
 import logo from '../assets/HouseClean_logo.png';
-import { Link } from 'react-router-dom';
-import ImgLeft from '../assets/deep-cleaning-list-hero.jpg';
+import { Link, useNavigate } from 'react-router-dom';
+import ImgLeft from '../assets/image-left.png';
 
 function ForgotPassword() {
+    const [errors, setErrors] = useState({});
+    const [errorMessage, setErrorMessage] = useState('');
+    const navigate = useNavigate();
+
+    const [formData, setFormData] = useState({
+        email: '',
+    });
+
+    useEffect(() => {
+        if (errorMessage) {
+            const timer = setTimeout(() => setErrorMessage(''), 3000);
+            return () => clearTimeout(timer);
+        }
+    }, [errorMessage]);
+
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setFormData({ ...formData, [name]: value });
+    };
     return (
         <div className="app">
             <main className="main-content">
@@ -29,19 +48,29 @@ function ForgotPassword() {
                         <h2>Quên Mật Khẩu</h2>
 
                         <form className="login-form">
-                            <div className="form-group">
-                                <label>Số điện thoại</label>
-                                <input type="tel" placeholder="Nhập số điện thoại" />
+                            <div className={`form-group ${errors.email ? 'error' : ''}`}>
+                                <label>Email</label>
+                                <input
+                                    type="email"
+                                    name="email"
+                                    placeholder="Nhập email"
+                                    value={formData.email}
+                                    onChange={handleChange}
+                                />
                             </div>
 
-                            <div className="form-group form-group-otp">
+                            {/* <div className="form-group form-group-otp">
                                 <label>Mã xác nhận</label>
                                 <div className="otp-input">
-                                    <input type="text" placeholder="Nhập mã xác nhận" required />
-                                    <button type="submit" className="otp-button">Láy mã</button>
+                                    <button type="submit" className="otp-button">Lấy mã</button>
+                                </div>
+                            </div> */}
+
+                            <div className="error-message-container">
+                                <div className={`error-message ${errorMessage ? 'show' : ''}`}>
+                                    {errorMessage}
                                 </div>
                             </div>
-
                             <button type="submit" className="login-button">Quên mật khẩu</button>
                         </form>
 
