@@ -60,7 +60,7 @@ public class CustomerController {
         return customerService.addAddress(request, customer_id);
     }
 
-    @PutMapping(value = "/{customerId}/update-address/{addressId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/{customerId}/update-address/{addressId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Map<String, Object>> updateEmployeeAddress(@RequestBody CustomerAddressesDTO request, @PathVariable Long customerId, @PathVariable Integer addressId) throws IOException {
         // Gọi service để xử lý update địa chỉ
         return customerService.updateCustomerAddress(request, customerId, addressId);
