@@ -10,6 +10,7 @@ import jakarta.persistence.Query;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -113,20 +114,26 @@ public class FindCleanerService {
                 dto.setJobId(((Number) row[0]).longValue());  // jobId
                 dto.setServiceName((String) row[1]);  // serviceName
                 dto.setPrice((Double) row[2]);  // total_price
-                dto.setScheduledTime((LocalDateTime) row[3]);  // scheduled_time
+                // Sử dụng toLocalDateTime() để chuyển đổi từ Timestamp sang LocalDateTime
+                dto.setScheduledTime(((Timestamp) row[3]).toLocalDateTime());  // scheduled_time
                 dto.setDistance((Double) row[4]);  // distance_m
 
                 jobSummaryList.add(dto);
             }
 
-            // Nếu số lượng job đạt giới hạn, dừng lại
+
             if (jobSummaryList.size() >= limit) {
                 break;
             }
         }
+        if (jobSummaryList.isEmpty()) {
+            return jobSummaryList;
+        }
 
         return jobSummaryList;
     }
+
+
 
     private List<Object[]> executeNearbyJobQuery(Long cleanerId, double latitude, double longitude, double radiusInMeters, int limit) {
         String query = "SELECT j.id, " +
@@ -134,15 +141,15 @@ public class FindCleanerService {
                 "           JOIN services s ON jsd.service_id = s.id WHERE jsd.job_id = j.id) AS service_name, " +
                 "       j.total_price, j.scheduled_time, " +
                 "       ST_Distance(" +
-                "               ST_Transform(ST_SetSRID(ST_MakePoint(ca.longitude, ca.latitude), 4326), 3857), " +
-                "               ST_Transform(ST_SetSRID(ST_MakePoint(:longitude, :latitude), 4326), 3857)" +
+                "               ST_SetSRID(ST_MakePoint(ca.longitude, ca.latitude), 4326), " + // Sử dụng SRID 4326
+                "               ST_SetSRID(ST_MakePoint(:longitude, :latitude), 4326)" + // Sử dụng SRID 4326
                 "       ) AS distance_m " +
                 "FROM jobs j " +
                 "JOIN customer_addresses ca ON j.customer_address_id = ca.id " +
                 "WHERE j.status = 'OPEN' " +
                 "AND ST_DWithin(" +
                 "        ca.geom, " +
-                "        ST_Transform(ST_SetSRID(ST_MakePoint(:longitude, :latitude), 4326), 3857), " +
+                "        ST_SetSRID(ST_MakePoint(:longitude, :latitude), 4326), " + // Sử dụng SRID 4326
                 "        :radius) " +
                 "AND j.id NOT IN (" +
                 "    SELECT job_id FROM job_application WHERE cleaner_id = :cleanerId AND status = 'Pending'" +
@@ -159,6 +166,7 @@ public class FindCleanerService {
 
         return nativeQuery.getResultList();
     }
+
 
 
 

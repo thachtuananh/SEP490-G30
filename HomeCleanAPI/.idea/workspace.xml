@@ -21,18 +21,18 @@
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
   </component>
-  <component name="GitHubPullRequestSearchHistory"><![CDATA[{
-  "lastFilter": {
-    "state": "OPEN",
-    "assignee": "manhtthe"
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;manhtthe&quot;
   }
-}]]></component>
-  <component name="GithubPullRequestsUISettings"><![CDATA[{
-  "selectedUrlAndAccountId": {
-    "url": "https://github.com/thachtuananh/SEP490-G30.git",
-    "accountId": "e0d96034-d382-466c-a3fc-c61093be196a"
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/thachtuananh/SEP490-G30.git&quot;,
+    &quot;accountId&quot;: &quot;e0d96034-d382-466c-a3fc-c61093be196a&quot;
   }
-}]]></component>
+}</component>
   <component name="MavenImportPreferences">
     <option name="generalSettings">
       <MavenGeneralSettings>
@@ -96,7 +96,8 @@
       <option name="presentableId" value="Default" />
       <updated>1743089713659</updated>
       <workItem from="1743089715291" duration="689000" />
-      <workItem from="1743184466633" duration="2269000" />
+      <workItem from="1743184466633" duration="2358000" />
+      <workItem from="1743218187368" duration="12666000" />
     </task>
     <task id="LOCAL-00001" summary="update application">
       <option name="closed" value="true" />
