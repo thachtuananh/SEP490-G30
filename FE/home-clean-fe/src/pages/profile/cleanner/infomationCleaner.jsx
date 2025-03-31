@@ -20,7 +20,7 @@ const InfomationCleaner = () => {
 
             if (token && cleanerId) {
                 try {
-                    const response = await fetch(`${BASE_URL}/employee/${cleanerId}/get-employee-profile`, {
+                    const response = await fetch(`${BASE_URL}/employee/${cleanerId}/get_employee_profile`, {
                         method: 'GET',
                         headers: { 'Authorization': `Bearer ${token}` },
                     });

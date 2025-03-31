@@ -72,7 +72,7 @@ export const Address = () => {
         const cleanerId = localStorage.getItem("cleanerId");
 
         try {
-            const response = await fetch(`${BASE_URL}/employee/${cleanerId}/create-address`, {
+            const response = await fetch(`${BASE_URL}/employee/${cleanerId}/create_address`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -142,8 +142,8 @@ export const Address = () => {
                 const cleanerId = localStorage.getItem("cleanerId");
 
                 try {
-                    const response = await fetch(`${BASE_URL}/employee/${cleanerId}/update-address/${addressId}`, {
-                        method: 'PUT',
+                    const response = await fetch(`${BASE_URL}/employee/${cleanerId}/update_address/${addressId}`, {
+                        method: 'POST',
                         headers: {
                             'Authorization': `Bearer ${token}`,
                             'Content-Type': 'application/json',
@@ -194,8 +194,7 @@ export const Address = () => {
         }
     };
 
-    // Debug logging
-    console.log("Addresses data:", addresses);
+
 
     return (
         <div className="address-container">

@@ -16,7 +16,7 @@ function RegisterCleaner() {
         confirmPassword: '',
         email: '',
         age: '',
-        address: '',
+        address: '',  // Vẫn giữ trường này trong state nhưng sẽ không yêu cầu người dùng nhập
         identity_number: '',
         experience: ''
     });
@@ -42,7 +42,7 @@ function RegisterCleaner() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        const { phone, name, password, confirmPassword, email, age, address, identity_number, experience } = formData;
+        const { phone, name, password, confirmPassword, email, age, identity_number, experience } = formData;
 
         console.log("👉 Dữ liệu form trước khi validate:", formData);
 
@@ -57,9 +57,9 @@ function RegisterCleaner() {
             identity_number: validateIdentityNumber(identity_number)
         };
 
-        if (!address.trim()) {
-            newErrors.address = "Vui lòng nhập địa chỉ!";
-        }
+        // if (!address.trim()) {
+        //     newErrors.address = "Vui lòng nhập địa chỉ!";
+        // }
 
         if (!experience.trim()) {
             newErrors.experience = "Vui lòng nhập kinh nghiệm!";
@@ -76,18 +76,8 @@ function RegisterCleaner() {
             return;
         }
 
-        console.log("🚀 Dữ liệu gửi đi API:", {
-            phone,
-            password,
-            name,
-            email,
-            age: parseInt(age),
-            address,
-            identity_number: parseInt(identity_number),
-            experience
-        });
-
         try {
+            // Luôn gửi address dưới dạng chuỗi trống
             const response = await fetch(`${BASE_URL}/employee/register`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -96,9 +86,9 @@ function RegisterCleaner() {
                     password,
                     name,
                     email,
+                    address: "", // Gửi chuỗi trống cho address
                     age: parseInt(age),
-                    address,
-                    identity_number: parseInt(identity_number),
+                    identity_number,
                     experience
                 })
             });
@@ -110,12 +100,11 @@ function RegisterCleaner() {
 
             if (response.ok) {
                 message.success(result.message || 'Đăng ký thành công!');
-                console.log("✅ Đăng ký thành công.");
+                console.log("Đăng ký thành công.");
                 navigate('/login');
             } else {
                 message.error(result.message || 'Đăng ký thất bại!');
                 // setErrorMessage(result.message || 'Đăng ký thất bại!');
-
             }
         } catch (error) {
             // console.error("🚫 Lỗi kết nối hoặc xử lý:", error);
@@ -257,8 +246,6 @@ function RegisterCleaner() {
                                     className="form-textarea"
                                 />
                             </div>
-
-
 
                             <div className="error-message-container">
                                 <div className={`error-message ${errorMessage ? 'show' : ''}`}>
