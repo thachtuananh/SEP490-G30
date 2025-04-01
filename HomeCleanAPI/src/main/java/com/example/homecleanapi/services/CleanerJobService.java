@@ -907,9 +907,13 @@ public class CleanerJobService {
 		// Đảm bảo nếu dịch vụ không có công việc nào thì hiển thị jobCount là 0
 		for (String serviceName : jobsByService.keySet()) {
 			Map<String, Object> serviceInfo = (Map<String, Object>) jobsByService.get(serviceName);
-			if (serviceInfo.get("jobCount") == null) {
-				serviceInfo.put("jobCount", 0); // Nếu không có công việc, đặt jobCount là 0
+			if (serviceInfo != null) {
+				int jobCount = (int) serviceInfo.getOrDefault("jobCount", 0);
+				serviceInfo.put("jobCount", jobCount + 1);
+			} else {
+				System.err.println("⚠️ serviceInfo is null for service: " + serviceName);
 			}
+
 		}
 
 		return jobsByService; // Trả về danh sách các công việc phân loại theo dịch vụ, bao gồm cả combo
