@@ -7,16 +7,21 @@ import com.example.homecleanapi.services.CustomerAuthService;
 import com.example.homecleanapi.utils.JwtUtils;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 @Tag(name = "Admin Manager Customer API")
 @RestController
 @RequestMapping("/api/admin/customers")
 public class AdminCustomerController {
+
+    @Autowired
+    private JobHistoryService jobHistoryService;
 
     private final AdminCustomerService customerService;
     private final JwtUtils jwtUtils;
@@ -85,6 +90,14 @@ public class AdminCustomerController {
         }
         return ResponseEntity.status(403).body(Map.of("message", "Access denied. Admin or Manager role required"));
     }
+
+    @GetMapping("/history/{customerId}")
+    public ResponseEntity<List<JobHistoryResponse>> getJobHistory(@PathVariable("customerId") Long customerId) {
+        List<JobHistoryResponse> jobHistoryResponses = jobHistoryService.getJobHistoryByCustomerId(customerId);
+        return ResponseEntity.ok(jobHistoryResponses);
+    }
+
+
 
 
 

@@ -861,6 +861,14 @@ public class CleanerJobService {
 					if (!countedJobIds.contains(job.getId())) {
 						// Lấy thông tin dịch vụ từ Map jobsByService
 						Map<String, Object> serviceInfo = (Map<String, Object>) jobsByService.get(serviceName);
+						if (serviceInfo != null) {
+							int jobCount = (int) serviceInfo.get("jobCount");
+							serviceInfo.put("jobCount", jobCount + 1);
+						} else {
+							
+							System.err.println("serviceInfo is null for service: " + serviceName);
+						}
+
 
 						// Kiểm tra nếu job có nhiều dịch vụ (tức là combo)
 						List<JobServiceDetail> jobServiceDetailsForJob = jobServiceDetailRepository
