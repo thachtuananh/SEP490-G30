@@ -67,15 +67,19 @@ public class AdminCustomerService {
 
         Customers customer = existingCustomerOpt.get();
 
-        customer.setFull_name(request.getFullName());
-        customer.setPhone(request.getPhone());
+        // 👇 Chỉ cập nhật nếu client truyền lên
+        if (request.getFullName() != null) {
+            customer.setFull_name(request.getFullName());
+        }
 
-        // 👇 Nếu có mật khẩu mới thì mã hóa và update
+        if (request.getPhone() != null) {
+            customer.setPhone(request.getPhone());
+        }
+
         if (request.getPassword() != null && !request.getPassword().isEmpty()) {
             customer.setPassword_hash(passwordEncoder.encode(request.getPassword()));
         }
 
-        // 👇 Nếu có cập nhật trạng thái tài khoản
         if (request.getAccountStatus() != null) {
             customer.setAccountStatus(request.getAccountStatus());
         }
@@ -90,6 +94,7 @@ public class AdminCustomerService {
                 "account_status", customer.getAccountStatus()
         ));
     }
+
 
 
     // Xóa khách hàng
