@@ -1,9 +1,7 @@
 package com.example.homecleanapi.models;
 
 import jakarta.persistence.*;
-
 import java.time.LocalDateTime;
-
 
 @Entity
 @Table(name = "customers")
@@ -11,16 +9,18 @@ public class Customers {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
+
     private String password_hash;
     private String full_name;
+
     @Column(name = "phone_number")
     private String phone;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime created_at;
-    private boolean is_deleted;
 
-    @Column(name = "account_status")
-    private Boolean accountStatus;
+    @Column(name = "is_deleted") // Cập nhật tên cột thành is_deleted
+    private boolean is_deleted;
 
     public Customers() {
     }
@@ -28,14 +28,6 @@ public class Customers {
     @PrePersist
     protected void onCreate() {
         this.created_at = LocalDateTime.now();
-    }
-
-    public Boolean getAccountStatus() {
-        return accountStatus;
-    }
-
-    public void setAccountStatus(Boolean accountStatus) {
-        this.accountStatus = accountStatus;
     }
 
     public Integer getId() {
@@ -78,6 +70,7 @@ public class Customers {
         this.created_at = created_at;
     }
 
+    // Cập nhật getter và setter cho cột is_deleted
     public boolean isIs_deleted() {
         return is_deleted;
     }

@@ -41,7 +41,7 @@ public class AdminCustomerService {
         customer.setPhone(request.getPhone());
         customer.setPassword_hash(passwordEncoder.encode(request.getPassword()));
         customer.setFull_name(request.getName());
-        customer.setAccountStatus(true);
+        customer.setIs_deleted(false); // Mặc định là không bị xóa
 
         // Lưu vào cơ sở dữ liệu
         customerRepository.save(customer);
@@ -52,9 +52,10 @@ public class AdminCustomerService {
                 "customerId", customer.getId(),
                 "phone", customer.getPhone(),
                 "name", customer.getFull_name(),
-                "account_status", customer.getAccountStatus()
+                "is_deleted", customer.isIs_deleted() // Cập nhật với is_deleted
         ));
     }
+
 
 
     // Cập nhật thông tin khách hàng
@@ -67,7 +68,7 @@ public class AdminCustomerService {
 
         Customers customer = existingCustomerOpt.get();
 
-        // 👇 Chỉ cập nhật nếu client truyền lên
+        // Chỉ cập nhật nếu client truyền lên
         if (request.getFullName() != null) {
             customer.setFull_name(request.getFullName());
         }
@@ -81,7 +82,7 @@ public class AdminCustomerService {
         }
 
         if (request.getAccountStatus() != null) {
-            customer.setAccountStatus(request.getAccountStatus());
+            customer.setIs_deleted(request.getAccountStatus());  // Cập nhật is_deleted
         }
 
         customerRepository.save(customer);
@@ -91,9 +92,10 @@ public class AdminCustomerService {
                 "customerId", customer.getId(),
                 "phone", customer.getPhone(),
                 "name", customer.getFull_name(),
-                "account_status", customer.getAccountStatus()
+                "is_deleted", customer.isIs_deleted()
         ));
     }
+
 
 
 
@@ -107,12 +109,12 @@ public class AdminCustomerService {
 
         Customers customer = existingCustomerOpt.get();
 
-        // Soft delete - đặt account_status = false
-        customer.setAccountStatus(false);
+        customer.setIs_deleted(true);
         customerRepository.save(customer);
 
         return ResponseEntity.ok(Map.of("message", "Khóa tài khoản khách hàng thành công"));
     }
+
 
 
     // Lấy thông tin khách hàng
@@ -130,10 +132,11 @@ public class AdminCustomerService {
                 "phone", customer.getPhone(),
                 "name", customer.getFull_name(),
                 "created_at", customer.getCreated_at(),
-                "account_status", customer.getAccountStatus(),
-                "password_hash", customer.getPassword_hash() // 👈 Thêm dòng này
+                "is_deleted", customer.isIs_deleted(),  // Cập nhật với is_deleted
+                "password_hash", customer.getPassword_hash()
         ));
     }
+
 
 
     public ResponseEntity<List<Map<String, Object>>> getAllCustomers() {
@@ -145,13 +148,13 @@ public class AdminCustomerService {
             map.put("phone", customer.getPhone());
             map.put("name", customer.getFull_name());
             map.put("created_at", customer.getCreated_at());
-            map.put("account_status", customer.getAccountStatus());
+            map.put("is_deleted", customer.isIs_deleted());  // Cập nhật với is_deleted
             return map;
         }).toList();
 
-
         return ResponseEntity.ok(result);
     }
+
 
 }
 

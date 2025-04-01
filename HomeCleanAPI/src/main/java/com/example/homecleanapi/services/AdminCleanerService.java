@@ -41,7 +41,7 @@ public class AdminCleanerService {
         cleaner.setIs_verified(false); // Mặc định chưa xác minh
         cleaner.setExperience(request.getExperience());
 
-        cleaner.setAccountStatus(true);
+        cleaner.setIsDeleted(true);
         cleaner.setStatus(true);
         cleaner.setCreated_at(LocalDateTime.now());
         cleaner.setUpdated_at(LocalDateTime.now());
@@ -81,7 +81,7 @@ public class AdminCleanerService {
         if (request.getExperience() != null) cleaner.setExperience(request.getExperience());
         if (request.getIsVerified() != null) cleaner.setIs_verified(request.getIsVerified());
 
-        if (request.getAccountStatus() != null) cleaner.setAccountStatus(request.getAccountStatus());
+        if (request.getAccountStatus() != null) cleaner.setIsDeleted(request.getAccountStatus());
 
         // Nếu có password mới
         if (request.getPassword() != null && !request.getPassword().isEmpty()) {
@@ -112,7 +112,7 @@ public class AdminCleanerService {
         }
 
         Employee cleaner = cleanerOpt.get();
-        cleaner.setAccountStatus(false);
+        cleaner.setIsDeleted(false);
         cleanerRepository.save(cleaner);
 
         return ResponseEntity.ok(Map.of("message", "Đã khóa tài khoản cleaner"));
@@ -131,7 +131,7 @@ public class AdminCleanerService {
         result.put("name", c.getName());
         result.put("phone", c.getPhone());
         result.put("email", c.getEmail());
-        result.put("account_status", c.getAccountStatus());
+        result.put("account_status", c.getIsDeleted());
         result.put("status", c.getStatus());
         result.put("created_at", c.getCreated_at());
         result.put("updated_at", c.getUpdated_at());
@@ -163,7 +163,7 @@ public class AdminCleanerService {
             map.put("name", cleaner.getName());
             map.put("email", cleaner.getEmail());
             map.put("created_at", cleaner.getCreated_at());
-            map.put("account_status", cleaner.getAccountStatus());
+            map.put("account_status", cleaner.getIsDeleted());
             return map;
         }).toList();
 
