@@ -2,7 +2,11 @@ package com.example.homecleanapi.controllers;
 
 import com.example.homecleanapi.dtos.ChatMessage;
 import com.example.homecleanapi.models.Conversation;
+import com.example.homecleanapi.models.Customers;
+import com.example.homecleanapi.models.Employee;
 import com.example.homecleanapi.repositories.ConversationRepository;
+import com.example.homecleanapi.repositories.CustomerRepository;
+import com.example.homecleanapi.repositories.EmployeeRepository;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.messaging.handler.annotation.Header;
@@ -25,15 +29,20 @@ public class ChatController {
 
     private final ConversationRepository conversationRepository;
 
-    public ChatController(RabbitTemplate rabbitTemplate, SimpMessagingTemplate messagingTemplate, ConversationRepository conversationRepository) {
+    private final CustomerRepository customerRepository;
+    private final EmployeeRepository cleanerRepository;
+
+    public ChatController(RabbitTemplate rabbitTemplate, SimpMessagingTemplate messagingTemplate, ConversationRepository conversationRepository, CustomerRepository customerRepository, EmployeeRepository employeeRepository) {
         this.rabbitTemplate = rabbitTemplate;
         this.messagingTemplate = messagingTemplate;
         this.conversationRepository = conversationRepository;
+        this.customerRepository = customerRepository;
+        this.cleanerRepository = employeeRepository;
     }
 
     @MessageMapping("/chat")
     public void sendMessage(@Payload ChatMessage message,
-                            @Header("customerId") Integer customerId,
+                            @Header("customerId") Long customerId,
                             @Header("employeeId") Integer employeeId) {
         // Lấy hoặc tạo mới conversation
         Long conversationId = getOrCreateConversation(customerId, employeeId);
@@ -55,8 +64,13 @@ public class ChatController {
 //        log.info("Sending to WebSocket receiver: {}", receiverId);
     }
 
-    private Long getOrCreateConversation(Integer customerId, Integer employeeId) {
-        Optional<Conversation> existingConversation = conversationRepository.findByCustomerIdAndCleanerId(customerId, employeeId);
+    private Long getOrCreateConversation(Long customerId, Integer employeeId) {
+        Customers customer = customerRepository.findById(customerId)
+                .orElseThrow(() -> new RuntimeException("Customer not found"));
+        Employee cleaner = cleanerRepository.findById(employeeId)
+                .orElseThrow(() -> new RuntimeException("Cleaner not found"));
+
+        Optional<Conversation> existingConversation = conversationRepository.findByCustomerAndCleaner(customer, cleaner);
 
         if (existingConversation.isPresent()) {
             return existingConversation.get().getId();
@@ -64,31 +78,23 @@ public class ChatController {
 
         // Tạo mới conversation nếu chưa tồn tại
         Conversation newConversation = new Conversation();
-        newConversation.setCustomerId(customerId);
-        newConversation.setCleanerId(employeeId);
-        newConversation = conversationRepository.save(newConversation);
+        newConversation.setCustomer(customer);
+        newConversation.setCleaner(cleaner);
 
-//        log.info("New conversation created with ID: {}", newConversation.getId());
+        newConversation = conversationRepository.save(newConversation);
         return newConversation.getId();
     }
+
 
 
     private Integer determineReceiverId(Long conversationId, Integer senderId) {
         Conversation conversation = conversationRepository.findById(conversationId)
                 .orElseThrow(() -> new RuntimeException("Conversation not found"));
-        return senderId.equals(conversation.getCustomerId()) ? conversation.getCleanerId() : conversation.getCustomerId();
-    }
 
-    // Gửi tin nhắn cá nhân
-//    @MessageMapping("/chat")
-//    public void sendPrivateMessage(@Payload Message message, SimpMessageHeaderAccessor headerAccessor) {
-//        // Lưu tin nhắn vào database
-//        message.setSent_at(LocalDateTime.now());
-//        messageBatchRepository.save(message);
-//
-//        // Gửi tin nhắn tới người nhận qua /queue
-//        String destination = "/queue/messages-" + message.getReceiverId();
-//        messagingTemplate.convertAndSend(destination, message);
-//    }
+        Integer customerId = conversation.getCustomer().getId();
+        Integer cleanerId = conversation.getCleaner().getId();
+
+        return senderId.equals(customerId) ? cleanerId : customerId;
+    }
 
 }

@@ -2,7 +2,11 @@ package com.example.homecleanapi.services;
 
 
 import com.example.homecleanapi.models.Conversation;
+import com.example.homecleanapi.models.Customers;
+import com.example.homecleanapi.models.Employee;
 import com.example.homecleanapi.repositories.ConversationRepository;
+import com.example.homecleanapi.repositories.CustomerRepository;
+import com.example.homecleanapi.repositories.EmployeeRepository;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,13 +23,20 @@ public class ConversationService {
 	
 	@Autowired
     private ConversationRepository conversationRepository;
+    private final EmployeeRepository employeeRepository;
+    private final CustomerRepository customerRepository;
 
-    public Conversation getOrCreateConversation(Integer customerId, Integer cleanerId) {
-        return conversationRepository.findByCustomerIdAndCleanerId(customerId, cleanerId)
+    public Conversation getOrCreateConversation(Long customerId, Integer cleanerId) {
+        Customers customer = customerRepository.findById(customerId)
+                .orElseThrow(() -> new RuntimeException("Customer not found"));
+        Employee cleaner = employeeRepository.findById(cleanerId)
+                .orElseThrow(() -> new RuntimeException("Cleaner not found"));
+
+        return conversationRepository.findByCustomerAndCleaner(customer, cleaner)
                 .orElseGet(() -> {
                     Conversation conversation = new Conversation();
-                    conversation.setCustomerId(customerId);
-                    conversation.setCleanerId(cleanerId);
+                    conversation.setCustomer(customer);
+                    conversation.setCleaner(cleaner);
                     return conversationRepository.save(conversation);
                 });
     }
@@ -37,9 +48,11 @@ public class ConversationService {
                 .stream()
                 .map(conversation -> {
                     Map<String, Object> allConversation = new HashMap<>();
-                    allConversation.put("customer_id", conversation.getCustomerId());
-                    allConversation.put("cleaner_id", conversation.getCleanerId());
+                    allConversation.put("customer_id", conversation.getCustomer().getId());
+                    allConversation.put("cleaner_id", conversation.getCleaner().getId());
                     allConversation.put("conversation_id", conversation.getId());
+                    allConversation.put("customer_name", conversation.getCustomer().getFull_name());
+                    allConversation.put("cleaner_name", conversation.getCleaner().getName());
                     return allConversation;
                 })
                 .toList();
@@ -54,9 +67,11 @@ public class ConversationService {
                 .stream()
                 .map(conversation -> {
                     Map<String, Object> allConversation = new HashMap<>();
-                    allConversation.put("customer_id", conversation.getCustomerId());
-                    allConversation.put("cleaner_id", conversation.getCleanerId());
+                    allConversation.put("customer_id", conversation.getCustomer().getId());
+                    allConversation.put("cleaner_id", conversation.getCleaner().getId());
                     allConversation.put("conversation_id", conversation.getId());
+                    allConversation.put("customer_name", conversation.getCustomer().getFull_name());
+                    allConversation.put("cleaner_name", conversation.getCleaner().getName());
                     return allConversation;
                 })
                 .toList();
