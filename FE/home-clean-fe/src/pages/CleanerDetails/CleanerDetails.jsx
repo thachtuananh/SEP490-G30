@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { fetchCleanerDetails } from "../../components/api/CleanerDetail";
+import { fetchCleanerDetails } from "../../services/owner/OwnerAPI";
 import { ImageGallery } from "../../components/cleaner-details/ImageGallery";
 import { ServiceInfo } from "../../components/cleaner-details/ServiceInfo";
 import { PriceSection } from "../../components/cleaner-details/PriceSection";

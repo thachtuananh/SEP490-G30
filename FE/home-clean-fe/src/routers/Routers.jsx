@@ -33,6 +33,7 @@ import ActivityJob from "../pages/ActivityJob"
 import JobListFilter from "../pages/JobListFilter"
 import ServiceDetailsCombo from './../pages/ServiceDetails/ServiceDetailsCombo';
 import ServiceDetailsCleaner from './../pages/CleanerDetails/ServiceDetail';
+import MainDashboard from "../pages/Admin/MainDashboard"
 
 const Routers = () => {
     return (
@@ -74,6 +75,7 @@ const Routers = () => {
             <Route path="/service-details-cleaner" element={<ServiceDetailsCleaner />} />
 
             <Route path="/job-list" element={<JobListFilter />} />
+            <Route path="/admin" element={<MainDashboard/>}/>
         </Routes>
     )
 }
