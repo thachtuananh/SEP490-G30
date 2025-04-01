@@ -902,7 +902,17 @@ public class CleanerJobService {
 		}
 
 		// Kết hợp kết quả của comboJobs với jobsByService
-		jobsByService.put("combo", comboJobs.get(comboKey)); // Chỉ giữ 1 ID duy nhất cho combo
+//		jobsByService.put("combo", comboJobs.get(comboKey));
+		// Đảm bảo combo luôn tồn tại trong map comboJobs
+		if (!comboJobs.containsKey(comboKey)) {
+			Map<String, Object> comboInfo = new HashMap<>();
+			comboInfo.put("jobCount", 0);
+			comboInfo.put("id", comboKey);
+			comboJobs.put(comboKey, comboInfo);
+		}
+
+		jobsByService.put("combo", comboJobs.get(comboKey));
+
 
 		// Đảm bảo nếu dịch vụ không có công việc nào thì hiển thị jobCount là 0
 		for (String serviceName : jobsByService.keySet()) {

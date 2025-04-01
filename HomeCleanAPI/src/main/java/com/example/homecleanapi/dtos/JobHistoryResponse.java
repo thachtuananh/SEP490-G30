@@ -1,6 +1,7 @@
 package com.example.homecleanapi.dtos;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 public class JobHistoryResponse {
     private Long jobId;
@@ -14,6 +15,7 @@ public class JobHistoryResponse {
     private String reminder;
     private Long cleanerId;
     private String cleanerName;
+    private List<String> services;
 
     // Getter và Setter
     public Long getJobId() {
@@ -102,6 +104,14 @@ public class JobHistoryResponse {
 
     public void setCleanerName(String cleanerName) {
         this.cleanerName = cleanerName;
+    }
+
+    public List<String> getServices() {
+        return services;
+    }
+
+    public void setServices(List<String> services) {
+        this.services = services;
     }
 }
 
