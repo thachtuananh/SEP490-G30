@@ -18,12 +18,23 @@ public class Customers {
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime created_at;
 
+    @Column(name = "account_status")
+    private Boolean accountStatus;
+
     public Customers() {
     }
 
     @PrePersist
     protected void onCreate() {
         this.created_at = LocalDateTime.now();
+    }
+
+    public Boolean getAccountStatus() {
+        return accountStatus;
+    }
+
+    public void setAccountStatus(Boolean accountStatus) {
+        this.accountStatus = accountStatus;
     }
 
     public Integer getId() {

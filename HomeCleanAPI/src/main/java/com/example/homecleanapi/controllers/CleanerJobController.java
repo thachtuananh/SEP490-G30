@@ -39,6 +39,12 @@ public class CleanerJobController {
         return ResponseEntity.ok(nearbyOpenJobs);
     }
 
+//    @GetMapping(value = "/jobs/{cleanerId}")
+//    public ResponseEntity<List<JobSummaryDTO>> getOpenJobs(@PathVariable Long cleanerId) {
+//        List<JobSummaryDTO> openJobs = cleanerJobService.getOpenJobs(cleanerId);
+//        return ResponseEntity.ok(openJobs);
+//    }
+
 
 
     // Xem chi tiết công việc

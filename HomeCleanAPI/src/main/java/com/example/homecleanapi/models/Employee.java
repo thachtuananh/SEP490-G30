@@ -40,6 +40,9 @@ public class Employee {
     @Column(name = "status")
     private Boolean status;
 
+    @Column(name = "account_status")
+    private Boolean accountStatus;
+
     @PrePersist
     protected void onCreate() {
         this.is_verified = Boolean.FALSE;
@@ -56,7 +59,14 @@ public class Employee {
 //        }
     }
 
-    
+    public Boolean getAccountStatus() {
+        return accountStatus;
+    }
+
+    public void setAccountStatus(Boolean accountStatus) {
+        this.accountStatus = accountStatus;
+    }
+
     public Boolean getStatus() {
 		return status;
 	}
