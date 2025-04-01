@@ -24,7 +24,7 @@ const AddLocationModal = ({ setIsShowAddLocationModal, onAddressAdded }) => {
     const customerId = localStorage.getItem("customerId");
 
     try {
-      const response = await fetch(`${BASE_URL}/customer/${customerId}/create-address`, {
+      const response = await fetch(`${BASE_URL}/customer/${customerId}/create_address`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
