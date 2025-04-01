@@ -20,8 +20,8 @@ import java.util.Map;
 @RequestMapping("/api/admin/customers")
 public class AdminCustomerController {
 
-    @Autowired
-    private JobHistoryService jobHistoryService;
+//    @Autowired
+//    private JobHistoryService jobHistoryService;
 
     private final AdminCustomerService customerService;
     private final JwtUtils jwtUtils;
@@ -91,11 +91,11 @@ public class AdminCustomerController {
         return ResponseEntity.status(403).body(Map.of("message", "Access denied. Admin or Manager role required"));
     }
 
-    @GetMapping("/history/{customerId}")
-    public ResponseEntity<List<JobHistoryResponse>> getJobHistory(@PathVariable("customerId") Long customerId) {
-        List<JobHistoryResponse> jobHistoryResponses = jobHistoryService.getJobHistoryByCustomerId(customerId);
-        return ResponseEntity.ok(jobHistoryResponses);
-    }
+//    @GetMapping("/history/{customerId}")
+//    public ResponseEntity<List<JobHistoryResponse>> getJobHistory(@PathVariable("customerId") Long customerId) {
+//        List<JobHistoryResponse> jobHistoryResponses = jobHistoryService.getJobHistoryByCustomerId(customerId);
+//        return ResponseEntity.ok(jobHistoryResponses);
+//    }
 
 
 

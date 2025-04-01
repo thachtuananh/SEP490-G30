@@ -865,7 +865,7 @@ public class CleanerJobService {
 							int jobCount = (int) serviceInfo.get("jobCount");
 							serviceInfo.put("jobCount", jobCount + 1);
 						} else {
-							
+
 							System.err.println("serviceInfo is null for service: " + serviceName);
 						}
 
