@@ -78,7 +78,7 @@ export const Address = () => {
 
     try {
       const response = await fetch(
-        `${BASE_URL}/customer/${customerId}/create-address`,
+        `${BASE_URL}/customer/${customerId}/create_address`,
         {
           method: "POST",
           headers: {
@@ -160,7 +160,7 @@ export const Address = () => {
         const customerId = localStorage.getItem("customerId");
         try {
           const response = await fetch(
-            `${BASE_URL}/customer/${customerId}/update-address/${addressId}`,
+            `${BASE_URL}/customer/${customerId}/update_address/${addressId}`,
             {
               method: "PUT",
               headers: {
