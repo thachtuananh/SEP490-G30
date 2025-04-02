@@ -1,6 +1,7 @@
 package com.example.homecleanapi.models;
 
 
+import com.example.homecleanapi.dtos.CleanerUpdateProfile;
 import jakarta.persistence.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -45,6 +46,7 @@ public class Employee {
         this.is_verified = Boolean.FALSE;
         this.created_at = LocalDateTime.now();
         this.updated_at = LocalDateTime.now();
+        this.status = Boolean.FALSE;
 //        byte[] image = getRandomProfileImage();
 //
 //        if (image == null || image.length == 0) {
@@ -140,6 +142,15 @@ public class Employee {
     }
 
     public Employee() {
+    }
+
+    public void updateProfile(CleanerUpdateProfile request) {
+        this.setName(request.getName());
+        this.setEmail(request.getEmail());
+        this.setPhone(request.getPhone());
+        this.setAge(request.getAge());
+        this.setIdentity_number(request.getIdentity_number());
+        this.setExperience(request.getExperience());
     }
 
     public Integer getId() {

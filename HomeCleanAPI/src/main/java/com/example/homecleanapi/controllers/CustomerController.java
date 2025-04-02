@@ -4,6 +4,7 @@ import com.example.homecleanapi.dtos.*;
 import com.example.homecleanapi.services.CustomerAuthService;
 import com.example.homecleanapi.services.CustomerService;
 import com.example.homecleanapi.utils.JwtUtils;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +17,7 @@ import java.util.Map;
 @Tag(name = "Customer Profile API")
 @RestController
 @RequestMapping("/api/customer")
+@SecurityRequirement(name = "BearerAuth")
 public class CustomerController {
 
     private JwtUtils jwtUtils;
@@ -39,31 +41,31 @@ public class CustomerController {
         return customerAuthService.customerLogin(request);
     }
 
-    @PostMapping(value = "/forgot-password",  produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Map<String, Object>> forgotPassword(@RequestBody ForgotPasswordRequest request) {
-        return customerAuthService.customerForgotPassword(request);
+    @PostMapping(value = "/{customerId}/forgot-password",  produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Map<String, Object>> forgotPassword(@RequestBody ForgotPasswordRequest request, @PathVariable Integer customerId) {
+        return customerAuthService.customerForgotPassword(request, customerId);
     }
 
-    @PutMapping(value = "/{customer_id}/profile",  produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Map<String, Object>> updateProfile(@RequestBody CustomerProfileRequest request, @PathVariable int customer_id) {
+    @PatchMapping(value = "/{customer_id}/profile",  produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Map<String, Object>> updateProfile(@RequestBody CustomerProfileRequest request, @PathVariable Long customer_id) {
 
         return customerService.updateProfile(customer_id, request);
     }
 
     @GetMapping(value = "/{customer_id}/profile", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Map<String, Object>> getProfile(@PathVariable int customer_id) {
+    public ResponseEntity<Map<String, Object>> getProfile(@PathVariable long customer_id) {
         return customerService.getProfile(customer_id);
     }
 
     @PostMapping(value = "/{customer_id}/create-address",  produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Map<String, Object>> createAddress(@RequestBody CustomerAddressesDTO request, @PathVariable int customer_id) throws IOException {
+    public ResponseEntity<Map<String, Object>> createAddress(@RequestBody CustomerAddressesDTO request, @PathVariable Long customer_id) throws IOException {
         return customerService.addAddress(request, customer_id);
     }
 
-    @PutMapping(value = "/{customer_id}/update-address", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Map<String, Object>> updateEmployeeAddress(@RequestBody CustomerAddressesDTO request, @PathVariable int employeeId) throws IOException {
+    @PutMapping(value = "/{customerId}/update-address/{addressId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Map<String, Object>> updateEmployeeAddress(@RequestBody CustomerAddressesDTO request, @PathVariable Long customerId, @PathVariable Integer addressId) throws IOException {
         // Gọi service để xử lý update địa chỉ
-        return customerService.updateCustomerAddress(request, employeeId);
+        return customerService.updateCustomerAddress(request, customerId, addressId);
     }
 
     // API xóa địa chỉ theo locationId
@@ -73,8 +75,14 @@ public class CustomerController {
     }
 
     // API lấy danh sách địa chỉ của employee theo employeeId
-    @GetMapping(value = "/{customer_id}/all-addresses",  produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Map<String, Object>> getAllEmployeeAddresses(@PathVariable int employeeId) {
-        return customerService.getAllCusomterAddresses(employeeId);
+    @GetMapping(value = "/{customerId}/all-addresses",  produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Map<String, Object>> getAllEmployeeAddresses(@PathVariable Long customerId) {
+        return customerService.getAllCustomerAddresses(customerId);
+    }
+
+    // API xóa account
+    @DeleteMapping(value = "/{customer_id}/delete_account", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Map<String, Object>> deleteAccount(@PathVariable Long customer_id) {
+        return customerService.deleteCustomerAccount(customer_id);
     }
 }

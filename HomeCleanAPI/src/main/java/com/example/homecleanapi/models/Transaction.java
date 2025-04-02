@@ -1,6 +1,8 @@
 package com.example.homecleanapi.models;
 
 import jakarta.persistence.*;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "transactions")
@@ -10,20 +12,32 @@ public class Transaction {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "customer_id")
-    private Customers customer; // Liên kết với bảng customers
+    @Column(name = "transaction_id", nullable = false, unique = true)
+    private String transactionId;
 
-    @ManyToOne
-    @JoinColumn(name = "cleaner_id")
-    private Employee cleaner; // Liên kết với bảng cleaners
+    @Column(name = "job_id", nullable = false)
+    private Long jobId;
 
-    private Double amount;
-    private String transactionType;  // "Credit" hoặc "Debit"
-    private String paymentMethod;    // "Credit Card", "Debit Card", "E-Wallet", etc.
-    private String transactionStatus; // "Pending", "Completed", "Failed"
+    @Column(name = "amount", nullable = false)
+    private BigDecimal amount;
+
+    @Column(name = "transaction_date", nullable = false)
+    private LocalDateTime transactionDate;
+
+    @Column(name = "status", nullable = false)
+    private String status; // 'Pending', 'Completed', 'Failed', 'Refunded'
+
+    @Column(name = "payment_method", nullable = false)
+    private String paymentMethod; // 'Credit Card', 'Debit Card', 'Bank Transfer', 'Cash', 'E-Wallet', etc.
+
+    @Column(name = "created_at", nullable = false)
+    private LocalDateTime createdAt;
+
+    @Column(name = "updated_at", nullable = false)
+    private LocalDateTime updatedAt;
 
     // Getters and Setters
+
     public Long getId() {
         return id;
     }
@@ -32,36 +46,44 @@ public class Transaction {
         this.id = id;
     }
 
-    public Customers getCustomer() {
-        return customer;
+    public String getTransactionId() {
+        return transactionId;
     }
 
-    public void setCustomer(Customers customer) {
-        this.customer = customer;
+    public void setTransactionId(String transactionId) {
+        this.transactionId = transactionId;
     }
 
-    public Employee getCleaner() {
-        return cleaner;
+    public Long getJobId() {
+        return jobId;
     }
 
-    public void setCleaner(Employee cleaner) {
-        this.cleaner = cleaner;
+    public void setJobId(Long jobId) {
+        this.jobId = jobId;
     }
 
-    public Double getAmount() {
+    public BigDecimal getAmount() {
         return amount;
     }
 
-    public void setAmount(Double amount) {
+    public void setAmount(BigDecimal amount) {
         this.amount = amount;
     }
 
-    public String getTransactionType() {
-        return transactionType;
+    public LocalDateTime getTransactionDate() {
+        return transactionDate;
     }
 
-    public void setTransactionType(String transactionType) {
-        this.transactionType = transactionType;
+    public void setTransactionDate(LocalDateTime transactionDate) {
+        this.transactionDate = transactionDate;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 
     public String getPaymentMethod() {
@@ -72,11 +94,19 @@ public class Transaction {
         this.paymentMethod = paymentMethod;
     }
 
-    public String getTransactionStatus() {
-        return transactionStatus;
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
     }
 
-    public void setTransactionStatus(String transactionStatus) {
-        this.transactionStatus = transactionStatus;
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
     }
 }

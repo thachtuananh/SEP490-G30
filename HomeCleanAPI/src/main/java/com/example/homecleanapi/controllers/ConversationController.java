@@ -23,7 +23,7 @@ public class ConversationController {
     }
 
     @PostMapping(name = "/createConversation")
-    public Conversation createConversation(@RequestParam @Valid Integer customerId, @RequestParam @Valid Integer cleanerId) {
+    public Conversation createConversation(@RequestParam @Valid Long customerId, @RequestParam @Valid Integer cleanerId) {
         return conversationService.getOrCreateConversation(customerId, cleanerId);
     }
 

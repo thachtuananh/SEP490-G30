@@ -6,14 +6,34 @@ public class BookJobRequest {
 
     private Integer customerAddressId;  
     private String jobTime;  
-    private List<ServiceRequest> services;  
+    private List<ServiceRequest> services; 
+    private String paymentMethod;
+    private String reminder;
 
     // Getter và Setter cho customerAddressId
+    
+    
     public Integer getCustomerAddressId() {
         return customerAddressId;
     }
 
-    public void setCustomerAddressId(Integer customerAddressId) {
+    public String getReminder() {
+		return reminder;
+	}
+
+	public void setReminder(String reminder) {
+		this.reminder = reminder;
+	}
+
+	public String getPaymentMethod() {
+		return paymentMethod;
+	}
+
+	public void setPaymentMethod(String paymentMethod) {
+		this.paymentMethod = paymentMethod;
+	}
+
+	public void setCustomerAddressId(Integer customerAddressId) {
         this.customerAddressId = customerAddressId;
     }
 
@@ -37,9 +57,9 @@ public class BookJobRequest {
 
     // Đối tượng đại diện cho một dịch vụ và chi tiết dịch vụ
     public static class ServiceRequest {
-        private Long serviceId;  // ID dịch vụ
-        private Long serviceDetailId;  // ID chi tiết dịch vụ
-        private String imageUrl;  // Link ảnh liên quan đến dịch vụ
+        private Long serviceId;  
+        private Long serviceDetailId;  
+        private String imageUrl;  
 
         // Getter và Setter cho serviceId
         public Long getServiceId() {
