@@ -16,6 +16,8 @@ public class JobHistoryResponse {
     private Long cleanerId;
     private String cleanerName;
     private List<String> services;
+    private List<String> feedback;
+    private List<String> cleanerApplications;
 
     // Getter và Setter
     public Long getJobId() {
@@ -112,6 +114,22 @@ public class JobHistoryResponse {
 
     public void setServices(List<String> services) {
         this.services = services;
+    }
+
+    public List<String> getFeedback() {
+        return feedback;
+    }
+
+    public void setFeedback(List<String> feedback) {
+        this.feedback = feedback;
+    }
+
+    public List<String> getCleanerApplications() {
+        return cleanerApplications;
+    }
+
+    public void setCleanerApplications(List<String> cleanerApplications) {
+        this.cleanerApplications = cleanerApplications;
     }
 }
 

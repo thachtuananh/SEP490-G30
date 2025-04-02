@@ -21,9 +21,9 @@ public class Job {
     @JoinColumn(name = "customer_id", nullable = false)
     private Customers customer;
 
-//    @ManyToOne
-//    @JoinColumn(name = "service_id")
-//    private Services service;
+
+    @OneToMany(mappedBy = "job", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Feedback> feedback;
     
     @OneToOne(mappedBy = "job", fetch = FetchType.LAZY)
     private JobDetails jobDetails;
@@ -62,9 +62,16 @@ public class Job {
     private String reminder;  
 
     // Getters and Setters
-    
-    
-    
+
+
+    public List<Feedback> getFeedback() {
+        return feedback;
+    }
+
+    public void setFeedback(List<Feedback> feedback) {
+        this.feedback = feedback;
+    }
+
     public Long getId() {
         return id;
     }

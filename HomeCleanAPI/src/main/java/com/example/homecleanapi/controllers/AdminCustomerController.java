@@ -1,6 +1,7 @@
 package com.example.homecleanapi.controllers;
 
 import com.example.homecleanapi.dtos.*;
+import com.example.homecleanapi.models.Job;
 import com.example.homecleanapi.services.AdminCustomerService;
 import com.example.homecleanapi.services.CustomerService;
 import com.example.homecleanapi.services.CustomerAuthService;
@@ -8,6 +9,7 @@ import com.example.homecleanapi.utils.JwtUtils;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -91,11 +93,28 @@ public class AdminCustomerController {
         return ResponseEntity.status(403).body(Map.of("message", "Access denied. Admin or Manager role required"));
     }
 
-    @GetMapping("/historybookjob/{customerId}")
+    @GetMapping("/historycreatejob/{customerId}")
     public ResponseEntity<List<JobHistoryResponse>> getJobHistory(@PathVariable("customerId") Long customerId) {
         List<JobHistoryResponse> jobHistoryResponses = customerService.getJobHistoryByCustomerId(customerId);
         return ResponseEntity.ok(jobHistoryResponses);
     }
+
+    @GetMapping("/historybookjob/{customerId}")
+    public ResponseEntity<List<JobHistoryResponse>> getJobbookHistory(@PathVariable("customerId") Long customerId) {
+        List<JobHistoryResponse> jobHistoryResponses = customerService.getJobHistoryByCustomerIdForCleaner(customerId);
+        return ResponseEntity.ok(jobHistoryResponses);
+    }
+
+    @GetMapping("/jobdetail/{jobId}")
+    public ResponseEntity<JobHistoryResponse> getJobDetails(@PathVariable("jobId") Long jobId) {
+        JobHistoryResponse response = customerService.getJobDetailsByJobId(jobId);
+        if (response == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        }
+        return ResponseEntity.ok(response);
+    }
+
+
 
 
 

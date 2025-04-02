@@ -2,9 +2,9 @@ package com.example.homecleanapi.services;
 import com.example.homecleanapi.dtos.*;
 import com.example.homecleanapi.models.Customers;
 import com.example.homecleanapi.models.Employee;
-import com.example.homecleanapi.repositories.CleanerRepository;
-import com.example.homecleanapi.repositories.CustomerRepo;
-import com.example.homecleanapi.repositories.CustomerRepository;
+import com.example.homecleanapi.models.Job;
+import com.example.homecleanapi.models.JobApplication;
+import com.example.homecleanapi.repositories.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -19,10 +20,14 @@ public class AdminCleanerService {
 
     private final CleanerRepository cleanerRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JobRepository jobRepository;
+    private final JobApplicationRepository jobApplicationRepository;
 
-    public AdminCleanerService(CleanerRepository cleanerRepository, PasswordEncoder passwordEncoder) {
+    public AdminCleanerService(CleanerRepository cleanerRepository, PasswordEncoder passwordEncoder, JobRepository jobRepository, JobApplicationRepository jobApplicationRepository) {
         this.cleanerRepository = cleanerRepository;
         this.passwordEncoder = passwordEncoder;
+        this.jobRepository = jobRepository;
+        this.jobApplicationRepository = jobApplicationRepository;
     }
 
     public ResponseEntity<Map<String, Object>> addCleaner(CleanerRegisterRequest request) {
@@ -169,6 +174,91 @@ public class AdminCleanerService {
 
         return ResponseEntity.ok(result);
     }
+
+    public ResponseEntity<List<JobHistoryResponse>> getJobHistoryByCleanerId(Long cleanerId) {
+        // Lấy tất cả job mà cleaner đã thực hiện
+        List<Job> jobs = jobRepository.findByCleanerId(cleanerId);
+
+        // Chuyển danh sách jobs thành danh sách JobHistoryResponse
+        List<JobHistoryResponse> jobHistoryResponses = jobs.stream()
+                .map(job -> {
+                    JobHistoryResponse response = new JobHistoryResponse();
+                    response.setJobId(job.getId());
+                    response.setFullName(job.getCustomer().getFull_name());
+                    response.setPhone(job.getCustomer().getPhone());
+                    response.setCreatedAt(job.getCreatedAt());
+                    response.setJobStatus(job.getStatus().name());
+                    response.setScheduledTime(job.getScheduledTime());
+                    response.setPaymentMethod(job.getPaymentMethod());
+                    response.setTotalPrice(job.getTotalPrice());
+                    response.setReminder(job.getReminder());
+                    response.setCleanerId(cleanerId);
+                    response.setCleanerName(job.getCleaner().getName());
+
+                    // Lấy thông tin service của job (job_service_detail)
+                    List<String> services = job.getJobServiceDetails().stream()
+                            .map(jobServiceDetail -> jobServiceDetail.getService().getName()) // Lấy tên dịch vụ
+                            .collect(Collectors.toList());
+
+                    // Thêm dịch vụ vào response
+                    response.setServices(services);
+
+                    return response;
+                })
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(jobHistoryResponses);
+    }
+
+    public ResponseEntity<List<JobHistoryResponse>> getJobHistoryByCleanerIdnull(Long cleanerId) {
+        // Lấy danh sách các job mà cleaner đã apply từ bảng job_application
+        List<JobApplication> jobApplications = jobApplicationRepository.findByCleanerId(cleanerId);
+
+        // Lọc ra những job mà cleaner chưa được giao (tức là cleaner_id = null trong bảng jobs)
+        List<JobHistoryResponse> jobHistoryResponses = jobApplications.stream()
+                .map(jobApplication -> {
+                    Job job = jobApplication.getJob(); // Lấy job từ job application
+                    JobHistoryResponse response = new JobHistoryResponse();
+
+                    // Kiểm tra nếu job chưa có cleaner (cleaner_id trong bảng jobs là null)
+                    if (job.getCleaner() == null) {
+                        // Lấy thông tin công việc nếu cleaner_id là null trong bảng jobs
+                        response.setJobId(job.getId());
+                        response.setFullName(job.getCustomer().getFull_name());
+                        response.setPhone(job.getCustomer().getPhone());
+                        response.setCreatedAt(job.getCreatedAt());
+                        response.setJobStatus(job.getStatus().name());
+                        response.setScheduledTime(job.getScheduledTime());
+                        response.setPaymentMethod(job.getPaymentMethod());
+                        response.setTotalPrice(job.getTotalPrice());
+                        response.setReminder(job.getReminder());
+
+                        // Cleaner chưa được giao, nên id và name sẽ là null
+                        response.setCleanerId(null);
+                        response.setCleanerName(null);
+
+                        // Lấy thông tin dịch vụ của job
+                        List<String> services = job.getJobServiceDetails().stream()
+                                .map(jobServiceDetail -> jobServiceDetail.getService().getName())
+                                .collect(Collectors.toList());
+                        response.setServices(services);
+
+                        return response; // Trả về response nếu job có cleaner_id = null
+                    }
+
+                    return null; // Trả về null nếu job đã có cleaner
+                })
+                .filter(Objects::nonNull) // Lọc bỏ những job đã có cleaner
+                .collect(Collectors.toList()); // Thu thập các job thành list
+
+        return ResponseEntity.ok(jobHistoryResponses);
+    }
+
+
+
+
+
+
 
 }
 

@@ -5,10 +5,8 @@ package com.example.homecleanapi.services;
 import com.example.homecleanapi.dtos.*;
 import com.example.homecleanapi.models.Customers;
 import com.example.homecleanapi.models.Job;
-import com.example.homecleanapi.repositories.CustomerRepo;
-import com.example.homecleanapi.repositories.CustomerRepository;
-import com.example.homecleanapi.repositories.EmployeeRepository;
-import com.example.homecleanapi.repositories.JobRepository;
+import com.example.homecleanapi.models.JobApplication;
+import com.example.homecleanapi.repositories.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -37,6 +35,9 @@ public class AdminCustomerService {
 
     @Autowired
     private EmployeeRepository employeeRepository;
+
+    @Autowired
+    private JobApplicationRepository jobApplicationRepository;
 
 
     // Thêm khách hàng
@@ -169,34 +170,122 @@ public class AdminCustomerService {
         // Lấy tất cả job của customer từ JobRepository
         List<Job> jobs = jobRepository.findByCustomerId(customerId);
 
-        // Chuyển danh sách jobs thành danh sách JobHistoryResponse
-        return jobs.stream().map(job -> {
-            JobHistoryResponse response = new JobHistoryResponse();
-            response.setJobId(job.getId());
-            response.setFullName(job.getCustomer().getFull_name());
-            response.setPhone(job.getCustomer().getPhone());
-            response.setCreatedAt(job.getCreatedAt());
-            response.setJobStatus(job.getStatus().name());
-            response.setScheduledTime(job.getScheduledTime());
-            response.setPaymentMethod(job.getPaymentMethod());
-            response.setTotalPrice(job.getTotalPrice());
-            response.setReminder(job.getReminder());
+        // Chuyển danh sách jobs thành danh sách JobHistoryResponse và lọc chỉ những job mà cleaner_id là null
+        return jobs.stream()
+                .filter(job -> job.getCleaner() == null) // Lọc chỉ những job mà cleaner_id là null
+                .map(job -> {
+                    JobHistoryResponse response = new JobHistoryResponse();
+                    response.setJobId(job.getId());
+                    response.setFullName(job.getCustomer().getFull_name());
+                    response.setPhone(job.getCustomer().getPhone());
+                    response.setCreatedAt(job.getCreatedAt());
+                    response.setJobStatus(job.getStatus().name());
+                    response.setScheduledTime(job.getScheduledTime());
+                    response.setPaymentMethod(job.getPaymentMethod());
+                    response.setTotalPrice(job.getTotalPrice());
+                    response.setReminder(job.getReminder());
 
-            // Set thông tin của cleaner nếu có
-            response.setCleanerId(job.getCleaner() != null ? Long.valueOf(job.getCleaner().getId()) : null);
-            response.setCleanerName(job.getCleaner() != null ? job.getCleaner().getName() : null);
+                    // Set thông tin của cleaner nếu có (đối với job này, cleaner sẽ là null)
+                    response.setCleanerId(null); // Cái này luôn là null vì job không có cleaner
+                    response.setCleanerName(null); // Tương tự với cleanerName
 
-            // Lấy thông tin service của job (job_service_detail)
-            List<String> services = job.getJobServiceDetails().stream()
-                    .map(jobServiceDetail -> jobServiceDetail.getService().getName()) // Lấy tên dịch vụ
-                    .collect(Collectors.toList());
+                    // Lấy thông tin service của job (job_service_detail)
+                    List<String> services = job.getJobServiceDetails().stream()
+                            .map(jobServiceDetail -> jobServiceDetail.getService().getName()) // Lấy tên dịch vụ
+                            .collect(Collectors.toList());
 
-            // Thêm dịch vụ vào response (nếu là combo, sẽ có nhiều dịch vụ)
-            response.setServices(services);
+                    // Thêm dịch vụ vào response (nếu là combo, sẽ có nhiều dịch vụ)
+                    response.setServices(services);
 
-            return response;
-        }).collect(Collectors.toList());
+                    return response;
+                })
+                .collect(Collectors.toList()); // Thu thập các job thành list
     }
+
+    public List<JobHistoryResponse> getJobHistoryByCustomerIdForCleaner(Long customerId) {
+        // Lấy tất cả job của customer từ JobRepository
+        List<Job> jobs = jobRepository.findByCustomerId(customerId);
+
+        // Chuyển danh sách jobs thành danh sách JobHistoryResponse và lọc chỉ những job mà cleaner_id có dữ liệu
+        return jobs.stream()
+                .filter(job -> job.getCleaner() != null) // Lọc chỉ những job mà cleaner_id có dữ liệu (không phải null)
+                .map(job -> {
+                    JobHistoryResponse response = new JobHistoryResponse();
+                    response.setJobId(job.getId());
+                    response.setFullName(job.getCustomer().getFull_name());
+                    response.setPhone(job.getCustomer().getPhone());
+                    response.setCreatedAt(job.getCreatedAt());
+                    response.setJobStatus(job.getStatus().name());
+                    response.setScheduledTime(job.getScheduledTime());
+                    response.setPaymentMethod(job.getPaymentMethod());
+                    response.setTotalPrice(job.getTotalPrice());
+                    response.setReminder(job.getReminder());
+
+                    // Set thông tin của cleaner (job đã có cleaner)
+                    response.setCleanerId(job.getCleaner() != null ? Long.valueOf(job.getCleaner().getId()) : null);
+                    response.setCleanerName(job.getCleaner() != null ? job.getCleaner().getName() : null);
+
+                    // Lấy thông tin service của job (job_service_detail)
+                    List<String> services = job.getJobServiceDetails().stream()
+                            .map(jobServiceDetail -> jobServiceDetail.getService().getName()) // Lấy tên dịch vụ
+                            .collect(Collectors.toList());
+
+                    // Thêm dịch vụ vào response (nếu là combo, sẽ có nhiều dịch vụ)
+                    response.setServices(services);
+
+                    return response;
+                })
+                .collect(Collectors.toList()); // Thu thập các job thành list
+    }
+
+
+    public JobHistoryResponse getJobDetailsByJobId(Long jobId) {
+        // Tìm job từ JobRepository
+        Job job = jobRepository.findById(jobId).orElse(null);
+        if (job == null) {
+            return null; // Nếu job không tồn tại, trả về null
+        }
+
+        // Tạo đối tượng JobHistoryResponse và điền thông tin từ Job
+        JobHistoryResponse response = new JobHistoryResponse();
+        response.setJobId(job.getId());
+        response.setFullName(job.getCustomer().getFull_name());
+        response.setPhone(job.getCustomer().getPhone());
+        response.setCreatedAt(job.getCreatedAt());
+        response.setJobStatus(job.getStatus().name());
+        response.setScheduledTime(job.getScheduledTime());
+        response.setPaymentMethod(job.getPaymentMethod());
+        response.setTotalPrice(job.getTotalPrice());
+        response.setReminder(job.getReminder());
+
+        // Lấy thông tin của cleaner nếu có
+        response.setCleanerId(job.getCleaner() != null ? Long.valueOf(job.getCleaner().getId()) : null);
+        response.setCleanerName(job.getCleaner() != null ? job.getCleaner().getName() : null);
+
+        // Lấy thông tin service của job (job_service_detail)
+        List<String> services = job.getJobServiceDetails().stream()
+                .map(jobServiceDetail -> jobServiceDetail.getService().getName()) // Lấy tên dịch vụ
+                .collect(Collectors.toList());
+        response.setServices(services);
+
+        // Lấy thông tin feedback của job (feedback)
+        List<String> feedbacks = job.getFeedback().stream()
+                .map(feedback -> "Rating: " + feedback.getRating() + ", Comment: " + feedback.getComment())
+                .collect(Collectors.toList());
+        response.setFeedback(feedbacks);
+
+        // Lấy danh sách cleaner đã ứng tuyển cho job
+        List<JobApplication> jobApplications = jobApplicationRepository.findByJob(job); // Giả sử bạn có phương thức này để lấy danh sách ứng tuyển
+        List<String> cleanerApplications = jobApplications.stream()
+                .map(jobApplication -> jobApplication.getCleaner().getName() + " (" + jobApplication.getStatus() + ")") // Lấy tên cleaner và status ứng tuyển
+                .collect(Collectors.toList());
+        response.setCleanerApplications(cleanerApplications);
+
+        return response;
+    }
+
+
+
 
 
 

@@ -8,6 +8,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 
@@ -75,5 +76,26 @@ public class AdminCleanerController {
         }
         return ResponseEntity.status(403).body(Map.of("message", "Access denied"));
     }
+
+    @GetMapping("/{cleaner_id}/jobbookedhistory")
+    public ResponseEntity<?> getJobHistory(@PathVariable("cleaner_id") Long cleanerId,
+                                           HttpServletRequest requestHttp) {
+        if (isAuthorizedRole(requestHttp)) {
+            return cleanerService.getJobHistoryByCleanerId(cleanerId);
+        }
+        return ResponseEntity.status(403).body(Map.of("message", "Access denied"));
+    }
+
+    @GetMapping("/{cleaner_id}/jobhistory")
+    public ResponseEntity<?> getJobHistoryByCustomer(@PathVariable("cleaner_id") Long cleanerId,
+                                                     HttpServletRequest requestHttp) {
+        if (isAuthorizedRole(requestHttp)) {
+            return cleanerService.getJobHistoryByCleanerIdnull(cleanerId);
+        }
+        return ResponseEntity.status(403).body(Map.of("message", "Access denied"));
+    }
+
+
+
 }
 
