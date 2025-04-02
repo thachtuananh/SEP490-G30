@@ -12,6 +12,7 @@ import {
   Tag,
   notification,
   Skeleton,
+  message,
 } from "antd";
 import {
   WalletOutlined,
@@ -54,11 +55,12 @@ export const WalletBalance = () => {
         throw new Error(data.message || "Không thể lấy dữ liệu ví");
       }
     } catch (error) {
-      notification.error({
-        message: "Lỗi khi tải dữ liệu ví",
-        description: error.message,
-        icon: <ExclamationCircleOutlined style={{ color: "#ff4d4f" }} />,
-      });
+      // notification.error({
+      //   message: "Lỗi khi tải dữ liệu ví",
+      //   description: error.message,
+      //   icon: <ExclamationCircleOutlined style={{ color: "#ff4d4f" }} />,
+      // });
+      message.error("Lỗi khi tải dữ liệu ví");
     } finally {
       setLoading(false);
     }

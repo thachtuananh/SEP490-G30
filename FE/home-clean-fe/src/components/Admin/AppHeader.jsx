@@ -1,15 +1,44 @@
-import React from "react";
-import { Layout, Badge, Avatar, Dropdown, Space, Menu } from "antd";
-import { BellOutlined, CaretDownOutlined } from "@ant-design/icons";
+import { useContext } from "react";
+import { AuthContext } from "../../context/AuthContext";
+import { useNavigate } from "react-router-dom";
+import { Layout, Badge, Avatar, Dropdown, Space, message } from "antd";
+import {
+  BellOutlined,
+  CaretDownOutlined,
+  UserOutlined,
+  LogoutOutlined,
+} from "@ant-design/icons";
 
 const { Header } = Layout;
 
 const AppHeader = () => {
-  const userMenuItems = [
-    { key: "1", label: "Profile" },
-    { key: "2", label: "Settings" },
-    { key: "3", label: "Logout" },
+  const { admin, dispatch } = useContext(AuthContext);
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    dispatch({ type: "LOGOUT" });
+    message.success("Đăng xuất thành công!");
+    navigate("/admin-login");
+  };
+
+  // Menu items for the dropdown
+  const menuItems = [
+    {
+      key: "1",
+      label: "Đăng xuất",
+      icon: <LogoutOutlined />,
+      onClick: handleLogout,
+    },
   ];
+
+  const getAdminName = () => {
+    if (admin && admin.adminName) {
+      return admin.adminName;
+    }
+    // Fallback to localStorage for compatibility
+    const storedName = localStorage.getItem("name");
+    return storedName ? storedName : "";
+  };
 
   return (
     <Header
@@ -28,12 +57,10 @@ const AppHeader = () => {
         <Badge count={2} style={{ marginRight: 24 }}>
           <BellOutlined style={{ fontSize: 20 }} />
         </Badge>
-        <Dropdown overlay={<Menu items={userMenuItems} />}>
+        <Dropdown menu={{ items: menuItems }} placement="bottomRight">
           <Space style={{ marginLeft: 16, cursor: "pointer" }}>
-            <Avatar src="https://via.placeholder.com/40" />
-            <div>
-              <div>Mani Roy</div>
-            </div>
+            <Avatar icon={<UserOutlined />} />
+            <div>{getAdminName()}</div>
             <CaretDownOutlined />
           </Space>
         </Dropdown>

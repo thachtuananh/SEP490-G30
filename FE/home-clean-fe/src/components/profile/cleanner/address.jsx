@@ -6,10 +6,12 @@ import "../owner/profile.css";
 
 export const Address = () => {
   const { cleaner, dispatch } = useContext(AuthContext);
-  const [defaultAddress, setDefaultAddress] = useState("home1");
   const [addresses, setAddresses] = useState([]);
-  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isAddModalVisible, setIsAddModalVisible] = useState(false);
+  const [isUpdateModalVisible, setIsUpdateModalVisible] = useState(false);
   const [newAddress, setNewAddress] = useState("");
+  const [updateAddress, setUpdateAddress] = useState("");
+  const [currentAddressId, setCurrentAddressId] = useState(null);
   const [loading, setLoading] = useState(false);
 
   const fetchAddresses = async () => {
@@ -32,9 +34,9 @@ export const Address = () => {
         if (response.ok) {
           const responseData = await response.json();
 
-          // Transform the data structure to match what your component expects
-          const formattedAddresses = responseData.data.map((item, index) => ({
-            id: index, // Using index as ID if not provided in the response
+          // Use the actual id and is_current from the API response
+          const formattedAddresses = responseData.data.map((item) => ({
+            id: item.id,
             address: item.address,
             isDefault: item.is_current,
             name: cleaner?.cleanerName || "",
@@ -55,13 +57,25 @@ export const Address = () => {
     fetchAddresses();
   }, [dispatch]);
 
-  const showModal = () => {
-    setIsModalVisible(true);
+  const showAddModal = () => {
+    setIsAddModalVisible(true);
   };
 
-  const handleCancel = () => {
-    setIsModalVisible(false);
+  const handleAddCancel = () => {
+    setIsAddModalVisible(false);
     setNewAddress("");
+  };
+
+  const showUpdateModal = (addressId, currentAddress) => {
+    setCurrentAddressId(addressId);
+    setUpdateAddress(currentAddress);
+    setIsUpdateModalVisible(true);
+  };
+
+  const handleUpdateCancel = () => {
+    setIsUpdateModalVisible(false);
+    setUpdateAddress("");
+    setCurrentAddressId(null);
   };
 
   const handleAddAddress = async () => {
@@ -76,7 +90,7 @@ export const Address = () => {
 
     try {
       const response = await fetch(
-        `${BASE_URL}/employee/${cleanerId}/create-address`,
+        `${BASE_URL}/employee/${cleanerId}/create_address`,
         {
           method: "POST",
           headers: {
@@ -90,7 +104,7 @@ export const Address = () => {
 
       if (response.ok) {
         message.success("Thêm địa chỉ mới thành công!");
-        setIsModalVisible(false);
+        setIsAddModalVisible(false);
         setNewAddress("");
         fetchAddresses(); // Refresh the addresses list
       } else {
@@ -103,110 +117,79 @@ export const Address = () => {
     }
   };
 
-  const handleDeleteAddress = async (addressId) => {
+  const handleUpdateAddressSubmit = async () => {
+    if (!updateAddress.trim()) {
+      message.error("Vui lòng nhập địa chỉ.");
+      return;
+    }
+
+    setLoading(true);
     const token = localStorage.getItem("token");
     const cleanerId = localStorage.getItem("cleanerId");
 
     try {
+      console.log("Updating address:", updateAddress); // Debug log
+
       const response = await fetch(
-        `${BASE_URL}/employee/${cleanerId}/delete-address/${addressId}`,
+        `${BASE_URL}/employee/${cleanerId}/update_address/${currentAddressId}`,
         {
-          method: "DELETE",
+          method: "POST",
           headers: {
             Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
             Accept: "application/json",
           },
+          body: JSON.stringify({ address: updateAddress }),
         }
       );
 
       if (response.ok) {
-        message.success("Xóa địa chỉ thành công!");
+        message.success("Cập nhật địa chỉ thành công!");
+        setIsUpdateModalVisible(false);
+        setUpdateAddress("");
+        setCurrentAddressId(null);
         fetchAddresses(); // Refresh the addresses list
       } else {
-        message.error("Không thể xóa địa chỉ.");
+        message.error("Không thể cập nhật địa chỉ.");
       }
     } catch (error) {
       message.error("Lỗi máy chủ, vui lòng thử lại sau.");
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleUpdateAddress = async (addressId, currentAddress) => {
+  const handleDeleteAddress = async (addressId) => {
     Modal.confirm({
-      title: "Cập nhật địa chỉ",
-      content: (
-        <Input.TextArea
-          defaultValue={currentAddress}
-          onChange={(e) => setNewAddress(e.target.value)}
-          placeholder="Nhập địa chỉ mới"
-          autoSize={{ minRows: 2, maxRows: 6 }}
-        />
-      ),
+      title: "Xác nhận xóa",
+      content: "Bạn có chắc chắn muốn xóa địa chỉ này không?",
+      okText: "Xác nhận",
+      cancelText: "Hủy",
       onOk: async () => {
-        if (!newAddress.trim()) {
-          message.error("Vui lòng nhập địa chỉ.");
-          return;
-        }
-
         const token = localStorage.getItem("token");
-        const cleanerId = localStorage.getItem("cleanerId");
-
         try {
           const response = await fetch(
-            `${BASE_URL}/employee/${cleanerId}/update_address/${addressId}`,
+            `${BASE_URL}/employee/${addressId}/delete_address`,
             {
-              method: "POST",
+              method: "DELETE",
               headers: {
                 Authorization: `Bearer ${token}`,
-                "Content-Type": "application/json",
                 Accept: "application/json",
               },
-              body: JSON.stringify({ address: newAddress }),
             }
           );
 
           if (response.ok) {
-            message.success("Cập nhật địa chỉ thành công!");
-            setNewAddress("");
+            message.success("Xóa địa chỉ thành công!");
             fetchAddresses(); // Refresh the addresses list
           } else {
-            message.error("Không thể cập nhật địa chỉ.");
+            message.error("Không thể xóa địa chỉ.");
           }
         } catch (error) {
           message.error("Lỗi máy chủ, vui lòng thử lại sau.");
         }
       },
-      onCancel() {
-        setNewAddress("");
-      },
     });
-  };
-
-  const handleSetDefaultAddress = async (addressId) => {
-    const token = localStorage.getItem("token");
-    const cleanerId = localStorage.getItem("cleanerId");
-
-    try {
-      const response = await fetch(
-        `${BASE_URL}/employee/${cleanerId}/set-default-address/${addressId}`,
-        {
-          method: "PUT",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            Accept: "application/json",
-          },
-        }
-      );
-
-      if (response.ok) {
-        message.success("Đã đặt địa chỉ mặc định!");
-        setDefaultAddress(`home${addressId}`);
-        fetchAddresses(); // Refresh the addresses list
-      } else {
-        message.error("Không thể đặt địa chỉ mặc định.");
-      }
-    } catch (error) {
-      message.error("Lỗi máy chủ, vui lòng thử lại sau.");
-    }
   };
 
   return (
@@ -216,7 +199,7 @@ export const Address = () => {
           <b>Địa chỉ của bạn</b>
           <p className="address-subtext">Quản lý thông tin địa chỉ của bạn</p>
         </div>
-        <button className="add-address-button" onClick={showModal}>
+        <button className="add-address-button" onClick={showAddModal}>
           + Thêm địa chỉ mới
         </button>
       </div>
@@ -226,16 +209,15 @@ export const Address = () => {
         style={{ display: "flex", flexDirection: "column", gap: "16px" }}
       >
         {addresses && addresses.length > 0 ? (
-          addresses.map((address, index) => (
+          addresses.map((address) => (
             <div
-              key={index}
+              key={address.id}
               className="address-item"
               style={{
                 padding: "16px",
                 backgroundColor: "#fff",
                 borderRadius: "8px",
                 boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-                // border: address.isDefault ? '2px solid #1890ff' : '1px solid #e8e8e8',
                 position: "relative",
               }}
             >
@@ -264,6 +246,7 @@ export const Address = () => {
                       borderRadius: "4px",
                       fontSize: "12px",
                       marginLeft: "10px",
+                      padding: "2px 6px",
                     }}
                   >
                     <b>Mặc định</b>
@@ -294,9 +277,7 @@ export const Address = () => {
                 <div style={{ display: "flex", gap: "15px" }}>
                   <b
                     className="update-button"
-                    onClick={() =>
-                      handleUpdateAddress(address.id, address.address)
-                    }
+                    onClick={() => showUpdateModal(address.id, address.address)}
                     style={{
                       color: "#00a651",
                       cursor: "pointer",
@@ -317,29 +298,6 @@ export const Address = () => {
                     Xóa
                   </b>
                 </div>
-                <div
-                  className="default-checkbox"
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "8px",
-                  }}
-                >
-                  <p style={{ margin: "0", fontSize: "14px" }}>
-                    Chọn làm mặc định
-                  </p>
-                  <input
-                    type="checkbox"
-                    checked={address.isDefault}
-                    onChange={() => handleSetDefaultAddress(address.id)}
-                    style={{
-                      width: "16px",
-                      height: "16px",
-                      cursor: "pointer",
-                      backgroundColor: "#00a651",
-                    }}
-                  />
-                </div>
               </div>
             </div>
           ))
@@ -358,12 +316,13 @@ export const Address = () => {
         )}
       </div>
 
+      {/* Add Address Modal */}
       <Modal
         title="Thêm địa chỉ mới"
-        visible={isModalVisible}
-        onCancel={handleCancel}
+        visible={isAddModalVisible}
+        onCancel={handleAddCancel}
         footer={[
-          <Button key="back" onClick={handleCancel}>
+          <Button key="back" onClick={handleAddCancel}>
             Hủy
           </Button>,
           <Button
@@ -379,6 +338,36 @@ export const Address = () => {
         <Input.TextArea
           value={newAddress}
           onChange={(e) => setNewAddress(e.target.value)}
+          placeholder="Nhập địa chỉ mới"
+          autoSize={{ minRows: 3, maxRows: 6 }}
+        />
+      </Modal>
+
+      {/* Update Address Modal */}
+      <Modal
+        title="Cập nhật địa chỉ"
+        visible={isUpdateModalVisible}
+        onCancel={handleUpdateCancel}
+        footer={[
+          <Button key="back" onClick={handleUpdateCancel}>
+            Hủy
+          </Button>,
+          <Button
+            key="submit"
+            type="primary"
+            loading={loading}
+            onClick={handleUpdateAddressSubmit}
+          >
+            Cập nhật
+          </Button>,
+        ]}
+      >
+        <Input.TextArea
+          value={updateAddress}
+          onChange={(e) => {
+            console.log("New value:", e.target.value); // Debug log
+            setUpdateAddress(e.target.value);
+          }}
           placeholder="Nhập địa chỉ mới"
           autoSize={{ minRows: 3, maxRows: 6 }}
         />

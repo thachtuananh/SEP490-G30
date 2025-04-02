@@ -15,6 +15,8 @@ import donDepNhaMoi from "../../assets/icon-home/nha-moi.svg";
 import donDepVanPhong from "../../assets/icon-home/don-van-phong.svg";
 import donDepTheoKy from "../../assets/icon-home/don-dinh-ky.svg";
 
+import { BASE_URL } from "../../utils/config";
+
 // Icon mapping outside of the component
 const iconMap = {
   1: donPhongKhach,
@@ -51,7 +53,7 @@ const JobUpload = () => {
     const fetchServices = async () => {
       try {
         setLoading(true);
-        const response = await fetch("http://localhost:8080/api/services/all");
+        const response = await fetch(`${BASE_URL}/services/all`);
         if (!response.ok) {
           throw new Error("Network response was not ok");
         }

@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom";
 import { fetchCleanerDetails } from "../../services/owner/OwnerAPI";
 import { ImageGallery } from "../../components/cleaner-details/ImageGallery";
 import { ServiceInfo } from "../../components/cleaner-details/ServiceInfo";
-import { PriceSection } from "../../components/cleaner-details/PriceSection";
+import PriceSection from "../../components/cleaner-details/PriceSection";
 import { TabsSection } from "../../components/cleaner-details/TabsSection";
 import styles from "../../components/cleaner-details/styles.module.css";
 
@@ -36,8 +36,8 @@ export const CleanerDetails = () => {
             averageRating={cleaner?.averageRating}
           />
           <PriceSection
-            cleanerId={cleanerId}  // Pass cleanerId here
-            cleanerName={cleaner?.cleanerName}  // Pass cleanerName here
+            cleanerId={cleanerId} // Pass cleanerId here
+            cleanerName={cleaner?.cleanerName} // Pass cleanerName here
           />
         </div>
       </div>
