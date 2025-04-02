@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { ChatIcon } from "./ChatIcon";
 import styles from "./styles.module.css";
@@ -10,55 +10,68 @@ import donPhongNgu from "../../assets/icon-home/don-phong-ngu.svg";
 import donDepNhaMoi from "../../assets/icon-home/nha-moi.svg";
 import donDepVanPhong from "../../assets/icon-home/don-van-phong.svg";
 import donDepTheoKy from "../../assets/icon-home/don-dinh-ky.svg";
+import { BASE_URL } from "../../utils/config";
+// Icon mapping outside of the component
+const iconMap = {
+  1: donPhongKhach,
+  2: donBep,
+  3: donPhongNgu,
+  4: donNhaVeSinh,
+  6: donDepNhaMoi,
+  7: donDepVanPhong,
+  8: donDepTheoKy,
+};
 
-export const PriceSection = ({ cleanerId, cleanerName }) => {
+// Function to map service IDs to their respective icons
+function getIconByServiceId(serviceId) {
+  return iconMap[serviceId] || donPhongKhach; // Default to phong khach icon if not found
+}
+
+// Function to truncate description
+function truncateDescription(description) {
+  return description && description.length > 100
+    ? `${description.substring(0, 35)}...`
+    : description;
+}
+
+const PriceSection = ({ cleanerId, cleanerName }) => {
   const [isServiceModalVisible, setIsServiceModalVisible] = useState(false);
   const [selectedServices, setSelectedServices] = useState([]);
+  const [allServices, setAllServices] = useState([]);
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const allServices = [
-    {
-      id: 1,
-      icon: donPhongKhach,
-      title: "Dọn phòng khách",
-      description: "Lau sàn, hút bụi, lau bàn ghế, cửa kính",
-    },
-    {
-      id: 2,
-      icon: donBep,
-      title: "Dọn phòng bếp",
-      description: "Gấp chăn gối, lau bụi, hút bụi, lau sàn",
-    },
-    {
-      id: 3,
-      icon: donPhongNgu,
-      title: "Dọn phòng ngủ",
-      description: "Gấp chăn gối, lau bụi, hút bụi, lau sàn",
-    },
-    {
-      id: 4,
-      icon: donNhaVeSinh,
-      title: "Dọn nhà vệ sinh",
-      description: "Gấp chăn gối, lau bụi, hút bụi, lau sàn",
-    },
-    {
-      id: 6,
-      icon: donDepNhaMoi,
-      title: "Dọn dẹp nhà mới xây, sau sửa chữa",
-      description: "Mô tả dịch vụ",
-    },
-    {
-      id: 7,
-      icon: donDepVanPhong,
-      title: "Dọn dẹp văn phòng, cửa hàng",
-      description: "Mô tả dịch vụ",
-    },
-    {
-      id: 8,
-      icon: donDepTheoKy,
-      title: "Dọn dẹp nhà theo định kỳ",
-      description: "Mô tả dịch vụ",
-    },
-  ];
+
+  useEffect(() => {
+    const fetchServices = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch(`${BASE_URL}/services/all`);
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
+        }
+        const data = await response.json();
+
+        // Map the fetched services to include icons and truncate descriptions
+        const servicesWithIcons = data.map((service) => ({
+          ...service,
+          id: service.serviceId,
+          title: service.serviceName,
+          icon: getIconByServiceId(service.serviceId),
+          description: truncateDescription(service.description),
+        }));
+
+        setAllServices(servicesWithIcons);
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching services:", error);
+        // Add error handling here if needed
+        setLoading(false);
+      }
+    };
+
+    fetchServices();
+  }, []);
+
   const showServiceModal = () => {
     setIsServiceModalVisible(true);
   };
@@ -77,17 +90,17 @@ export const PriceSection = ({ cleanerId, cleanerName }) => {
         selectedServices,
         cleanerId,
         cleanerName,
-        allServices
-      }
+        allServices,
+      },
     });
 
     setIsServiceModalVisible(false);
   };
 
   const onServiceChange = (serviceId) => {
-    setSelectedServices(prev => {
+    setSelectedServices((prev) => {
       if (prev.includes(serviceId)) {
-        return prev.filter(id => id !== serviceId);
+        return prev.filter((id) => id !== serviceId);
       } else {
         return [...prev, serviceId];
       }
@@ -101,7 +114,9 @@ export const PriceSection = ({ cleanerId, cleanerName }) => {
           <ChatIcon />
           <span>Chat ngay</span>
         </button> */}
-        <button className={styles.hireButton} onClick={showServiceModal}>Thuê ngay</button>
+        <button className={styles.hireButton} onClick={showServiceModal}>
+          Thuê ngay
+        </button>
       </div>
 
       <ServiceSelectionModal
@@ -111,7 +126,10 @@ export const PriceSection = ({ cleanerId, cleanerName }) => {
         selectedServices={selectedServices}
         onServiceChange={onServiceChange}
         allServices={allServices}
+        loading={loading}
       />
     </section>
   );
 };
+
+export default PriceSection;

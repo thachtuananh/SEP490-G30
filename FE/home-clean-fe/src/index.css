@@ -25,6 +25,9 @@
 .contact-container {
   animation: fadeSlideIn 1.2s ease-in-out;
 } */
+.infomation-container,.job-list-section{
+  min-height: 600px;
+}
 
 html,
 body {
