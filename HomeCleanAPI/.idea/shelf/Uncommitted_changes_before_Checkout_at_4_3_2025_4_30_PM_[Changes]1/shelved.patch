@@ -1,0 +1,1868 @@
+Index: src/main/java/com/example/homecleanapi/Payment/VnpayConfig.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/example/homecleanapi/Payment/VnpayConfig.java b/src/main/java/com/example/homecleanapi/Payment/VnpayConfig.java
+new file mode 100644
+--- /dev/null	(date 1743672482100)
++++ b/src/main/java/com/example/homecleanapi/Payment/VnpayConfig.java	(date 1743672482100)
+@@ -0,0 +1,133 @@
++package com.example.homecleanapi.Payment;
++
++import java.io.UnsupportedEncodingException;
++import java.nio.charset.StandardCharsets;
++import java.security.MessageDigest;
++import java.security.NoSuchAlgorithmException;
++import java.util.ArrayList;
++import java.util.Collections;
++import java.util.Iterator;
++import java.util.List;
++import java.util.Map;
++import java.util.Random;
++
++import javax.crypto.Mac;
++import javax.crypto.spec.SecretKeySpec;
++
++import jakarta.servlet.http.HttpServletRequest;
++
++
++// done
++public class VnpayConfig {
++
++    public static String vnp_PayUrl = "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
++    public static String vnp_ReturnUrl = "http://localhost:8080/api/vnpayment/return";      // trang phía client
++    //public static String vnp_ReturnUrl = "http://localhost:8080/api/cleaner/return";
++    // #vnpay
++    public static String vnp_TmnCode = "900XO632";
++    public static String secretKey = "VFH4K4F21GJQMFPLW7SMEVSG7Z0VPV6M";
++    public static String vnp_ApiUrl = "https://sandbox.vnpayment.vn/merchant_webapi/api/transaction";
++
++    public static String md5(String message) {
++        String digest = null;
++        try {
++            MessageDigest md = MessageDigest.getInstance("MD5");
++            byte[] hash = md.digest(message.getBytes("UTF-8"));
++            StringBuilder sb = new StringBuilder(2 * hash.length);
++            for (byte b : hash) {
++                sb.append(String.format("%02x", b & 0xff));
++            }
++            digest = sb.toString();
++        } catch (UnsupportedEncodingException ex) {
++            digest = "";
++        } catch (NoSuchAlgorithmException ex) {
++            digest = "";
++        }
++        return digest;
++    }
++
++    public static String Sha256(String message) {
++        String digest = null;
++        try {
++            MessageDigest md = MessageDigest.getInstance("SHA-256");
++            byte[] hash = md.digest(message.getBytes("UTF-8"));
++            StringBuilder sb = new StringBuilder(2 * hash.length);
++            for (byte b : hash) {
++                sb.append(String.format("%02x", b & 0xff));
++            }
++            digest = sb.toString();
++        } catch (UnsupportedEncodingException ex) {
++            digest = "";
++        } catch (NoSuchAlgorithmException ex) {
++            digest = "";
++        }
++        return digest;
++    }
++
++    // Util for VNPAY
++    public static String hashAllFields(Map fields) {
++        List fieldNames = new ArrayList(fields.keySet());
++        Collections.sort(fieldNames);
++        StringBuilder sb = new StringBuilder();
++        Iterator itr = fieldNames.iterator();
++        while (itr.hasNext()) {
++            String fieldName = (String) itr.next();
++            String fieldValue = (String) fields.get(fieldName);
++            if ((fieldValue != null) && (fieldValue.length() > 0)) {
++                sb.append(fieldName);
++                sb.append("=");
++                sb.append(fieldValue);
++            }
++            if (itr.hasNext()) {
++                sb.append("&");
++            }
++        }
++        return hmacSHA512(secretKey, sb.toString());
++    }
++
++    public static String hmacSHA512(final String key, final String data) {
++        try {
++
++            if (key == null || data == null) {
++                throw new NullPointerException();
++            }
++            final Mac hmac512 = Mac.getInstance("HmacSHA512");
++            byte[] hmacKeyBytes = key.getBytes();
++            final SecretKeySpec secretKey = new SecretKeySpec(hmacKeyBytes, "HmacSHA512");
++            hmac512.init(secretKey);
++            byte[] dataBytes = data.getBytes(StandardCharsets.UTF_8);
++            byte[] result = hmac512.doFinal(dataBytes);
++            StringBuilder sb = new StringBuilder(2 * result.length);
++            for (byte b : result) {
++                sb.append(String.format("%02x", b & 0xff));
++            }
++            return sb.toString();
++
++        } catch (Exception ex) {
++            return "";
++        }
++    }
++
++    public static String getIpAddress(HttpServletRequest request) {
++        String ipAdress;
++        try {
++            ipAdress = request.getHeader("X-FORWARDED-FOR");
++            if (ipAdress == null) {
++                ipAdress = request.getRemoteAddr();
++            }
++        } catch (Exception e) {
++            ipAdress = "Invalid IP:" + e.getMessage();
++        }
++        return ipAdress;
++    }
++
++    public static String getRandomNumber(int len) {
++        Random rnd = new Random();
++        String chars = "0123456789";
++        StringBuilder sb = new StringBuilder(len);
++        for (int i = 0; i < len; i++) {
++            sb.append(chars.charAt(rnd.nextInt(chars.length())));
++        }
++        return sb.toString();
++    }
++}
+Index: src/main/java/com/example/homecleanapi/Payment/VnpayService.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/example/homecleanapi/Payment/VnpayService.java b/src/main/java/com/example/homecleanapi/Payment/VnpayService.java
+new file mode 100644
+--- /dev/null	(date 1743672482101)
++++ b/src/main/java/com/example/homecleanapi/Payment/VnpayService.java	(date 1743672482101)
+@@ -0,0 +1,94 @@
++package com.example.homecleanapi.Payment;
++
++import java.io.UnsupportedEncodingException;
++import java.net.URLEncoder;
++import java.nio.charset.StandardCharsets;
++import java.text.SimpleDateFormat;
++import java.util.*;
++
++import org.springframework.http.HttpStatus;
++import org.springframework.http.ResponseEntity;
++import org.springframework.stereotype.Service;
++
++
++
++@Service
++public class VnpayService {
++
++    public String createPayment(VnpayRequest paymentRequest) throws UnsupportedEncodingException {
++        String vnp_Version = "2.1.0";
++        String vnp_Command = "pay";
++        String orderType = "other";
++
++        long amount = 0;
++        try {
++            amount = Long.parseLong(paymentRequest.getAmount()) * 100;
++        } catch (NumberFormatException e) {
++            throw new IllegalArgumentException("Số tiền không hợp lệ");
++        }
++
++        String bankCode = "NCB";
++        String vnp_TxnRef = VnpayConfig.getRandomNumber(8);
++        String vnp_IpAddr = "127.0.0.1";
++        String vnp_TmnCode = VnpayConfig.vnp_TmnCode;
++
++        Map<String, String> vnp_Params = new HashMap<>();
++        vnp_Params.put("vnp_Version", vnp_Version);
++        vnp_Params.put("vnp_Command", vnp_Command);
++        vnp_Params.put("vnp_TmnCode", vnp_TmnCode);
++        vnp_Params.put("vnp_Amount", String.valueOf(amount));
++        vnp_Params.put("vnp_CurrCode", "VND");
++
++        vnp_Params.put("vnp_BankCode", bankCode);
++        vnp_Params.put("vnp_TxnRef", vnp_TxnRef);
++        vnp_Params.put("vnp_OrderInfo", "Thanh toan don hang:" + vnp_TxnRef);
++        vnp_Params.put("vnp_OrderType", orderType);
++        vnp_Params.put("vnp_Locale", "vn");
++        vnp_Params.put("vnp_ReturnUrl", VnpayConfig.vnp_ReturnUrl);
++        
++        vnp_Params.put("vnp_IpAddr", vnp_IpAddr);    // lưu ý ở đây
++
++        Calendar cld = Calendar.getInstance(TimeZone.getTimeZone("Etc/GMT+7"));
++        SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMddHHmmss");
++        String vnp_CreateDate = formatter.format(cld.getTime());
++        vnp_Params.put("vnp_CreateDate", vnp_CreateDate);
++
++        cld.add(Calendar.MINUTE, 15);
++        String vnp_ExpireDate = formatter.format(cld.getTime());
++        vnp_Params.put("vnp_ExpireDate", vnp_ExpireDate);
++
++        List<String> fieldNames = new ArrayList<>(vnp_Params.keySet());
++        Collections.sort(fieldNames);
++        StringBuilder hashData = new StringBuilder();
++        StringBuilder query = new StringBuilder();
++        for (String fieldName : fieldNames) {
++            String fieldValue = vnp_Params.get(fieldName);
++            if ((fieldValue != null) && (fieldValue.length() > 0)) {
++                hashData.append(fieldName).append('=')
++                        .append(URLEncoder.encode(fieldValue, StandardCharsets.US_ASCII.toString()));
++                query.append(URLEncoder.encode(fieldName, StandardCharsets.US_ASCII.toString()))
++                        .append('=')
++                        .append(URLEncoder.encode(fieldValue, StandardCharsets.US_ASCII.toString()));
++                query.append('&');
++                hashData.append('&');
++            }
++        }
++
++        if (query.length() > 0)
++            query.setLength(query.length() - 1);
++        if (hashData.length() > 0)
++            hashData.setLength(hashData.length() - 1);
++
++        String vnp_SecureHash = VnpayConfig.hmacSHA512(VnpayConfig.secretKey, hashData.toString());
++        query.append("&vnp_SecureHash=").append(vnp_SecureHash);
++        return VnpayConfig.vnp_PayUrl + "?" + query;
++    }
++
++    public ResponseEntity<String> handlePaymentReturn(String responseCode) {
++        if ("00".equals(responseCode)) {
++            return ResponseEntity.ok("Thanh toán thành công!");
++        } else {
++            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Thanh toán thất bại! Mã lỗi: " + responseCode);
++        }
++    }
++}
+\ No newline at end of file
+Index: src/main/java/com/example/homecleanapi/PaymentForWallets/VnpayConfigWallet.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/example/homecleanapi/PaymentForWallets/VnpayConfigWallet.java b/src/main/java/com/example/homecleanapi/PaymentForWallets/VnpayConfigWallet.java
+new file mode 100644
+--- /dev/null	(date 1743672482102)
++++ b/src/main/java/com/example/homecleanapi/PaymentForWallets/VnpayConfigWallet.java	(date 1743672482102)
+@@ -0,0 +1,133 @@
++package com.example.homecleanapi.PaymentForWallets;
++
++import java.io.UnsupportedEncodingException;
++import java.nio.charset.StandardCharsets;
++import java.security.MessageDigest;
++import java.security.NoSuchAlgorithmException;
++import java.util.ArrayList;
++import java.util.Collections;
++import java.util.Iterator;
++import java.util.List;
++import java.util.Map;
++import java.util.Random;
++
++import javax.crypto.Mac;
++import javax.crypto.spec.SecretKeySpec;
++
++import jakarta.servlet.http.HttpServletRequest;
++
++
++// done
++public class VnpayConfigWallet {
++
++    public static String vnp_PayUrl = "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
++
++    public static String vnp_ReturnUrlForwallet = "http://localhost:8080/api/cleaner/return";
++    // #vnpay
++    public static String vnp_TmnCode = "900XO632";
++    public static String secretKey = "VFH4K4F21GJQMFPLW7SMEVSG7Z0VPV6M";
++    public static String vnp_ApiUrl = "https://sandbox.vnpayment.vn/merchant_webapi/api/transaction";
++
++    public static String md5(String message) {
++        String digest = null;
++        try {
++            MessageDigest md = MessageDigest.getInstance("MD5");
++            byte[] hash = md.digest(message.getBytes("UTF-8"));
++            StringBuilder sb = new StringBuilder(2 * hash.length);
++            for (byte b : hash) {
++                sb.append(String.format("%02x", b & 0xff));
++            }
++            digest = sb.toString();
++        } catch (UnsupportedEncodingException ex) {
++            digest = "";
++        } catch (NoSuchAlgorithmException ex) {
++            digest = "";
++        }
++        return digest;
++    }
++
++    public static String Sha256(String message) {
++        String digest = null;
++        try {
++            MessageDigest md = MessageDigest.getInstance("SHA-256");
++            byte[] hash = md.digest(message.getBytes("UTF-8"));
++            StringBuilder sb = new StringBuilder(2 * hash.length);
++            for (byte b : hash) {
++                sb.append(String.format("%02x", b & 0xff));
++            }
++            digest = sb.toString();
++        } catch (UnsupportedEncodingException ex) {
++            digest = "";
++        } catch (NoSuchAlgorithmException ex) {
++            digest = "";
++        }
++        return digest;
++    }
++
++    // Util for VNPAY
++    public static String hashAllFields(Map fields) {
++        List fieldNames = new ArrayList(fields.keySet());
++        Collections.sort(fieldNames);
++        StringBuilder sb = new StringBuilder();
++        Iterator itr = fieldNames.iterator();
++        while (itr.hasNext()) {
++            String fieldName = (String) itr.next();
++            String fieldValue = (String) fields.get(fieldName);
++            if ((fieldValue != null) && (fieldValue.length() > 0)) {
++                sb.append(fieldName);
++                sb.append("=");
++                sb.append(fieldValue);
++            }
++            if (itr.hasNext()) {
++                sb.append("&");
++            }
++        }
++        return hmacSHA512(secretKey, sb.toString());
++    }
++
++    public static String hmacSHA512(final String key, final String data) {
++        try {
++
++            if (key == null || data == null) {
++                throw new NullPointerException();
++            }
++            final Mac hmac512 = Mac.getInstance("HmacSHA512");
++            byte[] hmacKeyBytes = key.getBytes();
++            final SecretKeySpec secretKey = new SecretKeySpec(hmacKeyBytes, "HmacSHA512");
++            hmac512.init(secretKey);
++            byte[] dataBytes = data.getBytes(StandardCharsets.UTF_8);
++            byte[] result = hmac512.doFinal(dataBytes);
++            StringBuilder sb = new StringBuilder(2 * result.length);
++            for (byte b : result) {
++                sb.append(String.format("%02x", b & 0xff));
++            }
++            return sb.toString();
++
++        } catch (Exception ex) {
++            return "";
++        }
++    }
++
++    public static String getIpAddress(HttpServletRequest request) {
++        String ipAdress;
++        try {
++            ipAdress = request.getHeader("X-FORWARDED-FOR");
++            if (ipAdress == null) {
++                ipAdress = request.getRemoteAddr();
++            }
++        } catch (Exception e) {
++            ipAdress = "Invalid IP:" + e.getMessage();
++        }
++        return ipAdress;
++    }
++
++    public static String getRandomNumber(int len) {
++        Random rnd = new Random();
++        String chars = "0123456789";
++        StringBuilder sb = new StringBuilder(len);
++        for (int i = 0; i < len; i++) {
++            sb.append(chars.charAt(rnd.nextInt(chars.length())));
++        }
++        return sb.toString();
++    }
++}
+Index: src/main/java/com/example/homecleanapi/Payment/VnpayController.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/example/homecleanapi/Payment/VnpayController.java b/src/main/java/com/example/homecleanapi/Payment/VnpayController.java
+new file mode 100644
+--- /dev/null	(date 1743672482100)
++++ b/src/main/java/com/example/homecleanapi/Payment/VnpayController.java	(date 1743672482100)
+@@ -0,0 +1,67 @@
++package com.example.homecleanapi.Payment;
++
++import java.util.Optional;
++
++import org.springframework.beans.factory.annotation.Autowired;
++import org.springframework.http.HttpStatus;
++import org.springframework.http.ResponseEntity;
++import org.springframework.web.bind.annotation.*;
++
++import com.example.homecleanapi.enums.JobStatus;
++import com.example.homecleanapi.models.Job;
++import com.example.homecleanapi.repositories.JobRepository;
++
++
++
++@RestController
++@RequestMapping("/api/vnpayment")
++public class VnpayController {
++
++    @Autowired
++    private JobRepository jobRepository;
++    private final VnpayService vnpayService;
++
++    public VnpayController(VnpayService vnpayService) {
++        this.vnpayService = vnpayService;
++    }
++
++    @PostMapping
++    public ResponseEntity<String> createPayment(@RequestBody VnpayRequest paymentRequest) {
++        try {
++            String paymentUrl = vnpayService.createPayment(paymentRequest);
++            return ResponseEntity.ok(paymentUrl);
++        } catch (IllegalArgumentException e) {
++            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
++        } catch (Exception e) {
++            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Đã xảy ra lỗi khi tạo thanh toán!");
++        }
++    }
++
++    @GetMapping("/return")
++    public ResponseEntity<String> returnPayment(@RequestParam("vnp_ResponseCode") String responseCode,
++                                                @RequestParam("vnp_TxnRef") String txnRef) {
++        if ("00".equals(responseCode)) {
++            Optional<Job> jobOpt = jobRepository.findByTxnRef(txnRef);  
++
++            if (jobOpt.isPresent()) {
++                Job job = jobOpt.get();
++                job.setStatus(JobStatus.OPEN);  
++                jobRepository.save(job);  
++
++                return ResponseEntity.ok("Thanh toán thành công! Job đã được xác nhận.");
++            } else {
++                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Job không tồn tại.");
++            }
++        } else {
++            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Thanh toán thất bại! Mã lỗi: " + responseCode);
++        }
++    }
++
++
++
++
++
++}
++
++
++
+Index: src/main/java/com/example/homecleanapi/Payment/VnpayRequest.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/example/homecleanapi/Payment/VnpayRequest.java b/src/main/java/com/example/homecleanapi/Payment/VnpayRequest.java
+new file mode 100644
+--- /dev/null	(date 1743672482101)
++++ b/src/main/java/com/example/homecleanapi/Payment/VnpayRequest.java	(date 1743672482101)
+@@ -0,0 +1,18 @@
++package com.example.homecleanapi.Payment;
++
++import lombok.Data;
++
++@Data
++public class VnpayRequest {
++    private String amount;
++
++	public String getAmount() {
++		return amount;
++	}
++
++	public void setAmount(String amount) {
++		this.amount = amount;
++	}
++    
++    
++}
+\ No newline at end of file
+Index: src/main/java/com/example/homecleanapi/controllers/WalletController.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/example/homecleanapi/controllers/WalletController.java b/src/main/java/com/example/homecleanapi/controllers/WalletController.java
+new file mode 100644
+--- /dev/null	(date 1743672482112)
++++ b/src/main/java/com/example/homecleanapi/controllers/WalletController.java	(date 1743672482112)
+@@ -0,0 +1,77 @@
++package com.example.homecleanapi.controllers;
++
++import java.util.Map;
++
++import org.springframework.beans.factory.annotation.Autowired;
++import org.springframework.http.HttpStatus;
++
++import org.springframework.http.ResponseEntity;
++import org.springframework.security.core.context.SecurityContextHolder;
++import org.springframework.web.bind.annotation.GetMapping;
++import org.springframework.web.bind.annotation.PathVariable;
++import org.springframework.web.bind.annotation.PostMapping;
++import org.springframework.web.bind.annotation.RequestBody;
++import org.springframework.web.bind.annotation.RequestMapping;
++import org.springframework.web.bind.annotation.RequestParam;
++import org.springframework.web.bind.annotation.RestController;
++
++import com.example.homecleanapi.dtos.DepositRequest;
++import com.example.homecleanapi.services.WalletService;
++
++import io.swagger.v3.oas.annotations.security.SecurityRequirement;
++import io.swagger.v3.oas.annotations.tags.Tag;
++
++@RestController
++@Tag(name = "Wallet API")
++@SecurityRequirement(name = "BearerAuth")
++@RequestMapping("/api/cleaner")
++public class WalletController {
++	
++	@Autowired
++    private WalletService walletService;
++
++	@GetMapping("/{cleanerId}/wallet")
++    public ResponseEntity<Map<String, Object>> getWalletBalance(@PathVariable Long cleanerId) {
++        // Gọi service để lấy số dư ví của cleaner
++        Map<String, Object> response = walletService.getWalletBalance(cleanerId);
++
++        // Kiểm tra response để quyết định trả về status code và message
++        if (response.containsKey("message") && response.get("message").equals("Cleaner not found")) {
++            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
++        }
++
++        return ResponseEntity.ok(response);
++    }
++	
++	@PostMapping("/{cleanerId}/deposit")
++    public ResponseEntity<Map<String, Object>> depositMoney(@PathVariable Long cleanerId, @RequestBody DepositRequest depositRequest) {
++        // Gọi service để tạo yêu cầu thanh toán VNPay
++        Map<String, Object> response = walletService.createPaymentForDeposit(cleanerId, depositRequest.getAmount());
++
++        if (response.containsKey("message")) {
++            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response); // Nếu có thông báo lỗi
++        }
++
++        return ResponseEntity.ok(response); // Nếu thành công
++    }
++
++    // API trả về kết quả thanh toán VNPay
++	@GetMapping("/return")
++	public ResponseEntity<String> returnPayment(@RequestParam("vnp_ResponseCode") String responseCode,
++	                                            @RequestParam("vnp_TxnRef") String txnRef,
++	                                            @RequestParam("vnp_Amount") String amount) {  
++	    if ("00".equals(responseCode)) {
++	        
++	        double depositAmount = Double.parseDouble(amount) / 100;  
++
++	        // Cập nhật ví trong WalletService
++	        walletService.updateWalletBalance(txnRef, depositAmount);
++
++	        return ResponseEntity.ok("Thanh toán thành công! Số dư ví đã được cập nhật.");
++	    } else {
++	        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Thanh toán thất bại! Mã lỗi: " + responseCode);
++	    }
++	}
++
++
++}
+Index: src/main/java/com/example/homecleanapi/controllers/ReportController.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/example/homecleanapi/controllers/ReportController.java b/src/main/java/com/example/homecleanapi/controllers/ReportController.java
+new file mode 100644
+--- /dev/null	(date 1743672482111)
++++ b/src/main/java/com/example/homecleanapi/controllers/ReportController.java	(date 1743672482111)
+@@ -0,0 +1,39 @@
++package com.example.homecleanapi.controllers;
++
++import com.example.homecleanapi.dtos.ReportRequestDTO;
++import com.example.homecleanapi.services.ReportService;
++import io.swagger.v3.oas.annotations.security.SecurityRequirement;
++import io.swagger.v3.oas.annotations.tags.Tag;
++import org.springframework.http.MediaType;
++import org.springframework.http.ResponseEntity;
++import org.springframework.web.bind.annotation.*;
++
++import java.util.Map;
++
++@Tag(name = "Report API")
++@RestController
++@RequestMapping("/api/reports")
++@SecurityRequirement(name = "BearerAuth")
++public class ReportController {
++    private final ReportService reportService;
++
++    public ReportController(ReportService reportService) {
++        this.reportService = reportService;
++    }
++
++    @PostMapping(value = "/{job_id}/create-report",  produces = MediaType.APPLICATION_JSON_VALUE)
++    public ResponseEntity<Map<String, Object>> createReport(ReportRequestDTO reportRequest, @PathVariable Long job_id) {
++        return reportService.createReport(reportRequest, job_id);
++    }
++
++    @PutMapping(value = "/{report_id}/update_report", produces = MediaType.APPLICATION_JSON_VALUE)
++    public ResponseEntity<Map<String, Object>> updateReport(ReportUpdateDTO reportUpdate, @PathVariable Long report_id) {
++        return reportService.updateReport(reportUpdate, report_id);
++    }
++
++    @GetMapping(value = "/get-all-report", produces = MediaType.APPLICATION_JSON_VALUE)
++    public ResponseEntity<Map<String, Object>> getAllReport() {
++        return reportService.getAllReport();
++    }
++
++}
+Index: src/main/java/com/example/homecleanapi/PaymentForWallets/VnpayRequestWallet.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/example/homecleanapi/PaymentForWallets/VnpayRequestWallet.java b/src/main/java/com/example/homecleanapi/PaymentForWallets/VnpayRequestWallet.java
+new file mode 100644
+--- /dev/null	(date 1743672482103)
++++ b/src/main/java/com/example/homecleanapi/PaymentForWallets/VnpayRequestWallet.java	(date 1743672482103)
+@@ -0,0 +1,18 @@
++package com.example.homecleanapi.PaymentForWallets;
++
++import lombok.Data;
++
++@Data
++public class VnpayRequestWallet {
++    private String amount;
++
++	public String getAmount() {
++		return amount;
++	}
++
++	public void setAmount(String amount) {
++		this.amount = amount;
++	}
++    
++    
++}
+\ No newline at end of file
+Index: src/main/java/com/example/homecleanapi/PaymentForWallets/VnpayServiceWallet.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/example/homecleanapi/PaymentForWallets/VnpayServiceWallet.java b/src/main/java/com/example/homecleanapi/PaymentForWallets/VnpayServiceWallet.java
+new file mode 100644
+--- /dev/null	(date 1743672482103)
++++ b/src/main/java/com/example/homecleanapi/PaymentForWallets/VnpayServiceWallet.java	(date 1743672482103)
+@@ -0,0 +1,87 @@
++package com.example.homecleanapi.PaymentForWallets;
++
++import java.io.UnsupportedEncodingException;
++import java.net.URLEncoder;
++import java.nio.charset.StandardCharsets;
++import java.text.SimpleDateFormat;
++import java.util.*;
++
++import org.springframework.http.HttpStatus;
++import org.springframework.http.ResponseEntity;
++import org.springframework.stereotype.Service;
++
++import com.example.homecleanapi.Payment.VnpayRequest;
++
++
++
++@Service
++public class VnpayServiceWallet {
++
++	public String createPayment(VnpayRequestWallet paymentRequest) throws UnsupportedEncodingException {
++	    String vnp_Version = "2.1.0";
++	    String vnp_Command = "pay";
++	    String orderType = "other";
++	    long amount = 0;
++	    try {
++	        amount = Long.parseLong(paymentRequest.getAmount()) * 100;
++	    } catch (NumberFormatException e) {
++	        throw new IllegalArgumentException("Số tiền không hợp lệ");
++	    }
++
++	    String bankCode = "NCB";
++	    String vnp_TxnRef = VnpayConfigWallet.getRandomNumber(8);
++	    String vnp_IpAddr = "127.0.0.1";
++	    String vnp_TmnCode = VnpayConfigWallet.vnp_TmnCode;
++
++	    Map<String, String> vnp_Params = new HashMap<>();
++	    vnp_Params.put("vnp_Version", vnp_Version);
++	    vnp_Params.put("vnp_Command", vnp_Command);
++	    vnp_Params.put("vnp_TmnCode", vnp_TmnCode);
++	    vnp_Params.put("vnp_Amount", String.valueOf(amount));
++	    vnp_Params.put("vnp_CurrCode", "VND");
++
++	    vnp_Params.put("vnp_BankCode", bankCode);
++	    vnp_Params.put("vnp_TxnRef", vnp_TxnRef);
++	    vnp_Params.put("vnp_OrderInfo", "Thanh toan don hang:" + vnp_TxnRef);
++	    vnp_Params.put("vnp_OrderType", orderType);
++	    vnp_Params.put("vnp_Locale", "vn");
++	    vnp_Params.put("vnp_ReturnUrl", VnpayConfigWallet.vnp_ReturnUrlForwallet);
++	    vnp_Params.put("vnp_IpAddr", vnp_IpAddr);
++
++	    Calendar cld = Calendar.getInstance(TimeZone.getTimeZone("Etc/GMT+7"));
++	    SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMddHHmmss");
++	    String vnp_CreateDate = formatter.format(cld.getTime());
++	    vnp_Params.put("vnp_CreateDate", vnp_CreateDate);
++
++	    cld.add(Calendar.MINUTE, 15);
++	    String vnp_ExpireDate = formatter.format(cld.getTime());
++	    vnp_Params.put("vnp_ExpireDate", vnp_ExpireDate);
++
++	    List<String> fieldNames = new ArrayList<>(vnp_Params.keySet());
++	    Collections.sort(fieldNames);
++	    StringBuilder hashData = new StringBuilder();
++	    StringBuilder query = new StringBuilder();
++	    for (String fieldName : fieldNames) {
++	        String fieldValue = vnp_Params.get(fieldName);
++	        if ((fieldValue != null) && (fieldValue.length() > 0)) {
++	            hashData.append(fieldName).append('=')
++	                    .append(URLEncoder.encode(fieldValue, StandardCharsets.US_ASCII.toString()));
++	            query.append(URLEncoder.encode(fieldName, StandardCharsets.US_ASCII.toString()))
++	                    .append('=')
++	                    .append(URLEncoder.encode(fieldValue, StandardCharsets.US_ASCII.toString()));
++	            query.append('&');
++	            hashData.append('&');
++	        }
++	    }
++
++	    if (query.length() > 0)
++	        query.setLength(query.length() - 1);
++	    if (hashData.length() > 0)
++	        hashData.setLength(hashData.length() - 1);
++
++	    String vnp_SecureHash = VnpayConfigWallet.hmacSHA512(VnpayConfigWallet.secretKey, hashData.toString());
++	    query.append("&vnp_SecureHash=").append(vnp_SecureHash);
++	    return VnpayConfigWallet.vnp_PayUrl + "?" + query;
++	}
++
++}
+\ No newline at end of file
+Index: src/main/java/com/example/homecleanapi/controllers/CleanerController.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/example/homecleanapi/controllers/CleanerController.java b/src/main/java/com/example/homecleanapi/controllers/CleanerController.java
+new file mode 100644
+--- /dev/null	(date 1743672482105)
++++ b/src/main/java/com/example/homecleanapi/controllers/CleanerController.java	(date 1743672482105)
+@@ -0,0 +1,141 @@
++package com.example.homecleanapi.controllers;
++
++import org.springframework.messaging.handler.annotation.MessageMapping;
++import org.springframework.messaging.simp.SimpMessagingTemplate;
++import org.springframework.stereotype.Controller;
++import org.springframework.web.bind.annotation.GetMapping;
++import org.springframework.web.bind.annotation.RequestMapping;
++import org.springframework.web.bind.annotation.RestController;
++
++import java.util.HashMap;
++import java.util.List;
++import java.util.Map;
++import java.util.Optional;
++import java.util.stream.Collectors;
++
++import org.springframework.beans.factory.annotation.Autowired;
++import org.springframework.http.ResponseEntity;
++
++import com.example.homecleanapi.models.Employee;
++import com.example.homecleanapi.repositories.CleanerRepository;
++
++import com.fasterxml.jackson.databind.JsonNode;
++import com.fasterxml.jackson.databind.ObjectMapper;
++
++import io.swagger.v3.oas.annotations.security.SecurityRequirement;
++import io.swagger.v3.oas.annotations.tags.Tag;
++
++@RestController
++@Tag(name = "API View Cleaner Online ")
++@SecurityRequirement(name = "BearerAuth")
++@RequestMapping("/api/customer")
++public class CleanerController {
++
++    private final SimpMessagingTemplate messagingTemplate;
++    
++    @Autowired
++    private CleanerRepository cleanerRepository;
++    
++    // Lưu trữ cleanerId của các cleaner online
++    private static final Map<Long, Boolean> onlineCleaners = new HashMap<>();
++
++    public CleanerController(SimpMessagingTemplate messagingTemplate) {
++        this.messagingTemplate = messagingTemplate;
++    }
++
++    @MessageMapping("/cleaner-online")
++    public void handleCleanerOnline(String message) {
++        try {
++            ObjectMapper objectMapper = new ObjectMapper();
++            JsonNode jsonNode = objectMapper.readTree(message);  
++            String cleanerIdStr = jsonNode.get("cleanerId").asText(); 
++
++            Long cleanerId = Long.valueOf(cleanerIdStr);
++
++            System.out.println("Received cleaner login request with cleanerId: " + cleanerId);
++
++            Optional<Employee> cleanerOpt = cleanerRepository.findById(cleanerId);
++            cleanerOpt.ifPresent(cleaner -> {
++                cleaner.setStatus(true);  // Đánh dấu cleaner là online
++                cleanerRepository.save(cleaner);  // Cập nhật vào DB
++
++                System.out.println("Cleaner " + cleanerId + " (" + cleaner.getName() + ") is now online in DB.");
++                System.out.println("Cleaner Profile Image: " + cleaner.getProfile_image());
++                System.out.println("Cleaner Status: " + cleaner.getStatus());
++            });
++
++            onlineCleaners.put(cleanerId, true);
++            messagingTemplate.convertAndSend("/topic/onlineCleaners", cleanerId);
++        } catch (Exception e) {
++            System.err.println("Error processing cleaner login: " + e.getMessage());
++        }
++    }
++
++
++    @MessageMapping("/cleaner-offline")
++    public void handleCleanerOffline(String message) {
++        try {
++            // Phân tích JSON để lấy cleanerId
++            ObjectMapper objectMapper = new ObjectMapper();
++            JsonNode jsonNode = objectMapper.readTree(message);  
++            String cleanerIdStr = jsonNode.get("cleanerId").asText(); 
++
++            Long cleanerId = Long.valueOf(cleanerIdStr);
++
++            System.out.println("Received cleaner logout request with cleanerId: " + cleanerId);
++
++            Optional<Employee> cleanerOpt = cleanerRepository.findById(cleanerId);
++            cleanerOpt.ifPresent(cleaner -> {
++                cleaner.setStatus(false);  // Đánh dấu cleaner là offline
++                cleanerRepository.save(cleaner);  // Cập nhật vào DB
++
++                // In ra thông tin đầy đủ của cleaner khi logout
++                System.out.println("Cleaner " + cleanerId + " (" + cleaner.getName() + ") is now offline in DB.");
++                System.out.println("Cleaner Profile Image: " + cleaner.getProfile_image());
++                System.out.println("Cleaner Status: " + cleaner.getStatus());
++            });
++
++            // Xóa cleanerId khỏi danh sách onlineCleaners
++            onlineCleaners.remove(cleanerId);
++
++            // Gửi thông báo về trạng thái offline cho frontend
++            System.out.println("here1");
++            messagingTemplate.convertAndSend("/topic/oflineCleaners", cleanerId);
++            System.out.println("here2");
++        } catch (Exception e) {
++            System.err.println("Error processing cleaner logout: " + e.getMessage());
++        }
++    }
++
++
++    @GetMapping("/cleaners/online")
++    public ResponseEntity<List<Map<String, Object>>> getOnlineCleaners() {
++        List<Map<String, Object>> onlineCleanersList = onlineCleaners.keySet().stream()
++                .map(cleanerId -> {
++                    Map<String, Object> cleanerMap = new HashMap<>();
++                    cleanerMap.put("cleanerId", cleanerId); 
++
++                    Optional<Employee> cleanerOpt = cleanerRepository.findById(cleanerId);
++                    if (cleanerOpt.isPresent()) {
++                        Employee cleaner = cleanerOpt.get();
++                        cleanerMap.put("name", cleaner.getName()); 
++                        cleanerMap.put("profile_image", cleaner.getProfile_image()); 
++                    }
++
++                    return cleanerMap;
++                })
++                .collect(Collectors.toList());
++
++        // Ghi log kết quả
++        System.out.println("Online Cleaners List: " + onlineCleanersList);
++
++        if (onlineCleanersList.isEmpty()) {
++            System.out.println("No online cleaners found.");
++            return ResponseEntity.status(404).body(List.of());
++        }
++
++        return ResponseEntity.ok(onlineCleanersList);
++    }
++
++
++}
+Index: src/main/java/com/example/homecleanapi/dtos/FeedbackRequest.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/example/homecleanapi/dtos/FeedbackRequest.java b/src/main/java/com/example/homecleanapi/dtos/FeedbackRequest.java
+new file mode 100644
+--- /dev/null	(date 1743672482118)
++++ b/src/main/java/com/example/homecleanapi/dtos/FeedbackRequest.java	(date 1743672482118)
+@@ -0,0 +1,24 @@
++package com.example.homecleanapi.dtos;
++
++public class FeedbackRequest {
++
++    private Double rating; 
++    private String comment; 
++
++    // Getters and Setters
++    public Double getRating() {
++        return rating;
++    }
++
++    public void setRating(Double rating) {
++        this.rating = rating;
++    }
++
++    public String getComment() {
++        return comment;
++    }
++
++    public void setComment(String comment) {
++        this.comment = comment;
++    }
++}
+Index: src/main/java/com/example/homecleanapi/controllers/ReportUpdateDTO.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/example/homecleanapi/controllers/ReportUpdateDTO.java b/src/main/java/com/example/homecleanapi/controllers/ReportUpdateDTO.java
+new file mode 100644
+--- /dev/null	(date 1743672482112)
++++ b/src/main/java/com/example/homecleanapi/controllers/ReportUpdateDTO.java	(date 1743672482112)
+@@ -0,0 +1,16 @@
++package com.example.homecleanapi.controllers;
++
++import lombok.AllArgsConstructor;
++import lombok.Data;
++import lombok.NoArgsConstructor;
++
++import java.time.LocalDate;
++
++@Data
++@AllArgsConstructor
++@NoArgsConstructor
++public class ReportUpdateDTO {
++    private String status;
++    private LocalDate resolvedAt;
++    private String adminResponse;
++}
+Index: src/main/java/com/example/homecleanapi/controllers/FeedbackController.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/example/homecleanapi/controllers/FeedbackController.java b/src/main/java/com/example/homecleanapi/controllers/FeedbackController.java
+new file mode 100644
+--- /dev/null	(date 1743672482111)
++++ b/src/main/java/com/example/homecleanapi/controllers/FeedbackController.java	(date 1743672482111)
+@@ -0,0 +1,72 @@
++package com.example.homecleanapi.controllers;
++
++import com.example.homecleanapi.dtos.FeedbackRequest;
++import com.example.homecleanapi.services.FeedbackService;
++
++import io.swagger.v3.oas.annotations.security.SecurityRequirement;
++import io.swagger.v3.oas.annotations.tags.Tag;
++
++import org.springframework.beans.factory.annotation.Autowired;
++import org.springframework.http.HttpStatus;
++import org.springframework.http.ResponseEntity;
++import org.springframework.web.bind.annotation.*;
++
++import java.util.List;
++import java.util.Map;
++
++@RestController
++@Tag(name = "Feedback API")
++@SecurityRequirement(name = "BearerAuth")
++@RequestMapping("/api/customer")
++public class FeedbackController {
++
++    @Autowired
++    private FeedbackService feedbackService;
++
++    // Customer tạo feedback và đánh giá cho job
++    @PostMapping("/{customerId}/job/{jobId}/createfeedback")
++    public ResponseEntity<Map<String, Object>> createFeedback(@PathVariable Long customerId,@PathVariable Long jobId,@RequestBody FeedbackRequest feedbackRequest) {
++
++        Map<String, Object> response = feedbackService.createFeedback(customerId, jobId, feedbackRequest);
++        return new ResponseEntity<>(response, (HttpStatus) response.get("status"));
++    }
++    
++    
++    @PutMapping("/{customerId}/job/{jobId}/updatefeedback")
++    public ResponseEntity<Map<String, Object>> updateFeedback(@PathVariable Long customerId,@PathVariable Long jobId,@RequestBody FeedbackRequest feedbackRequest) {
++
++        Map<String, Object> response = feedbackService.updateFeedback(customerId, jobId, feedbackRequest);
++        return new ResponseEntity<>(response, (HttpStatus) response.get("status"));
++    }
++    
++    
++    @GetMapping("/{customerId}/feedbacks")
++    public ResponseEntity<List<Map<String, Object>>> getCustomerFeedbacks(@PathVariable Long customerId) {
++        List<Map<String, Object>> feedbacks = feedbackService.getFeedbacksByCustomerId(customerId);
++
++        if (feedbacks.isEmpty()) {
++            return ResponseEntity.noContent().build();  
++        }
++
++        return ResponseEntity.ok(feedbacks); 
++    }
++    
++    @GetMapping("/{customerId}/job/{jobId}/feedback")
++    public ResponseEntity<Map<String, Object>> getFeedbackDetails(@PathVariable Long customerId, @PathVariable Long jobId) {
++        Map<String, Object> response = feedbackService.getFeedbackDetails(customerId, jobId);
++        return new ResponseEntity<>(response, (HttpStatus) response.get("status"));
++    }
++    
++    @GetMapping("/cleaners/{cleanerId}/feedbacks")
++    public ResponseEntity<List<Map<String, Object>>> getFeedbacksOfCleaner(@PathVariable Long cleanerId) {
++        List<Map<String, Object>> feedbacks = feedbackService.getAllFeedbacksForCleaner(cleanerId);
++        if (feedbacks.isEmpty()) {
++            return ResponseEntity.noContent().build(); 
++        }
++
++        return ResponseEntity.ok(feedbacks); 
++    }
++}
++
++
++
+Index: src/main/java/com/example/homecleanapi/dtos/CleanerOnlineMessage.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/example/homecleanapi/dtos/CleanerOnlineMessage.java b/src/main/java/com/example/homecleanapi/dtos/CleanerOnlineMessage.java
+new file mode 100644
+--- /dev/null	(date 1743672482114)
++++ b/src/main/java/com/example/homecleanapi/dtos/CleanerOnlineMessage.java	(date 1743672482114)
+@@ -0,0 +1,34 @@
++package com.example.homecleanapi.dtos;
++
++public class CleanerOnlineMessage {
++    private String cleanerId;
++    private String cleanerName;
++    private String profileImage;
++    private String token;
++	public String getCleanerId() {
++		return cleanerId;
++	}
++	public void setCleanerId(String cleanerId) {
++		this.cleanerId = cleanerId;
++	}
++	public String getCleanerName() {
++		return cleanerName;
++	}
++	public void setCleanerName(String cleanerName) {
++		this.cleanerName = cleanerName;
++	}
++	public String getProfileImage() {
++		return profileImage;
++	}
++	public void setProfileImage(String profileImage) {
++		this.profileImage = profileImage;
++	}
++	public String getToken() {
++		return token;
++	}
++	public void setToken(String token) {
++		this.token = token;
++	}
++
++    
++}
+Index: src/main/java/com/example/homecleanapi/dtos/CleanerUpdateProfile.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/example/homecleanapi/dtos/CleanerUpdateProfile.java b/src/main/java/com/example/homecleanapi/dtos/CleanerUpdateProfile.java
+new file mode 100644
+--- /dev/null	(date 1743672482116)
++++ b/src/main/java/com/example/homecleanapi/dtos/CleanerUpdateProfile.java	(date 1743672482116)
+@@ -0,0 +1,15 @@
++package com.example.homecleanapi.dtos;
++
++import lombok.Getter;
++import lombok.Setter;
++
++@Getter
++@Setter
++public class CleanerUpdateProfile {
++    private String name;
++    private String phone;
++    private String email;
++    private Integer age;
++    private String identity_number;
++    private String experience;
++}
+Index: src/main/java/com/example/homecleanapi/dtos/ReportRequestDTO.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/example/homecleanapi/dtos/ReportRequestDTO.java b/src/main/java/com/example/homecleanapi/dtos/ReportRequestDTO.java
+new file mode 100644
+--- /dev/null	(date 1743672482121)
++++ b/src/main/java/com/example/homecleanapi/dtos/ReportRequestDTO.java	(date 1743672482121)
+@@ -0,0 +1,15 @@
++package com.example.homecleanapi.dtos;
++
++import lombok.AllArgsConstructor;
++import lombok.Data;
++import lombok.NoArgsConstructor;
++
++
++@Data
++@AllArgsConstructor
++@NoArgsConstructor
++public class ReportRequestDTO {
++    private String report_type;
++    private String description;
++    private String status;
++}
+Index: src/main/java/com/example/homecleanapi/dtos/ChangePasswordRequest.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/example/homecleanapi/dtos/ChangePasswordRequest.java b/src/main/java/com/example/homecleanapi/dtos/ChangePasswordRequest.java
+new file mode 100644
+--- /dev/null	(date 1743672482114)
++++ b/src/main/java/com/example/homecleanapi/dtos/ChangePasswordRequest.java	(date 1743672482114)
+@@ -0,0 +1,11 @@
++package com.example.homecleanapi.dtos;
++
++import lombok.Getter;
++import lombok.Setter;
++
++@Setter
++@Getter
++public class ChangePasswordRequest {
++    private String oldPassword;
++    private String newPassword;
++}
+Index: src/main/java/com/example/homecleanapi/repositories/ReportRepository.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/example/homecleanapi/repositories/ReportRepository.java b/src/main/java/com/example/homecleanapi/repositories/ReportRepository.java
+new file mode 100644
+--- /dev/null	(date 1743672482134)
++++ b/src/main/java/com/example/homecleanapi/repositories/ReportRepository.java	(date 1743672482134)
+@@ -0,0 +1,10 @@
++package com.example.homecleanapi.repositories;
++
++import com.example.homecleanapi.models.Report;
++import org.springframework.data.jpa.repository.JpaRepository;
++
++import java.util.List;
++
++public interface ReportRepository extends JpaRepository<Report, Long> {
++    Report findReportById(Long id);
++}
+Index: src/main/java/com/example/homecleanapi/repositories/WalletRepository.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/example/homecleanapi/repositories/WalletRepository.java b/src/main/java/com/example/homecleanapi/repositories/WalletRepository.java
+new file mode 100644
+--- /dev/null	(date 1743672482135)
++++ b/src/main/java/com/example/homecleanapi/repositories/WalletRepository.java	(date 1743672482135)
+@@ -0,0 +1,18 @@
++package com.example.homecleanapi.repositories;
++
++import java.util.Optional;
++
++import org.springframework.data.jpa.repository.JpaRepository;
++import org.springframework.stereotype.Repository;
++
++import com.example.homecleanapi.models.Wallet;
++
++@Repository
++public interface WalletRepository extends JpaRepository<Wallet, Long> {
++
++    Optional<Wallet> findByCleanerId(Integer cleanerId);
++    
++    Optional<Wallet> findByCleanerId(Long cleanerId);
++    
++    Optional<Wallet> findByTxnRef(String txnRef);
++}
+Index: src/main/java/com/example/homecleanapi/dtos/DepositRequest.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/example/homecleanapi/dtos/DepositRequest.java b/src/main/java/com/example/homecleanapi/dtos/DepositRequest.java
+new file mode 100644
+--- /dev/null	(date 1743672482116)
++++ b/src/main/java/com/example/homecleanapi/dtos/DepositRequest.java	(date 1743672482116)
+@@ -0,0 +1,15 @@
++package com.example.homecleanapi.dtos;
++
++public class DepositRequest {
++    private double amount;
++
++    public double getAmount() {
++        return amount;
++    }
++
++    public void setAmount(double amount) {
++        this.amount = amount;
++    }
++}
++
++
+Index: src/main/java/com/example/homecleanapi/models/Payment.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/example/homecleanapi/models/Payment.java b/src/main/java/com/example/homecleanapi/models/Payment.java
+new file mode 100644
+--- /dev/null	(date 1743672482127)
++++ b/src/main/java/com/example/homecleanapi/models/Payment.java	(date 1743672482127)
+@@ -0,0 +1,123 @@
++package com.example.homecleanapi.models;
++
++import jakarta.persistence.*;
++import java.math.BigDecimal;
++import java.time.LocalDateTime;
++
++@Entity
++@Table(name = "payments")
++public class Payment {
++
++    @Id
++    @GeneratedValue(strategy = GenerationType.IDENTITY)
++    private Long id;
++
++    @Column(name = "job_id")
++    private Long jobId;
++
++    @Column(name = "amount", nullable = false)
++    private BigDecimal amount;
++
++    @Column(name = "payment_status", nullable = false)
++    private String paymentStatus; // 'Pending', 'Completed', 'Failed', 'Refunded'
++
++    @Column(name = "payment_method", nullable = false)
++    private String paymentMethod; 
++
++    @Column(name = "payment_date", nullable = false)
++    private LocalDateTime paymentDate;
++
++    @Column(name = "payment_reference")
++    private String paymentReference;
++
++    @Column(name = "transaction_id")
++    private String transactionId;
++
++    @Column(name = "created_at", nullable = false)
++    private LocalDateTime createdAt;
++
++    @Column(name = "updated_at", nullable = false)
++    private LocalDateTime updatedAt;
++
++    // Getters and Setters
++
++    public Long getId() {
++        return id;
++    }
++
++    public void setId(Long id) {
++        this.id = id;
++    }
++
++    public Long getJobId() {
++        return jobId;
++    }
++
++    public void setJobId(Long jobId) {
++        this.jobId = jobId;
++    }
++
++    public BigDecimal getAmount() {
++        return amount;
++    }
++
++    public void setAmount(BigDecimal amount) {
++        this.amount = amount;
++    }
++
++    public String getPaymentStatus() {
++        return paymentStatus;
++    }
++
++    public void setPaymentStatus(String paymentStatus) {
++        this.paymentStatus = paymentStatus;
++    }
++
++    public String getPaymentMethod() {
++        return paymentMethod;
++    }
++
++    public void setPaymentMethod(String paymentMethod) {
++        this.paymentMethod = paymentMethod;
++    }
++
++    public LocalDateTime getPaymentDate() {
++        return paymentDate;
++    }
++
++    public void setPaymentDate(LocalDateTime paymentDate) {
++        this.paymentDate = paymentDate;
++    }
++
++    public String getPaymentReference() {
++        return paymentReference;
++    }
++
++    public void setPaymentReference(String paymentReference) {
++        this.paymentReference = paymentReference;
++    }
++
++    public String getTransactionId() {
++        return transactionId;
++    }
++
++    public void setTransactionId(String transactionId) {
++        this.transactionId = transactionId;
++    }
++
++    public LocalDateTime getCreatedAt() {
++        return createdAt;
++    }
++
++    public void setCreatedAt(LocalDateTime createdAt) {
++        this.createdAt = createdAt;
++    }
++
++    public LocalDateTime getUpdatedAt() {
++        return updatedAt;
++    }
++
++    public void setUpdatedAt(LocalDateTime updatedAt) {
++        this.updatedAt = updatedAt;
++    }
++}
+Index: src/main/java/com/example/homecleanapi/services/FeedbackService.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/example/homecleanapi/services/FeedbackService.java b/src/main/java/com/example/homecleanapi/services/FeedbackService.java
+new file mode 100644
+--- /dev/null	(date 1743672482140)
++++ b/src/main/java/com/example/homecleanapi/services/FeedbackService.java	(date 1743672482140)
+@@ -0,0 +1,248 @@
++package com.example.homecleanapi.services;
++
++import com.example.homecleanapi.dtos.FeedbackRequest;
++import com.example.homecleanapi.models.Feedback;
++import com.example.homecleanapi.models.Job;
++import com.example.homecleanapi.models.JobApplication;
++import com.example.homecleanapi.repositories.FeedbackRepository;
++import com.example.homecleanapi.repositories.JobApplicationRepository;
++import com.example.homecleanapi.repositories.JobRepository;
++import com.example.homecleanapi.enums.JobStatus; // Import Enum JobStatus
++
++import org.springframework.beans.factory.annotation.Autowired;
++import org.springframework.http.HttpStatus;
++import org.springframework.stereotype.Service;
++
++import java.util.ArrayList;
++import java.util.HashMap;
++import java.util.List;
++import java.util.Map;
++import java.util.Optional;
++
++@Service
++public class FeedbackService {
++
++    @Autowired
++    private FeedbackRepository feedbackRepository;
++
++    @Autowired
++    private JobRepository jobRepository;
++    
++    @Autowired
++    private JobApplicationRepository jobApplicationRepository;
++
++    // Kiểm tra xem customer đã đánh giá cho công việc này chưa
++    private boolean checkIfAlreadyReviewed(Long customerId, Long jobId) {
++        Optional<Feedback> feedbackOpt = feedbackRepository.findByJob_IdAndJob_Customer_Id(jobId, customerId);
++        return feedbackOpt.isPresent();
++    }
++
++    // Tạo feedback mới
++    public Map<String, Object> createFeedback(Long customerId, Long jobId, FeedbackRequest feedbackRequest) {
++        Map<String, Object> response = new HashMap<>();
++
++        // Kiểm tra xem job có tồn tại không
++        Optional<Job> jobOpt = jobRepository.findById(jobId);
++        if (!jobOpt.isPresent()) {
++            response.put("message", "Job not found");
++            response.put("status", HttpStatus.NOT_FOUND);
++            return response;
++        }
++
++        // Kiểm tra xem customer có phải là người tạo công việc này không
++        Job job = jobOpt.get();
++        if (job.getCustomer().getId().longValue() != customerId.longValue()) {
++            response.put("message", "You are not authorized to leave feedback for this job");
++            response.put("status", HttpStatus.FORBIDDEN);
++            return response;
++        }
++
++        // Kiểm tra trạng thái công việc là DONE
++        if (!job.getStatus().equals(JobStatus.DONE)) {
++            response.put("message", "Feedback can only be provided for completed jobs (status = DONE)");
++            response.put("status", HttpStatus.FORBIDDEN);
++            return response;
++        }
++
++        // Kiểm tra xem customer đã đánh giá cho công việc này chưa
++        if (checkIfAlreadyReviewed(customerId, jobId)) {
++            response.put("message", "You have already reviewed this job");
++            response.put("status", HttpStatus.BAD_REQUEST);
++            return response;
++        }
++
++        // Tạo feedback mới
++        Feedback feedback = new Feedback();
++        feedback.setJob(job);
++        feedback.setRating(feedbackRequest.getRating());
++        feedback.setComment(feedbackRequest.getComment());
++
++        // Lưu feedback vào cơ sở dữ liệu
++        feedbackRepository.save(feedback);
++
++        // Thành công, trả về phản hồi
++        response.put("message", "Feedback created successfully");
++        response.put("status", HttpStatus.CREATED);
++        return response;
++    }
++    
++    public Map<String, Object> updateFeedback(Long customerId, Long jobId, FeedbackRequest feedbackRequest) {
++        Map<String, Object> response = new HashMap<>();
++
++        // Kiểm tra xem job có tồn tại không
++        Optional<Job> jobOpt = jobRepository.findById(jobId);
++        if (!jobOpt.isPresent()) {
++            response.put("message", "Job not found");
++            response.put("status", HttpStatus.NOT_FOUND);
++            return response;
++        }
++
++        // Kiểm tra xem customer có phải là người tạo công việc này không
++        Job job = jobOpt.get();
++        if (job.getCustomer().getId().longValue() != customerId.longValue()) {
++            response.put("message", "You are not authorized to update feedback for this job");
++            response.put("status", HttpStatus.FORBIDDEN);
++            return response;
++        }
++
++        // Kiểm tra trạng thái công việc là DONE
++        if (!job.getStatus().equals(JobStatus.DONE)) {
++            response.put("message", "Feedback can only be updated for completed jobs (status = DONE)");
++            response.put("status", HttpStatus.FORBIDDEN);
++            return response;
++        }
++
++        // Kiểm tra xem customer đã đánh giá cho công việc này chưa
++        Optional<Feedback> existingFeedbackOpt = feedbackRepository.findByJob_IdAndJob_Customer_Id(jobId, customerId);
++        if (!existingFeedbackOpt.isPresent()) {
++            response.put("message", "No feedback found to update");
++            response.put("status", HttpStatus.NOT_FOUND);
++            return response;
++        }
++
++        // Lấy feedback hiện tại
++        Feedback existingFeedback = existingFeedbackOpt.get();
++
++        // Cập nhật rating nếu có giá trị mới
++        if (feedbackRequest.getRating() != null) {
++            existingFeedback.setRating(feedbackRequest.getRating());
++        }
++
++        // Cập nhật comment nếu có giá trị mới
++        if (feedbackRequest.getComment() != null && !feedbackRequest.getComment().isEmpty()) {
++            existingFeedback.setComment(feedbackRequest.getComment());
++        }
++
++        // Lưu feedback cập nhật vào cơ sở dữ liệu
++        feedbackRepository.save(existingFeedback);
++
++        // Thành công, trả về phản hồi
++        response.put("message", "Feedback updated successfully");
++        response.put("status", HttpStatus.OK);
++        return response;
++    }
++
++    
++    public List<Map<String, Object>> getFeedbacksByCustomerId(Long customerId) {
++        // Tìm tất cả các job mà customer đã thực hiện
++        List<JobApplication> jobApplications = jobApplicationRepository.findByJob_Customer_Id(customerId);
++        List<Map<String, Object>> feedbackList = new ArrayList<Map<String,Object>>();
++
++        // Duyệt qua các job mà customer đã thực hiện và lấy các feedback
++        for (JobApplication jobApplication : jobApplications) {
++            Job job = jobApplication.getJob(); // Lấy Job từ JobApplication
++
++            // Lấy các feedback cho Job này
++            List<Feedback> feedbacks = feedbackRepository.findByJobId(job.getId());
++
++            // Lấy thông tin feedback
++            for (Feedback feedback : feedbacks) {
++                Map<String, Object> feedbackInfo = new HashMap<>();
++                feedbackInfo.put("jobId", job.getId());
++                feedbackInfo.put("rating", feedback.getRating());
++                feedbackInfo.put("comment", feedback.getComment());
++                feedbackList.add(feedbackInfo);
++            }
++        }
++
++        return feedbackList;
++    }
++    
++    
++    public Map<String, Object> getFeedbackDetails(Long customerId, Long jobId) {
++        Map<String, Object> response = new HashMap<>();
++
++        // Kiểm tra xem job có tồn tại không
++        Optional<Job> jobOpt = jobRepository.findById(jobId);
++        if (!jobOpt.isPresent()) {
++            response.put("message", "Job not found");
++            response.put("status", HttpStatus.NOT_FOUND);
++            return response;
++        }
++
++        // Kiểm tra xem customer có phải là người tạo công việc này không
++        Job job = jobOpt.get();
++        if (job.getCustomer().getId().longValue() != customerId.longValue()) {
++            response.put("message", "You are not authorized to view feedback for this job");
++            response.put("status", HttpStatus.FORBIDDEN);
++            return response;
++        }
++
++        // Lấy feedback cho job này của customer
++        Optional<Feedback> feedbackOpt = feedbackRepository.findByJob_IdAndJob_Customer_Id(jobId, customerId);
++        if (!feedbackOpt.isPresent()) {
++            response.put("message", "Feedback not found");
++            response.put("status", HttpStatus.NOT_FOUND);
++            return response;
++        }
++
++        Feedback feedback = feedbackOpt.get();
++
++        // Tạo response với thông tin feedback
++        Map<String, Object> feedbackInfo = new HashMap<>();
++        feedbackInfo.put("jobId", job.getId());
++        feedbackInfo.put("rating", feedback.getRating());
++        feedbackInfo.put("comment", feedback.getComment());
++
++        response.put("feedback", feedbackInfo);
++        response.put("status", HttpStatus.OK);
++        return response;
++    }
++    
++    public List<Map<String, Object>> getAllFeedbacksForCleaner(Long cleanerId) {
++        List<Map<String, Object>> feedbackList = new ArrayList<>();
++
++        List<JobApplication> jobApplications = jobApplicationRepository.findByCleanerId(cleanerId);
++
++        for (JobApplication jobApplication : jobApplications) {
++            Job job = jobApplication.getJob();
++
++
++            if (!jobApplication.getStatus().equals("Accepted")) {
++                continue; 
++            }
++
++            List<Feedback> feedbacks = feedbackRepository.findByJobId(job.getId());
++
++            // Lấy thông tin feedback
++            for (Feedback feedback : feedbacks) {
++                Map<String, Object> feedbackInfo = new HashMap<>();
++                feedbackInfo.put("jobId", job.getId());
++                feedbackInfo.put("rating", feedback.getRating());
++                feedbackInfo.put("comment", feedback.getComment());
++                feedbackList.add(feedbackInfo);
++            }
++        }
++
++        return feedbackList;
++    }
++
++    
++    
++}
++
++
++
++
++
++
+Index: src/main/java/com/example/homecleanapi/services/WalletService.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/example/homecleanapi/services/WalletService.java b/src/main/java/com/example/homecleanapi/services/WalletService.java
+new file mode 100644
+--- /dev/null	(date 1743672482142)
++++ b/src/main/java/com/example/homecleanapi/services/WalletService.java	(date 1743672482142)
+@@ -0,0 +1,155 @@
++package com.example.homecleanapi.services;
++
++import java.util.HashMap;
++import java.util.Map;
++import java.util.Optional;
++
++import org.springframework.beans.factory.annotation.Autowired;
++import org.springframework.http.HttpStatus;
++import org.springframework.http.ResponseEntity;
++import org.springframework.stereotype.Service;
++
++import com.example.homecleanapi.Payment.VnpayRequest;
++import com.example.homecleanapi.Payment.VnpayService;
++import com.example.homecleanapi.PaymentForWallets.VnpayRequestWallet;
++import com.example.homecleanapi.PaymentForWallets.VnpayServiceWallet;
++import com.example.homecleanapi.models.Employee;
++import com.example.homecleanapi.models.Wallet;
++import com.example.homecleanapi.repositories.CleanerRepository;
++import com.example.homecleanapi.repositories.WalletRepository;
++
++@Service
++public class WalletService {
++
++    @Autowired
++    private WalletRepository walletRepository;
++
++    @Autowired
++    private CleanerRepository cleanerRepository; 
++    
++    @Autowired
++    private VnpayServiceWallet vnpayServiceWallet; 
++
++    public Map<String, Object> getWalletBalance(Long cleanerId) {
++        Map<String, Object> response = new HashMap<>();
++
++        // Tìm cleaner dựa trên cleanerId
++        Optional<Employee> cleanerOpt = cleanerRepository.findById(cleanerId);
++        if (!cleanerOpt.isPresent()) {
++            response.put("message", "Cleaner not found");
++            return response;
++        }
++
++        Employee cleaner = cleanerOpt.get();
++
++        // Tìm ví của cleaner
++        Optional<Wallet> walletOpt = walletRepository.findByCleanerId(cleaner.getId());
++        if (!walletOpt.isPresent()) {
++            response.put("message", "Cleaner wallet not found");
++            return response;
++        }
++
++        Wallet wallet = walletOpt.get();
++
++        // Tạo phản hồi trả về số dư ví
++        response.put("message", "Wallet balance retrieved successfully");
++        response.put("walletBalance", wallet.getBalance());
++        return response;
++    }
++    
++    
++    // cleaner nạp tiền
++    public Map<String, Object> createPaymentForDeposit(Long cleanerId, double amount) {
++        Map<String, Object> response = new HashMap<>();
++
++        // Kiểm tra số tiền nạp vào ví phải là một giá trị hợp lệ (lớn hơn 0)
++        if (amount <= 0) {
++            response.put("message", "Số tiền nạp phải lớn hơn 0.");
++            return response;
++        }
++
++        try {
++            long paymentAmount = (long) (amount);
++
++            // Tạo VNPay Request với số tiền thanh toán
++            VnpayRequestWallet vnpayRequest = new VnpayRequestWallet();
++            vnpayRequest.setAmount(String.valueOf(paymentAmount));
++
++            // Tạo URL thanh toán VNPay
++            String paymentUrl = vnpayServiceWallet.createPayment(vnpayRequest);
++
++            // Tạo txnRef từ VNPay để theo dõi giao dịch
++            String txnRef = extractTxnRefFromUrl(paymentUrl);  // Lấy txnRef từ URL của VNPay
++
++            // Tạo Wallet nếu chưa có
++            Optional<Wallet> walletOpt = walletRepository.findByCleanerId(cleanerId);
++            Wallet wallet;
++            if (walletOpt.isPresent()) {
++                wallet = walletOpt.get();
++            } else {
++                wallet = new Wallet();
++                wallet.setCleaner(cleanerRepository.findById(cleanerId).orElseThrow());
++                wallet.setBalance(0.0);  // Khởi tạo ví mới với số dư 0
++            }
++
++            // Cập nhật txnRef vào Wallet
++            wallet.setTxnRef(txnRef);
++            walletRepository.save(wallet);
++
++            // Trả về URL thanh toán cho cleaner
++            response.put("paymentUrl", paymentUrl);
++            response.put("txnRef", txnRef);  // Trả lại txnRef cho cleaner để theo dõi
++
++            return response;
++
++        } catch (Exception e) {
++            response.put("message", "Failed to create payment through VNPay: " + e.getMessage());
++            return response;
++        }
++    }
++
++
++    // Hàm để trích xuất txnRef từ URL trả về của VNPay
++    private String extractTxnRefFromUrl(String paymentUrl) {
++        try {
++            // Trích xuất txnRef từ URL
++            String[] urlParts = paymentUrl.split("\\?");
++            for (String part : urlParts[1].split("&")) {
++                if (part.startsWith("vnp_TxnRef")) {
++                    return part.split("=")[1];
++                }
++            }
++        } catch (Exception e) {
++            e.printStackTrace();
++        }
++        return null;
++    }
++    
++    public void updateWalletBalance(String txnRef, double depositAmount) {
++        // Tìm ví theo txnRef
++        Optional<Wallet> walletOpt = walletRepository.findByTxnRef(txnRef);
++
++        if (walletOpt.isPresent()) {
++            Wallet wallet = walletOpt.get();
++
++            System.out.println("đây là tiền ban đầu" + wallet.getBalance());
++            System.out.println("đây là tiền muốn cộng" + depositAmount);
++            // Cập nhật số dư ví của cleaner
++            double newBalance = wallet.getBalance() + depositAmount;  
++            wallet.setBalance(newBalance);  
++            walletRepository.save(wallet);  // Lưu cập nhật số dư ví
++
++            
++            
++        } else {
++            // Xử lý trường hợp không tìm thấy giao dịch ví theo txnRef
++            throw new RuntimeException("Wallet not found for txnRef: " + txnRef);
++        }
++    }
++
++    
++
++
++    
++
++}
+Index: src/main/java/com/example/homecleanapi/services/ReportService.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/example/homecleanapi/services/ReportService.java b/src/main/java/com/example/homecleanapi/services/ReportService.java
+new file mode 100644
+--- /dev/null	(date 1743672482141)
++++ b/src/main/java/com/example/homecleanapi/services/ReportService.java	(date 1743672482141)
+@@ -0,0 +1,61 @@
++package com.example.homecleanapi.services;
++
++import com.example.homecleanapi.controllers.ReportUpdateDTO;
++import com.example.homecleanapi.dtos.ReportRequestDTO;
++import com.example.homecleanapi.models.Report;
++import com.example.homecleanapi.repositories.ReportRepository;
++import org.springframework.beans.factory.annotation.Autowired;
++import org.springframework.http.HttpStatus;
++import org.springframework.http.ResponseEntity;
++import org.springframework.stereotype.Service;
++import org.springframework.web.bind.annotation.PathVariable;
++
++import java.time.LocalDate;
++import java.util.HashMap;
++import java.util.List;
++import java.util.Map;
++
++@Service
++public class ReportService {
++
++    @Autowired
++    private final ReportRepository reportRepository;
++
++    public ReportService(ReportRepository reportRepository) {
++        this.reportRepository = reportRepository;
++    }
++
++    public ResponseEntity<Map<String, Object>> createReport(ReportRequestDTO reportRequest, @PathVariable Long job_id) {
++        Map<String, Object> response = new HashMap<>();
++
++        Report report = new Report();
++        report.setJob_id(job_id);
++        report.setReportType(reportRequest.getReport_type());
++        report.setDescription(reportRequest.getDescription());
++
++        reportRepository.save(report);
++        response.put("report", report);
++        return ResponseEntity.status(HttpStatus.CREATED).body(response);
++    }
++
++    public ResponseEntity<Map<String, Object>> updateReport(ReportUpdateDTO reportUpdate, @PathVariable Long report_id) {
++        Map<String, Object> response = new HashMap<>();
++
++        Report report = reportRepository.findReportById(report_id);
++
++        report.setReportType(reportUpdate.getStatus());
++        report.setResolvedAt(LocalDate.now());
++        report.setAdminResponse(reportUpdate.getAdminResponse());
++        reportRepository.save(report);
++
++        return ResponseEntity.status(HttpStatus.OK).body(response);
++    }
++
++    public ResponseEntity<Map<String, Object>> getAllReport() {
++        Map<String, Object> response = new HashMap<>();
++        List<Report> reports = reportRepository.findAll();
++
++        response.put("reports", reports);
++        return ResponseEntity.status(HttpStatus.OK).body(response);
++    }
++}
