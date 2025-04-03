@@ -19,7 +19,7 @@ public class Customers {
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime created_at;
 
-    @Column(name = "is_deleted") // Cập nhật tên cột thành is_deleted
+    @Column(name = "is_deleted")
     private boolean is_deleted;
 
     public Customers() {

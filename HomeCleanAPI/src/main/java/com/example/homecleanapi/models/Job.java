@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import com.example.homecleanapi.enums.JobStatus;
+import org.hibernate.annotations.UpdateTimestamp;
 
 @Entity
 @Table(name = "jobs")
@@ -42,10 +43,13 @@ public class Job {
     private CustomerAddresses customerAddress; // Mối quan hệ với CustomerAddress
 
     @Column(name = "scheduled_time")
-    private LocalDateTime scheduledTime; 
+    private LocalDateTime scheduledTime;
 
-    @Column(name = "created_at")
-    private LocalDateTime createdAt;
+
+    @Column(name = "updated_at")
+    @UpdateTimestamp
+    private LocalDateTime updatedAt;
+
 
     private Double totalPrice;
     
@@ -63,6 +67,14 @@ public class Job {
 
     // Getters and Setters
 
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
+    }
 
     public List<Feedback> getFeedback() {
         return feedback;
@@ -108,13 +120,6 @@ public class Job {
 		this.jobServiceDetails = jobServiceDetails;
 	}
 
-	public LocalDateTime getCreatedAt() {
-		return createdAt;
-	}
-
-	public void setCreatedAt(LocalDateTime createdAt) {
-		this.createdAt = createdAt;
-	}
 
 	public void setId(Long id) {
         this.id = id;

@@ -495,7 +495,7 @@ public class CleanerJobService {
 			jobInfo.put("status", job.getStatus());
 			jobInfo.put("scheduledTime", job.getScheduledTime());
 			jobInfo.put("totalPrice", job.getTotalPrice());
-			jobInfo.put("createdAt", job.getCreatedAt()); // Thêm thời gian tạo job
+
 
 			// Thêm thông tin về customer đã book job
 			Customers customer = job.getCustomer();
@@ -579,7 +579,7 @@ public class CleanerJobService {
 				jobInfo.put("scheduledTime", job.getScheduledTime());
 				jobInfo.put("status", job.getStatus());
 				jobInfo.put("totalPrice", job.getTotalPrice());
-				jobInfo.put("createdAt", job.getCreatedAt()); // Thêm thời gian tạo job
+
 
 				// Thêm thông tin về customer đã book job
 				Customers customer = job.getCustomer();
@@ -670,7 +670,7 @@ public class CleanerJobService {
 				jobInfo.put("scheduledTime", job.getScheduledTime());
 				jobInfo.put("status", job.getStatus());
 				jobInfo.put("totalPrice", job.getTotalPrice());
-				jobInfo.put("createdAt", job.getCreatedAt()); // Thêm thời gian tạo job
+
 
 				// Thêm thông tin về customer đã book job
 				Customers customer = job.getCustomer();
@@ -760,7 +760,7 @@ public class CleanerJobService {
 	        jobInfo.put("status", job.getStatus());
 	        jobInfo.put("scheduledTime", job.getScheduledTime());
 	        jobInfo.put("totalPrice", job.getTotalPrice());
-	        jobInfo.put("createdAt", job.getCreatedAt()); // Thêm thời gian tạo job
+
 
 	        // Thêm thông tin về customer đã book job
 	        Customers customer = job.getCustomer();
@@ -946,7 +946,7 @@ public class CleanerJobService {
 				jobInfo.put("status", job.getStatus());
 				jobInfo.put("scheduledTime", job.getScheduledTime());
 				jobInfo.put("totalPrice", job.getTotalPrice());
-				jobInfo.put("createdAt", job.getCreatedAt());
+
 
 				// Thêm thông tin về customer đã book job
 				Customers customer = job.getCustomer();
@@ -1011,7 +1011,7 @@ public class CleanerJobService {
 						jobInfo.put("status", job.getStatus());
 						jobInfo.put("scheduledTime", job.getScheduledTime());
 						jobInfo.put("totalPrice", job.getTotalPrice());
-						jobInfo.put("createdAt", job.getCreatedAt());
+
 
 						// Thêm thông tin về customer đã book job
 						Customers customer = job.getCustomer();
@@ -1341,7 +1341,7 @@ public class CleanerJobService {
 	        jobInfo.put("status", job.getStatus());
 	        jobInfo.put("scheduledTime", job.getScheduledTime());
 	        jobInfo.put("totalPrice", job.getTotalPrice());
-	        jobInfo.put("createdAt", job.getCreatedAt());
+
 
 	        // Thêm thông tin về customer
 	        Customers customer = job.getCustomer();

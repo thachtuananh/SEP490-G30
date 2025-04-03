@@ -95,6 +95,25 @@ public class AdminCleanerController {
         return ResponseEntity.status(403).body(Map.of("message", "Access denied"));
     }
 
+    @GetMapping("/unverified")
+    public ResponseEntity<?> getUnverifiedCleaners(HttpServletRequest requestHttp) {
+        if (isAuthorizedRole(requestHttp)) {
+            return cleanerService.getUnverifiedCleaners();
+        }
+        return ResponseEntity.status(403).body(Map.of("message", "Access denied"));
+    }
+
+    @PutMapping("/{id}/identity-verified")
+    public ResponseEntity<String> updateCleanerIdentityVerifiedAndDeleted(
+            @PathVariable Integer id,
+            @RequestParam Boolean status,
+            @RequestParam Boolean isDeleted) {
+
+        cleanerService.updateIdentityVerifiedAndDeletedStatus(id, status, isDeleted);
+        return ResponseEntity.ok("Identity verified and deleted status updated successfully.");
+    }
+
+
 
 
 }

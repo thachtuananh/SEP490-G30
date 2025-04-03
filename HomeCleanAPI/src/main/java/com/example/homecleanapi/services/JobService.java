@@ -387,7 +387,7 @@ public class JobService {
             jobInfo.put("customerAddress", job.getCustomerAddress().getAddress());  // Địa chỉ
             jobInfo.put("status", job.getStatus());  // Trạng thái
             jobInfo.put("totalPrice", job.getTotalPrice());  // Giá
-            jobInfo.put("createdAt", job.getCreatedAt());  // Thời gian tạo
+//            jobInfo.put("createdAt", job.getCreatedAt());  // Thời gian tạo
 
             // Thêm thông tin về customer đã đặt job
             Customers customer = job.getCustomer();
@@ -496,6 +496,8 @@ public class JobService {
     
     
     // LU
+
+
     
 
 

@@ -178,7 +178,6 @@ public class AdminCustomerService {
                     response.setJobId(job.getId());
                     response.setFullName(job.getCustomer().getFull_name());
                     response.setPhone(job.getCustomer().getPhone());
-                    response.setCreatedAt(job.getCreatedAt());
                     response.setJobStatus(job.getStatus().name());
                     response.setScheduledTime(job.getScheduledTime());
                     response.setPaymentMethod(job.getPaymentMethod());
@@ -214,7 +213,6 @@ public class AdminCustomerService {
                     response.setJobId(job.getId());
                     response.setFullName(job.getCustomer().getFull_name());
                     response.setPhone(job.getCustomer().getPhone());
-                    response.setCreatedAt(job.getCreatedAt());
                     response.setJobStatus(job.getStatus().name());
                     response.setScheduledTime(job.getScheduledTime());
                     response.setPaymentMethod(job.getPaymentMethod());
@@ -251,7 +249,6 @@ public class AdminCustomerService {
         response.setJobId(job.getId());
         response.setFullName(job.getCustomer().getFull_name());
         response.setPhone(job.getCustomer().getPhone());
-        response.setCreatedAt(job.getCreatedAt());
         response.setJobStatus(job.getStatus().name());
         response.setScheduledTime(job.getScheduledTime());
         response.setPaymentMethod(job.getPaymentMethod());

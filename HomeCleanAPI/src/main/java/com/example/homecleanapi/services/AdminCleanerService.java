@@ -117,7 +117,7 @@ public class AdminCleanerService {
         }
 
         Employee cleaner = cleanerOpt.get();
-        cleaner.setIsDeleted(false);
+        cleaner.setIsDeleted(true);
         cleanerRepository.save(cleaner);
 
         return ResponseEntity.ok(Map.of("message", "Đã khóa tài khoản cleaner"));
@@ -186,7 +186,6 @@ public class AdminCleanerService {
                     response.setJobId(job.getId());
                     response.setFullName(job.getCustomer().getFull_name());
                     response.setPhone(job.getCustomer().getPhone());
-                    response.setCreatedAt(job.getCreatedAt());
                     response.setJobStatus(job.getStatus().name());
                     response.setScheduledTime(job.getScheduledTime());
                     response.setPaymentMethod(job.getPaymentMethod());
@@ -226,7 +225,6 @@ public class AdminCleanerService {
                         response.setJobId(job.getId());
                         response.setFullName(job.getCustomer().getFull_name());
                         response.setPhone(job.getCustomer().getPhone());
-                        response.setCreatedAt(job.getCreatedAt());
                         response.setJobStatus(job.getStatus().name());
                         response.setScheduledTime(job.getScheduledTime());
                         response.setPaymentMethod(job.getPaymentMethod());
@@ -254,6 +252,31 @@ public class AdminCleanerService {
         return ResponseEntity.ok(jobHistoryResponses);
     }
 
+    public ResponseEntity<List<Map<String, Object>>> getUnverifiedCleaners() {
+        List<Employee> unverifiedCleaners = cleanerRepository.findUnverifiedCleaners();
+
+        List<Map<String, Object>> result = unverifiedCleaners.stream()
+                .map(cleaner -> {
+                    Map<String, Object> map = Map.of(
+                            "cleanerId", cleaner.getId(),
+                            "name", cleaner.getName(),
+                            "phone", cleaner.getPhone(),
+                            "email", cleaner.getEmail(),
+                            "identity_verified", cleaner.getIs_verified(),
+                            "status", cleaner.getStatus(),
+                            "created_at", cleaner.getCreated_at()
+                    );
+                    return map;
+                })
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(result);
+    }
+
+
+    public void updateIdentityVerifiedAndDeletedStatus(Integer cleanerId, Boolean status, Boolean isDeleted) {
+        cleanerRepository.updateIdentityVerifiedAndDeletedStatus(cleanerId, status, isDeleted);
+    }
 
 
 
