@@ -60,15 +60,24 @@ public class CustomerAuthService {
 
 
     public ResponseEntity<Map<String, Object>> customerLogin(LoginRequest request) {
+        // Tìm customer dựa trên số điện thoại
         Customers customer = customerRepository.findByPhone(request.getPhone());
 
         Map<String, Object> response = new HashMap<>();
 
+        // Kiểm tra nếu không tìm thấy customer
         if (customer == null) {
             response.put("message", "Số điện thoại không tồn tại!");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
 
+
+//        if (customer.get == true) {
+//            response.put("message", "Tài khoản của bạn bị khóa");
+//            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
+//        }
+
+        // Kiểm tra mật khẩu
         if (!passwordEncoder.matches(request.getPassword(), customer.getPassword_hash())) {
             response.put("message", "Sai mật khẩu!");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
@@ -86,6 +95,7 @@ public class CustomerAuthService {
 
         return ResponseEntity.ok(response);
     }
+
 
     public ResponseEntity<Map<String, Object>> customerForgotPassword(ForgotPasswordRequest request, Integer customerId) {
         Customers customer = customerRepository.findCustomersById(customerId);

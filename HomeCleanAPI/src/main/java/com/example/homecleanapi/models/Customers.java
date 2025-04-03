@@ -70,7 +70,6 @@ public class Customers {
         this.created_at = created_at;
     }
 
-    // Cập nhật getter và setter cho cột is_deleted
     public boolean isIs_deleted() {
         return is_deleted;
     }

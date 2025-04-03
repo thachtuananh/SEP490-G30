@@ -48,7 +48,7 @@ public class Employee {
     @Column(name = "status")
     private Boolean status;
 
-    @Column(name = "is_deleted")  // Đổi tên cột từ account_status thành is_deleted
+    @Column(name = "is_deleted")
     private Boolean isDeleted;
 
     @PrePersist

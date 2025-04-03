@@ -169,7 +169,7 @@ public class AdminCleanerService {
             map.put("name", cleaner.getName());
             map.put("email", cleaner.getEmail());
             map.put("created_at", cleaner.getCreated_at());
-            map.put("account_status", cleaner.getIsDeleted());
+            map.put("is_deleted", cleaner.getIsDeleted());
             return map;
         }).toList();
 
