@@ -34,6 +34,9 @@ public interface CleanerRepository extends JpaRepository<Employee, Long> {
     @Query("SELECT c FROM Employee c WHERE c.is_verified = false")
     List<Employee> findCleanersNotVerified();
 
+    @Query("SELECT e FROM Employee e WHERE e.is_verified = true")
+    List<Employee> findVerifiedCleaners();
+
 
 }
 

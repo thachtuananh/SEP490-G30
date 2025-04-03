@@ -159,7 +159,8 @@ public class AdminCleanerService {
 
 
     public ResponseEntity<List<Map<String, Object>>> getAllCleaners() {
-        List<Employee> cleaners = cleanerRepository.findAll();
+        // Lấy tất cả các cleaner có identity_verified = true
+        List<Employee> cleaners = cleanerRepository.findVerifiedCleaners();
 
         List<Map<String, Object>> result = cleaners.stream().map(cleaner -> {
             Map<String, Object> map = new HashMap<>();
@@ -174,6 +175,7 @@ public class AdminCleanerService {
 
         return ResponseEntity.ok(result);
     }
+
 
     public ResponseEntity<List<JobHistoryResponse>> getJobHistoryByCleanerId(Long cleanerId) {
         // Lấy tất cả job mà cleaner đã thực hiện

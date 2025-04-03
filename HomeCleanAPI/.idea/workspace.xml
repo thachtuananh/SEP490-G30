@@ -5,66 +5,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="6dd32c25-99a1-4da0-a769-374f6713cd9c" name="Changes" comment="update application">
-      <change afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/assets/images/Google__G__Logo.svg.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/assets/images/bg-profile.jpg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/assets/images/bg-signup.jpg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/assets/images/calendar.svg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/assets/images/duplicate.svg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/assets/images/face-1.jpg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/assets/images/face-2.jpg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/assets/images/face-3.jpg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/assets/images/face-4.jpg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/assets/images/face-5.jpeg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/assets/images/face-6.jpeg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/assets/images/home-decor-1.jpeg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/assets/images/home-decor-2.jpeg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/assets/images/home-decor-3.jpeg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/assets/images/icon-1.svg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/assets/images/image-statue@2x.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/assets/images/image@2x.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/assets/images/img-signin.jpg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/assets/images/info-card-1.9dbf753.jpg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/assets/images/info-card-1.jpg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/assets/images/info-card-2.jpg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/assets/images/info-card-3.jpg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/assets/images/logo-apple.svg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/assets/images/logo-atlassian.svg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/assets/images/logo-invision.svg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/assets/images/logo-jira.svg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/assets/images/logo-shopify.svg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/assets/images/logo-slack.svg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/assets/images/logo-slack1.svg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/assets/images/logo-spotify.svg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/assets/images/logo-webdev.svg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/assets/images/logo.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/assets/images/logos-facebook.svg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/assets/images/mastercard-logo.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/assets/images/paypal-logo-2.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/assets/images/pencil.svg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/assets/images/rocket-white.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/assets/images/team-1.jpg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/assets/images/team-2.jpg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/assets/images/team-3.jpg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/assets/images/team-4.jpg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/assets/images/user-circle.svg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/assets/images/visa-logo.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/assets/styles/main.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/assets/styles/responsive.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/components/Admin/AppHeader.jsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/components/Admin/AppSidebar.jsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/components/Admin/DealsTable.jsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/components/Admin/SalesChart.jsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/components/Admin/StatCard.jsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/components/Admin/StatCards.jsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/components/activity/ReportModal.jsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/pages/Admin/LoginAdmin.jsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/pages/Admin/MainDashboard.jsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/pages/Admin/ManageUser/Cleaner/CleanerDetails.jsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/pages/Admin/ManageUser/Cleaner/CleanerList.jsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/pages/Admin/ManageUser/Owner/OwnerDetails.jsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/pages/Admin/ManageUser/Owner/OwnerList.jsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/services/owner/ReportAPI.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../FE/home-clean-fe/src/components/api/CleanerDetail.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/repositories/CleanerRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/repositories/CleanerRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/repositories/JobRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/repositories/JobRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/services/AdminCleanerService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/services/AdminCleanerService.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+import com.example.homecleanapi.models.Employee;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -40,6 +41,7 @@ public interface JobRepository extends JpaRepository<Job, Long> {
             "FROM Job j WHERE j.status = 'DONE' " +
             "GROUP BY EXTRACT(YEAR FROM j.updatedAt), EXTRACT(MONTH FROM j.updatedAt)")
     List<Object[]> findRevenueByYearAndMonthNative();
+
 
 
 
