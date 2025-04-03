@@ -17,6 +17,7 @@ public class Customers {
     private String phone;
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime created_at;
+    private boolean is_deleted;
 
     public Customers() {
     }
@@ -64,5 +65,13 @@ public class Customers {
 
     public void setCreated_at(LocalDateTime created_at) {
         this.created_at = created_at;
+    }
+
+    public boolean isIs_deleted() {
+        return is_deleted;
+    }
+
+    public void setIs_deleted(boolean is_deleted) {
+        this.is_deleted = is_deleted;
     }
 }

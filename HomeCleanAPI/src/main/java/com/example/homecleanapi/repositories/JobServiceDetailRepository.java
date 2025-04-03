@@ -10,4 +10,6 @@ public interface JobServiceDetailRepository extends JpaRepository<JobServiceDeta
 	List<JobServiceDetail> findByJobId(Long jobId);
 	
 	List<JobServiceDetail> findByJobIdIn(List<Long> jobIds);
+	
+	List<JobServiceDetail> findByServiceId(Long serviceId);
 }

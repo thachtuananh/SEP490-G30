@@ -24,15 +24,18 @@ const AddLocationModal = ({ setIsShowAddLocationModal, onAddressAdded }) => {
     const customerId = localStorage.getItem("customerId");
 
     try {
-      const response = await fetch(`${BASE_URL}/customer/${customerId}/create-address`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
-        body: JSON.stringify({ address: newAddress })
-      });
+      const response = await fetch(
+        `${BASE_URL}/customer/${customerId}/create-address`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+          body: JSON.stringify({ address: newAddress }),
+        }
+      );
 
       if (response.ok) {
         message.success("Thêm địa chỉ mới thành công!");
