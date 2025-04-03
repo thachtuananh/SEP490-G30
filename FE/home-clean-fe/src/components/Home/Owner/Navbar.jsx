@@ -1,11 +1,16 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useState, useContext, useEffect } from "react";
 import { AuthContext } from "../../../context/AuthContext";
-import houseCleanLogo from '../../../assets/HouseClean_logo.png';
+import houseCleanLogo from "../../../assets/HouseClean_logo.png";
 import Notification from "../../Notification/Notification";
 import styles from "../../../assets/CSS/Notification/Notification.module.css";
 import { message, Button, Dropdown, Avatar, Badge, Popover } from "antd";
-import { UserOutlined, LogoutOutlined, BellOutlined, MessageOutlined } from "@ant-design/icons";
+import {
+  UserOutlined,
+  LogoutOutlined,
+  BellOutlined,
+  MessageOutlined,
+} from "@ant-design/icons";
 import SockJS from "sockjs-client";
 import { Stomp } from "@stomp/stompjs";
 import ChatWindow from "../../Chat/ChatWindow";
@@ -30,7 +35,7 @@ function Navbar() {
 
   const roleStr = localStorage.getItem("role");
   const role = roleStr ? roleStr.toLowerCase() : null;
-  const userId = localStorage.getItem("customerId")
+  const userId = localStorage.getItem("customerId");
 
   const [stompClient, setStompClient] = useState(null);
   const [messages, setMessages] = useState([]);
@@ -42,8 +47,8 @@ function Navbar() {
       setIsMobile(window.innerWidth < 768);
     };
 
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
   // Fetch notification count when component mounts and when user changes
@@ -148,24 +153,24 @@ function Navbar() {
       return user.customerName;
     }
     const storedName = localStorage.getItem("name");
-    return storedName ? storedName : '';
+    return storedName ? storedName : "";
   };
 
   // Dropdown menu cho user
   const userMenu = {
     items: [
       {
-        key: '1',
+        key: "1",
         label: <Link to="/infomation">Thông tin tài khoản</Link>,
-        icon: <UserOutlined />
+        icon: <UserOutlined />,
       },
       {
-        key: '2',
-        label: 'Đăng xuất',
+        key: "2",
+        label: "Đăng xuất",
         icon: <LogoutOutlined />,
-        onClick: handleLogout
-      }
-    ]
+        onClick: handleLogout,
+      },
+    ],
   };
 
   // Notification icon với animation khi có thông báo mới
@@ -181,8 +186,10 @@ function Navbar() {
         onClick={isMobile ? toggleNotification : undefined}
       >
         <BellOutlined
-          className={`${styles.notification_icon} ${notificationCount > 0 ? styles.notification_active : ''}`}
-          style={{ fontSize: '20px' }}
+          className={`${styles.notification_icon} ${
+            notificationCount > 0 ? styles.notification_active : ""
+          }`}
+          style={{ fontSize: "20px" }}
           spin={isLoading}
         />
       </div>
@@ -190,31 +197,16 @@ function Navbar() {
   );
 
   // Mobile notification content
-  const mobileNotificationContent = isPopupNotification && isMobile && user ? (
-    <div className={styles.mobile_notification_overlay} onClick={() => setIsPopupNotification(false)}>
+  const mobileNotificationContent =
+    isPopupNotification && isMobile && user ? (
       <div
-        className={styles.mobile_notification_container}
-        onClick={(e) => e.stopPropagation()}
+        className={styles.mobile_notification_overlay}
+        onClick={() => setIsPopupNotification(false)}
       >
-        <Notification
-          onClose={() => setIsPopupNotification(false)}
-          onViewAll={() => {
-            setIsPopupNotification(false);
-            // Navigate to full notification page if you have one
-            // navigate("/notifications");
-          }}
-        />
-      </div>
-    </div>
-  ) : null;
-
-  // Notification popover component (for desktop)
-  const notificationPopover = isMobile ? (
-    user ? notificationIcon : null
-  ) : (
-    user ? (
-      <Popover
-        content={
+        <div
+          className={styles.mobile_notification_container}
+          onClick={(e) => e.stopPropagation()}
+        >
           <Notification
             onClose={() => setIsPopupNotification(false)}
             onViewAll={() => {
@@ -223,29 +215,48 @@ function Navbar() {
               // navigate("/notifications");
             }}
           />
-        }
-        trigger="click"
-        open={isPopupNotification}
-        onOpenChange={(visible) => {
-          setIsPopupNotification(visible);
-          if (visible) {
-            // Refresh notification count when opening the popover
-            refreshNotifications();
-          }
-        }}
-        placement="bottomRight"
-        overlayClassName={styles.notification_popover}
-      >
-        {notificationIcon}
-      </Popover>
+        </div>
+      </div>
+    ) : null;
+
+  // Notification popover component (for desktop)
+  const notificationPopover = isMobile ? (
+    user ? (
+      notificationIcon
     ) : null
-  );
+  ) : user ? (
+    <Popover
+      content={
+        <Notification
+          onClose={() => setIsPopupNotification(false)}
+          onViewAll={() => {
+            setIsPopupNotification(false);
+            // Navigate to full notification page if you have one
+            // navigate("/notifications");
+          }}
+        />
+      }
+      trigger="click"
+      open={isPopupNotification}
+      onOpenChange={(visible) => {
+        setIsPopupNotification(visible);
+        if (visible) {
+          // Refresh notification count when opening the popover
+          refreshNotifications();
+        }
+      }}
+      placement="bottomRight"
+      overlayClassName={styles.notification_popover}
+    >
+      {notificationIcon}
+    </Popover>
+  ) : null;
 
   // User profile component
   const userProfile = (
     <Dropdown menu={userMenu} placement="bottomRight">
-      <div style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
-        <Avatar icon={<UserOutlined />} style={{ marginRight: '8px' }} />
+      <div style={{ display: "flex", alignItems: "center", cursor: "pointer" }}>
+        <Avatar icon={<UserOutlined />} style={{ marginRight: "8px" }} />
         <span>{getUserName()}</span>
       </div>
     </Dropdown>
@@ -253,16 +264,24 @@ function Navbar() {
 
   // Login and Register buttons
   const authButtons = (
-    <div style={{ display: 'flex', gap: '10px' }}>
-      <Link to="/login" className="login-btn" style={{ width: '110px' }}>Đăng nhập</Link>
-      <Link to="/register" className="login-btn" style={{
-        width: '110px',
-        textAlign: 'center',
-        background: 'white',
-        border: '2px solid #00a651',
-        color: 'black'
-      }}>Đăng ký</Link>
-    </div >
+    <div style={{ display: "flex", gap: "10px" }}>
+      <Link to="/login" className="login-btn" style={{ width: "110px" }}>
+        Đăng nhập
+      </Link>
+      <Link
+        to="/register"
+        className="login-btn"
+        style={{
+          width: "110px",
+          textAlign: "center",
+          background: "white",
+          border: "2px solid #00a651",
+          color: "black",
+        }}
+      >
+        Đăng ký
+      </Link>
+    </div>
   );
 
   const toggleMessage = () => {
@@ -286,14 +305,15 @@ function Navbar() {
         onClick={isMobile ? toggleMessage : undefined}
       >
         <MessageOutlined
-          className={`${styles.message_icon} ${messageCount > 0 ? styles.message_active : ''}`}
-          style={{ fontSize: '20px' }}
+          className={`${styles.message_icon} ${
+            messageCount > 0 ? styles.message_active : ""
+          }`}
+          style={{ fontSize: "20px" }}
           spin={isMessageLoading}
         />
       </div>
     </Badge>
   );
-
 
   // WebSocket connection for real-time message updates
   useEffect(() => {
@@ -317,7 +337,7 @@ function Navbar() {
         setMessages((prev) => [...prev, msg]);
 
         // Increment message count for new unread message
-        setMessageCount(prevCount => prevCount + 1);
+        setMessageCount((prevCount) => prevCount + 1);
       });
     });
 
@@ -384,72 +404,81 @@ function Navbar() {
         employeeId: selectedConversation.employeeId.toString(),
       };
 
-      stompClient.send('/app/chat', headers, JSON.stringify(message));
-      setMessages((prev) => [...prev, { ...message, sentAt: new Date().toISOString() }]);
+      stompClient.send("/app/chat", headers, JSON.stringify(message));
+      setMessages((prev) => [
+        ...prev,
+        { ...message, sentAt: new Date().toISOString() },
+      ]);
     }
   };
   // Kết thúc xử lý Chat
 
   // Message popover component (for desktop)
   const messagePopover = isMobile ? (
-    user ? messageIcon : null
-  ) : (
     user ? (
-      <Popover
-        content={
-          <div className={styles.message_container}>
-            <div className={styles.message__title}>
-              <h2>Tin nhắn</h2>
-            </div>
-            <div className={styles.message__main}>
-              <div className={styles.message_sidebar}>
-                <div className={styles.message_user_list}>
-                  <ConversationList
-                    onSelect={(conversation) => {
-                      handleConversationSelect(conversation);
-                      // Reset message count when a conversation is selected
-                      setMessageCount(0);
-                    }}
-                    userId={userId}
-                    role={role}
-                  />
-                </div>
-              </div>
-              <div className={styles.message_outlet}>
-                <ChatWindow
-                  messages={messages}
-                  onSendMessage={sendMessage}
-                  conversation={selectedConversation}
+      messageIcon
+    ) : null
+  ) : user ? (
+    <Popover
+      content={
+        <div className={styles.message_container}>
+          <div className={styles.message__title}>
+            <h2>Tin nhắn</h2>
+          </div>
+          <div className={styles.message__main}>
+            <div className={styles.message_sidebar}>
+              <div className={styles.message_user_list}>
+                <ConversationList
+                  onSelect={(conversation) => {
+                    handleConversationSelect(conversation);
+                    // Reset message count when a conversation is selected
+                    setMessageCount(0);
+                  }}
                   userId={userId}
+                  role={role}
                 />
               </div>
             </div>
+            <div className={styles.message_outlet}>
+              <ChatWindow
+                messages={messages}
+                onSendMessage={sendMessage}
+                conversation={selectedConversation}
+                userId={userId}
+              />
+            </div>
           </div>
+        </div>
+      }
+      trigger="click"
+      open={isPopupMessage}
+      onOpenChange={(visible) => {
+        setIsPopupMessage(visible);
+        if (visible) {
+          // Refresh message count when opening the popover
+          refreshMessages();
         }
-        trigger="click"
-        open={isPopupMessage}
-        onOpenChange={(visible) => {
-          setIsPopupMessage(visible);
-          if (visible) {
-            // Refresh message count when opening the popover
-            refreshMessages();
-          }
-        }}
-        placement="top"
-        overlayClassName={styles.message_popover}
-        getPopupContainer={() => document.querySelector(`.${styles.message_icon_wrapper}`)}
-      >
-        {messageIcon}
-      </Popover>
-    ) : null
-  );
+      }}
+      placement="top"
+      overlayClassName={styles.message_popover}
+      getPopupContainer={() =>
+        document.querySelector(`.${styles.message_icon_wrapper}`)
+      }
+    >
+      {messageIcon}
+    </Popover>
+  ) : null;
 
   return (
     <div className="Container">
       <nav className="navbar">
         <div className="logo">
           <Link to="/">
-            <img src={houseCleanLogo} alt="House Clean Logo" className="logo-img" />
+            <img
+              src={houseCleanLogo}
+              alt="House Clean Logo"
+              className="logo-img"
+            />
           </Link>
         </div>
 
@@ -459,12 +488,28 @@ function Navbar() {
           <span></span>
         </div>
 
-        <div className={`nav-content ${isMenuOpen ? 'active' : ''}`}>
+        <div className={`nav-content ${isMenuOpen ? "active" : ""}`}>
           <ul className="menu">
-            <li><Link to="/about" className="nav-link">Giới thiệu</Link></li>
-            <li><Link to="/activitylist" className="nav-link">Theo dõi dịch vụ</Link></li>
-            <li><Link to="/" className="nav-link">Tin tức</Link></li>
-            <li><Link to="/contact" className="nav-link">Liên hệ</Link></li>
+            <li>
+              <Link to="/about" className="nav-link">
+                Giới thiệu
+              </Link>
+            </li>
+            <li>
+              <Link to="/activitylist" className="nav-link">
+                Theo dõi dịch vụ
+              </Link>
+            </li>
+            <li>
+              <Link to="/" className="nav-link">
+                Tin tức
+              </Link>
+            </li>
+            <li>
+              <Link to="/contact" className="nav-link">
+                Liên hệ
+              </Link>
+            </li>
 
             {/* Only show these elements on mobile */}
             <li className="mobile-login">
@@ -488,7 +533,15 @@ function Navbar() {
           {!isMobile && (
             <>
               {user && (
-                <div className="desktop-notification" style={{ marginRight: '12px', display: 'flex', gap: 12, alignItems: 'center' }}>
+                <div
+                  className="desktop-notification"
+                  style={{
+                    marginRight: "12px",
+                    display: "flex",
+                    gap: 12,
+                    alignItems: "center",
+                  }}
+                >
                   {notificationPopover}
                   {messagePopover}
                 </div>
