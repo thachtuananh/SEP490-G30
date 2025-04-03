@@ -40,7 +40,7 @@ public class Job {
     
     @ManyToOne
     @JoinColumn(name = "customer_address_id", referencedColumnName = "id")
-    private CustomerAddresses customerAddress; // Mối quan hệ với CustomerAddress
+    private CustomerAddresses customerAddress;
 
     @Column(name = "scheduled_time")
     private LocalDateTime scheduledTime;
@@ -57,7 +57,7 @@ public class Job {
     private String paymentMethod;
 
     @Enumerated(EnumType.STRING)
-    private JobStatus status;  // Import JobStatus ở đây 
+    private JobStatus status;
     
     @Column(name = "txn_ref")
     private String txnRef;
