@@ -44,16 +44,19 @@ public class VnpayServiceWallet {
 	    vnp_Params.put("vnp_ReturnUrl", VnpayConfigWallet.vnp_ReturnUrlForwallet);
 	    vnp_Params.put("vnp_IpAddr", vnp_IpAddr);
 
-	    Calendar cld = Calendar.getInstance(TimeZone.getTimeZone("Etc/GMT+7"));
-	    SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMddHHmmss");
-	    String vnp_CreateDate = formatter.format(cld.getTime());
-	    vnp_Params.put("vnp_CreateDate", vnp_CreateDate);
+		Calendar cld = Calendar.getInstance(TimeZone.getTimeZone("Asia/Ho_Chi_Minh"));
+		SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMddHHmmss");
+		formatter.setTimeZone(TimeZone.getTimeZone("Asia/Ho_Chi_Minh")); // Đảm bảo formatter cũng dùng đúng múi giờ
 
-	    cld.add(Calendar.MINUTE, 15);
-	    String vnp_ExpireDate = formatter.format(cld.getTime());
-	    vnp_Params.put("vnp_ExpireDate", vnp_ExpireDate);
+		String vnp_CreateDate = formatter.format(cld.getTime());
+		vnp_Params.put("vnp_CreateDate", vnp_CreateDate);
 
-	    List<String> fieldNames = new ArrayList<>(vnp_Params.keySet());
+		cld.add(Calendar.MINUTE, 30);
+		String vnp_ExpireDate = formatter.format(cld.getTime());
+		vnp_Params.put("vnp_ExpireDate", vnp_ExpireDate);
+
+
+		List<String> fieldNames = new ArrayList<>(vnp_Params.keySet());
 	    Collections.sort(fieldNames);
 	    StringBuilder hashData = new StringBuilder();
 	    StringBuilder query = new StringBuilder();
