@@ -4,113 +4,215 @@ import { AuthContext } from "../../../context/AuthContext";
 import "../owner/profile.css";
 import profileImg from "../../../assets/imgProfile/imgProfile.svg";
 import { message } from "antd";
+import { BASE_URL } from "../../../utils/config";
 
 export const PersonaInformation = () => {
-    const { cleaner, dispatch } = useContext(AuthContext);
+  const { cleaner, dispatch } = useContext(AuthContext);
+  const [isLoading, setIsLoading] = useState(false);
 
+  const [cleanerName, setName] = useState(cleaner?.cleanerName || "");
+  const [cleanerPhone, setPhone] = useState(cleaner?.cleanerPhone || "");
+  const [cleanerEmail, setEmail] = useState(cleaner?.cleanerEmail || "");
+  const [cleanerAge, setAge] = useState(cleaner?.cleanerAge || "");
+  const [cleanerAddress, setAddress] = useState(cleaner?.cleanerAddress || "");
+  const [cleanerIDnum, setIdentityNumber] = useState(
+    cleaner?.cleanerIDnum || ""
+  );
+  const [cleanerExp, setExperience] = useState(cleaner?.cleanerExp || "");
+  const [cleanerImg, setImg] = useState(cleaner?.cleanerImg || "");
 
-    const [cleanerName, setName] = useState(cleaner?.cleanerName || "");
-    const [cleanerPhone, setPhone] = useState(cleaner?.cleanerPhone || "");
-    const [cleanerEmail, setEmail] = useState(cleaner?.cleanerEmail || "");
-    const [cleanerAge, setAge] = useState(cleaner?.cleanerAge || "");
-    const [cleanerAddress, setAddress] = useState(cleaner?.cleanerAddress || "");
-    const [cleanerIDnum, setIdentityNumber] = useState(cleaner?.cleanerIDnum || "");
-    const [cleanerExp, setExperience] = useState(cleaner?.cleanerExp || "");
-    const [cleanerImg, setImg] = useState(cleaner?.cleanerImg || "");
+  // Update API call function
+  const updateProfileAPI = async () => {
+    const token = localStorage.getItem("token");
+    const cleanerId = localStorage.getItem("cleanerId");
+    if (!cleanerId || !token) {
+      message.error("Không tìm thấy thông tin người dùng!");
+      return;
+    }
 
-    // Hàm xử lý lưu thông tin từng trường
-    const handleSave = (field, value) => {
-        const updatedData = { ...cleaner, [field]: value };
-        dispatch({ type: "UPDATE_USER", payload: updatedData });
-        message.success(`${field} đã được cập nhật!`);
-
-    };
-
-
-    useEffect(() => {
-        if (cleaner) {
-            // Nếu có thông tin cleaner trong context, cập nhật các trường input
-            setName(cleaner.cleanerName || "");
-            setPhone(cleaner.cleanerPhone || "");
-            setEmail(cleaner.cleanerEmail || "");
-            setAge(cleaner.cleanerAge || "");
-            setAddress(cleaner.cleanerAddress || "");
-            setIdentityNumber(cleaner.cleanerIDnum || "");
-            setExperience(cleaner.cleanerExp || "");
-            if (cleaner.profile_image) {
-                setImg(`data:image/png;base64,${cleaner.profile_image}`);
-            } else {
-                setImg(profileImg); // Ảnh mặc định nếu không có ảnh từ API
-            }
-        } else {
-            // Nếu không có thông tin cleaner, reset các giá trị về mặc định
-            setName("");
-            setPhone("");
-            setEmail("");
-            setAge("");
-            setAddress("");
-            setIdentityNumber("");
-            setExperience("");
-            setImg(profileImg);
+    setIsLoading(true);
+    try {
+      const response = await fetch(
+        `${BASE_URL}/employee/${cleanerId}/update_profile`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            accept: "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            name: cleanerName,
+            phone: cleanerPhone,
+            email: cleanerEmail,
+            age: parseInt(cleanerAge),
+            identity_number: cleanerIDnum,
+            experience: cleanerExp,
+          }),
         }
-    }, [cleaner]);
+      );
 
-    return (
-        <div className="persona-container">
-            <div className="persona-header">
-                <strong>Thông tin cá nhân</strong>
-                <p className="persona-subtext">Quản lý thông tin cá nhân của tài khoản bạn</p>
-            </div>
+      if (!response.ok) {
+        throw new Error(`Error: ${response.status}`);
+      }
 
-            <div className="avatar-section">
-                <b>Ảnh đại diện</b>
-                <img className="avatar-image" src={cleanerImg} alt="icon" />
-                <b><u className="avatar-select">Chọn ảnh</u></b>
-            </div>
+      // Update context with new data
+      const updatedData = {
+        ...cleaner,
+        cleanerName: cleanerName,
+        cleanerPhone: cleanerPhone,
+        cleanerEmail: cleanerEmail,
+        cleanerAge: cleanerAge,
+        cleanerIDnum: cleanerIDnum,
+        cleanerExp: cleanerExp,
+      };
 
-            <div className="form-group">
-                <b>Họ và tên</b>
-                <input type="text" value={cleanerName} onChange={(e) => setName(e.target.value)} />
-            </div>
+      dispatch({ type: "UPDATE_CLEANER", payload: updatedData });
+      message.success("Cập nhật thông tin thành công!");
+    } catch (error) {
+      message.error("Cập nhật thông tin thất bại!");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-            <div className="form-group">
-                <b>Số điện thoại</b>
-                <input type="text" value={cleanerPhone} onChange={(e) => setPhone(e.target.value)} />
-            </div>
+  // Hàm xử lý lưu tất cả thông tin
+  const handleSave = () => {
+    updateProfileAPI();
+  };
 
-            <div className="form-group">
-                <b>Email</b>
-                <input type="email" value={cleanerEmail} onChange={(e) => setEmail(e.target.value)} />
-            </div>
+  // Hàm xử lý upload ảnh (cần bổ sung API upload ảnh)
+  const handleImageUpload = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      // Here you would implement image upload API
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImg(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
-            <div className="form-group">
-                <b>Tuổi</b>
-                <input type="text" value={cleanerAge} onChange={(e) => setAge(e.target.value)} />
-            </div>
+  useEffect(() => {
+    if (cleaner) {
+      // Nếu có thông tin cleaner trong context, cập nhật các trường input
+      setName(cleaner.cleanerName || "");
+      setPhone(cleaner.cleanerPhone || "");
+      setEmail(cleaner.cleanerEmail || "");
+      setAge(cleaner.cleanerAge || "");
+      setAddress(cleaner.cleanerAddress || "");
+      setIdentityNumber(cleaner.cleanerIDnum || "");
+      setExperience(cleaner.cleanerExp || "");
+      if (cleaner.profile_image) {
+        setImg(`data:image/png;base64,${cleaner.profile_image}`);
+      } else {
+        setImg(profileImg); // Ảnh mặc định nếu không có ảnh từ API
+      }
+    } else {
+      // Nếu không có thông tin cleaner, reset các giá trị về mặc định
+      setName("");
+      setPhone("");
+      setEmail("");
+      setAge("");
+      setAddress("");
+      setIdentityNumber("");
+      setExperience("");
+      setImg(profileImg);
+    }
+  }, [cleaner]);
 
-            <div className="form-group">
-                <b>Địa chỉ</b>
-                <input type="text" value={cleanerAddress} onChange={(e) => setAddress(e.target.value)} />
-            </div>
+  return (
+    <div className="persona-container">
+      <div className="persona-header">
+        <strong>Thông tin cá nhân</strong>
+        <p className="persona-subtext">
+          Quản lý thông tin cá nhân của tài khoản bạn
+        </p>
+      </div>
 
-            <div className="form-group">
-                <b>Số CCCD</b>
-                <input type="text" value={cleanerIDnum} onChange={(e) => setIdentityNumber(e.target.value)} />
-            </div>
+      <div className="avatar-section">
+        <b>Ảnh đại diện</b>
+        <img className="avatar-image" src={cleanerImg} alt="icon" />
+        <input
+          type="file"
+          id="avatar-upload"
+          accept="image/*"
+          onChange={handleImageUpload}
+          style={{ display: "none" }}
+        />
+        <label htmlFor="avatar-upload">
+          <b>
+            <u className="avatar-select">Chọn ảnh</u>
+          </b>
+        </label>
+      </div>
 
+      <div className="form-group">
+        <b>Họ và tên</b>
+        <input
+          type="text"
+          value={cleanerName}
+          onChange={(e) => setName(e.target.value)}
+        />
+      </div>
 
-            <div className="form-group">
-                <b>Kinh nghiệm</b>
-                <input type="text" value={cleanerExp} onChange={(e) => setExperience(e.target.value)} />
-            </div>
+      <div className="form-group">
+        <b>Số điện thoại</b>
+        <input
+          type="text"
+          value={cleanerPhone}
+          onChange={(e) => setPhone(e.target.value)}
+        />
+      </div>
 
+      <div className="form-group">
+        <b>Email</b>
+        <input
+          type="email"
+          value={cleanerEmail}
+          onChange={(e) => setEmail(e.target.value)}
+        />
+      </div>
 
-            {/* Nút Lưu và Đăng xuất */}
-            <div className="button-group">
-                <button className="save-button" type="button" onClick={handleSave}>
-                    Lưu
-                </button>
-            </div>
-        </div>
-    );
+      <div className="form-group">
+        <b>Tuổi</b>
+        <input
+          type="text"
+          value={cleanerAge}
+          onChange={(e) => setAge(e.target.value)}
+        />
+      </div>
+
+      <div className="form-group">
+        <b>Số CCCD</b>
+        <input
+          type="text"
+          value={cleanerIDnum}
+          onChange={(e) => setIdentityNumber(e.target.value)}
+        />
+      </div>
+
+      <div className="form-group">
+        <b>Kinh nghiệm</b>
+        <input
+          type="text"
+          value={cleanerExp}
+          onChange={(e) => setExperience(e.target.value)}
+        />
+      </div>
+
+      {/* Nút Lưu và Đăng xuất */}
+      <div className="button-group">
+        <button
+          className="save-button"
+          type="button"
+          onClick={handleSave}
+          disabled={isLoading}
+        >
+          {isLoading ? "Đang lưu..." : "Lưu"}
+        </button>
+      </div>
+    </div>
+  );
 };

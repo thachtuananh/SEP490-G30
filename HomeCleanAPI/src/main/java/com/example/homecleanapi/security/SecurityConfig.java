@@ -1,7 +1,9 @@
 package com.example.homecleanapi.security;
 
+import com.example.homecleanapi.repositories.AdministratorRepository;
 import com.example.homecleanapi.repositories.CustomerRepository;
 import com.example.homecleanapi.repositories.EmployeeRepository;
+import com.example.homecleanapi.services.CustomAdminUserDetailsService;
 import com.example.homecleanapi.services.CustomCustomerUserDetailsService;
 import com.example.homecleanapi.services.CustomEmployeeUserDetailsService;
 import com.example.homecleanapi.utils.JwtUtils;
@@ -29,12 +31,18 @@ public class SecurityConfig {
     private final JwtUtils jwtUtils;
     private CustomerRepository customerRepository; // Inject CustomerRepository
     private EmployeeRepository employeeRepository; // Inject EmployeeRepository
+    private final AdministratorRepository administratorRepository;
 
-    public SecurityConfig(JwtUtils jwtUtils, CustomerRepository customerRepository, EmployeeRepository employeeRepository) {
+    public SecurityConfig(JwtUtils jwtUtils,
+                          CustomerRepository customerRepository,
+                          EmployeeRepository employeeRepository,
+                          AdministratorRepository administratorRepository) {
         this.jwtUtils = jwtUtils;
         this.customerRepository = customerRepository;
         this.employeeRepository = employeeRepository;
+        this.administratorRepository = administratorRepository;
     }
+
 
     @Bean
     public UserDetailsService customerUserDetailsService() {
@@ -63,13 +71,19 @@ public class SecurityConfig {
                         .requestMatchers("/**").permitAll()
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
                         .requestMatchers("/api-docs").permitAll()
+                        .requestMatchers("/api/admin/customers/**").hasAnyRole("Admin", "Manager")
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(customerAuthenticationProvider())
                 .authenticationProvider(employeeAuthenticationProvider())
-                .addFilterBefore(new JwtAuthenticationFilter(jwtUtils, customerUserDetailsService(), employeeUserDetailsService()),
-                        UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(new JwtAuthenticationFilter(
+                        jwtUtils,
+                        customerUserDetailsService(),
+                        employeeUserDetailsService(),
+                        adminUserDetailsService()
+                ), UsernamePasswordAuthenticationFilter.class);
+
         return http.build();
     }
 
@@ -87,6 +101,13 @@ public class SecurityConfig {
     public EmployeeAuthenticationProvider employeeAuthenticationProvider() {
         return new EmployeeAuthenticationProvider(employeeRepository, passwordEncoder());
     }
+
+    @Bean
+    public UserDetailsService adminUserDetailsService() {
+        return new CustomAdminUserDetailsService(administratorRepository);
+    }
+
+
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {

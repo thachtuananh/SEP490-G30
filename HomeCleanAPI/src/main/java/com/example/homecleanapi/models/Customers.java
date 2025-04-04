@@ -1,9 +1,7 @@
 package com.example.homecleanapi.models;
 
 import jakarta.persistence.*;
-
 import java.time.LocalDateTime;
-
 
 @Entity
 @Table(name = "customers")
@@ -11,12 +9,17 @@ public class Customers {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
+
     private String password_hash;
     private String full_name;
+
     @Column(name = "phone_number")
     private String phone;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime created_at;
+
+    @Column(name = "is_deleted")
     private boolean is_deleted;
 
     public Customers() {

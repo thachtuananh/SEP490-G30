@@ -4,6 +4,7 @@ import com.example.homecleanapi.dtos.JobSummaryDTO;
 import com.example.homecleanapi.enums.JobStatus;
 import com.example.homecleanapi.services.CleanerJobService;
 
+import com.example.homecleanapi.services.FindCleanerService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
@@ -28,12 +29,22 @@ public class CleanerJobController {
     @Autowired
     private CleanerJobService cleanerJobService;
 
+    @Autowired
+    private FindCleanerService findCleanerService;
+
     // Xem danh sách các công việc "Open"
     @GetMapping(value = "/jobs/{cleanerId}")
-    public ResponseEntity<List<JobSummaryDTO>> getOpenJobs(@PathVariable Long cleanerId) {
-        List<JobSummaryDTO> openJobs = cleanerJobService.getOpenJobs(cleanerId);
-        return ResponseEntity.ok(openJobs);
+    public ResponseEntity<List<JobSummaryDTO>> getNearbyOpenJobs(@PathVariable Long cleanerId) {
+        List<JobSummaryDTO> nearbyOpenJobs = findCleanerService.getNearbyOpenJobs(cleanerId, 6);
+        return ResponseEntity.ok(nearbyOpenJobs);
     }
+
+//    @GetMapping(value = "/jobs/{cleanerId}")
+//    public ResponseEntity<List<JobSummaryDTO>> getOpenJobs(@PathVariable Long cleanerId) {
+//        List<JobSummaryDTO> openJobs = cleanerJobService.getOpenJobs(cleanerId);
+//        return ResponseEntity.ok(openJobs);
+//    }
+
 
 
     // Xem chi tiết công việc

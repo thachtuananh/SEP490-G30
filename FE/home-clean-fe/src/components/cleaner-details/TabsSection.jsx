@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { Tabs, Rate, Typography, Card, Spin, Empty } from 'antd';
-import axios from 'axios';
-import { useParams } from 'react-router-dom';
-import { BASE_URL } from '../../utils/config';
+import React, { useState, useEffect } from "react";
+import { Tabs, Rate, Typography, Card, Spin, Empty } from "antd";
+import axios from "axios";
+import { useParams } from "react-router-dom";
+import { BASE_URL } from "../../utils/config";
 
 const { Text, Paragraph } = Typography;
 
@@ -16,26 +16,29 @@ export const TabsSection = () => {
 
   const fetchFeedbacks = async () => {
     // Retrieve token from localStorage
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem("token");
 
     if (!token) {
-      setError('Không tìm thấy token đăng nhập');
+      setError("Không tìm thấy token đăng nhập");
       return;
     }
 
     setIsLoading(true);
     setError(null);
     try {
-      const response = await axios.get(`${BASE_URL}/customer/cleaners/${cleanerId}/feedbacks`, {
-        headers: {
-          'accept': 'application/json',
-          'Authorization': `Bearer ${token}`
+      const response = await axios.get(
+        `${BASE_URL}/customer/cleaners/${cleanerId}/feedbacks`,
+        {
+          headers: {
+            accept: "application/json",
+            Authorization: `Bearer ${token}`,
+          },
         }
-      });
+      );
       setFeedbacks(response.data);
     } catch (err) {
-      setError('Không thể tải đánh giá');
-      console.error('Feedback fetch error:', err);
+      setError("Không thể tải đánh giá");
+      console.error("Feedback fetch error:", err);
     } finally {
       setIsLoading(false);
     }
@@ -43,21 +46,21 @@ export const TabsSection = () => {
 
   const tabItems = [
     {
-      key: 'info',
-      label: 'Thông tin',
-      children: (
+      key: "info",
+      label: "Thông tin",
+      items: (
         <Paragraph>
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
-          tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim
-          veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea
-          commodo consequat.
+          Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
+          eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad
+          minim veniam, quis nostrud exercitation ullamco laboris nisi ut
+          aliquip ex ea commodo consequat.
         </Paragraph>
       ),
     },
     {
-      key: 'reviews',
-      label: 'Đánh giá',
-      children: (
+      key: "reviews",
+      label: "Đánh giá",
+      items: (
         <div>
           {isLoading ? (
             <Spin tip="Đang tải đánh giá..." fullscreen />
@@ -71,10 +74,10 @@ export const TabsSection = () => {
               description="Chưa có đánh giá nào"
               imageStyle={{
                 height: 160,
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'center',
-                alignItems: 'center',
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "center",
+                alignItems: "center",
               }}
             >
               {/* <Paragraph type="secondary" style={{ textAlign: 'center', marginBottom: 16 }}>
@@ -90,28 +93,28 @@ export const TabsSection = () => {
                   marginBottom: 16,
                 }}
               >
-                <div style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  marginBottom: 12
-                }}>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    marginBottom: 12,
+                  }}
+                >
                   <Text type="secondary">Công việc #{feedback.jobId}</Text>
                   <Rate
                     disabled
                     value={feedback.rating}
-                    style={{ color: '#FFC107' }}
+                    style={{ color: "#FFC107" }}
                   />
                 </div>
-                <Paragraph>
-                  {feedback.comment}
-                </Paragraph>
+                <Paragraph>{feedback.comment}</Paragraph>
               </Card>
             ))
           )}
         </div>
       ),
-    }
+    },
   ];
 
   useEffect(() => {
@@ -121,11 +124,7 @@ export const TabsSection = () => {
   }, [cleanerId]);
 
   return (
-    <Tabs
-      defaultActiveKey="info"
-      items={tabItems}
-      style={{ width: '100%' }}
-    />
+    <Tabs defaultActiveKey="info" items={tabItems} style={{ width: "100%" }} />
   );
 };
 

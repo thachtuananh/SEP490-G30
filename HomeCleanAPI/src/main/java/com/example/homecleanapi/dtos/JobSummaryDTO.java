@@ -8,13 +8,27 @@ public class JobSummaryDTO {
     private String serviceName;
     private Double price;
     private LocalDateTime scheduledTime;
+	private Double distance;
 
-    public JobSummaryDTO(Long jobId, String serviceName, Double price, LocalDateTime scheduledTime) {
-        this.jobId = jobId;  // Gán giá trị jobId
-        this.serviceName = serviceName;
-        this.price = price;
-        this.scheduledTime = scheduledTime;
-    }
+	public JobSummaryDTO(Long jobId, String serviceName, Double price, LocalDateTime scheduledTime, Double distance) {
+		this.jobId = jobId;
+		this.serviceName = serviceName;
+		this.price = price;
+		this.scheduledTime = scheduledTime;
+		this.distance = distance;  // Gán giá trị distance
+	}
+
+	public JobSummaryDTO() {
+
+	}
+
+	public Double getDistance() {
+		return distance;
+	}
+
+	public void setDistance(Double distance) {
+		this.distance = distance;
+	}
 
 	public String getServiceName() {
 		return serviceName;

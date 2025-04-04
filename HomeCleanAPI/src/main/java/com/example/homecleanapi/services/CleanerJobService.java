@@ -84,35 +84,36 @@ public class CleanerJobService {
 	@Autowired
     private WalletRepository walletRepository;
 
-	
-	
+
+
+
 
 	// Lấy danh sách các công việc đang mở
-	public List<JobSummaryDTO> getOpenJobs(Long cleanerId) {
-		// Lấy tất cả các Job có trạng thái OPEN
-		List<Job> openJobs = jobRepository.findByStatus(JobStatus.OPEN);
-
-		// Lấy tất cả các jobId đã có ứng viên (cleaner) cho cleanerId
-		List<Long> appliedJobIds = jobApplicationRepository.findByCleanerIdAndStatus(cleanerId, "Pending").stream()
-				.map(jobApplication -> jobApplication.getJob().getId()).collect(Collectors.toList());
-
-		// Lọc ra các công việc mà cleaner này chưa ứng tuyển
-		List<Job> jobsWithoutCleaner = openJobs.stream().filter(job -> !appliedJobIds.contains(job.getId()))
-				.collect(Collectors.toList());
-
-		List<JobServiceDetail> jobServiceDetails = jobServiceDetailRepository
-				.findByJobIdIn(jobsWithoutCleaner.stream().map(Job::getId).collect(Collectors.toList()));
-
-		return jobsWithoutCleaner.stream().map(job -> {
-			List<String> serviceNames = jobServiceDetails.stream()
-					.filter(jobServiceDetail -> jobServiceDetail.getJob().getId().equals(job.getId()))
-					.map(jobServiceDetail -> jobServiceDetail.getService().getName()).collect(Collectors.toList());
-
-			String serviceName = serviceNames.isEmpty() ? "N/A" : String.join(", ", serviceNames);
-
-			return new JobSummaryDTO(job.getId(), serviceName, job.getTotalPrice(), job.getScheduledTime());
-		}).collect(Collectors.toList());
-	}
+//	public List<JobSummaryDTO> getOpenJobs(Long cleanerId) {
+//		// Lấy tất cả các Job có trạng thái OPEN
+//		List<Job> openJobs = jobRepository.findByStatus(JobStatus.OPEN);
+//
+//		// Lấy tất cả các jobId đã có ứng viên (cleaner) cho cleanerId
+//		List<Long> appliedJobIds = jobApplicationRepository.findByCleanerIdAndStatus(cleanerId, "Pending").stream()
+//				.map(jobApplication -> jobApplication.getJob().getId()).collect(Collectors.toList());
+//
+//		// Lọc ra các công việc mà cleaner này chưa ứng tuyển
+//		List<Job> jobsWithoutCleaner = openJobs.stream().filter(job -> !appliedJobIds.contains(job.getId()))
+//				.collect(Collectors.toList());
+//
+//		List<JobServiceDetail> jobServiceDetails = jobServiceDetailRepository
+//				.findByJobIdIn(jobsWithoutCleaner.stream().map(Job::getId).collect(Collectors.toList()));
+//
+//		return jobsWithoutCleaner.stream().map(job -> {
+//			List<String> serviceNames = jobServiceDetails.stream()
+//					.filter(jobServiceDetail -> jobServiceDetail.getJob().getId().equals(job.getId()))
+//					.map(jobServiceDetail -> jobServiceDetail.getService().getName()).collect(Collectors.toList());
+//
+//			String serviceName = serviceNames.isEmpty() ? "N/A" : String.join(", ", serviceNames);
+//
+//			return new JobSummaryDTO(job.getId(), serviceName, job.getTotalPrice(), job.getScheduledTime());
+//		}).collect(Collectors.toList());
+//	}
 
 	// Lấy chi tiết công việc
 	public Map<String, Object> getJobDetails(Long jobId) {
@@ -494,7 +495,7 @@ public class CleanerJobService {
 			jobInfo.put("status", job.getStatus());
 			jobInfo.put("scheduledTime", job.getScheduledTime());
 			jobInfo.put("totalPrice", job.getTotalPrice());
-			jobInfo.put("createdAt", job.getCreatedAt()); // Thêm thời gian tạo job
+
 
 			// Thêm thông tin về customer đã book job
 			Customers customer = job.getCustomer();
@@ -578,7 +579,7 @@ public class CleanerJobService {
 				jobInfo.put("scheduledTime", job.getScheduledTime());
 				jobInfo.put("status", job.getStatus());
 				jobInfo.put("totalPrice", job.getTotalPrice());
-				jobInfo.put("createdAt", job.getCreatedAt()); // Thêm thời gian tạo job
+
 
 				// Thêm thông tin về customer đã book job
 				Customers customer = job.getCustomer();
@@ -669,7 +670,7 @@ public class CleanerJobService {
 				jobInfo.put("scheduledTime", job.getScheduledTime());
 				jobInfo.put("status", job.getStatus());
 				jobInfo.put("totalPrice", job.getTotalPrice());
-				jobInfo.put("createdAt", job.getCreatedAt()); // Thêm thời gian tạo job
+
 
 				// Thêm thông tin về customer đã book job
 				Customers customer = job.getCustomer();
@@ -759,7 +760,7 @@ public class CleanerJobService {
 	        jobInfo.put("status", job.getStatus());
 	        jobInfo.put("scheduledTime", job.getScheduledTime());
 	        jobInfo.put("totalPrice", job.getTotalPrice());
-	        jobInfo.put("createdAt", job.getCreatedAt()); // Thêm thời gian tạo job
+
 
 	        // Thêm thông tin về customer đã book job
 	        Customers customer = job.getCustomer();
@@ -860,6 +861,14 @@ public class CleanerJobService {
 					if (!countedJobIds.contains(job.getId())) {
 						// Lấy thông tin dịch vụ từ Map jobsByService
 						Map<String, Object> serviceInfo = (Map<String, Object>) jobsByService.get(serviceName);
+						if (serviceInfo != null) {
+							int jobCount = (int) serviceInfo.get("jobCount");
+							serviceInfo.put("jobCount", jobCount + 1);
+						} else {
+
+							System.err.println("serviceInfo is null for service: " + serviceName);
+						}
+
 
 						// Kiểm tra nếu job có nhiều dịch vụ (tức là combo)
 						List<JobServiceDetail> jobServiceDetailsForJob = jobServiceDetailRepository
@@ -893,14 +902,28 @@ public class CleanerJobService {
 		}
 
 		// Kết hợp kết quả của comboJobs với jobsByService
-		jobsByService.put("combo", comboJobs.get(comboKey)); // Chỉ giữ 1 ID duy nhất cho combo
+//		jobsByService.put("combo", comboJobs.get(comboKey));
+		// Đảm bảo combo luôn tồn tại trong map comboJobs
+		if (!comboJobs.containsKey(comboKey)) {
+			Map<String, Object> comboInfo = new HashMap<>();
+			comboInfo.put("jobCount", 0);
+			comboInfo.put("id", comboKey);
+			comboJobs.put(comboKey, comboInfo);
+		}
+
+		jobsByService.put("combo", comboJobs.get(comboKey));
+
 
 		// Đảm bảo nếu dịch vụ không có công việc nào thì hiển thị jobCount là 0
 		for (String serviceName : jobsByService.keySet()) {
 			Map<String, Object> serviceInfo = (Map<String, Object>) jobsByService.get(serviceName);
-			if (serviceInfo.get("jobCount") == null) {
-				serviceInfo.put("jobCount", 0); // Nếu không có công việc, đặt jobCount là 0
+			if (serviceInfo != null) {
+				int jobCount = (int) serviceInfo.getOrDefault("jobCount", 0);
+				serviceInfo.put("jobCount", jobCount + 1);
+			} else {
+				System.err.println("⚠️ serviceInfo is null for service: " + serviceName);
 			}
+
 		}
 
 		return jobsByService; // Trả về danh sách các công việc phân loại theo dịch vụ, bao gồm cả combo
@@ -923,7 +946,7 @@ public class CleanerJobService {
 				jobInfo.put("status", job.getStatus());
 				jobInfo.put("scheduledTime", job.getScheduledTime());
 				jobInfo.put("totalPrice", job.getTotalPrice());
-				jobInfo.put("createdAt", job.getCreatedAt());
+
 
 				// Thêm thông tin về customer đã book job
 				Customers customer = job.getCustomer();
@@ -988,7 +1011,7 @@ public class CleanerJobService {
 						jobInfo.put("status", job.getStatus());
 						jobInfo.put("scheduledTime", job.getScheduledTime());
 						jobInfo.put("totalPrice", job.getTotalPrice());
-						jobInfo.put("createdAt", job.getCreatedAt());
+
 
 						// Thêm thông tin về customer đã book job
 						Customers customer = job.getCustomer();
@@ -1318,7 +1341,7 @@ public class CleanerJobService {
 	        jobInfo.put("status", job.getStatus());
 	        jobInfo.put("scheduledTime", job.getScheduledTime());
 	        jobInfo.put("totalPrice", job.getTotalPrice());
-	        jobInfo.put("createdAt", job.getCreatedAt());
+
 
 	        // Thêm thông tin về customer
 	        Customers customer = job.getCustomer();
