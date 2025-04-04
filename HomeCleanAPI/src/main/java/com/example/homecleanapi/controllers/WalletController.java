@@ -2,6 +2,7 @@ package com.example.homecleanapi.controllers;
 
 import java.util.Map;
 
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 
@@ -44,9 +45,9 @@ public class WalletController {
     }
 	
 	@PostMapping("/{cleanerId}/deposit")
-    public ResponseEntity<Map<String, Object>> depositMoney(@PathVariable Long cleanerId, @RequestBody DepositRequest depositRequest) {
+    public ResponseEntity<Map<String, Object>> depositMoney(@PathVariable Long cleanerId, @RequestBody DepositRequest depositRequest, HttpServletRequest request) {
         // Gọi service để tạo yêu cầu thanh toán VNPay
-        Map<String, Object> response = walletService.createPaymentForDeposit(cleanerId, depositRequest.getAmount());
+        Map<String, Object> response = walletService.createPaymentForDeposit(cleanerId, depositRequest.getAmount(), request);
 
         if (response.containsKey("message")) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response); // Nếu có thông báo lỗi

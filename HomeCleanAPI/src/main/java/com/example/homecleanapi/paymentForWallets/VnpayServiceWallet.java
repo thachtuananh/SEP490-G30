@@ -6,13 +6,14 @@ import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Service;
 
 
 @Service
 public class VnpayServiceWallet {
 
-	public String createPayment(VnpayRequestWallet paymentRequest) throws UnsupportedEncodingException {
+	public String createPayment(VnpayRequestWallet paymentRequest, HttpServletRequest request) throws UnsupportedEncodingException {
 	    String vnp_Version = "2.1.0";
 	    String vnp_Command = "pay";
 	    String orderType = "other";
@@ -25,7 +26,7 @@ public class VnpayServiceWallet {
 
 	    String bankCode = "NCB";
 	    String vnp_TxnRef = VnpayConfigWallet.getRandomNumber(8);
-	    String vnp_IpAddr = "127.0.0.1";
+	    String vnp_IpAddr = VnpayConfigWallet.getIpAddress(request);
 	    String vnp_TmnCode = VnpayConfigWallet.vnp_TmnCode;
 
 	    Map<String, String> vnp_Params = new HashMap<>();
