@@ -4,7 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="6dd32c25-99a1-4da0-a769-374f6713cd9c" name="Changes" comment="Test code payment 1">
+    <list default="true" id="6dd32c25-99a1-4da0-a769-374f6713cd9c" name="Changes" comment="Test code payment 2">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/Payment/VnpayConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/Payment/VnpayConfig.java" afterDir="false" />
     </list>
@@ -154,7 +154,15 @@
       <option name="project" value="LOCAL" />
       <updated>1743784667147</updated>
     </task>
-    <option name="localTasksCounter" value="6" />
+    <task id="LOCAL-00006" summary="Test code payment 2">
+      <option name="closed" value="true" />
+      <created>1743785209924</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1743785209924</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -188,7 +196,8 @@
     <MESSAGE value="Add code schedule jobs" />
     <MESSAGE value="Test code payment" />
     <MESSAGE value="Test code payment 1" />
-    <option name="LAST_COMMIT_MESSAGE" value="Test code payment 1" />
+    <MESSAGE value="Test code payment 2" />
+    <option name="LAST_COMMIT_MESSAGE" value="Test code payment 2" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />
