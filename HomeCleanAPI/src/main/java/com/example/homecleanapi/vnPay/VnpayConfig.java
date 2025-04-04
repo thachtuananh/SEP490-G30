@@ -24,8 +24,8 @@ public class VnpayConfig {
     public static String vnp_ReturnUrl = "https://pike-armor-ms-hampton.trycloudflare.com/api/vnpayment/return";      // trang phía client
     //public static String vnp_ReturnUrl = "http://localhost:8080/api/cleaner/return";
     // #vnpay
-    public static String vnp_TmnCode = "900XO632";
-    public static String secretKey = "VFH4K4F21GJQMFPLW7SMEVSG7Z0VPV6M";
+    public static String vnp_TmnCode = "8HPKEH7C";
+    public static String secretKey = "FFN4WZXF6DQP6N14CSHEP3VWUIL2RODU";
     public static String vnp_ApiUrl = "https://sandbox.vnpayment.vn/merchant_webapi/api/transaction";
 
     public static String md5(String message) {
