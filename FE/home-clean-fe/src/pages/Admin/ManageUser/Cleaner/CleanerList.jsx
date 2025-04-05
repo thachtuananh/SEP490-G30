@@ -1,6 +1,23 @@
 import React, { useState, useEffect } from "react";
-import { Layout, Typography, Table, Button, Input, Tag, message } from "antd";
-import { SearchOutlined, EyeOutlined } from "@ant-design/icons";
+import {
+  Layout,
+  Typography,
+  Table,
+  Button,
+  Input,
+  Tag,
+  message,
+  Card,
+  Breadcrumb,
+  Space,
+} from "antd";
+import {
+  SearchOutlined,
+  EyeOutlined,
+  ReloadOutlined,
+  HomeOutlined,
+  UserOutlined,
+} from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import AppSidebar from "../../../../components/Admin/AppSidebar";
 import AppHeader from "../../../../components/Admin/AppHeader";
@@ -23,7 +40,7 @@ const CleanerList = () => {
   const fetchCleaners = async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem("token"); // Assuming you store token in localStorage
+      const token = localStorage.getItem("token");
 
       const response = await axios.get(`${BASE_URL}/admin/cleaners/all`, {
         headers: {
@@ -40,16 +57,14 @@ const CleanerList = () => {
     }
   };
 
-  // Hàm chuyển đổi chuỗi datetime thành Date object
   const parseDate = (dateStr) => new Date(dateStr);
 
-  // Filter data based on search text before passing to Table
   const filteredCleaners = searchText
     ? cleaners.filter(
         (record) =>
-          record.name.toLowerCase().includes(searchText.toLowerCase()) ||
-          record.phone.includes(searchText) ||
-          record.email.toLowerCase().includes(searchText.toLowerCase())
+          record.name?.toLowerCase().includes(searchText.toLowerCase()) ||
+          record.phone?.includes(searchText) ||
+          record.email?.toLowerCase().includes(searchText.toLowerCase())
       )
     : cleaners;
 
@@ -64,8 +79,8 @@ const CleanerList = () => {
       title: "Tên",
       dataIndex: "name",
       key: "name",
-      sorter: (a, b) => a.name.localeCompare(b.name),
-      // Removed filteredValue and onFilter from here
+      sorter: (a, b) => a.name?.localeCompare(b.name),
+      render: (text) => <span style={{ fontWeight: 500 }}>{text}</span>,
     },
     {
       title: "Số điện thoại",
@@ -92,7 +107,11 @@ const CleanerList = () => {
         const color = is_deleted ? "red" : "green";
         const text = is_deleted ? "Không hoạt động" : "Đang hoạt động";
 
-        return <Tag color={color}>{text}</Tag>;
+        return (
+          <Tag color={color} style={{ borderRadius: "4px" }}>
+            {text}
+          </Tag>
+        );
       },
       filters: [
         { text: "Đang hoạt động", value: false },
@@ -119,44 +138,79 @@ const CleanerList = () => {
     navigate(`/admin/cleaners/${id}`);
   };
 
+  // Updated breadcrumb items using the new API
+  const breadcrumbItems = [
+    {
+      title: <HomeOutlined />,
+    },
+    {
+      title: (
+        <>
+          <UserOutlined />
+          <span>Người dùng</span>
+        </>
+      ),
+    },
+    {
+      title: "Người dọn dẹp",
+    },
+  ];
+
   return (
-    <Layout style={{ minHeight: "1000px" }}>
+    <Layout style={{ minHeight: "100vh" }}>
       <AppSidebar />
-      <Layout>
+      <Layout style={{ marginLeft: 220 }}>
         <AppHeader />
         <Content
           style={{
             margin: "24px 16px",
-            padding: 24,
-            background: "#fff",
             minHeight: 280,
           }}
         >
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              marginBottom: 16,
-            }}
-          >
-            <Title level={3}>Danh sách Cleaner</Title>
-            <Input
-              placeholder="Tìm kiếm theo tên, số điện thoại hoặc email"
-              prefix={<SearchOutlined />}
-              style={{ width: 300 }}
-              value={searchText}
-              onChange={(e) => setSearchText(e.target.value)}
-            />
-          </div>
+          <Breadcrumb items={breadcrumbItems} style={{ marginBottom: 16 }} />
 
-          <Table
-            columns={columns}
-            dataSource={filteredCleaners} // Using filtered data here
-            rowKey="cleanerId"
-            loading={loading}
-            pagination={{ pageSize: 10 }}
-            bordered
-          />
+          <Card>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                marginBottom: 16,
+              }}
+            >
+              <Title level={3}>Danh sách Người dọn dẹp</Title>
+              <Space>
+                <Button
+                  icon={<ReloadOutlined />}
+                  onClick={fetchCleaners}
+                  loading={loading}
+                >
+                  Làm mới
+                </Button>
+                <Input
+                  placeholder="Tìm kiếm theo tên, số điện thoại hoặc email"
+                  prefix={<SearchOutlined />}
+                  style={{ width: 300 }}
+                  value={searchText}
+                  onChange={(e) => setSearchText(e.target.value)}
+                  allowClear
+                />
+              </Space>
+            </div>
+
+            <Table
+              columns={columns}
+              dataSource={filteredCleaners}
+              rowKey="cleanerId"
+              loading={loading}
+              // pagination={{
+              //   pageSize: 10,
+              //   showSizeChanger: true,
+              //   showTotal: (total, range) =>
+              //     `${range[0]}-${range[1]} của ${total} mục`,
+              // }}
+              bordered
+            />
+          </Card>
         </Content>
       </Layout>
     </Layout>

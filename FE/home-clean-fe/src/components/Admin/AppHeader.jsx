@@ -1,18 +1,28 @@
 import { useContext, useEffect, useState } from "react";
 import { AuthContext } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
-import { Layout, Badge, Avatar, Dropdown, Space, message } from "antd";
+import {
+  Layout,
+  Badge,
+  Avatar,
+  Dropdown,
+  Space,
+  message,
+  Tooltip,
+  Button,
+} from "antd";
 import {
   BellOutlined,
-  CaretDownOutlined,
   UserOutlined,
   LogoutOutlined,
   LoginOutlined,
+  MenuFoldOutlined,
+  MenuUnfoldOutlined,
 } from "@ant-design/icons";
 
 const { Header } = Layout;
 
-const AppHeader = () => {
+const AppHeader = ({ collapsed, setCollapsed }) => {
   const { admin, dispatch } = useContext(AuthContext);
   const navigate = useNavigate();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -38,16 +48,25 @@ const AppHeader = () => {
   // Menu items for the dropdown - changes based on login status
   const menuItems = isLoggedIn
     ? [
+        // {
+        //   key: "profile",
+        //   label: "Thông tin cá nhân",
+        //   icon: <UserOutlined />,
+        // },
+        // {
+        //   type: "divider",
+        // },
         {
-          key: "1",
+          key: "logout",
           label: "Đăng xuất",
           icon: <LogoutOutlined />,
           onClick: handleLogout,
+          danger: true,
         },
       ]
     : [
         {
-          key: "2",
+          key: "login",
           label: "Đăng nhập",
           icon: <LoginOutlined />,
           onClick: handleLogin,
@@ -67,26 +86,47 @@ const AppHeader = () => {
     <Header
       style={{
         background: "#fff",
-        padding: "0 16px",
+        padding: "0 24px",
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
+        position: "sticky",
+        top: 0,
+        zIndex: 1,
+        boxShadow: "0 1px 4px rgba(0, 21, 41, 0.08)",
       }}
     >
       <div style={{ display: "flex", alignItems: "center" }}>
-        {/* Left side of header can be extended here */}
+        {/* <Tooltip title={collapsed ? "Mở rộng" : "Thu gọn"}>
+          <Button
+            type="text"
+            icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+            onClick={() => setCollapsed(!collapsed)}
+            style={{ fontSize: "16px", marginRight: 12 }}
+          />
+        </Tooltip> */}
       </div>
       <div style={{ display: "flex", alignItems: "center" }}>
         {isLoggedIn && (
-          <Badge count={2} style={{ marginRight: 24 }}>
-            <BellOutlined style={{ fontSize: 20 }} />
-          </Badge>
+          <Tooltip title="Thông báo">
+            <Badge count={2} style={{ marginRight: 24 }}>
+              <Button
+                type="text"
+                icon={<BellOutlined style={{ fontSize: 20 }} />}
+              />
+            </Badge>
+          </Tooltip>
         )}
         <Dropdown menu={{ items: menuItems }} placement="bottomRight">
           <Space style={{ marginLeft: 16, cursor: "pointer" }}>
-            <Avatar icon={<UserOutlined />} />
-            <div>{getAdminName()}</div>
-            <CaretDownOutlined />
+            <Avatar
+              icon={<UserOutlined />}
+              style={{ backgroundColor: isLoggedIn ? "#1890ff" : "#d9d9d9" }}
+            />
+            <div style={{ fontWeight: 500 }}>{getAdminName() || "Khách"}</div>
+            <span className="dropdown-icon" style={{ fontSize: 12 }}>
+              ▼
+            </span>
           </Space>
         </Dropdown>
       </div>

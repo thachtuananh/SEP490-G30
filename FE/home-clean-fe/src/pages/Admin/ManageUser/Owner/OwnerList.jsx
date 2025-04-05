@@ -1,6 +1,23 @@
 import React, { useState, useEffect } from "react";
-import { Layout, Typography, Table, Button, Input, Tag, message } from "antd";
-import { SearchOutlined, EyeOutlined } from "@ant-design/icons";
+import {
+  Layout,
+  Typography,
+  Table,
+  Button,
+  Input,
+  Tag,
+  message,
+  Card,
+  Breadcrumb,
+  Space,
+} from "antd";
+import {
+  SearchOutlined,
+  EyeOutlined,
+  ReloadOutlined,
+  HomeOutlined,
+  UserOutlined,
+} from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import AppSidebar from "../../../../components/Admin/AppSidebar";
 import AppHeader from "../../../../components/Admin/AppHeader";
@@ -23,7 +40,7 @@ const OwnerList = () => {
   const fetchOwners = async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem("token"); // Assuming you store token in localStorage
+      const token = localStorage.getItem("token");
 
       const response = await axios.get(`${BASE_URL}/admin/customers/all`, {
         headers: {
@@ -40,15 +57,13 @@ const OwnerList = () => {
     }
   };
 
-  // Hàm chuyển đổi chuỗi datetime thành Date object
   const parseDate = (dateStr) => new Date(dateStr);
 
-  // Filter data based on search text before passing to Table
   const filteredOwners = searchText
     ? owners.filter(
         (record) =>
-          record.name.toLowerCase().includes(searchText.toLowerCase()) ||
-          record.phone.includes(searchText)
+          record.name?.toLowerCase().includes(searchText.toLowerCase()) ||
+          record.phone?.includes(searchText)
       )
     : owners;
 
@@ -63,7 +78,8 @@ const OwnerList = () => {
       title: "Tên",
       dataIndex: "name",
       key: "name",
-      sorter: (a, b) => a.name.localeCompare(b.name),
+      sorter: (a, b) => a.name?.localeCompare(b.name),
+      render: (text) => <span style={{ fontWeight: 500 }}>{text}</span>,
     },
     {
       title: "Số điện thoại",
@@ -82,7 +98,10 @@ const OwnerList = () => {
       dataIndex: "is_deleted",
       key: "is_deleted",
       render: (is_deleted) => (
-        <Tag color={is_deleted ? "red" : "green"}>
+        <Tag
+          color={is_deleted ? "red" : "green"}
+          style={{ borderRadius: "4px" }}
+        >
           {is_deleted ? "Đã xoá" : "Hoạt động"}
         </Tag>
       ),
@@ -110,45 +129,78 @@ const OwnerList = () => {
   const viewOwnerDetails = (id) => {
     navigate(`/admin/owners/${id}`);
   };
-
+  // Updated breadcrumb items using the new API
+  const breadcrumbItems = [
+    {
+      title: <HomeOutlined />,
+    },
+    {
+      title: (
+        <>
+          <UserOutlined />
+          <span>Người dùng</span>
+        </>
+      ),
+    },
+    {
+      title: "Chủ nhà",
+    },
+  ];
   return (
-    <Layout style={{ minHeight: "1000px" }}>
+    <Layout style={{ minHeight: "100vh" }}>
       <AppSidebar />
-      <Layout>
+      <Layout style={{ marginLeft: 220 }}>
         <AppHeader />
         <Content
           style={{
             margin: "24px 16px",
-            padding: 24,
-            background: "#fff",
             minHeight: 280,
           }}
         >
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              marginBottom: 16,
-            }}
-          >
-            <Title level={3}>Danh sách Owner</Title>
-            <Input
-              placeholder="Tìm kiếm theo tên hoặc số điện thoại"
-              prefix={<SearchOutlined />}
-              style={{ width: 300 }}
-              value={searchText}
-              onChange={(e) => setSearchText(e.target.value)}
-            />
-          </div>
+          <Breadcrumb items={breadcrumbItems} style={{ marginBottom: 16 }} />
 
-          <Table
-            columns={columns}
-            dataSource={filteredOwners} // Using filtered data instead of all owners
-            rowKey="customerId"
-            pagination={{ pageSize: 10 }}
-            bordered
-            loading={loading}
-          />
+          <Card>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                marginBottom: 16,
+              }}
+            >
+              <Title level={3}>Danh sách Chủ nhà</Title>
+              <Space>
+                <Button
+                  icon={<ReloadOutlined />}
+                  onClick={fetchOwners}
+                  loading={loading}
+                >
+                  Làm mới
+                </Button>
+                <Input
+                  placeholder="Tìm kiếm theo tên hoặc số điện thoại"
+                  prefix={<SearchOutlined />}
+                  style={{ width: 300 }}
+                  value={searchText}
+                  onChange={(e) => setSearchText(e.target.value)}
+                  allowClear
+                />
+              </Space>
+            </div>
+
+            <Table
+              columns={columns}
+              dataSource={filteredOwners}
+              rowKey="customerId"
+              // pagination={{
+              //   pageSize: 10,
+              //   showSizeChanger: true,
+              //   showTotal: (total, range) =>
+              //     `${range[0]}-${range[1]} của ${total} mục`,
+              // }}
+              bordered
+              loading={loading}
+            />
+          </Card>
         </Content>
       </Layout>
     </Layout>

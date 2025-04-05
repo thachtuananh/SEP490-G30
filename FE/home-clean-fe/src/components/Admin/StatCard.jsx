@@ -6,13 +6,11 @@ const { Title, Text } = Typography;
 const StatCard = ({ title, value, icon, iconBgColor, iconColor }) => {
   return (
     <Card
-      bordered={false}
       style={{
         borderRadius: 8,
         boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
         height: "100%",
       }}
-      bodyStyle={{ padding: "20px 24px" }}
     >
       <div
         style={{

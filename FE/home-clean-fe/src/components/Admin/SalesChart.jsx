@@ -1,9 +1,8 @@
 import React from "react";
-import { Card, Button, Dropdown, Menu } from "antd";
+import { Card, Button, Dropdown } from "antd";
 import { AreaChartOutlined, CaretDownOutlined } from "@ant-design/icons";
 
 const SalesChart = () => {
-  // Sample data for the line chart (can be passed as props in a real application)
   const data = [
     { day: "0", value: 20 },
     { day: "5", value: 30 },
@@ -26,7 +25,7 @@ const SalesChart = () => {
     <Card
       title="Sales Details"
       extra={
-        <Dropdown overlay={<Menu items={monthMenuItems} />}>
+        <Dropdown menu={{ items: monthMenuItems }}>
           <Button>
             October <CaretDownOutlined />
           </Button>
