@@ -17,19 +17,23 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtUtils jwtUtils;
     private final UserDetailsService customerUserDetailsService;
     private final UserDetailsService employeeUserDetailsService;
+    private final UserDetailsService adminUserDetailsService;
 
     public JwtAuthenticationFilter(JwtUtils jwtUtils,
                                    UserDetailsService customerUserDetailsService,
-                                   UserDetailsService employeeUserDetailsService) {
+                                   UserDetailsService employeeUserDetailsService,
+                                   UserDetailsService adminUserDetailsService) {
         this.jwtUtils = jwtUtils;
         this.customerUserDetailsService = customerUserDetailsService;
         this.employeeUserDetailsService = employeeUserDetailsService;
+        this.adminUserDetailsService = adminUserDetailsService;
     }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
+
         String authHeader = request.getHeader("Authorization");
 
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
@@ -38,24 +42,41 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         String token = authHeader.substring(7);
-        String phone = jwtUtils.getAllClaimsFromToken(token).get("phone").toString();
-        String role = jwtUtils.getAllClaimsFromToken(token).get("role").toString();
-        System.out.println("phone = " + phone);
-        System.out.println("role = " + role);
+
+        if (!jwtUtils.validateToken(token)) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        String phone = jwtUtils.getClaimFromToken(token, "phone");
+        String role = jwtUtils.getClaimFromToken(token, "role");
+
 
         if (phone != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             UserDetails userDetails = null;
 
-            if ("Customer".equals(role)) {
-                userDetails = customerUserDetailsService.loadUserByUsername(phone);
-            } else if ("Cleaner".equals(role)) {
-                userDetails = employeeUserDetailsService.loadUserByUsername(phone);
-            }
+            try {
+                switch (role) {
+                    case "Customer":
+                        userDetails = customerUserDetailsService.loadUserByUsername(phone);
+                        break;
+                    case "Cleaner":
+                        userDetails = employeeUserDetailsService.loadUserByUsername(phone);
+                        break;
+                    case "Admin":
+                    case "Manager":
+                        userDetails = adminUserDetailsService.loadUserByUsername(phone);
+                        break;
+                }
 
-            if (jwtUtils.validateToken(token)) {
-                UsernamePasswordAuthenticationToken authToken =
-                        new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-                SecurityContextHolder.getContext().setAuthentication(authToken);
+                if (userDetails != null) {
+                    UsernamePasswordAuthenticationToken authToken =
+                            new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+                    SecurityContextHolder.getContext().setAuthentication(authToken);
+                }
+
+            } catch (Exception e) {
+                System.out.println("JWT Filter Error: " + e.getMessage());
             }
         }
 

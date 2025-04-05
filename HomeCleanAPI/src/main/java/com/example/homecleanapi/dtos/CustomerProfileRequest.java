@@ -4,6 +4,9 @@ public class CustomerProfileRequest {
     private String phone;
     private String fullName;
     private String email;
+    private String password;
+    private Boolean accountStatus;
+
 
 
 
@@ -31,5 +34,21 @@ public class CustomerProfileRequest {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public Boolean getAccountStatus() {
+        return accountStatus;
+    }
+
+    public void setAccountStatus(Boolean accountStatus) {
+        this.accountStatus = accountStatus;
     }
 }

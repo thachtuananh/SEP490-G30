@@ -1,4 +1,4 @@
-package com.example.homecleanapi.PaymentForWallets;
+package com.example.homecleanapi.paymentForWallets;
 
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;

@@ -1,6 +1,5 @@
 package com.example.homecleanapi.models;
 
-
 import com.example.homecleanapi.dtos.CleanerUpdateProfile;
 import jakarta.persistence.*;
 import java.nio.file.Files;
@@ -17,29 +16,40 @@ public class Employee {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
+
     @Column(name = "password_hash")
     private String password;
+
     @Column(name = "full_name")
     private String name;
+
     @Column(name = "phone_number")
     private String phone;
-    
+
     private String email;
     private Integer age;
     private String address;
-    
+
     private String identity_number;
-    
+
     @Column(name = "identity_verified")
     private Boolean is_verified;
+
+
+
     private String experience;
+
     private LocalDateTime created_at;
     private LocalDateTime updated_at;
+
     @Column(name = "profile_image", columnDefinition = "BYTEA")
     private byte[] profile_image;
 
     @Column(name = "status")
     private Boolean status;
+
+    @Column(name = "is_deleted")
+    private Boolean isDeleted;
 
     @PrePersist
     protected void onCreate() {
@@ -47,29 +57,25 @@ public class Employee {
         this.created_at = LocalDateTime.now();
         this.updated_at = LocalDateTime.now();
         this.status = Boolean.FALSE;
-//        byte[] image = getRandomProfileImage();
-//
-//        if (image == null || image.length == 0) {
-//            System.out.println("Không có ảnh, gán null cho profile_image");
-//            this.profile_image = null;
-//        } else {
-//            System.out.println("Lưu ảnh có kích thước: " + image.length + " bytes");
-//            this.profile_image = image;
-//        }
     }
 
-    
+    public Boolean getIsDeleted() {  // Thay đổi tên getter
+        return isDeleted;
+    }
+
+    public void setIsDeleted(Boolean isDeleted) {  // Thay đổi tên setter
+        this.isDeleted = isDeleted;
+    }
+
     public Boolean getStatus() {
-		return status;
-	}
+        return status;
+    }
 
+    public void setStatus(Boolean status) {
+        this.status = status;
+    }
 
-	public void setStatus(Boolean status) {
-		this.status = status;
-	}
-
-
-	public Integer getAge() {
+    public Integer getAge() {
         return age;
     }
 
