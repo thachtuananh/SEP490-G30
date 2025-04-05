@@ -211,6 +211,29 @@
   margin-bottom: 16px;
   animation: spin 1s linear infinite;
 }
+.cancelBtn {
+  cursor: pointer;
+  color: #29322e;
+  background-color: #ccc;
+  border: none;
+  border-radius: 12px;
+  min-width: 133px;
+  padding: 12px;
+  font-family: Inter, sans-serif;
+  font-size: 16px;
+}
+
+.completeBtn {
+  cursor: pointer;
+  color: #fff;
+  background-color: #aaa;
+  border: none;
+  border-radius: 12px;
+  min-width: 246px;
+  padding: 12px;
+  font-family: Inter, sans-serif;
+  font-size: 16px;
+}
 
 @keyframes spin {
   0% {
@@ -227,39 +250,9 @@
     flex-direction: column;
     align-items: stretch;
   }
-}
-
-.cancelBtn {
-  cursor: pointer;
-  color: #29322e;
-  background-color: #ccc;
-  border: none;
-  border-radius: 12px;
-  min-width: 133px;
-  padding: 12px;
-  font-family: Inter, sans-serif;
-  font-size: 16px;
-}
-
-@media (width <=640px) {
   .cancelBtn {
     width: 100%;
   }
-}
-
-.completeBtn {
-  cursor: pointer;
-  color: #fff;
-  background-color: #aaa;
-  border: none;
-  border-radius: 12px;
-  min-width: 246px;
-  padding: 12px;
-  font-family: Inter, sans-serif;
-  font-size: 16px;
-}
-
-@media (width <=640px) {
   .completeBtn {
     width: 100%;
   }

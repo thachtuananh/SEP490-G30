@@ -52,7 +52,7 @@ const MenuInfomation = ({ selectedMenu, setSelectedMenu }) => {
         ].map((item) => (
           <div key={item.id} className="menu-item">
             <Link
-              to="/infomationcleaner"
+              to="/homeclean/infomationcleaner"
               className={`menu-link ${
                 selectedMenu === item.id ? "menu-active" : ""
               }`}

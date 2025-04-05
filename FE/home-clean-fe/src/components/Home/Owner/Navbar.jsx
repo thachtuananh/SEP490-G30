@@ -16,8 +16,10 @@ import { Stomp } from "@stomp/stompjs";
 import ChatWindow from "../../Chat/ChatWindow";
 import ConversationList from "../../Chat/ConversationList";
 import { getUnreadNotificationCount } from "../../../services/NotificationService";
-import { getUnreadMessageCount } from "../../../services/ChatService";
-import { BASE_URL } from "../../../utils/config";
+import {
+  getUnreadMessageCount,
+  handleConversationSelect as serviceHandleConversationSelect,
+} from "../../../services/ChatService";
 import { URL_WEB_SOCKET } from "../../../utils/config";
 
 function Navbar() {
@@ -61,6 +63,9 @@ function Navbar() {
           setNotificationCount(count);
         } catch (error) {
           console.error("Failed to fetch notification count:", error);
+          message.error(
+            "Không thể tải số lượng thông báo. Vui lòng thử lại sau!"
+          );
         } finally {
           setIsLoading(false);
         }
@@ -126,6 +131,10 @@ function Navbar() {
 
   const toggleNotification = () => {
     setIsPopupNotification(!isPopupNotification);
+    // Reset notification count when opening the notification panel
+    if (!isPopupNotification) {
+      setNotificationCount(0);
+    }
     // Close menu when toggling notification on mobile
     if (isMobile && isMenuOpen) {
       setIsMenuOpen(false);
@@ -137,8 +146,8 @@ function Navbar() {
     if (user) {
       try {
         setIsLoading(true);
-        const count = await getUnreadNotificationCount();
-        setNotificationCount(count);
+        // const count = await getUnreadNotificationCount();
+        setNotificationCount(0);
       } catch (error) {
         console.error("Failed to refresh notifications:", error);
       } finally {
@@ -241,6 +250,8 @@ function Navbar() {
       onOpenChange={(visible) => {
         setIsPopupNotification(visible);
         if (visible) {
+          // Reset notification count when opening the popover
+          setNotificationCount(0);
           // Refresh notification count when opening the popover
           refreshNotifications();
         }
@@ -364,31 +375,13 @@ function Navbar() {
   };
 
   const handleConversationSelect = (conversation) => {
-    console.log("🔍 Chọn cuộc trò chuyện:", conversation);
-
-    if (!conversation || !conversation.id) {
-      console.error("Lỗi: Cuộc trò chuyện không hợp lệ!", conversation);
-      return;
-    }
-
-    setSelectedConversation(conversation);
-
-    const apiUrl = `${BASE_URL}/messages/${conversation.id}`;
-
-    fetch(apiUrl)
-      .then((response) => response.json())
-      .then((data) => {
-        if (data && Array.isArray(data.messages)) {
-          setMessages(data.messages);
-        } else {
-          console.error("API không trả về mảng tin nhắn hợp lệ:", data);
-          setMessages([]);
-        }
-      })
-      .catch((error) => {
-        console.error("Lỗi khi tải tin nhắn cũ:", error);
-        setMessages([]);
-      });
+    serviceHandleConversationSelect(
+      conversation,
+      setSelectedConversation,
+      setMessages
+    );
+    // Reset message count when a conversation is selected
+    setMessageCount(0);
   };
 
   const sendMessage = (messageContent) => {
@@ -431,8 +424,6 @@ function Navbar() {
                 <ConversationList
                   onSelect={(conversation) => {
                     handleConversationSelect(conversation);
-                    // Reset message count when a conversation is selected
-                    setMessageCount(0);
                   }}
                   userId={userId}
                   role={role}

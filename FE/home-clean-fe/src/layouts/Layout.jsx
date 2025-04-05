@@ -20,15 +20,12 @@ const Layout = () => {
       "/login/cleaner",
       "/homeclean",
       "/",
-      "/infomationcleaner",
-      "/activityjob",
-      "/applysuccess",
-      "/job-list",
       "/admin-login",
       "/admin",
     ].includes(location.pathname) ||
     location.pathname.startsWith("/workdetail/") ||
-    location.pathname.startsWith("/admin/");
+    location.pathname.startsWith("/admin/") ||
+    location.pathname.startsWith("/homeclean/");
 
   return (
     <>

@@ -4,18 +4,24 @@ import { Input, Typography } from "antd";
 
 const { TextArea } = Input;
 const { Title } = Typography;
-const Note = () => {
-    return (
-        <div className={styles.noteContainer}>
-            <Title level={5}>Ghi chú cho Cleaner</Title>
-            <TextArea
-                placeholder="Nhập ghi chú cho người giúp việc..."
-                autoSize={{ minRows: 4 }}
-                style={{ width: '100%' }}
-            />
-        </div>
-    )
-}
+const Note = ({ onNoteChange }) => {
+  const handleChange = (e) => {
+    if (onNoteChange) {
+      onNoteChange(e.target.value);
+    }
+  };
+
+  return (
+    <div className={styles.noteContainer}>
+      <Title level={5}>Ghi chú cho Cleaner</Title>
+      <TextArea
+        placeholder="Nhập ghi chú cho người giúp việc..."
+        autoSize={{ minRows: 4 }}
+        style={{ width: "100%" }}
+        onChange={handleChange}
+      />
+    </div>
+  );
+};
 
 export default Note;
-

@@ -39,6 +39,9 @@ import CleanerList from "../pages/Admin/ManageUser/Cleaner/CleanerList";
 import OwnerDetails from "../pages/Admin/ManageUser/Owner/OwnerDetails";
 import AdminCleanerDetails from "../pages/Admin/ManageUser/Cleaner/CleanerDetails";
 import LoginAdmin from "../pages/Admin/LoginAdmin";
+import ProtectedAdminRoute from "./ProtectedAdminRoute";
+import CleanerListBan from "../pages/Admin/ManageUser/Cleaner/CleanerListBan";
+
 const Routers = () => {
   return (
     <Routes>
@@ -47,20 +50,23 @@ const Routers = () => {
 
       <Route path="/login" element={<LoginSelection />} />
       <Route path="/login/user" element={<LoginUser />} />
-      <Route path="/login/cleaner" element={<LoginCleaner />} />
+      <Route path="/homeclean/login/cleaner" element={<LoginCleaner />} />
 
       <Route path="/forgot-password" element={<ForgotPassword />} />
 
       <Route path="/register" element={<RegisterSelection />} />
       <Route path="/register/user" element={<RegisterUser />} />
-      <Route path="/register/cleaner" element={<RegisterCleaner />} />
+      <Route path="/homeclean/register/cleaner" element={<RegisterCleaner />} />
 
       <Route path="/activitylist" element={<ActivityList />} />
 
       <Route path="/contact" element={<Contact />} />
 
       <Route path="/infomation" element={<Infomation />} />
-      <Route path="/infomationcleaner" element={<InfomationCleaner />} />
+      <Route
+        path="/homeclean/infomationcleaner"
+        element={<InfomationCleaner />}
+      />
       <Route path="/about" element={<About />} />
 
       <Route path="/service/:id?" element={<ServiceDetails />} />
@@ -68,10 +74,10 @@ const Routers = () => {
       <Route path="/cleaner/:cleanerId" element={<CleanerDetails />} />
       <Route path="/createjob" element={<CreateJob />} />
       <Route path="/createjobtocleaner" element={<CreateJobToCleaner />} />
-      <Route path="/activityjob" element={<ActivityJob />} />
+      <Route path="/homeclean/activityjob" element={<ActivityJob />} />
 
-      <Route path="/ordersuccess" element={<OrderSuccess />} />
-      <Route path="/applysuccess" element={<ApplySuccess />} />
+      {/* <Route path="/ordersuccess" element={<OrderSuccess />} /> */}
+      {/* <Route path="/applysuccess" element={<ApplySuccess />} /> */}
 
       <Route path="/workdetail/:jobId?" element={<WorkDetail />} />
 
@@ -81,17 +87,59 @@ const Routers = () => {
         element={<ServiceDetailsCleaner />}
       />
 
-      <Route path="/job-list" element={<JobListFilter />} />
+      <Route path="/homeclean/job-list" element={<JobListFilter />} />
 
-      {/* Admin */}
-      <Route path="/admin" element={<MainDashboard />} />
+      {/* Admin login route - accessible to everyone */}
       <Route path="/admin-login" element={<LoginAdmin />} />
-      <Route path="/admin/owners" element={<OwnerList />} />
-      <Route path="/admin/cleaners" element={<CleanerList />} />
-      <Route path="/admin/owners/:customerId" element={<OwnerDetails />} />
+
+      {/* Protected Admin Routes */}
+      <Route
+        path="/admin"
+        element={
+          <ProtectedAdminRoute>
+            <MainDashboard />
+          </ProtectedAdminRoute>
+        }
+      />
+      <Route
+        path="/admin/owners"
+        element={
+          <ProtectedAdminRoute>
+            <OwnerList />
+          </ProtectedAdminRoute>
+        }
+      />
+      <Route
+        path="/admin/cleaners"
+        element={
+          <ProtectedAdminRoute>
+            <CleanerList />
+          </ProtectedAdminRoute>
+        }
+      />
+      <Route
+        path="/admin/cleaners-ban"
+        element={
+          <ProtectedAdminRoute>
+            <CleanerListBan />
+          </ProtectedAdminRoute>
+        }
+      />
+      <Route
+        path="/admin/owners/:customerId"
+        element={
+          <ProtectedAdminRoute>
+            <OwnerDetails />
+          </ProtectedAdminRoute>
+        }
+      />
       <Route
         path="/admin/cleaners/:cleanerId"
-        element={<AdminCleanerDetails />}
+        element={
+          <ProtectedAdminRoute>
+            <AdminCleanerDetails />
+          </ProtectedAdminRoute>
+        }
       />
     </Routes>
   );
