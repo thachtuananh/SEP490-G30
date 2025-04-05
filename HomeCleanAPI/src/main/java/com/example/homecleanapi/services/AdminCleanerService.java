@@ -136,7 +136,7 @@ public class AdminCleanerService {
         result.put("name", c.getName());
         result.put("phone", c.getPhone());
         result.put("email", c.getEmail());
-        result.put("account_status", c.getIsDeleted());
+        result.put("is_deleted", c.getIsDeleted());
         result.put("status", c.getStatus());
         result.put("created_at", c.getCreated_at());
         result.put("updated_at", c.getUpdated_at());

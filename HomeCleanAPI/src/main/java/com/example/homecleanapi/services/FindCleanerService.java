@@ -13,7 +13,9 @@ import org.springframework.stereotype.Service;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class FindCleanerService {
@@ -101,7 +103,8 @@ public class FindCleanerService {
         // Các mức bán kính cần tìm kiếm (bạn có thể điều chỉnh bán kính này)
         double[] radiusLevels = {15000, 30000, 60000};
 
-        List<JobSummaryDTO> jobSummaryList = new ArrayList<>();
+        // Sử dụng Map để đảm bảo không có trùng lặp jobId
+        Map<Long, JobSummaryDTO> jobSummaryMap = new HashMap<>();
 
         // Lặp qua các mức bán kính để tìm kiếm job
         for (double radius : radiusLevels) {
@@ -114,24 +117,23 @@ public class FindCleanerService {
                 dto.setJobId(((Number) row[0]).longValue());  // jobId
                 dto.setServiceName((String) row[1]);  // serviceName
                 dto.setPrice((Double) row[2]);  // total_price
-                // Sử dụng toLocalDateTime() để chuyển đổi từ Timestamp sang LocalDateTime
                 dto.setScheduledTime(((Timestamp) row[3]).toLocalDateTime());  // scheduled_time
                 dto.setDistance((Double) row[4]);  // distance_m
 
-                jobSummaryList.add(dto);
+                // Chỉ thêm job nếu chưa có trong Map (dựa trên jobId)
+                jobSummaryMap.putIfAbsent(dto.getJobId(), dto);
             }
 
-
-            if (jobSummaryList.size() >= limit) {
+            // Nếu đã đủ số lượng job, thoát khỏi vòng lặp
+            if (jobSummaryMap.size() >= limit) {
                 break;
             }
         }
-        if (jobSummaryList.isEmpty()) {
-            return jobSummaryList;
-        }
 
-        return jobSummaryList;
+        // Chuyển Map thành List trước khi trả về
+        return new ArrayList<>(jobSummaryMap.values());
     }
+
 
 
 
@@ -151,8 +153,9 @@ public class FindCleanerService {
                 "        ca.geom, " +
                 "        ST_SetSRID(ST_MakePoint(:longitude, :latitude), 4326), " + // Sử dụng SRID 4326
                 "        :radius) " +
+                // Điều kiện này đảm bảo rằng không có job nào mà cleaner đã ứng tuyển
                 "AND j.id NOT IN (" +
-                "    SELECT job_id FROM job_application WHERE cleaner_id = :cleanerId AND status = 'Pending'" +
+                "    SELECT job_id FROM job_application WHERE cleaner_id = :cleanerId" +
                 ") " +
                 "ORDER BY distance_m ASC " +
                 "LIMIT :limit";
@@ -166,6 +169,7 @@ public class FindCleanerService {
 
         return nativeQuery.getResultList();
     }
+
 
 
 
