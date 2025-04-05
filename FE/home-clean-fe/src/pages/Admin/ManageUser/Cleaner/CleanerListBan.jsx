@@ -101,7 +101,7 @@ const CleanerListBan = () => {
         { text: "Đã xác minh", value: true },
         { text: "Chưa xác minh", value: false },
       ],
-      onFilter: (value, record) => record.account_status === value,
+      onFilter: (value, record) => record.is_deleted === value,
     },
     // {
     //   title: "Trạng thái xác minh",

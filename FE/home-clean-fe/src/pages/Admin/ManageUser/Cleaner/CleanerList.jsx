@@ -98,7 +98,7 @@ const CleanerList = () => {
         { text: "Đang hoạt động", value: false },
         { text: "Không hoạt động", value: true },
       ],
-      onFilter: (value, record) => record.account_status === value,
+      onFilter: (value, record) => record.is_deleted === value,
     },
     {
       title: "Hành động",

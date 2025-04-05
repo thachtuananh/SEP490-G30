@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Tabs,
   Descriptions,
@@ -30,6 +30,12 @@ const CleanerTabs = ({
   const [verificationForm] = Form.useForm();
   const [loading, setLoading] = useState(false);
 
+  // Add state variables to track button selections
+  const [identityVerified, setIdentityVerified] = useState(
+    cleanerData?.identity_verified
+  );
+  const [accountActive, setAccountActive] = useState(!cleanerData?.is_deleted);
+
   // Format date and time function
   const formatDateTime = (dateTimeString) => {
     const date = new Date(dateTimeString);
@@ -53,17 +59,20 @@ const CleanerTabs = ({
       phone: cleanerData.phone,
       email: cleanerData.email,
       age: cleanerData.age,
-      // address: cleanerData.address || "",
       experience: cleanerData.experience,
     });
     setIsProfileModalVisible(true);
   };
 
   const showEditModalVerification = () => {
+    // Set state variables when opening the modal
+    setIdentityVerified(cleanerData.identity_verified);
+    setAccountActive(!cleanerData.is_deleted);
+
     verificationForm.setFieldsValue({
       identityNumber: cleanerData.identity_number,
       identityVerified: cleanerData.identity_verified,
-      accountStatus: cleanerData.account_status,
+      accountStatus: cleanerData.is_deleted,
     });
     setIsVerificationModalVisible(true);
   };
@@ -98,7 +107,6 @@ const CleanerTabs = ({
             phone: values.phone,
             email: values.email,
             age: parseInt(values.age),
-            // address: values.address,
             experience: values.experience,
           }),
         }
@@ -130,20 +138,15 @@ const CleanerTabs = ({
       const token = localStorage.getItem("token");
       const cleanerId = cleanerData.id || cleanerData.cleanerId;
 
+      // Using the updated API endpoint from the requirements
       const response = await fetch(
-        `${BASE_URL}/admin/cleaners/${cleanerId}/update`,
+        `${BASE_URL}/admin/cleaners/${cleanerId}/identity-verified?status=${values.identityVerified}&isDeleted=${values.accountStatus}`,
         {
           method: "PUT",
           headers: {
-            "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
             accept: "application/json",
           },
-          body: JSON.stringify({
-            identityNumber: values.identityNumber,
-            identityVerified: values.identityVerified,
-            accountStatus: values.accountStatus,
-          }),
         }
       );
 
@@ -163,6 +166,18 @@ const CleanerTabs = ({
     } finally {
       setLoading(false);
     }
+  };
+
+  // Handle identity verification status change
+  const handleIdentityVerifiedChange = (value) => {
+    setIdentityVerified(value);
+    verificationForm.setFieldsValue({ identityVerified: value });
+  };
+
+  // Handle account status change
+  const handleAccountStatusChange = (isActive) => {
+    setAccountActive(isActive);
+    verificationForm.setFieldsValue({ accountStatus: !isActive });
   };
 
   // Tab items configuration
@@ -188,9 +203,6 @@ const CleanerTabs = ({
             <Descriptions.Item label="Kinh nghiệm">
               {cleanerData?.experience}
             </Descriptions.Item>
-            {/* <Descriptions.Item label="Địa chỉ">
-              {cleanerData?.address || "Chưa cập nhật"}
-            </Descriptions.Item> */}
           </Descriptions>
           <div
             style={{
@@ -241,11 +253,9 @@ const CleanerTabs = ({
             </Descriptions.Item>
             <Descriptions.Item label="Trạng thái tài khoản">
               <Badge
-                status={cleanerData?.account_status ? "error" : "success"}
+                status={cleanerData?.is_deleted ? "error" : "success"}
                 text={
-                  cleanerData?.account_status
-                    ? "Không hoạt động"
-                    : "Đang hoạt động"
+                  cleanerData?.is_deleted ? "Không hoạt động" : "Đang hoạt động"
                 }
               />
             </Descriptions.Item>
@@ -336,7 +346,6 @@ const CleanerTabs = ({
             phone: cleanerData?.phone,
             email: cleanerData?.email,
             age: cleanerData?.age,
-            // address: cleanerData?.address || "",
             experience: cleanerData?.experience,
           }}
         >
@@ -404,10 +413,6 @@ const CleanerTabs = ({
             <Input placeholder="Nhập tuổi" />
           </Form.Item>
 
-          {/* <Form.Item name="address" label="Địa chỉ">
-            <Input placeholder="Nhập địa chỉ" />
-          </Form.Item> */}
-
           <Form.Item name="experience" label="Kinh nghiệm">
             <Input placeholder="Nhập kinh nghiệm" />
           </Form.Item>
@@ -439,46 +444,25 @@ const CleanerTabs = ({
           initialValues={{
             identityNumber: cleanerData?.identity_number,
             identityVerified: cleanerData?.identity_verified,
-            accountStatus: cleanerData?.account_status,
+            accountStatus: cleanerData?.is_deleted,
           }}
         >
-          <Form.Item
-            name="identityNumber"
-            label="CMND/CCCD"
-            rules={[
-              {
-                required: true,
-                message: "Vui lòng nhập số CMND/CCCD",
-              },
-            ]}
-          >
-            <Input placeholder="Nhập số CMND/CCCD" />
+          <Form.Item name="identityNumber" label="CMND/CCCD">
+            <Input placeholder="Số CMND/CCCD" disabled />
           </Form.Item>
 
           <Form.Item name="identityVerified" label="Trạng thái xác minh">
             <Input.Group compact>
               <Button
-                type={
-                  verificationForm.getFieldValue("identityVerified")
-                    ? "primary"
-                    : "default"
-                }
-                onClick={() =>
-                  verificationForm.setFieldsValue({ identityVerified: true })
-                }
+                type={identityVerified ? "primary" : "default"}
+                onClick={() => handleIdentityVerifiedChange(true)}
                 style={{ width: "50%" }}
               >
                 Đã xác minh
               </Button>
               <Button
-                type={
-                  !verificationForm.getFieldValue("identityVerified")
-                    ? "primary"
-                    : "default"
-                }
-                onClick={() =>
-                  verificationForm.setFieldsValue({ identityVerified: false })
-                }
+                type={!identityVerified ? "primary" : "default"}
+                onClick={() => handleIdentityVerifiedChange(false)}
                 style={{ width: "50%" }}
               >
                 Chưa xác minh
@@ -489,27 +473,15 @@ const CleanerTabs = ({
           <Form.Item name="accountStatus" label="Trạng thái tài khoản">
             <Input.Group compact>
               <Button
-                type={
-                  !verificationForm.getFieldValue("accountStatus")
-                    ? "primary"
-                    : "default"
-                }
-                onClick={() =>
-                  verificationForm.setFieldsValue({ accountStatus: false })
-                }
+                type={accountActive ? "primary" : "default"}
+                onClick={() => handleAccountStatusChange(true)}
                 style={{ width: "50%" }}
               >
                 Đang hoạt động
               </Button>
               <Button
-                type={
-                  verificationForm.getFieldValue("accountStatus")
-                    ? "primary"
-                    : "default"
-                }
-                onClick={() =>
-                  verificationForm.setFieldsValue({ accountStatus: true })
-                }
+                type={!accountActive ? "primary" : "default"}
+                onClick={() => handleAccountStatusChange(false)}
                 style={{ width: "50%" }}
               >
                 Không hoạt động

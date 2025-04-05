@@ -213,9 +213,9 @@ const CleanerDetails = () => {
                 <Title level={4}>{cleanerData.name}</Title>
                 <Space size="large" wrap>
                   <Badge
-                    status={cleanerData.account_status ? "error" : "success"}
+                    status={cleanerData.is_deleted ? "error" : "success"}
                     text={
-                      cleanerData.account_status
+                      cleanerData.is_deleted
                         ? "Không hoạt động"
                         : "Đang hoạt động"
                     }

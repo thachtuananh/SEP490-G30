@@ -74,6 +74,7 @@ function LoginAdmin() {
 
   useEffect(() => {
     if (errorMessage) {
+      message.error(errorMessage);
       const timer = setTimeout(() => setErrorMessage(""), 3000);
       return () => clearTimeout(timer);
     }
@@ -113,14 +114,14 @@ function LoginAdmin() {
               </Text>
             </div>
 
-            {errorMessage && (
+            {/* {errorMessage && (
               <Alert
                 message={errorMessage}
                 type="error"
                 showIcon
                 style={{ marginBottom: "16px" }}
               />
-            )}
+            )} */}
 
             <Form
               form={form}
