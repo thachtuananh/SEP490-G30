@@ -1,49 +1,146 @@
 import { Link } from "react-router-dom";
+import {
+  Card,
+  Avatar,
+  Rate,
+  Tag,
+  Button,
+  Typography,
+  Tooltip,
+  Statistic,
+  Space,
+} from "antd";
+import {
+  UserOutlined,
+  StarOutlined,
+  CommentOutlined,
+  ShoppingCartOutlined,
+} from "@ant-design/icons";
 
-function CleanerCard({ cleanerId, cleanerImg, cleanerName, rating, reviews, isOnline }) {
+const { Text, Paragraph } = Typography;
+const { Meta } = Card;
+
+function CleanerCard({
+  cleanerId,
+  cleanerImg,
+  cleanerName,
+  rating,
+  reviews,
+  isOnline,
+}) {
   return (
-    <div className="service-card">
-      <div className="card-image">
-        {/* Đối với hình ảnh base64, cần thêm tiền tố data:image định dạng;base64, */}
-        <img
-          src={cleanerImg ? (cleanerImg.startsWith('data:') ? cleanerImg : `data:image/jpeg;base64,${cleanerImg}`) : ''}
-          alt={cleanerName}
-        />
-      </div>
-      <div className="card-content">
-        <div style={{ display: "flex", justifyContent: "space-between" }}>
-          <h3 className="service-title">{cleanerName}</h3>
-          <p style={{ color: isOnline ? "green" : "gray", fontWeight: "bold" }}>
-            {isOnline ? "Online" : "Offline"}
-          </p>
-        </div>
-        <p className="service-description">
-          {`Dịch vụ của ${cleanerName}`}
-        </p>
-        <div className="service-meta">
-          <div className="rating">
-            <span className="stars">{rating} ★</span>
-            <span className="review-count">({reviews} đánh giá)</span>
+    <Card
+      hoverable
+      style={{ height: "100%", position: "relative", cursor: "default" }}
+      actions={
+        [
+          // <Tooltip title="Đánh giá">
+          //   <Space direction="vertical" size={0} style={{ lineHeight: 1 }}>
+          //     <StarOutlined style={{ color: "#faad14" }} />
+          //     <Text style={{ fontSize: "12px" }}>{rating}</Text>
+          //   </Space>
+          // </Tooltip>,
+          // <Tooltip title="Đánh giá">
+          //   <Space direction="vertical" size={0} style={{ lineHeight: 1 }}>
+          //     <CommentOutlined />
+          //     <Text style={{ fontSize: "12px" }}>{reviews}</Text>
+          //   </Space>
+          // </Tooltip>,
+          // <Link to={`/cleaner/${cleanerId}`} state={{ cleanerId }}>
+          //   <Tooltip title="Thuê ngay">
+          //     <ShoppingCartOutlined style={{ color: "#1890ff" }} />
+          //   </Tooltip>
+          // </Link>,
+        ]
+      }
+    >
+      <Tag
+        style={{
+          position: "absolute",
+          top: 10,
+          right: 10,
+          zIndex: 1,
+          border: "none",
+          borderRadius: "12px",
+          backgroundColor: isOnline
+            ? "rgba(82, 196, 26, 0.1)"
+            : "rgba(245, 34, 45, 0.1)",
+          color: isOnline ? "#52c41a" : "#f5222d", // Đặt màu chữ ở đây
+        }}
+      >
+        {isOnline ? "Online" : "Offline"}
+      </Tag>
 
-          </div>
-        </div>
-        <div className="card-footer">
-          <Link to={`/cleaner/${cleanerId}`} state={{ cleanerId }}>
-            <button className="hire-btn">Thuê ngay</button>
-          </Link>
-          <div className="user-avatars">
-            {[1, 2, 3].map((i) => (
-              <img
-                key={i}
-                src={`https://i.pravatar.cc/30?img=${i}`}
-                alt="User avatar"
-                className="avatar"
-              />
-            ))}
-          </div>
-        </div>
+      <div style={{ textAlign: "center", marginBottom: "16px" }}>
+        {cleanerImg ? (
+          <Avatar
+            src={
+              cleanerImg.startsWith("data:")
+                ? cleanerImg
+                : `data:image/jpeg;base64,${cleanerImg}`
+            }
+            size={80}
+            style={{ border: `3px solid ${isOnline ? "#52c41a" : "#d9d9d9"}` }}
+          />
+        ) : (
+          <Avatar
+            icon={<UserOutlined />}
+            size={80}
+            style={{ border: `3px solid ${isOnline ? "#52c41a" : "#d9d9d9"}` }}
+          />
+        )}
       </div>
-    </div>
+
+      <Meta
+        title={
+          <Text
+            style={{
+              fontSize: "18px",
+              fontWeight: "bold",
+              textAlign: "center",
+              display: "block",
+            }}
+          >
+            {cleanerName}
+          </Text>
+        }
+        description={
+          <div style={{ textAlign: "center" }}>
+            <Paragraph ellipsis={{ rows: 2 }} style={{ marginBottom: "8px" }}>
+              {`Dịch vụ của ${cleanerName}`}
+            </Paragraph>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                marginBottom: "12px",
+              }}
+            >
+              {/* <Rate
+                disabled
+                defaultValue={rating}
+                allowHalf
+                style={{ fontSize: "14px" }}
+              /> */}
+            </div>
+            {/* <div style={{ marginBottom: "16px" }}>
+              <Avatar.Group maxCount={3} size="small">
+                {[1, 2, 3].map((i) => (
+                  <Tooltip key={i} title="Khách hàng">
+                    <Avatar src={`https://i.pravatar.cc/30?img=${i}`} />
+                  </Tooltip>
+                ))}
+              </Avatar.Group>
+            </div> */}
+            <Link to={`/cleaner/${cleanerId}`} state={{ cleanerId }}>
+              <Button type="primary" ghost block>
+                Thuê ngay
+              </Button>
+            </Link>
+          </div>
+        }
+      />
+    </Card>
   );
 }
 

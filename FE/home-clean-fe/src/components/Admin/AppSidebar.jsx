@@ -31,6 +31,11 @@ const AppSidebar = () => {
       icon: <TeamOutlined />,
       label: <Link to="/admin/cleaners">Danh sách Cleaner</Link>,
     },
+    {
+      key: "/admin/cleaners-ban",
+      icon: <TeamOutlined />,
+      label: <Link to="/admin/cleaners-ban">Danh sách Cleaner Ban</Link>,
+    },
     // {
     //   key: "logout",
     //   icon: <LogoutOutlined />,

@@ -10,7 +10,7 @@ import { BASE_URL } from "../../../../utils/config";
 const { Content } = Layout;
 const { Title } = Typography;
 
-const CleanerList = () => {
+const CleanerListBan = () => {
   const [searchText, setSearchText] = useState("");
   const [cleaners, setCleaners] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -25,12 +25,15 @@ const CleanerList = () => {
       setLoading(true);
       const token = localStorage.getItem("token"); // Assuming you store token in localStorage
 
-      const response = await axios.get(`${BASE_URL}/admin/cleaners/all`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          accept: "application/json",
-        },
-      });
+      const response = await axios.get(
+        `${BASE_URL}/admin/cleaners/unverified`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            accept: "application/json",
+          },
+        }
+      );
 
       setCleaners(response.data);
       setLoading(false);
@@ -85,21 +88,37 @@ const CleanerList = () => {
       sorter: (a, b) => parseDate(a.created_at) - parseDate(b.created_at),
     },
     {
-      title: "Trạng thái",
-      dataIndex: "is_deleted",
-      key: "is_deleted",
-      render: (is_deleted) => {
-        const color = is_deleted ? "red" : "green";
-        const text = is_deleted ? "Không hoạt động" : "Đang hoạt động";
+      title: "Trạng thái hoạt động",
+      dataIndex: "identity_verified",
+      key: "identity_verified",
+      render: (identity_verified) => {
+        const color = identity_verified ? "green" : "red";
+        const text = identity_verified ? "Đã xác minh" : "Chưa xác minh";
 
         return <Tag color={color}>{text}</Tag>;
       },
       filters: [
-        { text: "Đang hoạt động", value: false },
-        { text: "Không hoạt động", value: true },
+        { text: "Đã xác minh", value: true },
+        { text: "Chưa xác minh", value: false },
       ],
       onFilter: (value, record) => record.account_status === value,
     },
+    // {
+    //   title: "Trạng thái xác minh",
+    //   dataIndex: "identity_verified",
+    //   key: "identity_verified",
+    //   render: (identity_verified) => {
+    //     const color = identity_verified ? "green" : "red";
+    //     const text = identity_verified ? "Đã xác minh" : "Chưa xác minh";
+
+    //     return <Tag color={color}>{text}</Tag>;
+    //   },
+    //   filters: [
+    //     { text: "Đã xác minh", value: true },
+    //     { text: "Chưa xác minh", value: false },
+    //   ],
+    //   onFilter: (value, record) => record.identity_verified === value,
+    // },
     {
       title: "Hành động",
       key: "action",
@@ -139,7 +158,7 @@ const CleanerList = () => {
               marginBottom: 16,
             }}
           >
-            <Title level={3}>Danh sách Cleaner</Title>
+            <Title level={3}>Danh sách Cleaner chưa xác minh</Title>
             <Input
               placeholder="Tìm kiếm theo tên, số điện thoại hoặc email"
               prefix={<SearchOutlined />}
@@ -163,4 +182,4 @@ const CleanerList = () => {
   );
 };
 
-export default CleanerList;
+export default CleanerListBan;

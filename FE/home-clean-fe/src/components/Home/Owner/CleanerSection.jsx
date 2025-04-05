@@ -2,53 +2,79 @@ import { useContext, useEffect, useState } from "react";
 import { WebSocketContext } from "../../../context/WebSocketContext";
 import axios from "axios";
 import CleanerCard from "./CleanerCard";
-import AuthContext from "../../../context/AuthContext"
 import { BASE_URL } from "../../../utils/config";
+import {
+  List,
+  Typography,
+  Divider,
+  Skeleton,
+  Result,
+  Button,
+  Space,
+  Pagination,
+  ConfigProvider,
+  Row,
+  Col,
+} from "antd";
+import { ReloadOutlined, TeamOutlined } from "@ant-design/icons";
+import { useMediaQuery } from "react-responsive";
+
+const { Title } = Typography;
 
 function CleanerSection() {
-  const [cleaners, setCleaners] = useState([]); // Danh sách tất cả các cleaner
-  const [onlineCleanerIds, setOnlineCleanerIds] = useState([]); // Danh sách các cleaner đang online
+  const [cleaners, setCleaners] = useState([]);
+  const [onlineCleanerIds, setOnlineCleanerIds] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [isSub, setIsSub] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+
+  // Responsive pageSize based on screen width
+  const isMobile = useMediaQuery({ maxWidth: 767 });
+  const isTablet = useMediaQuery({ minWidth: 768, maxWidth: 991 });
+  const isLaptop = useMediaQuery({ minWidth: 992, maxWidth: 1199 });
+
+  // Adjust page size based on screen size
+  const pageSize = isMobile ? 4 : isTablet ? 6 : 8;
+
   const client = useContext(WebSocketContext);
 
-  // Fetch danh sách cleaner từ API một lần khi component mount
   const fetchAllCleaners = async () => {
     try {
-      // console.log("🔄 Calling API to fetch all cleaners...");
+      setLoading(true);
       const res = await axios.get(`${BASE_URL}/customer/cleaners/online`);
 
-      setCleaners(res.data); // Cập nhật danh sách cleaners
+      setCleaners(res.data);
       const ids = res.data.map((cleaner) => cleaner.cleanerId);
-      setOnlineCleanerIds(ids); // Lưu lại danh sách cleaner đang online
-      // console.log("Fetched cleaners:", res.data);
+      setOnlineCleanerIds(ids);
     } catch (error) {
       console.error("❌ Lỗi khi fetch cleaners:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
-  // Đăng ký WebSocket khi WebSocket client sẵn sàng
   useEffect(() => {
     if (!client || isSub) return;
 
     const trySub = () => {
-      console.log('connect');
-      const subscription = client.subscribe("/topic/onlineCleaners", (message) => {
-        try {
-          const cleanerId = JSON.parse(message.body); // Nhận cleanerId từ thông báo
-          console.log("🚀 ~ subscription ~ message.body:", message.body)
-          setCleaners((prev) => {
-            // Kiểm tra nếu cleanerId đã có trong mảng prev rồi thì không thêm vào
-            if (prev.some((cleaner) => cleaner === cleanerId)) {
-              return prev;  // Nếu đã có, giữ nguyên mảng cũ
-            }
-            // Nếu chưa có, thêm cleanerId vào mảng
-            return [...prev, cleanerId];
-          });
-
-        } catch (error) {
-          console.error("❌ Lỗi khi nhận thông tin cleaner online:", error);
+      console.log("connect");
+      const subscription = client.subscribe(
+        "/topic/onlineCleaners",
+        (message) => {
+          try {
+            const cleanerId = JSON.parse(message.body);
+            console.log("🚀 ~ subscription ~ message.body:", message.body);
+            setCleaners((prev) => {
+              if (prev.some((cleaner) => cleaner === cleanerId)) {
+                return prev;
+              }
+              return [...prev, cleanerId];
+            });
+          } catch (error) {
+            console.error("❌ Lỗi khi nhận thông tin cleaner online:", error);
+          }
         }
-      });
+      );
       setIsSub(true);
 
       return subscription;
@@ -69,41 +95,145 @@ function CleanerSection() {
         }
       };
     }
-  }, [client]); // Lắng nghe WebSocket thông báo khi client kết nối
+  }, [client]);
 
-  // Kiểm tra xem cleaner có đang online không
   const isOnline = (cleanerId) => onlineCleanerIds.includes(cleanerId);
 
-  // Chạy fetchAllCleaners một lần khi component mount
   useEffect(() => {
-    fetchAllCleaners(); // Chạy 1 lần khi component mount
-  }, []); // Chạy 1 lần khi component mount
+    fetchAllCleaners();
+  }, []);
 
   useEffect(() => {
-    console.log("🚀 ~ CleanersSection ~ cleaners:", cleaners)
+    console.log("🚀 ~ CleanersSection ~ cleaners:", cleaners);
   }, [cleaners]);
 
+  const onlineCount = cleaners.filter((cleaner) =>
+    isOnline(cleaner.cleanerId)
+  ).length;
+
+  // Tính toán dữ liệu cho trang hiện tại
+  const getCurrentPageData = () => {
+    const startIndex = (currentPage - 1) * pageSize;
+    const endIndex = startIndex + pageSize;
+    return cleaners.slice(startIndex, endIndex);
+  };
+
+  // Xử lý thay đổi trang
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  };
 
   return (
     <section className="service-section">
-      <h2 className="section-title">Danh sách cleaner</h2>
-      <div style={{ display: "flex", gap: 15, flexWrap: "wrap" }}>
-        {cleaners.length > 0 ? (
-          cleaners.map((cleaner) => (
-            <CleanerCard
-              key={cleaner.cleanerId}
-              cleanerId={cleaner.cleanerId}
-              cleanerImg={cleaner.profile_image}
-              cleanerName={cleaner.name}
-              rating={4.6}
-              reviews={100}
-              isOnline={isOnline(cleaner.cleanerId)} // Truyền trạng thái online vào CleanerCard
-            />
-          ))
-        ) : (
-          <p>Đang tải danh sách cleaner...</p>
-        )}
-      </div>
+      <Row
+        gutter={[16, 16]}
+        align="middle"
+        justify="space-between"
+        style={{ marginBottom: "20px" }}
+      >
+        <Col xs={24} sm={16}>
+          <div
+            style={{ display: "flex", alignItems: "center", flexWrap: "wrap" }}
+          >
+            <h2
+              className="section-title"
+              style={{ marginRight: "8px", marginBottom: isMobile ? "8px" : 0 }}
+            >
+              Danh sách cleaner
+            </h2>
+            {onlineCount > 0 && (
+              <span
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  fontSize: "14px",
+                  color: "#52c41a",
+                  backgroundColor: "rgba(82, 196, 26, 0.1)",
+                  borderRadius: "12px",
+                  padding: "2px 10px",
+                }}
+              >
+                <TeamOutlined style={{ marginRight: "4px" }} />
+                {onlineCount} người online
+              </span>
+            )}
+          </div>
+        </Col>
+        <Col xs={24} sm={8} style={{ textAlign: isMobile ? "left" : "right" }}>
+          <Button
+            type="primary"
+            icon={<ReloadOutlined />}
+            onClick={fetchAllCleaners}
+            loading={loading}
+          >
+            Làm mới
+          </Button>
+        </Col>
+      </Row>
+
+      {loading ? (
+        <Skeleton active paragraph={{ rows: 10 }} />
+      ) : cleaners.length > 0 ? (
+        <>
+          <List
+            grid={{
+              gutter: 16,
+              xs: 1,
+              sm: 2,
+              md: 2,
+              lg: 3,
+              xl: 4,
+              xxl: 4,
+            }}
+            dataSource={getCurrentPageData()}
+            renderItem={(cleaner) => (
+              <List.Item>
+                <CleanerCard
+                  cleanerId={cleaner.cleanerId}
+                  cleanerImg={cleaner.profile_image}
+                  cleanerName={cleaner.name}
+                  isOnline={isOnline(cleaner.cleanerId)}
+                />
+              </List.Item>
+            )}
+          />
+
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              margin: "24px 0",
+            }}
+          >
+            <ConfigProvider>
+              <Pagination
+                current={currentPage}
+                total={cleaners.length}
+                pageSize={pageSize}
+                onChange={handlePageChange}
+                showSizeChanger={false}
+                showQuickJumper={!isMobile}
+                size={isMobile ? "small" : "default"}
+              />
+            </ConfigProvider>
+          </div>
+        </>
+      ) : (
+        <Result
+          status="info"
+          title="Không tìm thấy cleaner nào"
+          subTitle="Vui lòng thử lại sau hoặc kiểm tra kết nối mạng của bạn."
+          extra={
+            <Button type="primary" onClick={fetchAllCleaners}>
+              Thử lại
+            </Button>
+          }
+        />
+      )}
     </section>
   );
 }

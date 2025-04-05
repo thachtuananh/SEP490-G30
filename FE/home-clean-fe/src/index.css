@@ -25,7 +25,8 @@
 .contact-container {
   animation: fadeSlideIn 1.2s ease-in-out;
 } */
-.infomation-container,.job-list-section{
+.infomation-container,
+.job-list-section {
   min-height: 600px;
 }
 
@@ -48,7 +49,7 @@ body {
 }
 
 body {
-  font-family: "Roboto", 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: "Roboto", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
   font-optical-sizing: auto;
   font-style: normal;
   line-height: 1.6;
@@ -133,54 +134,8 @@ body {
   display: none;
 }
 
-
 .Container {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-/* Hero styles */
-.hero {
-  background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url("https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=1200&q=80");
-  background-size: cover;
-  background-position: center;
-  color: white;
-  padding: 4rem 2rem;
-  border-radius: 10px;
-  margin: 1rem auto;
-  max-width: 1200px;
-}
-
-.hero-content {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 3rem 2rem;
-}
-
-.hero h1 {
-  font-size: 3rem;
-  margin-bottom: 1rem;
-}
-
-.hero-stats {
-  display: flex;
-  gap: 3rem;
-  margin: 2rem 0;
-}
-
-.stat {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.stat-value {
-  font-size: 1.5rem;
-  font-weight: bold;
-}
-
-.stat-label {
-  font-size: 0.9rem;
-  opacity: 0.8;
 }
 
 /* Service section styles */
@@ -188,23 +143,21 @@ body {
 .testimonial-section,
 .news-section,
 .job-list-section {
-  padding: 2rem 0;
+  padding: 1rem 0;
   max-width: 1200px;
   margin: 0 auto;
 }
 
-
-
-.section-title {
+/* .section-title {
   color: #333;
   margin-bottom: 2rem;
   position: relative;
   display: inline-block;
   font-size: 1.5rem;
   padding-bottom: 0.5rem;
-}
+} */
 
-.section-title::after {
+/* .section-title::after {
   content: "";
   position: absolute;
   bottom: 0;
@@ -212,9 +165,7 @@ body {
   width: 60px;
   height: 3px;
   background: #00a651;
-}
-
-
+} */
 
 .service-grid {
   display: flex;
@@ -232,7 +183,8 @@ body {
 /* Features section styles */
 .features-section {
   padding: 3rem 2rem;
-  background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=1200&q=80');
+  background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)),
+    url("https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=1200&q=80");
   background-size: cover;
   background-position: center;
   background-attachment: fixed;
@@ -424,8 +376,6 @@ body {
   transition: transform 0.3s ease;
 }
 
-
-
 .service-card:hover {
   transform: translateY(-5px);
 }
@@ -434,8 +384,6 @@ body {
   position: relative;
   height: 150px;
 }
-
-
 
 .card-image img {
   width: 100%;
@@ -461,13 +409,9 @@ body {
   color: #ff4081;
 }
 
-
-
 .card-content {
   padding: 1rem;
 }
-
-
 
 .service-title {
   margin-bottom: 0.5rem;
@@ -527,21 +471,6 @@ body {
 
 .avatar:first-child {
   margin-left: 0;
-}
-
-.hire-btn {
-  background: #00a651;
-  color: white;
-  border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.hire-btn:hover {
-  background: #008c44;
-  transform: scale(1.05);
 }
 
 /* Login styles */
@@ -675,7 +604,7 @@ body {
 }
 
 .login-button:hover {
-  background-color: #0D8A4E;
+  background-color: #0d8a4e;
 }
 
 .social-login {
@@ -779,7 +708,7 @@ body {
   accent-color: #039855;
 }
 
-.selection-option input[type="radio"]:checked+.option-text {
+.selection-option input[type="radio"]:checked + .option-text {
   color: #00a651;
   font-weight: 500;
 }
@@ -883,7 +812,6 @@ body {
 
 .main-image {
   flex: 0.6;
-
 }
 
 .main-image img {
@@ -894,11 +822,9 @@ body {
   max-height: 700px;
 }
 
-.main-content>*:last-child {
+.main-content > *:last-child {
   flex: 0.4;
 }
-
-
 
 /*User Profile*/
 .user-section {
@@ -911,28 +837,6 @@ body {
   font-size: 16px;
   font-weight: bold;
   color: #333;
-}
-
-/* Error Message Styles */
-.error-message-container {
-  height: 20px;
-  margin-bottom: 16px;
-  display: flex;
-  align-items: center;
-}
-
-.error-message {
-  color: red;
-  font-size: 14px;
-  margin-top: 4px;
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity 0.3s ease-in-out, visibility 0.3s;
-}
-
-.error-message.show {
-  opacity: 1;
-  visibility: visible;
 }
 
 .password-input-container {
@@ -1019,7 +923,8 @@ body {
 
 /* Services Section */
 .services-section {
-  background: linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.8)), url('../src/assets/bgintroduce.png');
+  background: linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.8)),
+    url("../src/assets/bgintroduce.png");
   background-size: cover;
   background-position: center;
   padding: 60px 0;
@@ -1034,7 +939,6 @@ body {
 
 .services-container h2 {
   font-size: 2rem;
-
 }
 
 .services-grid {
@@ -1104,7 +1008,6 @@ body {
 
 .team-member {
   padding: 20px;
-
 }
 
 /* .team-member:hover {
@@ -1157,7 +1060,6 @@ body {
   align-items: center;
 }
 
-
 /* All media queries grouped together */
 @media (max-width: 1200px) {
   .service-grid {
@@ -1172,7 +1074,10 @@ body {
     padding: 0 24px;
   }
 
-  .job-list-section {
+  .job-list-section,
+  .service-section,
+  .testimonial-section,
+  .news-section {
     padding: 2rem;
   }
 }
@@ -1187,7 +1092,7 @@ body {
     margin-right: 24px;
   }
 
-  .main-content>*:last-child {
+  .main-content > *:last-child {
     flex: 0.5;
   }
 
@@ -1211,7 +1116,6 @@ body {
 }
 
 @media (width <=991px) {
-
   .service-section,
   .features-section,
   .testimonial-section,
@@ -1290,7 +1194,7 @@ body {
     display: none;
   }
 
-  .main-content>*:last-child {
+  .main-content > *:last-child {
     flex: 1;
     width: 100%;
     max-width: 400px;
