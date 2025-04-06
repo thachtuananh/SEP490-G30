@@ -44,5 +44,7 @@ public interface JobRepository extends JpaRepository<Job, Long> {
 
 
     List<Job> getJobsByStatus(JobStatus status);
+
+    List<Job> getJobsByStatusAndScheduledTimeBefore(JobStatus status, LocalDateTime scheduledTime);
 }
 
