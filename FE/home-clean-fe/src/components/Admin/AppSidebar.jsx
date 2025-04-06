@@ -1,11 +1,12 @@
-import React from "react";
-import { Layout, Menu, Typography } from "antd";
+import React, { useState, useEffect } from "react";
+import { Layout, Menu, Typography, Button } from "antd";
 import {
   DashboardOutlined,
   TeamOutlined,
   UserOutlined,
   StopOutlined,
-  LogoutOutlined,
+  MenuUnfoldOutlined,
+  MenuFoldOutlined,
 } from "@ant-design/icons";
 import { Link, useLocation } from "react-router-dom";
 import logo from "../../assets/HouseClean_logo.png";
@@ -16,6 +17,30 @@ const { Title } = Typography;
 const AppSidebar = () => {
   const location = useLocation();
   const currentPath = location.pathname;
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+  const [collapsed, setCollapsed] = useState(window.innerWidth < 992);
+  const isMobile = windowWidth < 768;
+
+  // Track window resize
+  useEffect(() => {
+    const handleResize = () => {
+      const width = window.innerWidth;
+      setWindowWidth(width);
+
+      if (width < 768) {
+        setCollapsed(true);
+      } else if (width >= 768 && width < 992) {
+        setCollapsed(false);
+      } else {
+        setCollapsed(false);
+      }
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
 
   // Define menu items using the recommended items prop structure
   const menuItems = [
@@ -46,25 +71,35 @@ const AppSidebar = () => {
         },
       ],
     },
-    // {
-    //   key: "logout",
-    //   icon: <LogoutOutlined />,
-    //   label: "Đăng xuất",
-    //   className: "logout-menu-item",
-    // },
   ];
 
+  // Determine sidebar width based on screen size
+  const getSiderWidth = () => {
+    if (collapsed) {
+      if (windowWidth < 992) return 60; // mobile + tablet đều collapse còn 60
+      return 100; // desktop collapsed
+    } else {
+      if (windowWidth < 1200) return 180; // tablet & small desktop
+      return 220; // large desktop
+    }
+  };
+
   return (
+    // In AppSidebar.jsx, modify the Sider component props:
     <Sider
-      width={220}
+      width={getSiderWidth()}
       theme="light"
+      collapsed={collapsed}
+      collapsedWidth={getSiderWidth()} // Luôn hiển thị, nhưng nhỏ hơn trên mobile
       style={{
         boxShadow: "0 0 10px rgba(0,0,0,0.1)",
         height: "100vh",
         position: "fixed",
         left: 0,
         overflow: "auto",
+        zIndex: 999,
       }}
+      trigger={null}
     >
       <div
         style={{
@@ -72,7 +107,7 @@ const AppSidebar = () => {
           padding: "16px",
           display: "flex",
           alignItems: "center",
-          justifyContent: "center",
+          justifyContent: collapsed ? "center" : "center",
           borderBottom: "1px solid #f0f0f0",
         }}
       >
@@ -87,17 +122,19 @@ const AppSidebar = () => {
           <img
             src={logo}
             alt="House Clean Logo"
-            style={{ height: "32px", marginBottom: "4px" }}
+            style={{
+              height: collapsed ? "40px" : "60px",
+              width: "auto",
+              marginBottom: "4px",
+            }}
           />
-          <Title level={5} style={{ margin: 0, color: "#1890ff" }}>
-            House Clean
-          </Title>
         </Link>
       </div>
+
       <Menu
         mode="inline"
         selectedKeys={[currentPath]}
-        defaultOpenKeys={["users"]}
+        defaultOpenKeys={collapsed ? [] : ["users"]}
         style={{ borderRight: 0, paddingTop: "12px" }}
         items={menuItems}
       />
