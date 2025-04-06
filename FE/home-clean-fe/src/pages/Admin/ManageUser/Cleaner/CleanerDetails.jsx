@@ -9,12 +9,16 @@ import {
   Divider,
   Badge,
   message,
+  Row,
+  Col,
 } from "antd";
 import {
   ArrowLeftOutlined,
   UserOutlined,
   CheckCircleOutlined,
   CloseCircleOutlined,
+  MenuFoldOutlined,
+  MenuUnfoldOutlined,
 } from "@ant-design/icons";
 import { useParams, useNavigate } from "react-router-dom";
 import AppSidebar from "../../../../components/Admin/AppSidebar";
@@ -34,12 +38,24 @@ const CleanerDetails = () => {
   const [jobHistory, setJobHistory] = useState([]);
   const [jobHistoryBooked, setJobHistoryBooked] = useState([]);
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+  const [collapsed, setCollapsed] = useState(false);
 
   // Track window resize
   useEffect(() => {
     const handleResize = () => {
       setWindowWidth(window.innerWidth);
+      // Auto-collapse sidebar on smaller screens
+      if (window.innerWidth < 768) {
+        setCollapsed(true);
+      } else if (window.innerWidth >= 992) {
+        setCollapsed(false);
+      }
     };
+
+    // Set initial state based on screen size
+    if (window.innerWidth < 768) {
+      setCollapsed(true);
+    }
 
     window.addEventListener("resize", handleResize);
     return () => {
@@ -50,6 +66,10 @@ const CleanerDetails = () => {
   // Determine responsive settings based on window width
   const isMobile = windowWidth < 768;
   const isTablet = windowWidth >= 768 && windowWidth < 992;
+
+  const toggleSidebar = () => {
+    setCollapsed(!collapsed);
+  };
 
   // Create a fetchCleanerData function that can be called for refresh
   const fetchCleanerData = useCallback(async () => {
@@ -141,20 +161,29 @@ const CleanerDetails = () => {
     return `data:image/png;base64,${base64String}`;
   };
 
-  if (loading) {
+  // Cập nhật lại margin cho layout
+  const sidebarWidth = collapsed ? 80 : windowWidth < 1200 ? 180 : 220;
+
+  const contentStyle = {
+    margin: isMobile ? "8px 8px 8px 4px" : isTablet ? "16px 8px" : "24px 16px",
+    padding: isMobile ? 8 : isTablet ? 16 : 24,
+    background: "#fff",
+    minHeight: 280,
+    transition: "all 0.2s",
+  };
+
+  const layoutStyle = {
+    marginLeft: isMobile ? "60px" : `${sidebarWidth}px`,
+    transition: "all 0.2s",
+  };
+
+  if (loading && !cleanerData) {
     return (
       <Layout style={{ minHeight: "100vh" }}>
         <AppSidebar />
-        <Layout>
-          <AppHeader />
-          <Content
-            style={{
-              margin: isMobile ? "8px" : "24px 16px",
-              padding: isMobile ? 12 : 24,
-              background: "#fff",
-              minHeight: 280,
-            }}
-          >
+        <Layout style={layoutStyle}>
+          <AppHeader collapsed={collapsed} onToggle={toggleSidebar} />
+          <Content style={contentStyle}>
             <div style={{ textAlign: "center", padding: "50px 0" }}>
               <p>Đang tải dữ liệu...</p>
             </div>
@@ -167,32 +196,23 @@ const CleanerDetails = () => {
   return (
     <Layout style={{ minHeight: "100vh" }}>
       <AppSidebar />
-      <Layout>
-        <AppHeader />
-        <Content
-          style={{
-            margin: isMobile ? "8px" : "24px 16px",
-            padding: isMobile ? 12 : 24,
-            background: "#fff",
-            minHeight: 280,
-          }}
-        >
-          <div
-            style={{
-              marginBottom: 16,
-              display: "flex",
-              alignItems: "center",
-              flexWrap: "wrap",
-              gap: "8px",
-            }}
-          >
-            {/* <Button icon={<ArrowLeftOutlined />} onClick={goBack}>
-              {!isMobile && "Quay lại"}
-            </Button> */}
-            <Title level={isMobile ? 4 : 3} style={{ margin: 0 }}>
-              Chi tiết Cleaner
-            </Title>
-          </div>
+      <Layout style={layoutStyle}>
+        <AppHeader collapsed={collapsed} onToggle={toggleSidebar} />
+        <Content style={contentStyle}>
+          <Row gutter={[16, 16]} style={{ marginBottom: 16 }}>
+            <Col xs={24} sm={12} scroll={{ x: "max-content" }}>
+              <div
+                style={{ display: "flex", alignItems: "center", gap: "8px" }}
+              >
+                {/* <Button icon={<ArrowLeftOutlined />} onClick={goBack}>
+                  {!isMobile && "Quay lại"}
+                </Button> */}
+                <Title level={isMobile ? 4 : 3} style={{ margin: 0 }}>
+                  Chi tiết Cleaner
+                </Title>
+              </div>
+            </Col>
+          </Row>
 
           <Card>
             <div
@@ -210,8 +230,14 @@ const CleanerDetails = () => {
                 icon={!cleanerData.profile_image_base64 && <UserOutlined />}
               />
               <div style={{ textAlign: isMobile ? "center" : "left" }}>
-                <Title level={4}>{cleanerData.name}</Title>
-                <Space size="large" wrap>
+                <Title level={4} style={{ marginTop: 0 }}>
+                  {cleanerData.name}
+                </Title>
+                <Space
+                  size={isMobile ? "small" : "large"}
+                  wrap
+                  direction={isMobile ? "vertical" : "horizontal"}
+                >
                   <Badge
                     status={cleanerData.is_deleted ? "error" : "success"}
                     text={
@@ -232,7 +258,7 @@ const CleanerDetails = () => {
               </div>
             </div>
 
-            <Divider />
+            <Divider style={{ margin: isMobile ? "12px 0" : "24px 0" }} />
 
             <CleanerTabs
               cleanerData={cleanerData}

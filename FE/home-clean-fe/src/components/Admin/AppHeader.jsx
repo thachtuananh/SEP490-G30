@@ -1,18 +1,10 @@
 import { useContext, useEffect, useState } from "react";
 import { AuthContext } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
-import {
-  Layout,
-  Badge,
-  Avatar,
-  Dropdown,
-  Space,
-  message,
-  Tooltip,
-  Button,
-} from "antd";
+import { Layout, Badge, Avatar, Dropdown, Space, message, Button } from "antd";
 import {
   BellOutlined,
+  CaretDownOutlined,
   UserOutlined,
   LogoutOutlined,
   LoginOutlined,
@@ -22,10 +14,25 @@ import {
 
 const { Header } = Layout;
 
-const AppHeader = ({ collapsed, setCollapsed }) => {
+const AppHeader = ({ collapsed, onToggle }) => {
   const { admin, dispatch } = useContext(AuthContext);
   const navigate = useNavigate();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+
+  // Track window resize
+  useEffect(() => {
+    const handleResize = () => {
+      setWindowWidth(window.innerWidth);
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
+
+  const isMobile = windowWidth < 768;
 
   // Check for token in localStorage on component mount
   useEffect(() => {
@@ -48,25 +55,16 @@ const AppHeader = ({ collapsed, setCollapsed }) => {
   // Menu items for the dropdown - changes based on login status
   const menuItems = isLoggedIn
     ? [
-        // {
-        //   key: "profile",
-        //   label: "Thông tin cá nhân",
-        //   icon: <UserOutlined />,
-        // },
-        // {
-        //   type: "divider",
-        // },
         {
-          key: "logout",
+          key: "1",
           label: "Đăng xuất",
           icon: <LogoutOutlined />,
           onClick: handleLogout,
-          danger: true,
         },
       ]
     : [
         {
-          key: "login",
+          key: "2",
           label: "Đăng nhập",
           icon: <LoginOutlined />,
           onClick: handleLogin,
@@ -86,47 +84,34 @@ const AppHeader = ({ collapsed, setCollapsed }) => {
     <Header
       style={{
         background: "#fff",
-        padding: "0 24px",
+        padding: "0 16px",
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
-        position: "sticky",
-        top: 0,
-        zIndex: 1,
-        boxShadow: "0 1px 4px rgba(0, 21, 41, 0.08)",
+        flexFlow: "row-reverse",
       }}
     >
-      <div style={{ display: "flex", alignItems: "center" }}>
-        {/* <Tooltip title={collapsed ? "Mở rộng" : "Thu gọn"}>
+      {/* <div style={{ display: "flex", alignItems: "center" }}>
+        {onToggle && (
           <Button
             type="text"
             icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
-            onClick={() => setCollapsed(!collapsed)}
-            style={{ fontSize: "16px", marginRight: 12 }}
+            onClick={onToggle}
+            style={{ marginRight: 16, display: isMobile ? "none" : "block" }}
           />
-        </Tooltip> */}
-      </div>
+        )}
+      </div> */}
       <div style={{ display: "flex", alignItems: "center" }}>
         {isLoggedIn && (
-          <Tooltip title="Thông báo">
-            <Badge count={2} style={{ marginRight: 24 }}>
-              <Button
-                type="text"
-                icon={<BellOutlined style={{ fontSize: 20 }} />}
-              />
-            </Badge>
-          </Tooltip>
+          <Badge count={2} style={{ marginRight: 24 }}>
+            <BellOutlined style={{ fontSize: 20 }} />
+          </Badge>
         )}
         <Dropdown menu={{ items: menuItems }} placement="bottomRight">
           <Space style={{ marginLeft: 16, cursor: "pointer" }}>
-            <Avatar
-              icon={<UserOutlined />}
-              style={{ backgroundColor: isLoggedIn ? "#1890ff" : "#d9d9d9" }}
-            />
-            <div style={{ fontWeight: 500 }}>{getAdminName() || "Khách"}</div>
-            <span className="dropdown-icon" style={{ fontSize: 12 }}>
-              ▼
-            </span>
+            <Avatar icon={<UserOutlined />} />
+            <div>{getAdminName()}</div>
+            <CaretDownOutlined />
           </Space>
         </Dropdown>
       </div>

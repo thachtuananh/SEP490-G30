@@ -78,6 +78,7 @@ const CleanerListBan = () => {
       dataIndex: "cleanerId",
       key: "cleanerId",
       sorter: (a, b) => a.cleanerId - b.cleanerId,
+      responsive: ["md"],
     },
     {
       title: "Tên",
@@ -90,11 +91,13 @@ const CleanerListBan = () => {
       title: "Số điện thoại",
       dataIndex: "phone",
       key: "phone",
+      responsive: ["md"],
     },
     {
       title: "Email",
       dataIndex: "email",
       key: "email",
+      responsive: ["md"],
     },
     {
       title: "Ngày tạo",
@@ -102,6 +105,7 @@ const CleanerListBan = () => {
       key: "created_at",
       render: (text) => parseDate(text).toLocaleDateString("vi-VN"),
       sorter: (a, b) => parseDate(a.created_at) - parseDate(b.created_at),
+      responsive: ["lg"],
     },
     {
       title: "Trạng thái xác minh",
@@ -182,12 +186,22 @@ const CleanerListBan = () => {
             <div
               style={{
                 display: "flex",
+                flexDirection: "row",
                 justifyContent: "space-between",
+                alignItems: "center",
                 marginBottom: 16,
+                flexWrap: "wrap",
+                gap: "16px",
               }}
             >
               <Title level={3}>Danh sách Người dọn dẹp chưa xác minh</Title>
-              <Space>
+              <Space
+                style={{
+                  display: "flex",
+                  flexWrap: "wrap",
+                  gap: "8px",
+                }}
+              >
                 <Button
                   icon={<ReloadOutlined />}
                   onClick={fetchCleaners}
@@ -198,7 +212,11 @@ const CleanerListBan = () => {
                 <Input
                   placeholder="Tìm kiếm theo tên, số điện thoại hoặc email"
                   prefix={<SearchOutlined />}
-                  style={{ width: 300 }}
+                  style={{
+                    width: "100%",
+                    minWidth: "200px",
+                    maxWidth: "300px",
+                  }}
                   value={searchText}
                   onChange={(e) => setSearchText(e.target.value)}
                   allowClear
@@ -218,6 +236,7 @@ const CleanerListBan = () => {
               //     `${range[0]}-${range[1]} của ${total} mục`,
               // }}
               bordered
+              scroll={{ x: "max-content" }}
             />
           </Card>
         </Content>
