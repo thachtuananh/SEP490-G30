@@ -1,119 +1,214 @@
 .overlay {
-    width: 100%;
-    height: 100vh;
-    background-color: rgba(0, 0, 0, 0.5);
-    position: fixed;
-    top: 0;
-    left: 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-  
+  width: 100%;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.6);
+  position: fixed;
+  top: 0;
+  left: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  backdrop-filter: blur(3px);
+}
+
+.modal {
+  background-color: white;
+  padding: 24px;
+  border-radius: 10px;
+  width: 90%;
+  max-width: 600px;
+  max-height: 85vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.title {
+  font-size: 20px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.subtitle {
+  color: #475467;
+  margin: 5px 0 0 0;
+  font-size: 14px;
+}
+
+.addButton {
+  color: white;
+  padding: 8px 16px;
+  background-color: #039855;
+  border: none;
+  border-radius: 6px;
+  height: fit-content;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.addButton:hover {
+  background-color: #027a44;
+  transform: translateY(-2px);
+}
+
+.plus {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.addressItem {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid #e6e6e6;
+  border-radius: 8px;
+  background-color: #fafafa;
+  transition: all 0.2s ease;
+}
+
+.addressItem:hover {
+  border-color: #039855;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.addressHeader {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.name {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.phone {
+  color: #667085;
+  margin: 0;
+  font-size: 14px;
+}
+
+.defaultTag {
+  color: #039855;
+  background-color: #ecfdf3;
+  padding: 4px 8px;
+  border-radius: 16px;
+  font-weight: 600;
+  font-size: 12px;
+  margin: 0;
+}
+
+.addressDetail {
+  color: #475467;
+  font-size: 14px;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 8px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.selectButton {
+  padding: 8px 16px;
+  color: #039855;
+  background-color: white;
+  border: 1px solid #039855;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.selectButton:hover {
+  background-color: #f0fdf4;
+}
+
+.checkboxWrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #667085;
+  font-size: 14px;
+  margin: 0;
+  cursor: pointer;
+}
+
+.checkboxWrapper input {
+  accent-color: #039855;
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+.divider {
+  width: 100%;
+  height: 1px;
+  background-color: #e4e7ec;
+  margin: 4px 0;
+}
+
+.noAddress {
+  text-align: center;
+  color: #667085;
+  font-style: italic;
+  padding: 20px 0;
+}
+
+@media (max-width: 768px) {
   .modal {
-    background-color: white;
-    padding: 15px 20px;
-    border-radius: 4px;
-    width: 45%;
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
+    width: 95%;
+    padding: 16px;
   }
-  
+
   .header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-  
-  .title {
-    font-size: 18px;
-    font-weight: 500;
-  }
-  
-  .subtitle {
-    color: #475467;
-  }
-  
-  .addButton {
-    color: white;
-    padding: 7px 12px;
-    background-color: #039855;
-    border: none;
-    border-radius: 5px;
-    height: fit-content;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 14px;
-  }
-  
-  .plus {
-    font-size: 22px;
-  }
-  
-  .addressItem {
-    display: flex;
-    justify-content: space-between;
-  }
-  
-  .addressHeader {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-  
-  .name {
-    font-size: 17px;
-    font-weight: 500;
-  }
-  
-  .phone {
-    color: #667085;
-  }
-  
-  .defaultTag {
-    color: #039855;
-    background-color: #ecfdf3;
-    padding: 6px;
-    border-radius: 15px;
-    font-weight: 600;
-    font-size: 14px;
-  }
-  
-  .addressDetail {
-    color: #475467;
-  }
-  
-  .actions {
-    display: flex;
     flex-direction: column;
-    align-items: flex-end;
-    gap: 10px;
+    align-items: flex-start;
+    gap: 12px;
   }
-  
-  .selectButton {
-    border: 1px solid #d4d4d4;
-    padding: 6px;
-    color: #827f7f;
-    background-color: white;
-    border-radius: 7px;
-    font-weight: 600;
-  }
-  
-  .checkboxWrapper {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    margin-right: 10px;
-    color: #bcbcbc;
-    font-size: 15px;
-  }
-  
-  .divider {
+
+  .addButton {
     width: 100%;
-    height: 1px;
-    background-color: #e4e7ec;
+    justify-content: center;
   }
-  
+
+  .actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .selectButton,
+  .checkboxWrapper {
+    width: 100%;
+    text-align: center;
+  }
+
+  .checkboxWrapper {
+    justify-content: center;
+  }
+}

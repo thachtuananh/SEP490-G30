@@ -39,6 +39,8 @@ export const sendNotification = async (userId, message, type, role) => {
     }
 };
 
+// Track if notifications have been read locally
+let notificationsReadLocally = false;
 
 export const getNotifications = async () => {
     try {
@@ -66,6 +68,14 @@ export const getNotifications = async () => {
             `${BASE_URL}/notification/${role}/${id}`,
             { headers }
         );
+
+        // If notifications have been marked as read locally, modify the response
+        if (notificationsReadLocally) {
+            return response.data.map(notification => ({
+                ...notification,
+                isRead: true
+            }));
+        }
 
         return response.data;
     } catch (error) {
@@ -100,6 +110,9 @@ export const deleteAllNotifications = async (role, userId) => {
             { headers }
         );
 
+        // Reset the local read state when deleting all notifications
+        notificationsReadLocally = false;
+        
         return response.data;
     } catch (error) {
         console.error('Error deleting all notifications:', error);
@@ -109,6 +122,11 @@ export const deleteAllNotifications = async (role, userId) => {
 
 export const getUnreadNotificationCount = async () => {
     try {
+        // If notifications have been marked as read locally, return 0
+        if (notificationsReadLocally) {
+            return 0;
+        }
+        
         const notifications = await getNotifications();
         // Count notifications that have an isRead property that is false
         // If isRead property doesn't exist, assume it's unread

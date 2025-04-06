@@ -4,21 +4,19 @@ import { message } from 'antd';
 
 export const getUnreadMessageCount = async () => {
     try {
-        const userId = localStorage.getItem('customerId');
+        const userId = localStorage.getItem('customerId') || localStorage.getItem('cleanerId');
         const role = localStorage.getItem('role');
 
         if (!userId || !role) {
-            throw new Error('User ID or role not found');
+            console.error('User ID or role not found');
+            return 0;
         }
 
-        // const response = await axios.get(`${BASE_URL}/chat/unread-count`, {
-        //     params: {
-        //         userId: userId,
-        //         role: role.toLowerCase()
-        //     }
-        // });
-
-        // return response.data.unreadCount || 0;
+        // Since there's no direct API for unread count, we'll need to implement
+        // a different approach. For now, returning 0 as a placeholder
+        // TODO: Implement logic to fetch or calculate unread messages
+        
+        return 0;
     } catch (error) {
         console.error('Error fetching unread message count:', error);
         return 0;
@@ -47,5 +45,41 @@ export const createConversation = async (customerId, cleanerId) => {
         console.error("Error creating conversation:", error);
         message.error('Không thể tạo cuộc trò chuyện');
         throw error;
+    }
+};
+
+export const handleConversationSelect = async (conversation, setSelectedConversation, setMessages) => {
+    console.log("🔍 Chọn cuộc trò chuyện:", conversation);
+
+    if (!conversation || !conversation.id) {
+        console.error("Lỗi: Cuộc trò chuyện không hợp lệ!", conversation);
+        return;
+    }
+
+    setSelectedConversation(conversation);
+
+    const apiUrl = `${BASE_URL}/messages/${conversation.id}`;
+
+    try {
+        const response = await fetch(apiUrl);
+        const data = await response.json();
+        
+        if (data && Array.isArray(data.messages)) {
+            // Transform messages if needed based on API response structure
+            const formattedMessages = data.messages.map(msg => ({
+                ...msg,
+                // Ensure consistency in field names
+                sentAt: msg.sent_at || msg.sentAt,
+                // Add any other necessary transformations
+            }));
+            
+            setMessages(formattedMessages);
+        } else {
+            console.error("API không trả về mảng tin nhắn hợp lệ:", data);
+            setMessages([]);
+        }
+    } catch (error) {
+        console.error("Lỗi khi tải tin nhắn cũ:", error);
+        setMessages([]);
     }
 };

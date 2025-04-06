@@ -10,5 +10,6 @@ public enum JobStatus {
     CANCELLED,
     DONE,
     BOOKED,
-    PAID
+    PAID,
+    AUTO_CANCELLED
 }

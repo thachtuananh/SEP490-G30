@@ -1,377 +1,339 @@
-/* .container {
-    position: relative;
-} */
-
-
-.card {
-    border: 1px solid rgb(231, 225, 225);
-    border-radius: 10px;
-    padding: 20px;
-    margin-bottom: 15px;
-    position: relative;
-    max-width: 100%;
-    overflow: hidden;
+.cardlist {
+  width: 100%;
 }
 
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
 
+.card {
+  background-color: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transition: transform 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+}
+
+/* Progress Bar Styles */
+.progressContainer {
+  background-color: #f7f9fc;
+  border-radius: 8px;
+  padding: 15px 10px;
+  margin-bottom: 20px;
+}
+
+.progressTitle {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 15px;
+}
+
+.progressBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+}
+
+.progressStep {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  z-index: 2;
+  flex: 1;
+}
+
+.progressIcon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #f0f0f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 8px;
+  border: 2px solid #e0e0e0;
+}
+
+.progressStep.active .progressIcon {
+  background-color: #1890ff;
+  border-color: #1890ff;
+}
+
+.progressLabel {
+  font-size: 12px;
+  text-align: center;
+  color: #666;
+  font-weight: 500;
+}
+
+.progressStep.active .progressLabel {
+  color: #1890ff;
+  font-weight: 600;
+}
+
+.progressDate {
+  font-size: 10px;
+  color: #999;
+}
+
+.progressConnector {
+  height: 2px;
+  background-color: #e0e0e0;
+  flex-grow: 1;
+  z-index: 1;
+  position: relative;
+  top: -20px;
+  margin: 0 5px;
+}
+
+.progressConnector.active {
+  background-color: #1890ff;
+}
+
+/* Card Content Styles */
 .cardContent {
-    display: flex;
-    flex-direction: column;
-    row-gap: 10px;
-    position: relative;
+  position: relative;
 }
 
 .header {
-    display: flex;
-    gap: 10px;
+  margin-bottom: 15px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
 }
 
-h3 {
-    margin: 0;
+.serviceItem h3 {
+  margin: 0;
+  font-size: 18px;
+  color: #333;
 }
 
-.timeNew {
-    color: rgb(95, 235, 74);
-    padding-top: 3px;
+.infoGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  margin-bottom: 15px;
 }
 
-.timeOld {
-    color: rgb(177, 168, 168);
-    padding-top: 3px;
+.infoItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #666;
+  word-break: break-word;
+}
+
+.icon {
+  color: #1890ff;
+  font-size: 16px;
+  flex-shrink: 0;
 }
 
 .location {
-    overflow: hidden;
-    white-space: nowrap;
-    max-width: 100%;
-    text-overflow: ellipsis;
-}
-
-.deleteButton {
-    cursor: pointer;
-    padding: 10px;
-    border: 1px solid rgb(231, 225, 225);
-    border-radius: 20px;
-    position: absolute;
-    top: 0;
-    right: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    background: white;
-    transition: all 0.3s ease;
-    white-space: nowrap;
-    min-width: 80px;
-    max-width: 120px;
-    text-align: center;
-}
-
-.deleteButton:hover {
-    background: rgb(245, 230, 230);
-    border-color: rgb(255, 100, 100);
-}
-
-.deleteIcon {
-    color: rgb(255, 50, 50);
-    font-size: 18px;
-}
-
-.price {
-    position: absolute;
-    bottom: 0;
-    right: 0;
-}
-
-.divider {
-    height: 1px;
-    background: rgb(231, 225, 225);
-    margin: 20px 0px 15px 0px;
-}
-
-.footer {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-
-}
-
-.reviewButton {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    /* gap: 8px; */
-    color: white;
-    background: #039855;
-    /* padding: 9px; */
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: bold;
-    font-size: 14px;
-    transition: all 0.3s ease;
-    box-shadow: 0px 3px 5px rgba(0, 0, 0, 0.2);
-}
-
-.statusButton {
-    box-shadow: 0px 3px 5px rgba(0, 0, 0, 0.2);
-    padding: 10px 15px;
-}
-
-.reviewButton:hover {
-    background: #027a44;
-    transform: scale(1.05);
-    transition-duration: 0.5s;
-}
-
-.statusButton:hover {
-    background: #027a44;
-    transform: scale(1.05);
-    transition-duration: 0.5s;
-}
-
-.reviewIcon {
-    font-size: 16px;
-}
-
-.viewButton {
-    color: white;
-    background: #949494;
-    padding: 10px;
-    border-radius: 8px;
-    position: absolute;
-    top: 0;
-    right: 0;
-    cursor: pointer;
-    transition-duration: 0.5s;
-}
-
-.viewButton:hover {
-    background: rgb(100, 95, 95);
-    transform: scale(1.05);
-    transition-duration: 0.5s;
-}
-
-.bottomDivider {
-    height: 1px;
-    background: rgb(231, 225, 225);
-}
-
-.currentDate {
-    padding-top: 20px;
-    color: rgb(180, 179, 179);
-}
-
-.popup {
-    top: 50%;
-    left: 50%;
-    width: 90%;
-    max-width: 1100px;
-    max-height: 90vh;
-    overflow-y: auto;
-    box-shadow: -2px 0px 8px rgb(60, 60, 60), 2px 8px 8px rgb(60, 60, 60);
-    border-radius: 10px;
-    position: fixed;
-    transform: translate(-50%, -50%);
-    z-index: 9999;
-}
-
-
-.exitButton {
-    cursor: pointer;
-    position: absolute;
-    bottom: -50px;
-    left: 500px;
-    color: white;
-    font-weight: bold;
-}
-
-.overlay {
-    position: fixed;
-    width: 100vw;
-    height: 100%;
-    background: #8d8b8b;
-    top: 0;
-    left: 0;
-    opacity: 0.5;
-}
-
-.modal-cleaner .ant-modal-header {
-    background-color: #27ae60;
-    /* Xanh lá cây */
-    color: white;
-    font-size: 20px;
-    font-weight: bold;
-    text-align: center;
-    border-radius: 10px 10px 0 0;
-}
-
-.modal-cleaner .ant-modal-title {
-    color: white;
-}
-
-.modal-cleaner .ant-modal-content {
-    border-radius: 10px;
-    box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.3);
-    padding: 20px;
-}
-
-.modal-cleaner .ant-modal-body {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 12px;
-}
-
-.cleaner-list {
-    width: 100%;
-}
-
-.cleaner-item {
-    padding: 15px;
-    font-size: 18px;
-    text-align: center;
-    background: #f4f4f4;
-    border-radius: 8px;
-    margin-bottom: 10px;
-    transition: background 0.3s, transform 0.2s;
-    cursor: pointer;
-}
-
-.cleaner-item:hover {
-    background: #2ecc71;
-    color: white;
-    transform: scale(1.05);
-}
-
-.back-btn {
-    background-color: #27ae60;
-    color: white;
-    font-weight: bold;
-    border-radius: 5px;
-    margin-top: 15px;
-}
-
-.back-btn:hover {
-    background-color: #219150;
-
-}
-
-.cleaner-item:hover {
-    cursor: pointer;
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 10px;
+  color: #666;
 }
 
 .services {
-    margin-bottom: 10px;
+  margin: 15px 0;
 }
 
-.serviceItem {
-    margin-bottom: 4px;
-    padding: 4px 0;
-    border-bottom: 1px dashed #eee;
+.serviceDetails {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  padding: 8px;
+  background-color: #f7f9fc;
+  border-radius: 6px;
+  flex-wrap: wrap;
+  gap: 5px;
 }
 
-.serviceItem:last-child {
-    border-bottom: none;
+.serviceTitle {
+  font-weight: 600;
+  color: #333;
 }
 
+.serviceArea {
+  color: #666;
+}
 
+/* Status Badge and Price in Flex Layout */
+.statusAndPrice {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 15px;
+}
+
+.statusBadge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 16px;
+  color: white;
+  font-weight: 600;
+  font-size: 12px;
+}
+
+.price {
+  background-color: #f8f8f8;
+  padding: 6px 12px;
+  border-radius: 6px;
+  color: #333;
+  font-size: 16px;
+}
+
+.divider {
+  height: 1px;
+  background-color: #eaeaea;
+  margin: 15px 0;
+}
+
+/* Footer Styles */
+.footer {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  margin-top: 10px;
+}
+
+.actionButtons {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  width: 100%;
+  justify-content: flex-end;
+}
+
+.statusButton,
+.reviewButton,
+.reportButton,
+.cancelButton {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.buttonGroup {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+/* Pagination Styles */
+.paginationContainer {
+  display: flex;
+  justify-content: center;
+  margin-top: 30px;
+  margin-bottom: 20px;
+}
+
+/* Responsive Design */
 @media (max-width: 768px) {
+  .card {
+    padding: 15px;
+  }
 
-    /* .container {
-        position: relative;
-    } */
-    .card {
-        padding: 15px;
-        margin-bottom: 10px;
-        border-radius: 5px;
-    }
+  .footer {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+  }
 
-    .location {
-        width: 100%;
-        white-space: normal;
-    }
+  .actionButtons {
+    justify-content: space-between;
+    width: 100%;
+  }
 
-    .deleteButton {
-        width: 40px;
-        height: 40px;
-        padding: 0;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        min-width: unset;
-        max-width: unset;
-    }
+  .progressLabel {
+    font-size: 10px;
+  }
 
-    .deleteButton::before {
-        content: "";
-        display: block;
-        width: 15px;
-        height: 15px;
-        background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="100" height="100" viewBox="0 0 26 26" fill="%23FA5252"><path d="M 11 -0.03125 C 10.164063 -0.03125 9.34375 0.132813 8.75 0.71875 C 8.15625 1.304688 7.96875 2.136719 7.96875 3 L 4 3 C 3.449219 3 3 3.449219 3 4 L 2 4 L 2 6 L 24 6 L 24 4 L 23 4 C 23 3.449219 22.550781 3 22 3 L 18.03125 3 C 18.03125 2.136719 17.84375 1.304688 17.25 0.71875 C 16.65625 0.132813 15.835938 -0.03125 15 -0.03125 Z M 11 2.03125 L 15 2.03125 C 15.546875 2.03125 15.71875 2.160156 15.78125 2.21875 C 15.84375 2.277344 15.96875 2.441406 15.96875 3 L 10.03125 3 C 10.03125 2.441406 10.15625 2.277344 10.21875 2.21875 C 10.28125 2.160156 10.453125 2.03125 11 2.03125 Z M 4 7 L 4 23 C 4 24.652344 5.347656 26 7 26 L 19 26 C 20.652344 26 22 24.652344 22 23 L 22 7 Z M 8 10 L 10 10 L 10 22 L 8 22 Z M 12 10 L 14 10 L 14 22 L 12 22 Z M 16 10 L 18 10 L 18 22 L 16 22 Z"></path></svg>');
-        background-size: contain;
-        background-repeat: no-repeat;
-    }
+  .progressIcon {
+    width: 32px;
+    height: 32px;
+  }
 
-    .deleteButton b {
-        display: none;
-    }
+  .progressContainer {
+    padding: 10px 5px;
+  }
 
-    .deleteIcon {
-        font-size: 20px;
-    }
+  .progressTitle {
+    font-size: 14px;
+    margin-bottom: 10px;
+  }
+}
 
-    .price {
-        position: relative;
-        text-align: right;
-        margin-top: 10px;
-    }
+@media (max-width: 480px) {
+  .card {
+    padding: 12px;
+  }
 
-    .footer {
-        height: auto;
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-    }
+  .statusAndPrice {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
 
-    .reviewButton {
-        text-align: center;
-        position: relative;
-    }
+  .progressIcon {
+    width: 24px;
+    height: 24px;
+  }
 
-    .viewButton {
-        width: 94%;
-        text-align: center;
-        position: relative;
-    }
+  .progressConnector {
+    top: -12px;
+  }
 
+  .progressLabel {
+    font-size: 8px;
+  }
 
-    .popup {
-        width: 100%;
-        left: 0;
-        top: 0;
-        border-radius: 0;
-        box-shadow: none;
-        transform: none;
-    }
+  .buttonGroup {
+    flex-direction: column;
+    width: 100%;
+    gap: 8px;
+  }
 
-    .exitButton {
-        position: relative;
-        left: auto;
-        bottom: auto;
-        display: block;
-        margin-top: 20px;
-        text-align: center;
-        font-size: 16px;
-        color: white;
-        background: #ff4d4f;
-        padding: 10px 20px;
-        border-radius: 8px;
-        cursor: pointer;
-        transition: background 0.3s ease;
-    }
+  .buttonGroup button,
+  .actionButtons button {
+    width: 100%;
+  }
 
-    .exitButton:hover {
-        background: #d9363e;
-    }
+  .serviceDetails {
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 320px) {
+  .progressBar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 20px;
+  }
+
+  .progressStep {
+    flex-direction: row;
+    width: 100%;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .progressIcon {
+    margin-bottom: 0;
+  }
+
+  .progressConnector {
+    display: none;
+  }
 }
