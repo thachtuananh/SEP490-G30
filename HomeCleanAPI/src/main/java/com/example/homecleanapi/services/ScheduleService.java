@@ -26,7 +26,7 @@ public class ScheduleService {
     }
 
     // Chạy mỗi tiếng 1 lần
-    @Scheduled(cron = "0 * * * * *")
+    @Scheduled(cron = "0 0 * * * *")
     public void checkJobAndDelete() {
         System.out.println("Check Job and Delete");
 
