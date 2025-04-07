@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -25,42 +26,47 @@ public class ScheduleService {
         this.notificationService = notificationService;
     }
 
-    // Chạy mỗi tiếng 1 lần
-    @Scheduled(cron = "0 0 * * * *")
+    @Scheduled(cron = "0 30 * * * *")
     public void checkJobAndDelete() {
         System.out.println("Check Job and Delete");
 
-        // Tạo một lần và sử dụng lại
         LocalDateTime now = LocalDateTime.now();
-        LocalDateTime oneHourAgo = now.minusHours(1); // Lấy thời gian cách đây 1 tiếng
-
+        LocalDateTime oneHourAgo = now.minusMinutes(1);
         System.out.println("Check Job and Delete at: " + now);
 
-        // Lấy tất cả các công việc với trạng thái OPEN và scheduledTime < one hour ago
         List<Job> jobs = jobRepository.getJobsByStatusAndScheduledTimeBefore(JobStatus.OPEN, oneHourAgo);
 
-        // Kiểm tra nếu có job cần cập nhật
         if (jobs.isEmpty()) {
             System.out.println("Không có công việc nào cần hủy.");
             return;
         }
 
-        // Duyệt qua tất cả các job cần hủy
-        for (Job job : jobs) {
-            job.setStatus(JobStatus.AUTO_CANCELLED);
-            // Tạo NotificationDTO và gửi thông báo
-            NotificationDTO notification = new NotificationDTO(job.getCustomer().getId(),
-                    "Đơn hàng của bạn đã bị hủy do không có người nhận việc",
-                    "AUTO_MESSAGE",
-                    LocalDate.now());
-            notificationService.processNotification(notification, "CUSTOMER", job.getCustomer().getId());
+        List<Job> updatedJobs = new ArrayList<>();
 
-            System.out.println("Job " + job.getId() + " đã bị hủy.");
+        for (Job job : jobs) {
+            // Nếu chưa bị auto-cancelled thì xử lý
+            if (job.getStatus() != JobStatus.AUTO_CANCELLED) {
+                job.setStatus(JobStatus.AUTO_CANCELLED);
+                updatedJobs.add(job);
+
+                // Gửi thông báo đến customer
+                NotificationDTO notification = new NotificationDTO(
+                        job.getCustomer().getId(),
+                        "Đơn hàng của bạn đã bị hủy do không có người nhận việc",
+                        "AUTO_MESSAGE",
+                        LocalDate.now()
+                );
+                notificationService.processNotification(notification, "CUSTOMER", job.getCustomer().getId());
+
+                System.out.println("Đã tự động hủy Job " + job.getId());
+            }
         }
 
-        // Lưu tất cả các job đã bị hủy vào DB cùng một lúc
-        jobRepository.saveAll(jobs);
-        System.out.println("Đã cập nhật trạng thái cho " + jobs.size() + " công việc.");
+        if (!updatedJobs.isEmpty()) {
+            jobRepository.saveAll(updatedJobs);
+            System.out.println("Đã cập nhật trạng thái cho " + updatedJobs.size() + " công việc.");
+        } else {
+            System.out.println("Không có công việc nào cần cập nhật trạng thái.");
+        }
     }
-
 }
