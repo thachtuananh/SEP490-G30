@@ -149,7 +149,7 @@ export async function completeJob(jobId) {
 }
 
 // Delete a job posting
-export async function deleteJobPosting(jobId) {
+export async function deleteJobPosting(jobId,customerId) {
     try {
         const token = localStorage.getItem("token");
 
@@ -157,8 +157,8 @@ export async function deleteJobPosting(jobId) {
             throw new Error("No authentication token found");
         }
 
-        const response = await fetch(`${BASE_URL}/customer/job/${jobId}`, {
-            method: "DELETE",
+        const response = await fetch(`${BASE_URL}/customer/${customerId}/cancel-job/${jobId}`, {
+            method: "POST",
             headers: {
                 "Authorization": `Bearer ${token}`,
                 "Content-Type": "application/json",

@@ -7,15 +7,24 @@ import { sendNotification } from "../../services/NotificationService";
 const getStatusColor = (status) => {
   const normalizedStatus = status.toUpperCase();
   switch (normalizedStatus) {
-    case "OPEN": return "#3498db";
-    case "PAID": return "#5dade2";
-    case "PENDING_APPROVAL": return "#f1c40f";
-    case "IN_PROGRESS": return "#e67e22";
-    case "COMPLETED": return "#2ecc71";
-    case "CANCELLED": return "#e74c3c";
-    case "DONE": return "#27ae60";
-    case "BOOKED": return "#8e44ad";
-    default: return "#bdc3c7";
+    case "OPEN":
+      return "#3498db";
+    case "PAID":
+      return "#5dade2";
+    case "PENDING_APPROVAL":
+      return "#f1c40f";
+    case "IN_PROGRESS":
+      return "#e67e22";
+    case "COMPLETED":
+      return "#2ecc71";
+    case "CANCELLED":
+      return "#e74c3c";
+    case "DONE":
+      return "#27ae60";
+    case "BOOKED":
+      return "#8e44ad";
+    default:
+      return "#bdc3c7";
   }
 };
 const getStatusLabel = (status) => {
@@ -33,22 +42,23 @@ const getStatusLabel = (status) => {
 };
 
 const JobCard = ({ job, refreshJobs }) => {
-
   const [currentStatus, setCurrentStatus] = useState(job.status.toUpperCase());
   const [loading, setLoading] = useState(false);
 
   const handleStatusUpdate = (newStatus) => {
     Modal.confirm({
       title: "Xác nhận",
-      content: `Bạn có chắc muốn cập nhật trạng thái thành '${getStatusLabel(newStatus)}' không?`,
+      content: `Bạn có chắc muốn cập nhật trạng thái thành '${getStatusLabel(
+        newStatus
+      )}' không?`,
       onOk: () => {
         setLoading(true); // Hiển thị trạng thái loading
         const token = localStorage.getItem("token");
         fetch(`${BASE_URL}/cleaner/job/${newStatus}/${job.jobId}`, {
           method: "POST",
           headers: {
-            "Accept": "application/json",
-            "Authorization": `Bearer ${token}`,
+            Accept: "application/json",
+            Authorization: `Bearer ${token}`,
           },
         })
           .then((response) => {
@@ -60,17 +70,24 @@ const JobCard = ({ job, refreshJobs }) => {
           .then((data) => {
             console.log("Status updated:", data);
             setCurrentStatus(newStatus.toUpperCase());
-            message.success(`Đã cập nhật trạng thái thành ${getStatusLabel(newStatus)}`);
-            sendNotification(job.customerId,
-              `Người dọn ${localStorage.getItem('name')} cập nhật trạng thái: ${getStatusLabel(newStatus) || 'Trạng thái'}`,
-              'STATUS',
-              'Customer'
-            )
+            message.success(
+              `Đã cập nhật trạng thái thành ${getStatusLabel(newStatus)}`
+            );
+            sendNotification(
+              job.customerId,
+              `Người dọn ${localStorage.getItem("name")} cập nhật trạng thái: ${
+                getStatusLabel(newStatus) || "Trạng thái"
+              }`,
+              "STATUS",
+              "Customer"
+            );
             if (refreshJobs) refreshJobs();
           })
           .catch((error) => {
             console.error("Error updating status:", error);
-            message.error("Không thể cập nhật trạng thái. Vui lòng thử lại sau.");
+            message.error(
+              "Không thể cập nhật trạng thái. Vui lòng thử lại sau."
+            );
           })
           .finally(() => {
             setLoading(false); // Tắt trạng thái loading
@@ -84,13 +101,16 @@ const JobCard = ({ job, refreshJobs }) => {
     const token = localStorage.getItem("token");
     const cleanerId = localStorage.getItem("cleanerId");
 
-    fetch(`${BASE_URL}/cleaner/job/${job.jobId}/accept-reject?action=${action}`, {
-      method: "PUT",
-      headers: {
-        "Accept": "application/json",
-        "Authorization": `Bearer ${token}`,
-      },
-    })
+    fetch(
+      `${BASE_URL}/cleaner/job/${job.jobId}/accept-reject?action=${action}`,
+      {
+        method: "PUT",
+        headers: {
+          Accept: "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    )
       .then((response) => {
         if (!response.ok) {
           throw new Error(`API responded with status: ${response.status}`);
@@ -101,69 +121,90 @@ const JobCard = ({ job, refreshJobs }) => {
         console.log(`Job ${action}ed:`, data);
 
         // If job is accepted, create a conversation and send notification
-        if (action === 'accept') {
+        if (action === "accept") {
           Promise.all([
             createConversation(job.customerId, cleanerId),
-            sendNotification(job.customerId,
-              `Người dọn ${localStorage.getItem('name')} đã nhận dịch vụ: ${job.services[0]?.serviceName || 'Dọn dẹp'}`,
-              'BOOKED',
-              'Customer'
-            )
+            sendNotification(
+              job.customerId,
+              `Người dọn ${localStorage.getItem("name")} đã nhận dịch vụ: ${
+                job.services[0]?.serviceName || "Dọn dẹp"
+              }`,
+              "BOOKED",
+              "Customer"
+            ),
           ])
             .then(([conversationData, notificationData]) => {
               console.log("Conversation created:", conversationData);
               console.log("Notification sent:", notificationData);
             })
-            .catch(error => {
+            .catch((error) => {
               console.error("Error in post-acceptance operations:", error);
-              message.error("Có lỗi xảy ra khi xử lý sau khi chấp nhận công việc.");
+              message.error(
+                "Có lỗi xảy ra khi xử lý sau khi chấp nhận công việc."
+              );
             });
-        } else if (action === 'reject') {
-          sendNotification(job.customerId,
-            `Người dọn ${localStorage.getItem('name')} đã từ chối dịch vụ: ${job.services[0]?.serviceName || 'Dọn dẹp'}`,
-            'REJECTED',
-            'Customer'
+        } else if (action === "reject") {
+          sendNotification(
+            job.customerId,
+            `Người dọn ${localStorage.getItem("name")} đã từ chối dịch vụ: ${
+              job.services[0]?.serviceName || "Dọn dẹp"
+            }`,
+            "REJECTED",
+            "Customer"
           )
-            .then(notificationData => {
+            .then((notificationData) => {
               console.log("Rejection notification sent:", notificationData);
             })
-            .catch(error => {
+            .catch((error) => {
               console.error("Error in sending rejection notification:", error);
               message.error("Có lỗi xảy ra khi gửi thông báo từ chối.");
             });
         }
 
-        message.success(action === 'accept' ? 'Đã chấp nhận công việc' : 'Đã từ chối công việc');
+        message.success(
+          action === "accept"
+            ? "Đã chấp nhận công việc"
+            : "Đã từ chối công việc"
+        );
         if (refreshJobs) refreshJobs();
       })
       .catch((error) => {
         console.error(`Error ${action}ing job:`, error);
-        message.error(`Không thể ${action === 'accept' ? 'chấp nhận' : 'từ chối'} công việc. Vui lòng thử lại sau.`);
+        message.error(
+          `Không thể ${
+            action === "accept" ? "chấp nhận" : "từ chối"
+          } công việc. Vui lòng thử lại sau.`
+        );
       })
       .finally(() => {
         setLoading(false);
       });
   };
 
-
   return (
     <article className={styles.jobCard}>
       <header className={styles.jobHeader}>
-        <div style={{ display: 'flex', flexDirection: 'column' }}>
+        <div style={{ display: "flex", flexDirection: "column" }}>
           <h2 className={styles.jobTitle}>
             {job.services
-              ? (Array.isArray(job.services)
-                ? job.services.map(service => service.serviceName).join(" & ")
-                : job.services.serviceName || "Unnamed Service")
+              ? Array.isArray(job.services)
+                ? job.services.map((service) => service.serviceName).join(" & ")
+                : job.services.serviceName || "Unnamed Service"
               : "Unnamed Service"}
           </h2>
-          <span className={styles.detailValue}>Tên khách hàng: {job.customerName}</span>
-          <span className={styles.detailValue}>SĐT khách hàng: {job.customerPhone}</span>
+          <span className={styles.detailValue}>
+            Tên khách hàng: {job.customerName}
+          </span>
+          <span className={styles.detailValue}>
+            SĐT khách hàng: {job.customerPhone}
+          </span>
         </div>
-        <span className={styles.status} style={{ color: getStatusColor(currentStatus) }}>
+        <span
+          className={styles.status}
+          style={{ color: getStatusColor(currentStatus) }}
+        >
           {getStatusLabel(currentStatus)}
         </span>
-
       </header>
 
       <section className={styles.jobDetails}>
@@ -194,13 +235,21 @@ const JobCard = ({ job, refreshJobs }) => {
           </div>
           <div className={styles.detailContent}>
             <span className={styles.detailLabel}>Thù lao</span>
-            <strong className={styles.detailValue}>{job.totalPrice.toLocaleString()} VND</strong>
+            <strong className={styles.detailValue}>
+              {job.totalPrice.toLocaleString()} VND
+            </strong>
           </div>
         </div>
 
         <div className={styles.detailItem}>
           <div>
-            <svg width="51" height="51" viewBox="0 0 51 51" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <svg
+              width="51"
+              height="51"
+              viewBox="0 0 51 51"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
               <path
                 d="M25.5 2L49 25.5L25.5 49L2 25.5L25.5 2Z"
                 fill="#E6F6EE"
@@ -230,11 +279,12 @@ const JobCard = ({ job, refreshJobs }) => {
           </div>
           <div className={styles.detailContent}>
             <span className={styles.detailLabel}>Diện tích</span>
-            <strong className={styles.detailValue}>{job.services
-              ? (Array.isArray(job.services)
-                ? job.services.map(service => service.areaRange).join(" & ")
-                : job.services.areaRange || "Unnamed Service")
-              : "Unnamed Service"}
+            <strong className={styles.detailValue}>
+              {job.services
+                ? Array.isArray(job.services)
+                  ? job.services.map((service) => service.areaRange).join(" & ")
+                  : job.services.areaRange || "Unnamed Service"
+                : "Unnamed Service"}
             </strong>
           </div>
         </div>
@@ -259,7 +309,9 @@ const JobCard = ({ job, refreshJobs }) => {
           </div>
           <div className={styles.detailContent}>
             <span className={styles.detailLabel}>Địa điểm</span>
-            <strong className={styles.detailValue}>{job.customerAddress}</strong>
+            <strong className={styles.detailValue}>
+              {job.customerAddress}
+            </strong>
           </div>
         </div>
 
@@ -273,8 +325,24 @@ const JobCard = ({ job, refreshJobs }) => {
               xmlns="http://www.w3.org/2000/svg"
             >
               <circle cx="26" cy="25.5" r="21.75" fill="#039855" />
-              <line x1="26" y1="12" x2="26" y2="26" stroke="white" strokeWidth="3" strokeLinecap="round" />
-              <line x1="26" y1="26" x2="35" y2="30" stroke="white" strokeWidth="3" strokeLinecap="round" />
+              <line
+                x1="26"
+                y1="12"
+                x2="26"
+                y2="26"
+                stroke="white"
+                strokeWidth="3"
+                strokeLinecap="round"
+              />
+              <line
+                x1="26"
+                y1="26"
+                x2="35"
+                y2="30"
+                stroke="white"
+                strokeWidth="3"
+                strokeLinecap="round"
+              />
             </svg>
           </div>
           <div className={styles.detailContent}>
@@ -293,28 +361,31 @@ const JobCard = ({ job, refreshJobs }) => {
       </section>
 
       <footer className={styles.actionButtons}>
-
-        {job.status === "OPEN" && (
-          <Button type="primary">Hủy công việc</Button>
-        )}
+        {job.status === "OPEN" && <Button type="primary">Hủy công việc</Button>}
         {job.status === "IN_PROGRESS" && (
-          <Button type="primary" onClick={() => handleStatusUpdate("completed")} loading={loading}>Đã hoàn thành</Button>
+          <Button
+            type="primary"
+            onClick={() => handleStatusUpdate("completed")}
+            loading={loading}
+          >
+            Đã hoàn thành
+          </Button>
         )}
 
         {job.status === "BOOKED" && (
           <div className={styles.buttonGroup}>
             <Button
               type="primary"
-              onClick={() => handleJobAction('accept')}
+              onClick={() => handleJobAction("accept")}
               loading={loading}
-              style={{ marginRight: '10px' }}
+              style={{ marginRight: "10px" }}
             >
               Chấp nhận
             </Button>
             <Button
               type="primary"
               danger
-              onClick={() => handleJobAction('reject')}
+              onClick={() => handleJobAction("reject")}
               loading={loading}
             >
               Từ chối

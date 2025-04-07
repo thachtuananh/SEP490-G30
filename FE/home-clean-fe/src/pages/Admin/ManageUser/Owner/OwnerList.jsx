@@ -201,21 +201,21 @@ const OwnerList = () => {
     transition: "all 0.2s",
   };
 
-  if (loading) {
-    return (
-      <Layout style={{ minHeight: "100vh" }}>
-        <AppSidebar />
-        <Layout style={layoutStyle}>
-          <AppHeader collapsed={collapsed} onToggle={toggleSidebar} />
-          <Content style={contentStyle}>
-            <div style={{ textAlign: "center", padding: "50px 0" }}>
-              <p>Đang tải dữ liệu...</p>
-            </div>
-          </Content>
-        </Layout>
-      </Layout>
-    );
-  }
+  // if (loading) {
+  //   return (
+  //     <Layout style={{ minHeight: "100vh" }}>
+  //       <AppSidebar />
+  //       <Layout style={layoutStyle}>
+  //         <AppHeader collapsed={collapsed} onToggle={toggleSidebar} />
+  //         <Content style={contentStyle}>
+  //           <div style={{ textAlign: "center", padding: "50px 0" }}>
+  //             <p>Đang tải dữ liệu...</p>
+  //           </div>
+  //         </Content>
+  //       </Layout>
+  //     </Layout>
+  //   );
+  // }
 
   return (
     <Layout style={{ minHeight: "100vh" }}>

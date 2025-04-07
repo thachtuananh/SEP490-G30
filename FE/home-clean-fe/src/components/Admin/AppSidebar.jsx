@@ -7,6 +7,7 @@ import {
   StopOutlined,
   MenuUnfoldOutlined,
   MenuFoldOutlined,
+  ClearOutlined,
 } from "@ant-design/icons";
 import { Link, useLocation } from "react-router-dom";
 import logo from "../../assets/HouseClean_logo.png";
@@ -61,7 +62,7 @@ const AppSidebar = () => {
         },
         {
           key: "/admin/cleaners",
-          icon: <UserOutlined />,
+          icon: <ClearOutlined />,
           label: <Link to="/admin/cleaners">Người dọn dẹp</Link>,
         },
         {
