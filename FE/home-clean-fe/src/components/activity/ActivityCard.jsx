@@ -303,18 +303,40 @@ export const ActivityCard = ({ data, onDelete }) => {
   };
 
   // Handle delete job posting with local state update
-  const handleDeleteJob = async (jobId) => {
-    try {
-      await onDelete(jobId);
-      // Remove deleted job from local state
-      setActivities((prevActivities) =>
-        prevActivities.filter((activity) => activity.jobId !== jobId)
-      );
-      message.success("Huỷ việc thành công");
-    } catch (error) {
-      console.error("❌ Lỗi khi xóa công việc:", error);
-      message.error("Lỗi khi không huỷ được công việc");
-    }
+  const handleDeleteJob = (jobId) => {
+    Modal.confirm({
+      title: "Xác nhận huỷ việc",
+      content: "Bạn có chắc chắn muốn huỷ công việc này không?",
+      okText: "Đồng ý",
+      cancelText: "Huỷ bỏ",
+      onOk: async () => {
+        try {
+          // Use the deleteJobPosting function imported at the top
+          await deleteJobPosting(jobId, customerId);
+
+          // Remove deleted job from local state
+          setActivities((prevActivities) =>
+            prevActivities.filter((activity) => activity.jobId !== jobId)
+          );
+
+          message.success("Huỷ việc thành công");
+
+          // Send notification if needed (assuming you have the cleaner ID)
+          const activity = activities.find((a) => a.jobId === jobId);
+          if (activity && activity.cleanerId) {
+            sendNotification(
+              activity.cleanerId,
+              `Người thuê ${localStorage.getItem("name")} đã huỷ công việc`,
+              "CANCELLED",
+              "Cleaner"
+            );
+          }
+        } catch (error) {
+          console.error("❌ Lỗi khi huỷ công việc:", error);
+          message.error("Không thể huỷ công việc");
+        }
+      },
+    });
   };
 
   const columns = [
@@ -469,6 +491,24 @@ export const ActivityCard = ({ data, onDelete }) => {
                   ></div>
 
                   {/* Step 3: Cleaner Completed */}
+                  <div
+                    className={`${styles.progressStep} ${
+                      progressStep >= 3 ? styles.active : ""
+                    }`}
+                  >
+                    <div className={styles.progressIcon}>
+                      <ProgressIcon active={progressStep >= 3} step={3} />
+                    </div>
+                    <div className={styles.progressLabel}>Đến nơi</div>
+                  </div>
+
+                  {/* Connector line */}
+                  <div
+                    className={`${styles.progressConnector} ${
+                      progressStep >= 4 ? styles.active : ""
+                    }`}
+                  ></div>
+
                   <div
                     className={`${styles.progressStep} ${
                       progressStep >= 3 ? styles.active : ""

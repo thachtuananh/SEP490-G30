@@ -86,7 +86,7 @@ const SelectLocationModal = ({
             <div>
               <p className={styles.title}>Sổ địa chỉ</p>
               <p className={styles.subtitle}>
-                Quản lý thông tin địa chỉ giao hàng của bạn
+                Quản lý thông tin địa chỉ của bạn
               </p>
             </div>
             <button
