@@ -304,7 +304,7 @@ export const Address = () => {
 
     try {
       const response = await fetch(
-        `${BASE_URL}/employee/${cleanerId}/create-address`,
+        `${BASE_URL}/employee/${cleanerId}/create_address`,
         {
           method: "POST",
           headers: {
