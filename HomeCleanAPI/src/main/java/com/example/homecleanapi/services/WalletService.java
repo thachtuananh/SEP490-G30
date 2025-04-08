@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -55,7 +56,7 @@ public class WalletService {
     
     
     // cleaner nạp tiền
-    public Map<String, Object> createPaymentForDeposit(Long cleanerId, double amount) {
+    public Map<String, Object> createPaymentForDeposit(Long cleanerId, double amount, HttpServletRequest request) {
         Map<String, Object> response = new HashMap<>();
 
         // Kiểm tra số tiền nạp vào ví phải là một giá trị hợp lệ (lớn hơn 0)
@@ -72,7 +73,7 @@ public class WalletService {
             vnpayRequest.setAmount(String.valueOf(paymentAmount));
 
             // Tạo URL thanh toán VNPay
-            String paymentUrl = vnpayServiceWallet.createPayment(vnpayRequest);
+            String paymentUrl = vnpayServiceWallet.createPayment(vnpayRequest, request);
 
             // Tạo txnRef từ VNPay để theo dõi giao dịch
             String txnRef = extractTxnRefFromUrl(paymentUrl);  // Lấy txnRef từ URL của VNPay
