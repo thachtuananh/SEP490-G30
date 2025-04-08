@@ -13,6 +13,9 @@ import {
   notification,
   Skeleton,
   message,
+  Modal,
+  InputNumber,
+  Form,
 } from "antd";
 import {
   WalletOutlined,
@@ -29,6 +32,10 @@ const { Title, Text } = Typography;
 export const WalletBalance = () => {
   const [walletData, setWalletData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [depositModalVisible, setDepositModalVisible] = useState(false);
+  const [depositAmount, setDepositAmount] = useState(100000);
+  const [depositLoading, setDepositLoading] = useState(false);
+  const [form] = Form.useForm();
 
   useEffect(() => {
     fetchWalletBalance();
@@ -55,14 +62,55 @@ export const WalletBalance = () => {
         throw new Error(data.message || "Không thể lấy dữ liệu ví");
       }
     } catch (error) {
-      // notification.error({
-      //   message: "Lỗi khi tải dữ liệu ví",
-      //   description: error.message,
-      //   icon: <ExclamationCircleOutlined style={{ color: "#ff4d4f" }} />,
-      // });
       message.error("Lỗi khi tải dữ liệu ví");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDepositClick = () => {
+    setDepositModalVisible(true);
+  };
+
+  const handleDepositCancel = () => {
+    setDepositModalVisible(false);
+    form.resetFields();
+  };
+
+  const handleDepositSubmit = async () => {
+    try {
+      await form.validateFields();
+      setDepositLoading(true);
+
+      const token = localStorage.getItem("token");
+      const cleanerId = localStorage.getItem("cleanerId");
+
+      const response = await fetch(`${BASE_URL}/cleaner/${cleanerId}/deposit`, {
+        method: "POST",
+        headers: {
+          accept: "application/json",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          amount: depositAmount,
+        }),
+      });
+
+      const data = await response.json();
+      if (response.ok && data.paymentUrl) {
+        // Open the payment URL in a new window
+        window.open(data.paymentUrl, "_blank");
+        setDepositModalVisible(false);
+        form.resetFields();
+        message.success("Đang chuyển hướng đến trang thanh toán");
+      } else {
+        throw new Error(data.message || "Không thể thực hiện nạp tiền");
+      }
+    } catch (error) {
+      message.error(`Lỗi khi nạp tiền: ${error.message}`);
+    } finally {
+      setDepositLoading(false);
     }
   };
 
@@ -112,11 +160,6 @@ export const WalletBalance = () => {
               }}
               formatter={(value) => value.toLocaleString()}
             />
-            {/* <div style={{ marginTop: 8 }}>
-              <Text type="secondary" italic>
-                {walletData?.message || "Số dư ví hiện tại"}
-              </Text>
-            </div> */}
           </Space>
         )}
 
@@ -131,8 +174,9 @@ export const WalletBalance = () => {
                 borderColor: "#52c41a",
                 height: 40,
               }}
+              onClick={handleDepositClick}
             >
-              Thêm tiền vào ví
+              Nạp tiền vào ví
             </Button>
           </Col>
           <Col span={12}>
@@ -154,6 +198,66 @@ export const WalletBalance = () => {
           </Tag>
         </div>
       </Space>
+
+      {/* Deposit Modal */}
+      <Modal
+        title="Nạp tiền vào ví"
+        open={depositModalVisible}
+        onCancel={handleDepositCancel}
+        footer={[
+          <Button key="cancel" onClick={handleDepositCancel}>
+            Hủy
+          </Button>,
+          <Button
+            key="submit"
+            type="primary"
+            loading={depositLoading}
+            onClick={handleDepositSubmit}
+            style={{ backgroundColor: "#52c41a", borderColor: "#52c41a" }}
+          >
+            Tiếp tục thanh toán
+          </Button>,
+        ]}
+      >
+        <Form form={form} layout="vertical" initialValues={{ amount: 100000 }}>
+          <Form.Item
+            label="Số tiền muốn nạp (VNĐ)"
+            name="amount"
+            rules={[
+              { required: true, message: "Vui lòng nhập số tiền" },
+              {
+                type: "number",
+                min: 10000,
+                message: "Số tiền nạp tối thiểu là 10,000 VNĐ",
+              },
+              {
+                type: "number",
+                max: 50000000,
+                message: "Số tiền nạp tối đa là 50,000,000 VNĐ",
+              },
+            ]}
+          >
+            <InputNumber
+              style={{ width: "100%" }}
+              formatter={(value) =>
+                `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+              }
+              parser={(value) => value.replace(/\$\s?|(,*)/g, "")}
+              min={10000}
+              max={50000000}
+              step={10000}
+              onChange={(value) => setDepositAmount(value)}
+              addonBefore="₫"
+            />
+          </Form.Item>
+          <div style={{ marginTop: 16 }}>
+            <Text type="secondary">
+              Bạn sẽ được chuyển đến trang thanh toán VNPAY để hoàn tất việc nạp
+              tiền.
+            </Text>
+          </div>
+        </Form>
+      </Modal>
     </Card>
   );
 };

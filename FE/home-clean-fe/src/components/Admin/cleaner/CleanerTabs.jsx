@@ -142,7 +142,7 @@ const CleanerTabs = ({
       const response = await fetch(
         `${BASE_URL}/admin/cleaners/${cleanerId}/identity-verified?status=${values.identityVerified}&isDeleted=${values.accountStatus}`,
         {
-          method: "PUT",
+          method: "PATCH",
           headers: {
             Authorization: `Bearer ${token}`,
             accept: "application/json",
