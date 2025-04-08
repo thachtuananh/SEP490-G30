@@ -26,7 +26,7 @@ public class ScheduleService {
         this.notificationService = notificationService;
     }
 
-    @Scheduled(cron = "0 30 * * * *")
+    @Scheduled(cron = "0 * * * * *")
     public void checkJobAndDelete() {
         System.out.println("Check Job and Delete");
 
