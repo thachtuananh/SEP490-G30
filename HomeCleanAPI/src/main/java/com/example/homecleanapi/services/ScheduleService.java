@@ -31,34 +31,33 @@ public class ScheduleService {
         System.out.println("Check Job and Delete");
 
         LocalDateTime now = LocalDateTime.now();
-        LocalDateTime oneHourAgo = now.minusMinutes(1);
         System.out.println("Check Job and Delete at: " + now);
 
-        List<Job> jobs = jobRepository.getJobsByStatusAndScheduledTimeBefore(JobStatus.OPEN, oneHourAgo);
-
-        if (jobs.isEmpty()) {
-            System.out.println("Không có công việc nào cần hủy.");
-            return;
-        }
+        // Lấy tất cả job OPEN
+        List<Job> jobs = jobRepository.findAllByStatus(JobStatus.OPEN);
+        System.out.println("Tổng số job OPEN: " + jobs.size());
 
         List<Job> updatedJobs = new ArrayList<>();
 
         for (Job job : jobs) {
-            // Nếu chưa bị auto-cancelled thì xử lý
-            if (job.getStatus() != JobStatus.AUTO_CANCELLED) {
-                job.setStatus(JobStatus.AUTO_CANCELLED);
-                updatedJobs.add(job);
+            if (job.getScheduledTime().isBefore(now)) {
+                if (job.getStatus() != JobStatus.AUTO_CANCELLED) {
+                    job.setStatus(JobStatus.AUTO_CANCELLED);
+                    updatedJobs.add(job);
 
-                // Gửi thông báo đến customer
-                NotificationDTO notification = new NotificationDTO(
-                        job.getCustomer().getId(),
-                        "Đơn hàng của bạn đã bị hủy do không có người nhận việc",
-                        "AUTO_MESSAGE",
-                        LocalDate.now()
-                );
-                notificationService.processNotification(notification, "CUSTOMER", job.getCustomer().getId());
+                    // Gửi thông báo đến customer
+                    NotificationDTO notification = new NotificationDTO(
+                            job.getCustomer().getId(),
+                            "Đơn hàng của bạn đã bị hủy do không có người nhận việc",
+                            "AUTO_MESSAGE",
+                            LocalDate.now()
+                    );
+                    notificationService.processNotification(notification, "CUSTOMER", job.getCustomer().getId());
 
-                System.out.println("Đã tự động hủy Job " + job.getId());
+                    System.out.println("Đã tự động hủy Job " + job.getId());
+                }
+            } else {
+                System.out.println("Job " + job.getId() + " vẫn còn thời gian hợp lệ.");
             }
         }
 
@@ -70,3 +69,5 @@ public class ScheduleService {
         }
     }
 }
+
+
