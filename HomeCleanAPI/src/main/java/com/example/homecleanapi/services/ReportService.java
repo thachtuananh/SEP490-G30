@@ -1,6 +1,6 @@
 package com.example.homecleanapi.services;
 
-import com.example.homecleanapi.controllers.ReportUpdateDTO;
+import com.example.homecleanapi.dtos.ReportUpdateDTO;
 import com.example.homecleanapi.dtos.ReportRequestDTO;
 import com.example.homecleanapi.models.Report;
 import com.example.homecleanapi.repositories.ReportRepository;
@@ -30,7 +30,7 @@ public class ReportService {
 
         Report report = new Report();
         report.setJob_id(job_id);
-        report.setReportType(reportRequest.getReport_type());
+        report.setReportType("Pending");
         report.setDescription(reportRequest.getDescription());
 
         reportRepository.save(report);

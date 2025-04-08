@@ -1,6 +1,7 @@
 package com.example.homecleanapi.controllers;
 
 import com.example.homecleanapi.dtos.ReportRequestDTO;
+import com.example.homecleanapi.dtos.ReportUpdateDTO;
 import com.example.homecleanapi.services.ReportService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;

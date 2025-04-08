@@ -11,5 +11,4 @@ import lombok.NoArgsConstructor;
 public class ReportRequestDTO {
     private String report_type;
     private String description;
-    private String status;
 }

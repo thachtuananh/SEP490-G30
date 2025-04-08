@@ -1,4 +1,4 @@
-package com.example.homecleanapi.controllers;
+package com.example.homecleanapi.dtos;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
