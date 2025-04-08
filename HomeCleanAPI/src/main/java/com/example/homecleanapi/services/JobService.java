@@ -2,9 +2,8 @@ package com.example.homecleanapi.services;
 
 
 
-import com.example.homecleanapi.Payment.VnpayConfig;
-import com.example.homecleanapi.Payment.VnpayRequest;
-import com.example.homecleanapi.Payment.VnpayService;
+import com.example.homecleanapi.vnPay.VnpayRequest;
+import com.example.homecleanapi.vnPay.VnpayService;
 import com.example.homecleanapi.dtos.BookJobRequest;
 import com.example.homecleanapi.dtos.BookJobRequest.ServiceRequest;
 import com.example.homecleanapi.enums.JobStatus;
@@ -13,12 +12,11 @@ import com.example.homecleanapi.repositories.*;
 
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
 
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestParam;
 
-import java.time.DayOfWeek;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -62,11 +60,18 @@ public class JobService {
     
     @Autowired
     private VnpayService vnpayService;
-    
 
-    
-  
-    public Map<String, Object> bookJob(@PathVariable Long customerId, @RequestBody BookJobRequest request) {
+    @Autowired
+    private CustomerWalletRepository customerWalletRepository;
+
+    @Autowired
+    private WalletRepository WalletRepository;
+
+
+
+
+
+    public Map<String, Object> bookJob(@PathVariable Long customerId, @RequestBody BookJobRequest request, HttpServletRequest requestvn) {
         Map<String, Object> response = new HashMap<>();
 
         // Kiểm tra khách hàng có tồn tại không
@@ -178,7 +183,7 @@ public class JobService {
                 vnpayRequest.setAmount(String.valueOf(amount)); // Gửi số tiền đã được nhân với 100
 
                 // Tạo URL thanh toán VNPay
-                String paymentUrl = vnpayService.createPayment(vnpayRequest);
+                String paymentUrl = vnpayService.createPayment(vnpayRequest,requestvn);
 
                 // Lấy txnRef từ URL của VNPay
                 String txnRef = extractTxnRefFromUrl(paymentUrl);  // Lấy txnRef từ URL của VNPay
@@ -301,7 +306,7 @@ public class JobService {
 
         return false;
     }
-    
+
     public Map<String, Object> updateJobStatusToDone(Long jobId) {
         Map<String, Object> response = new HashMap<>();
 
@@ -331,38 +336,27 @@ public class JobService {
         // Lấy cleaner từ jobApplication
         Employee cleaner = jobApplication.getCleaner();
 
-        // Chuyển trạng thái công việc sang "DONE"
+        // Cập nhật trạng thái công việc sang "DONE"
         job.setStatus(JobStatus.DONE);
         jobRepository.save(job);
 
-        // Nếu phương thức thanh toán là "Cash", tiến hành trừ tiền hoa hồng từ ví của cleaner
-        if (job.getPaymentMethod().equalsIgnoreCase("Cash")) {
-            // Lấy thông tin ví của cleaner
-            Optional<Wallet> walletOpt = walletRepository.findByCleanerId(cleaner.getId());
-            if (!walletOpt.isPresent()) {
-                response.put("message", "Cleaner wallet not found");
-                return response;
-            }
+        // Tính toán số tiền sẽ trả cho cleaner (85% tổng giá trị đơn hàng)
+        double totalPrice = job.getTotalPrice();
+        double cleanerPayment = totalPrice * 0.85;
 
-            Wallet wallet = walletOpt.get();
-
-            // Tính hoa hồng (20% của tổng giá)
-            double commission = 0.2 * job.getTotalPrice();
-
-            // Kiểm tra số dư ví của cleaner có đủ để trừ hoa hồng không
-            if (wallet.getBalance() < commission) {
-                response.put("message", "Insufficient balance in cleaner's wallet to cover the commission");
-                return response;
-            }
-
-            // Trừ đi hoa hồng từ ví của cleaner
-            wallet.setBalance(wallet.getBalance() - commission);
-            walletRepository.save(wallet);
-
-            response.put("message", "Commission deducted from cleaner's wallet");
+        // Lấy ví của cleaner
+        Optional<Wallet> walletOpt = walletRepository.findByCleanerId(cleaner.getId());
+        if (!walletOpt.isPresent()) {
+            response.put("message", "Cleaner wallet not found");
+            return response;
         }
+        Wallet wallet = walletOpt.get();
 
-        response.put("message", "Job status updated to DONE");
+        // Cộng 85% giá trị đơn vào ví của cleaner
+        wallet.setBalance(wallet.getBalance() + cleanerPayment);
+        walletRepository.save(wallet);
+
+        response.put("message", "Job status updated to DONE, and cleaner's wallet has been credited with 85% of the job value");
         return response;
     }
 
@@ -370,7 +364,8 @@ public class JobService {
 
 
 
-    
+
+
     // list tất cả job đã book
     public List<Map<String, Object>> getBookedJobsForCustomer(Long customerId) {
         List<Map<String, Object>> bookedJobs = new ArrayList<Map<String,Object>>();
@@ -475,26 +470,53 @@ public class JobService {
             return response;
         }
 
-
         // Kiểm tra trạng thái của job
-        if (job.getStatus().equals(JobStatus.STARTED) || job.getStatus().equals(JobStatus.COMPLETED) || job.getStatus().equals(JobStatus.DONE) ) {
-            response.put("message", "You cannot cancel a job that has already started");
+        if (job.getStatus().equals(JobStatus.ARRIVED) || job.getStatus().equals(JobStatus.COMPLETED) || job.getStatus().equals(JobStatus.DONE)) {
+            response.put("message", "You cannot cancel a job that has already ARRIVED or completed");
             return response;
         }
+
+        // Khai báo biến refundPercentage (phần trăm hoàn tiền)
+        double refundPercentage = 1.0; // Mặc định hoàn 100%
+
+        // Nếu job có trạng thái IN_PROGRESS, chỉ hoàn 90%
+        if (job.getStatus().equals(JobStatus.IN_PROGRESS)) {
+            refundPercentage = 0.9; // Hoàn 90% khi job đang trong trạng thái IN_PROGRESS
+        }
+
+        // Tính toán số tiền hoàn lại
+        double totalPrice = job.getTotalPrice();
+        double refundAmount = totalPrice * refundPercentage;
+
+        // Lấy ví của customer
+        Optional<CustomerWallet> walletOpt = customerWalletRepository.findByCustomerId(customerId);
+        if (!walletOpt.isPresent()) {
+            response.put("message", "Customer wallet not found");
+            return response;
+        }
+        CustomerWallet wallet = walletOpt.get();
+
+        // Cộng tiền vào ví của customer
+        wallet.setBalance(wallet.getBalance() + refundAmount);
+        customerWalletRepository.save(wallet);  // Lưu cập nhật vào ví của customer
+
+        // Thêm thông báo hoàn tiền
+        response.put("message", "Job has been cancelled successfully and " + (refundPercentage * 100) + "% refund has been credited to the wallet");
 
         // Cập nhật trạng thái công việc thành "CANCELLED"
         job.setStatus(JobStatus.CANCELLED);
         jobRepository.save(job);
 
-        response.put("message", "Job has been cancelled successfully");
         response.put("jobId", jobId);
         response.put("status", job.getStatus());
         return response;
     }
-    
-    
-    
-    
+
+
+
+
+
+
     // LU
 
 

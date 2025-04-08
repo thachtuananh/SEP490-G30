@@ -467,7 +467,7 @@ public class CleanerJobService {
 		}
 
 		// Kiểm tra trạng thái của công việc
-		if (!job.getStatus().equals(JobStatus.IN_PROGRESS)) {
+		if (!job.getStatus().equals(JobStatus.ARRIVED)) {
 			response.put("message", "Job is not in 'IN_PROGRESS' state");
 			return response;
 		}

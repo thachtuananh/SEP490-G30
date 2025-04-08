@@ -2,6 +2,7 @@ package com.example.homecleanapi.controllers;
 
 import java.util.Map;
 
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 
@@ -42,18 +43,35 @@ public class WalletController {
 
         return ResponseEntity.ok(response);
     }
-	
-	@PostMapping("/{cleanerId}/deposit")
-    public ResponseEntity<Map<String, Object>> depositMoney(@PathVariable Long cleanerId, @RequestBody DepositRequest depositRequest) {
-        // Gọi service để tạo yêu cầu thanh toán VNPay
-        Map<String, Object> response = walletService.createPaymentForDeposit(cleanerId, depositRequest.getAmount());
 
-        if (response.containsKey("message")) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response); // Nếu có thông báo lỗi
+    @PostMapping("/{cleanerId}/deposit")
+    public ResponseEntity<Map<String, Object>> depositMoney(@PathVariable Long cleanerId, @RequestBody Map<String, Object> orderRequest, HttpServletRequest request) {
+        try {
+            // Lấy phương thức thanh toán từ request
+            String paymentMethod = (String) orderRequest.get("payment_method");
+
+            // Lấy số tiền từ request và đảm bảo chuyển đổi đúng
+            double amount = 0.0;
+            if (orderRequest.get("amount") instanceof String) {
+                amount = Double.parseDouble((String) orderRequest.get("amount"));
+            } else if (orderRequest.get("amount") instanceof Double) {
+                amount = (Double) orderRequest.get("amount");
+            }
+
+            if ("vnpay".equalsIgnoreCase(paymentMethod)) {
+                Map<String, Object> response = walletService.createPaymentForDepositVnpay(cleanerId, amount, request);
+                return ResponseEntity.ok(response);
+            } else if ("zalopay".equalsIgnoreCase(paymentMethod)) {
+                Map<String, Object> response = walletService.createPaymentForDepositZalopay(cleanerId, amount);
+                return ResponseEntity.ok(response);
+            } else {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", "Invalid payment method"));
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("message", "Error creating payment: " + e.getMessage()));
         }
-
-        return ResponseEntity.ok(response); // Nếu thành công
     }
+
 
     // API trả về kết quả thanh toán VNPay
 	@GetMapping("/return")

@@ -1,4 +1,4 @@
-package com.example.homecleanapi.Payment;
+package com.example.homecleanapi.vnPay;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -6,6 +6,8 @@ import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
+import com.example.homecleanapi.paymentForWallets.VnpayConfigWallet;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -15,7 +17,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class VnpayService {
 
-    public String createPayment(VnpayRequest paymentRequest) throws UnsupportedEncodingException {
+    public String createPayment(VnpayRequest paymentRequest, HttpServletRequest request) throws UnsupportedEncodingException {
         String vnp_Version = "2.1.0";
         String vnp_Command = "pay";
         String orderType = "other";
@@ -29,7 +31,7 @@ public class VnpayService {
 
         String bankCode = "NCB";
         String vnp_TxnRef = VnpayConfig.getRandomNumber(8);
-        String vnp_IpAddr = "127.0.0.1";
+        String vnp_IpAddr = VnpayConfigWallet.getIpAddress(request);
         String vnp_TmnCode = VnpayConfig.vnp_TmnCode;
 
         Map<String, String> vnp_Params = new HashMap<>();
@@ -45,7 +47,7 @@ public class VnpayService {
         vnp_Params.put("vnp_OrderType", orderType);
         vnp_Params.put("vnp_Locale", "vn");
         vnp_Params.put("vnp_ReturnUrl", VnpayConfig.vnp_ReturnUrl);
-        
+
         vnp_Params.put("vnp_IpAddr", vnp_IpAddr);    // lưu ý ở đây
 
         Calendar cld = Calendar.getInstance(TimeZone.getTimeZone("Etc/GMT+7"));

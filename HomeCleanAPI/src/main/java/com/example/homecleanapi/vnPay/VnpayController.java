@@ -1,7 +1,8 @@
-package com.example.homecleanapi.Payment;
+package com.example.homecleanapi.vnPay;
 
 import java.util.Optional;
 
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,9 +27,9 @@ public class VnpayController {
     }
 
     @PostMapping
-    public ResponseEntity<String> createPayment(@RequestBody VnpayRequest paymentRequest) {
+    public ResponseEntity<String> createPayment(@RequestBody VnpayRequest paymentRequest, HttpServletRequest request) {
         try {
-            String paymentUrl = vnpayService.createPayment(paymentRequest);
+            String paymentUrl = vnpayService.createPayment(paymentRequest,request);
             return ResponseEntity.ok(paymentUrl);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
