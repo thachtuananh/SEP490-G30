@@ -76,6 +76,8 @@ export const ActivityCard = ({ data, onDelete }) => {
         return "#2ecc71";
       case "CANCELLED":
         return "#e74c3c";
+      case "AUTO_CANCELLED":
+        return "#e74c3c";
       case "DONE":
         return "#27ae60";
       case "BOOKED":
@@ -99,6 +101,8 @@ export const ActivityCard = ({ data, onDelete }) => {
         return "Người nhận việc đã hoàn thành";
       case "CANCELLED":
         return "Đã hủy";
+      case "AUTO_CANCELLED":
+        return "Đã hủy do quá thời gian";
       case "DONE":
         return "Hoàn tất công việc";
       case "BOOKED":
@@ -495,24 +499,6 @@ export const ActivityCard = ({ data, onDelete }) => {
                   ></div>
 
                   {/* Step 3: Cleaner Completed */}
-                  <div
-                    className={`${styles.progressStep} ${
-                      progressStep >= 3 ? styles.active : ""
-                    }`}
-                  >
-                    <div className={styles.progressIcon}>
-                      <ProgressIcon active={progressStep >= 3} step={3} />
-                    </div>
-                    <div className={styles.progressLabel}>Đến nơi</div>
-                  </div>
-
-                  {/* Connector line */}
-                  <div
-                    className={`${styles.progressConnector} ${
-                      progressStep >= 4 ? styles.active : ""
-                    }`}
-                  ></div>
-
                   <div
                     className={`${styles.progressStep} ${
                       progressStep >= 3 ? styles.active : ""
