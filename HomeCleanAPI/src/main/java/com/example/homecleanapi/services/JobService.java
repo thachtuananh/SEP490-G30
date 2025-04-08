@@ -382,7 +382,6 @@ public class JobService {
             jobInfo.put("customerAddress", job.getCustomerAddress().getAddress());  // Địa chỉ
             jobInfo.put("status", job.getStatus());  // Trạng thái
             jobInfo.put("totalPrice", job.getTotalPrice());  // Giá
-//            jobInfo.put("createdAt", job.getCreatedAt());  // Thời gian tạo
 
             // Thêm thông tin về customer đã đặt job
             Customers customer = job.getCustomer();
@@ -436,6 +435,16 @@ public class JobService {
                 jobInfo.put("services", "No services found for this job");
             }
 
+            // Lấy thông tin cleaner đã nhận công việc này (nếu có)
+            JobApplication jobApplication = jobApplicationRepository.findByJobIdAndStatus(job.getId(), "Accepted");
+            if (jobApplication != null) {
+                Employee cleaner = jobApplication.getCleaner();
+                if (cleaner != null) {
+                    jobInfo.put("cleanerId", cleaner.getId());
+
+                }
+            }
+
             bookedJobs.add(jobInfo);
         }
 
@@ -443,7 +452,9 @@ public class JobService {
     }
 
 
-    
+
+
+
     // huy job ddax book
     public Map<String, Object> cancelJobForCustomer(Long customerId, Long jobId) {
         Map<String, Object> response = new HashMap<>();
