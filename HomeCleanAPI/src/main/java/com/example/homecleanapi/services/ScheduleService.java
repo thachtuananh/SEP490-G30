@@ -67,7 +67,7 @@ public class ScheduleService {
                 }
 
                 // Lấy tất cả JobApplication liên quan đến Job
-                List<JobApplication> jobApplications = jobApplicationRepository.findByJob_Customer_Id(job.getId());
+                List<JobApplication> jobApplications = jobApplicationRepository.findJobApplicationById(job.getId());
                 for (JobApplication application : jobApplications) {
                     String status = application.getStatus();
                     if (!"Rejected".equals(status) && !"Accepted".equals(status)) {
