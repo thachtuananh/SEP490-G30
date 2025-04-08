@@ -350,7 +350,7 @@ export const Address = () => {
 
     try {
       const response = await fetch(
-        `${BASE_URL}/employee/${cleanerId}/update-address/${currentAddressId}`,
+        `${BASE_URL}/employee/${cleanerId}/update_address/${currentAddressId}`,
         {
           method: "POST",
           headers: {
