@@ -10,10 +10,9 @@ const JobUploadCard = ({ id, icon, title, description, onComboSelect }) => {
   const updateDescription = () => {
     if (!description) return;
 
-    // if (window.innerWidth <= 700) {
-    //   setTruncatedDescription(`${description.substring(0, 40)}...`);
-    // } else
-    if (window.innerWidth <= 2000) {
+    if (window.innerWidth <= 700) {
+      setTruncatedDescription(`${description.substring(0, 40)}...`);
+    } else if (window.innerWidth <= 3000) {
       setTruncatedDescription(`${description.substring(0, 20)}...`);
     } else {
       setTruncatedDescription(description);
@@ -34,7 +33,7 @@ const JobUploadCard = ({ id, icon, title, description, onComboSelect }) => {
     <Card
       hoverable
       style={{ height: "100%", position: "relative", cursor: "default" }}
-      bodyStyle={{ height: "100%" }}
+      styles={{ body: { height: "100%" } }}
     >
       <div className={styles.serviceCard}>
         <div className={styles.iconWrapper}>

@@ -242,7 +242,9 @@ export const ActivityCard = ({ data, onDelete }) => {
       message.success("Thuê cleaner thành công!");
       sendNotification(
         cleanerId,
-        `Người thuê ${localStorage.getItem("name")} đã chấp nhận công việc`,
+        `Chúc mừng, người thuê ${localStorage.getItem(
+          "name"
+        )} đã chấp nhận công việc`,
         "BOOKED",
         "Cleaner"
       );
@@ -266,7 +268,9 @@ export const ActivityCard = ({ data, onDelete }) => {
       message.success("Từ chối cleaner thành công!");
       sendNotification(
         cleanerId,
-        `Người thuê ${localStorage.getItem("name")} từ chối công việc`,
+        `Rất tiếc, người thuê ${localStorage.getItem(
+          "name"
+        )} từ chối công việc`,
         "BOOKED",
         "Cleaner"
       );

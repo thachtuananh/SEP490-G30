@@ -3,7 +3,7 @@ import style from "../../assets/CSS/Service/ServiceDescription.module.css";
 const ServiceDescription = ({ description }) => {
   const tabs = [
     { id: "desc", label: "Mô tả dịch vụ", active: true },
-    { id: "reviews", label: "Đánh giá", active: false },
+    // { id: "reviews", label: "Đánh giá", active: false },
   ];
 
   return (

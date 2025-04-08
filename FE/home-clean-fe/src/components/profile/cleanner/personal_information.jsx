@@ -3,12 +3,15 @@ import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../../../context/AuthContext";
 import "../owner/profile.css";
 import profileImg from "../../../assets/imgProfile/imgProfile.svg";
-import { message } from "antd";
+import { message, Modal } from "antd";
 import { BASE_URL } from "../../../utils/config";
 
 export const PersonaInformation = () => {
   const { cleaner, dispatch } = useContext(AuthContext);
   const [isLoading, setIsLoading] = useState(false);
+  const [isDeleteLoading, setIsDeleteLoading] = useState(false);
+  const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
+  const navigate = useNavigate();
 
   const [cleanerName, setName] = useState(cleaner?.cleanerName || "");
   const [cleanerPhone, setPhone] = useState(cleaner?.cleanerPhone || "");
@@ -76,9 +79,54 @@ export const PersonaInformation = () => {
     }
   };
 
+  // Hàm xóa tài khoản
+  const deleteAccountAPI = async () => {
+    const token = localStorage.getItem("token");
+    const cleanerId = localStorage.getItem("cleanerId");
+    if (!cleanerId || !token) {
+      message.error("Không tìm thấy thông tin người dùng!");
+      return;
+    }
+
+    setIsDeleteLoading(true);
+    try {
+      const response = await fetch(
+        `${BASE_URL}/employee/${cleanerId}/delete_account`,
+        {
+          method: "DELETE",
+          headers: {
+            accept: "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Error: ${response.status}`);
+      }
+
+      message.success("Tài khoản đã được xóa thành công!");
+
+      dispatch({ type: "LOGOUT" });
+
+      // Redirect to login page
+      navigate("/login");
+    } catch (error) {
+      message.error("Xóa tài khoản thất bại!");
+    } finally {
+      setIsDeleteLoading(false);
+      setIsDeleteModalVisible(false);
+    }
+  };
+
   // Hàm xử lý lưu tất cả thông tin
   const handleSave = () => {
     updateProfileAPI();
+  };
+
+  // Hàm mở modal xác nhận xóa tài khoản
+  const showDeleteConfirm = () => {
+    setIsDeleteModalVisible(true);
   };
 
   // Hàm xử lý upload ảnh (cần bổ sung API upload ảnh)
@@ -212,7 +260,35 @@ export const PersonaInformation = () => {
         >
           {isLoading ? "Đang lưu..." : "Lưu"}
         </button>
+        <button
+          className="save-button"
+          style={{ backgroundColor: "#f70003" }}
+          type="button"
+          onClick={showDeleteConfirm}
+          disabled={isDeleteLoading}
+        >
+          {isDeleteLoading ? "Đang xóa..." : "Xoá tài khoản"}
+        </button>
       </div>
+
+      {/* Modal xác nhận xóa tài khoản */}
+      <Modal
+        title="Xác nhận xóa tài khoản"
+        open={isDeleteModalVisible}
+        onOk={deleteAccountAPI}
+        onCancel={() => setIsDeleteModalVisible(false)}
+        okText="Xóa"
+        cancelText="Hủy"
+        okButtonProps={{
+          style: { backgroundColor: "#ff4d4f" },
+          loading: isDeleteLoading,
+        }}
+      >
+        <p>
+          Bạn có chắc chắn muốn xóa tài khoản này? Hành động này không thể hoàn
+          tác.
+        </p>
+      </Modal>
     </div>
   );
 };
