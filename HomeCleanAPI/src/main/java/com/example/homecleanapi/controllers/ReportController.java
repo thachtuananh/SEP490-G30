@@ -39,8 +39,8 @@ public class ReportController {
         return reportService.getAllReport(offset, limit);
     }
 
-    @GetMapping(value = "/{customerId}/get-report-by-customerid", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Map<String, Object>> getReportByCustomerId(@PathVariable Long customerId) {
-        return true;
-    }
+//    @GetMapping(value = "/{customerId}/get-report-by-customerid", produces = MediaType.APPLICATION_JSON_VALUE)
+//    public ResponseEntity<Map<String, Object>> getReportByCustomerId(@PathVariable Long customerId) {
+//        return ;
+//    }
 }
