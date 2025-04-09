@@ -17,13 +17,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.PathVariable;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class JobService {
@@ -112,6 +109,45 @@ public class JobService {
             job.setStatus(JobStatus.OPEN);  // Nếu thanh toán bằng tiền mặt, đặt status là OPEN
         } else if ("vnpay".equalsIgnoreCase(request.getPaymentMethod())) {
             job.setStatus(JobStatus.PAID);  // Nếu thanh toán qua VNPay, đặt status là PAID
+        } else if ("wallet".equalsIgnoreCase(request.getPaymentMethod())) {
+            // Kiểm tra ví của customer và số dư trong ví
+            Optional<CustomerWallet> walletOpt = customerWalletRepository.findByCustomerId(customerId);
+            if (!walletOpt.isPresent()) {
+                response.put("message", "Customer wallet not found");
+                return response;
+            }
+
+            CustomerWallet wallet = walletOpt.get();
+
+            double totalPrice = 0;
+            for (ServiceRequest serviceRequest : request.getServices()) {
+                Optional<Services> serviceOpt = serviceRepository.findById(serviceRequest.getServiceId());
+                if (!serviceOpt.isPresent()) {
+                    response.put("message", "Service not found with serviceId: " + serviceRequest.getServiceId());
+                    return response;
+                }
+                Services service = serviceOpt.get();
+                Optional<ServiceDetail> serviceDetailOpt = serviceDetailRepository.findById(serviceRequest.getServiceDetailId());
+                if (!serviceDetailOpt.isPresent()) {
+                    response.put("message", "Service Detail not found for serviceId: " + serviceRequest.getServiceDetailId());
+                    return response;
+                }
+                ServiceDetail serviceDetail = serviceDetailOpt.get();
+                totalPrice += serviceDetail.getPrice() + serviceDetail.getAdditionalPrice();
+            }
+
+            // Kiểm tra nếu số dư trong ví không đủ
+            if (wallet.getBalance() < totalPrice) {
+                response.put("message", "không đủ tiền trong ví, hãy nạp thêm");
+                return response;
+            }
+
+            // Cộng tiền vào ví của customer
+            wallet.setBalance(wallet.getBalance() - totalPrice);  // Giảm số dư ví
+            customerWalletRepository.save(wallet);  // Lưu cập nhật vào ví của customer
+
+            // Cập nhật trạng thái job
+            job.setStatus(JobStatus.OPEN);
         }
 
         job.setPaymentMethod(request.getPaymentMethod());
@@ -144,6 +180,12 @@ public class JobService {
 
         // Lưu Job vào cơ sở dữ liệu
         job.setTotalPrice(totalPrice);
+
+        // Tạo mã đơn hàng orderCode theo format customerId + ddMMyy + RandomString
+        String orderCode = customerId + LocalDate.now().format(DateTimeFormatter.ofPattern("ddMMyy")) + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+
+        job.setOrderCode(orderCode);  // Gán mã đơn hàng
+
         job = jobRepository.save(job);
 
         // Lưu các JobServiceDetail nếu có
@@ -183,7 +225,7 @@ public class JobService {
                 vnpayRequest.setAmount(String.valueOf(amount)); // Gửi số tiền đã được nhân với 100
 
                 // Tạo URL thanh toán VNPay
-                String paymentUrl = vnpayService.createPayment(vnpayRequest,requestvn);
+                String paymentUrl = vnpayService.createPayment(vnpayRequest, requestvn);
 
                 // Lấy txnRef từ URL của VNPay
                 String txnRef = extractTxnRefFromUrl(paymentUrl);  // Lấy txnRef từ URL của VNPay
@@ -204,11 +246,14 @@ public class JobService {
         // Nếu chọn phương thức thanh toán tiền mặt, hoàn tất tạo job
         response.put("message", "Job booked successfully");
         response.put("jobId", job.getId());
+        response.put("orderCode", job.getOrderCode());  // Trả về orderCode
         response.put("status", job.getStatus());
         response.put("totalPrice", totalPrice);
 
         return response;
     }
+
+
 
 
 

@@ -6,6 +6,7 @@
   <component name="ChangeListManager">
     <list default="true" id="6dd32c25-99a1-4da0-a769-374f6713cd9c" name="Changes" comment="update application">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/models/Job.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/models/Job.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/services/JobService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/services/JobService.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -113,7 +114,7 @@
       <workItem from="1743854637638" duration="7499000" />
       <workItem from="1743912289831" duration="3401000" />
       <workItem from="1743951380648" duration="205000" />
-      <workItem from="1744023302316" duration="33493000" />
+      <workItem from="1744023302316" duration="42006000" />
     </task>
     <task id="LOCAL-00001" summary="update application">
       <option name="closed" value="true" />
