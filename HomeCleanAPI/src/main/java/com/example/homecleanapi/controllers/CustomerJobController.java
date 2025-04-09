@@ -11,6 +11,7 @@ import com.example.homecleanapi.services.JobService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -35,8 +36,8 @@ public class CustomerJobController {
 	// API cho customer tạo job
 	@PostMapping(value = "/{customerId}/createjob")
 	public ResponseEntity<Map<String, Object>> createJob(@RequestBody BookJobRequest request,
-			@PathVariable Long customerId) {
-		Map<String, Object> response = jobService.bookJob(customerId, request);
+			@PathVariable Long customerId, HttpServletRequest requestIp) {
+		Map<String, Object> response = jobService.bookJob(customerId, request, requestIp);
 		return ResponseEntity.status(HttpStatus.CREATED).body(response);
 	}
 
