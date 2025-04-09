@@ -36,7 +36,7 @@ public class CustomerJobController {
 	// API cho customer tạo job
 	@PostMapping(value = "/{customerId}/createjob")
 	public ResponseEntity<Map<String, Object>> createJob(@RequestBody BookJobRequest request,
-														 @PathVariable Long customerId, HttpServletRequest requestIp) {
+			@PathVariable Long customerId, HttpServletRequest requestIp) {
 		Map<String, Object> response = jobService.bookJob(customerId, request, requestIp);
 		return ResponseEntity.status(HttpStatus.CREATED).body(response);
 	}

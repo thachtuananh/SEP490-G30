@@ -106,10 +106,12 @@ public class AdminCleanerController {
     @PatchMapping("/{id}/identity-verified")
     public ResponseEntity<String> updateCleanerIdentityVerifiedAndDeleted(
             @PathVariable Integer id,
-            @RequestParam(defaultValue = "true") Boolean status,
-            @RequestParam(defaultValue = "false") Boolean isDeleted) {
+            @RequestParam(required = false, defaultValue = "false") Boolean status,
+            @RequestParam(required = false, defaultValue = "false") Boolean isDeleted) {
+        boolean safeStatus = status != null && status;
+        boolean safeIsDeleted = isDeleted != null && isDeleted;
 
-        cleanerService.updateIdentityVerifiedAndDeletedStatus(id, status, isDeleted);
+        cleanerService.updateIdentityVerifiedAndDeletedStatus(id, safeStatus, safeIsDeleted);
         return ResponseEntity.ok("Identity verified and deleted status updated successfully.");
     }
 
