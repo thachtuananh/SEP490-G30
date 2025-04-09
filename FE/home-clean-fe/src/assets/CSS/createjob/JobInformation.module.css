@@ -1,115 +1,113 @@
 .jobInfoContainer {
-    border: 1px solid #E4E7EC;
-    border-radius: 8px;
-    padding: 16px;
-    position: relative;
+  border: 1px solid #e4e7ec;
+  border-radius: 8px;
+  padding: 16px;
+  position: relative;
 }
 
 .infoTitle {
-    margin-bottom: 12px;
-    font-size: 1.1rem;
+  margin-bottom: 12px;
+  font-size: 1.1rem;
 }
 
 .infoRow {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 8px;
-    flex-wrap: wrap;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
 }
 
 .infoRow span:last-child {
-    text-align: right;
-    /* max-width: 60%; */
-    word-break: break-word;
+  text-align: right;
+  max-width: 60%;
+  word-break: break-word;
 }
 
 .divider {
-    height: 2px;
-    width: 100%;
-    background: rgb(225, 225, 225);
-    margin-top: 15px;
+  height: 2px;
+  width: 100%;
+  background: rgb(225, 225, 225);
+  margin-top: 15px;
 }
 
 .totalContainer {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    /* padding: 20px 0px 10px 0px; */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  /* padding: 20px 0px 10px 0px; */
 }
 
 .totalPrice {
-    font-size: 20px;
-    margin: 0;
+  font-size: 20px;
+  margin: 0;
 }
 
 .actionButtons {
-    display: flex;
-    gap: 15px;
-    position: relative;
-    /* margin-top: 30px; */
-    justify-content: flex-end;
-    width: 100%;
+  display: flex;
+  gap: 15px;
+  position: relative;
+  /* margin-top: 30px; */
+  justify-content: flex-end;
+  width: 100%;
 }
 
 .linkReset {
-    text-decoration: none;
-    width: 25%;
+  text-decoration: none;
+  width: 25%;
 }
 
 .cancelButton {
-    height: 40px;
-    background: rgb(174, 174, 174);
-    color: white;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
+  height: 40px;
+  background: rgb(174, 174, 174);
+  color: white;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
 }
 
 .submitButton {
-    height: 40px;
-    background: rgb(10, 139, 3);
-    color: white;
-    width: 25%;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
+  height: 40px;
+  background: rgb(10, 139, 3);
+  color: white;
+  width: 25%;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
 }
 
 .serviceTags {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-top: 4px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 4px;
 }
 
 .serviceTag {
-    background: #f0f2f5;
-    padding: 4px 10px;
-    border-radius: 10px;
-    font-size: 14px;
-    color: #333;
+  background: #f0f2f5;
+  padding: 4px 10px;
+  border-radius: 10px;
+  font-size: 14px;
+  color: #333;
 }
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
-
-    .linkReset,
-    .submitButton {
-        width: 50%;
-    }
+  .linkReset,
+  .submitButton {
+    width: 50%;
+  }
 }
 
 @media (max-width: 480px) {
-    .infoRow span:last-child {
-        max-width: 50%;
-    }
+  .infoRow span:last-child {
+    max-width: 100%;
+  }
 
-    .jobInfoContainer {
-        padding: 12px;
-        margin-bottom: 60px;
-    }
+  .jobInfoContainer {
+    padding: 12px;
+  }
 }

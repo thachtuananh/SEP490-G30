@@ -225,6 +225,9 @@
   gap: 8px;
 }
 
+.buttonProfile span {
+  width: 100%;
+}
 .buttonGroup {
   display: flex;
   gap: 12px;
@@ -305,11 +308,16 @@
     gap: 8px;
   }
 
-  .buttonGroup button,
-  .actionButtons button {
+  /* .buttonGroup button,
+  .actionButtons button,
+  .actionButtons span {
+    width: 100%;
+  } */
+  .statusButton,
+  .buttonProfile,
+  .actionButtons .cancelButton {
     width: 100%;
   }
-
   .serviceDetails {
     flex-direction: column;
   }

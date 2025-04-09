@@ -463,6 +463,51 @@ function Navbar() {
     </Popover>
   ) : null;
 
+  // Mobile message content
+  const mobileMessageContent =
+    isPopupMessage && isMobile && cleaner ? (
+      <div
+        className={styles.mobile_notification_overlay}
+        onClick={() => setIsPopupMessage(false)}
+      >
+        <div
+          className={styles.mobile_notification_container}
+          style={{ maxWidth: "95%", width: "350px", maxHeight: "80vh" }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div
+            className={styles.message_container}
+            style={{ width: "100%", height: "100%" }}
+          >
+            <div className={styles.message__title}>
+              <h2>Tin nhắn</h2>
+            </div>
+            <div className={styles.message__main}>
+              <div className={styles.message_sidebar}>
+                <div className={styles.message_user_list}>
+                  <ConversationList
+                    onSelect={(conversation) => {
+                      handleConversationSelect(conversation);
+                    }}
+                    userId={userId}
+                    role={role}
+                  />
+                </div>
+              </div>
+              <div className={styles.message_outlet}>
+                <ChatWindow
+                  messages={messages}
+                  onSendMessage={sendMessage}
+                  conversation={selectedConversation}
+                  userId={userId}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    ) : null;
+
   return (
     <div className="Container">
       <nav className="navbar">
@@ -544,6 +589,7 @@ function Navbar() {
 
       {/* Render mobile notification panel outside navbar structure */}
       {mobileNotificationContent}
+      {mobileMessageContent}
     </div>
   );
 }

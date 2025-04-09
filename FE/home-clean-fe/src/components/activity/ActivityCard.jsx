@@ -72,6 +72,8 @@ export const ActivityCard = ({ data, onDelete }) => {
         return "#f1c40f";
       case "IN_PROGRESS":
         return "#e67e22";
+      case "ARRIVED":
+        return "#9b59b6";
       case "COMPLETED":
         return "#2ecc71";
       case "CANCELLED":
@@ -97,6 +99,8 @@ export const ActivityCard = ({ data, onDelete }) => {
         return "Chờ phê duyệt";
       case "IN_PROGRESS":
         return "Người nhận việc đang tới";
+      case "ARRIVED":
+        return "Người nhận việc đã tới";
       case "COMPLETED":
         return "Người nhận việc đã hoàn thành";
       case "CANCELLED":
@@ -119,9 +123,9 @@ export const ActivityCard = ({ data, onDelete }) => {
         return 1;
       case "IN_PROGRESS":
         return 2;
-      case "COMPLETED":
+      case "ARRIVED":
         return 3;
-      case "DONE":
+      case "COMPLETED":
         return 4;
       default:
         return 1;
@@ -385,7 +389,18 @@ export const ActivityCard = ({ data, onDelete }) => {
         <>
           <Button
             type="primary"
-            style={{ marginRight: 8 }}
+            style={{
+              marginRight: 8,
+              padding: "8px 16px",
+              fontSize: "14px",
+              width: "auto",
+              minWidth: "80px",
+              "@media (max-width: 768px)": {
+                padding: "6px 12px",
+                fontSize: "12px",
+                minWidth: "60px",
+              },
+            }}
             onClick={() =>
               handleHireCleaner(selectedJobId, record.cleanerId, customerId)
             }
@@ -395,6 +410,17 @@ export const ActivityCard = ({ data, onDelete }) => {
           </Button>
           <Button
             danger
+            style={{
+              padding: "8px 16px",
+              fontSize: "14px",
+              width: "auto",
+              minWidth: "80px",
+              "@media (max-width: 768px)": {
+                padding: "6px 12px",
+                fontSize: "12px",
+                minWidth: "60px",
+              },
+            }}
             onClick={() =>
               handleRejectCleaner(selectedJobId, record.cleanerId, customerId)
             }
@@ -638,18 +664,20 @@ export const ActivityCard = ({ data, onDelete }) => {
                   {(activity.status === "OPEN" ||
                     activity.status === "BOOKED") &&
                     applicationsCount[activity.jobId] > 0 && (
-                      <Badge
-                        count={applicationsCount[activity.jobId]}
-                        size="small"
-                      >
-                        <Button
-                          type="primary"
-                          className={styles.statusButton}
-                          onClick={() => openModal(activity.jobId)}
+                      <div className={styles.buttonProfile}>
+                        <Badge
+                          count={applicationsCount[activity.jobId]}
+                          size="small"
                         >
-                          Xem thông tin Cleaner
-                        </Button>
-                      </Badge>
+                          <Button
+                            type="primary"
+                            className={styles.statusButton}
+                            onClick={() => openModal(activity.jobId)}
+                          >
+                            Xem thông tin Cleaner
+                          </Button>
+                        </Badge>
+                      </div>
                     )}
 
                   {activity.status === "COMPLETED" && (
