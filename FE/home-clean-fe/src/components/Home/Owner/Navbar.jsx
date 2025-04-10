@@ -537,6 +537,11 @@ function Navbar() {
               </Link>
             </li>
             <li>
+              <Link to="/cleaner-section" className="nav-link">
+                Danh sách cleaner
+              </Link>
+            </li>
+            <li>
               <Link to="/" className="nav-link">
                 Tin tức
               </Link>
