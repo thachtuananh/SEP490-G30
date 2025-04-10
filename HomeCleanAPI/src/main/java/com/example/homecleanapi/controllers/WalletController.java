@@ -1,7 +1,11 @@
 package com.example.homecleanapi.controllers;
 
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
+import com.example.homecleanapi.models.TransactionHistory;
+import com.example.homecleanapi.repositories.TransactionHistoryRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -30,6 +34,11 @@ public class WalletController {
 	
 	@Autowired
     private WalletService walletService;
+
+    @Autowired
+    private TransactionHistoryRepository transactionHistoryRepository;
+
+
 
 	@GetMapping("/{cleanerId}/wallet")
     public ResponseEntity<Map<String, Object>> getWalletBalance(@PathVariable Long cleanerId) {
@@ -74,22 +83,54 @@ public class WalletController {
 
 
     // API trả về kết quả thanh toán VNPay
-	@GetMapping("/return")
-	public ResponseEntity<String> returnPayment(@RequestParam("vnp_ResponseCode") String responseCode,
-	                                            @RequestParam("vnp_TxnRef") String txnRef,
-	                                            @RequestParam("vnp_Amount") String amount) {  
-	    if ("00".equals(responseCode)) {
-	        
-	        double depositAmount = Double.parseDouble(amount) / 100;  
+    @GetMapping("/return")
+    public ResponseEntity<String> returnPayment(@RequestParam("vnp_ResponseCode") String responseCode,
+                                                @RequestParam("vnp_TxnRef") String txnRef,
+                                                @RequestParam("vnp_Amount") String amount) {
+        if ("00".equals(responseCode)) {
+            // Chuyển số tiền về đơn vị phù hợp (VNPay trả tiền trong đơn vị đồng, bạn cần chuyển thành VND)
+            double depositAmount = Double.parseDouble(amount) / 100;
 
-	        // Cập nhật ví trong WalletService
-	        walletService.updateWalletBalance(txnRef, depositAmount);
+            // Cập nhật số dư ví trong WalletService
+            walletService.updateWalletBalance(txnRef, depositAmount);
 
-	        return ResponseEntity.ok("Thanh toán thành công! Số dư ví đã được cập nhật.");
-	    } else {
-	        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Thanh toán thất bại! Mã lỗi: " + responseCode);
-	    }
-	}
+            // Cập nhật trạng thái của giao dịch trong bảng transaction_history là "SUCCESS"
+            Optional<TransactionHistory> transactionOpt = transactionHistoryRepository.findByTxnRef(txnRef);
+            if (transactionOpt.isPresent()) {
+                TransactionHistory transaction = transactionOpt.get();
+                transaction.setStatus("SUCCESS");
+                transactionHistoryRepository.save(transaction); // Lưu thay đổi
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Transaction not found");
+            }
+
+            return ResponseEntity.ok("Thanh toán thành công! Số dư ví đã được cập nhật.");
+        } else {
+            // Cập nhật trạng thái của giao dịch trong bảng transaction_history là "FAILED"
+            Optional<TransactionHistory> transactionOpt = transactionHistoryRepository.findByTxnRef(txnRef);
+            if (transactionOpt.isPresent()) {
+                TransactionHistory transaction = transactionOpt.get();
+                transaction.setStatus("FAILED");
+                transactionHistoryRepository.save(transaction); // Lưu thay đổi
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Transaction not found");
+            }
+
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Thanh toán thất bại! Mã lỗi: " + responseCode);
+        }
+    }
+
+    @GetMapping("/{cleanerId}/transaction-history")
+    public ResponseEntity<List<TransactionHistory>> getTransactionHistory(@PathVariable Long cleanerId) {
+        List<TransactionHistory> transactionHistoryList = walletService.getTransactionHistoryByCleanerId(cleanerId);
+
+        if (transactionHistoryList.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+
+
+        return ResponseEntity.ok(transactionHistoryList);
+    }
 
 
 }

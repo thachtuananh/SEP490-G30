@@ -2,9 +2,13 @@ package com.example.homecleanapi.services;
 
 import java.net.http.HttpRequest;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import com.example.homecleanapi.models.Customers;
+import com.example.homecleanapi.models.TransactionHistory;
+import com.example.homecleanapi.repositories.*;
 import com.example.homecleanapi.zaloPay.ZalopayService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletRequest;
@@ -15,8 +19,6 @@ import com.example.homecleanapi.paymentForWallets.VnpayRequestWallet;
 import com.example.homecleanapi.paymentForWallets.VnpayServiceWallet;
 import com.example.homecleanapi.models.Employee;
 import com.example.homecleanapi.models.Wallet;
-import com.example.homecleanapi.repositories.CleanerRepository;
-import com.example.homecleanapi.repositories.WalletRepository;
 
 @Service
 public class WalletService {
@@ -29,8 +31,12 @@ public class WalletService {
     
     @Autowired
     private VnpayServiceWallet vnpayServiceWallet;
+
     @Autowired
     private ZalopayService zalopayService;
+    @Autowired
+    private TransactionHistoryRepository transactionHistoryRepository;
+
 
     public Map<String, Object> getWalletBalance(Long cleanerId) {
         Map<String, Object> response = new HashMap<>();
@@ -58,7 +64,9 @@ public class WalletService {
         response.put("walletBalance", wallet.getBalance());
         return response;
     }
-    
+
+
+
     
     // cleaner nạp tiền
     public Map<String, Object> createPaymentForDepositVnpay(Long cleanerId, double amount, HttpServletRequest request) {
@@ -83,7 +91,7 @@ public class WalletService {
             // Tạo txnRef từ VNPay để theo dõi giao dịch
             String txnRef = extractTxnRefFromUrl(paymentUrl);  // Lấy txnRef từ URL của VNPay
 
-            // Tạo Wallet nếu chưa có
+            // Lưu thông tin vào Wallet và cập nhật txnRef
             Optional<Wallet> walletOpt = walletRepository.findByCleanerId(cleanerId);
             Wallet wallet;
             if (walletOpt.isPresent()) {
@@ -98,6 +106,16 @@ public class WalletService {
             wallet.setTxnRef(txnRef);
             walletRepository.save(wallet);
 
+            // Lưu thông tin vào bảng transaction_history
+            TransactionHistory transactionHistory = new TransactionHistory();
+            transactionHistory.setCleaner(wallet.getCleaner());
+            transactionHistory.setAmount(amount);
+            transactionHistory.setTransactionType("DEPOSIT");
+            transactionHistory.setPaymentMethod("VNPay");
+            transactionHistory.setStatus("PENDING");
+            transactionHistory.setTxnRef(txnRef);
+            transactionHistoryRepository.save(transactionHistory);
+
             // Trả về URL thanh toán cho cleaner
             response.put("paymentUrl", paymentUrl);
             response.put("txnRef", txnRef);  // Trả lại txnRef cho cleaner để theo dõi
@@ -109,6 +127,8 @@ public class WalletService {
             return response;
         }
     }
+
+
 
     public Map<String, Object> createPaymentForDepositZalopay(Long cleanerId, double amount) {
         Map<String, Object> response = new HashMap<>();
@@ -190,6 +210,14 @@ public class WalletService {
         }
     }
 
+    public List<TransactionHistory> getTransactionHistoryByCleanerId(Long cleanerId) {
+        return transactionHistoryRepository.findByCleanerId(cleanerId);
+    }
+
+    // Phương thức lấy lịch sử giao dịch của customer
+    public List<TransactionHistory> getTransactionHistoryByCustomerId(Long customerId) {
+        return transactionHistoryRepository.findByCustomerId(customerId);
+    }
     
 
 
