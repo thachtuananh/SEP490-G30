@@ -117,74 +117,76 @@ public class CleanerJobService {
 
 	// Lấy chi tiết công việc
 	public Map<String, Object> getJobDetails(Long jobId) {
-	    Map<String, Object> jobDetails = new HashMap<>();
+		Map<String, Object> jobDetails = new HashMap<>();
 
-	    // Tìm job theo jobId
-	    Job job = jobRepository.findById(jobId).orElse(null);
-	    if (job != null) {
-	        // Thêm thông tin về job
-	        jobDetails.put("jobId", job.getId());
-	        jobDetails.put("status", job.getStatus());
-	        jobDetails.put("totalPrice", job.getTotalPrice());
-	        jobDetails.put("scheduledTime", job.getScheduledTime());
+		// Tìm job theo jobId
+		Job job = jobRepository.findById(jobId).orElse(null);
+		if (job != null) {
+			// Thêm thông tin về job
+			jobDetails.put("jobId", job.getId());
+			jobDetails.put("status", job.getStatus());
+			jobDetails.put("totalPrice", job.getTotalPrice());
+			jobDetails.put("scheduledTime", job.getScheduledTime());
 
+			// Thêm thông tin orderCode của job
+			if (job.getOrderCode() != null) {
+				jobDetails.put("orderCode", job.getOrderCode());
+			}
 
-	        if (job.getReminder() != null) {
-	            jobDetails.put("reminder", job.getReminder());  
-	        }
+			if (job.getReminder() != null) {
+				jobDetails.put("reminder", job.getReminder());
+			}
 
+			List<JobServiceDetail> jobServiceDetails = jobServiceDetailRepository.findByJobId(jobId);
+			if (jobServiceDetails != null && !jobServiceDetails.isEmpty()) {
+				List<Map<String, Object>> serviceList = new ArrayList<>();
 
-	        List<JobServiceDetail> jobServiceDetails = jobServiceDetailRepository.findByJobId(jobId);
-	        if (jobServiceDetails != null && !jobServiceDetails.isEmpty()) {
-	            List<Map<String, Object>> serviceList = new ArrayList<>();
+				for (JobServiceDetail jobServiceDetail : jobServiceDetails) {
+					Services service = jobServiceDetail.getService();
+					if (service != null) {
+						Map<String, Object> serviceInfo = new HashMap<>();
+						serviceInfo.put("serviceName", service.getName());
+						serviceInfo.put("serviceDescription", service.getDescription());
 
+						ServiceDetail serviceDetail = jobServiceDetail.getServiceDetail();
+						if (serviceDetail != null) {
+							serviceInfo.put("serviceDetailId", serviceDetail.getId());
+							serviceInfo.put("serviceDetailName", serviceDetail.getName());
+							serviceInfo.put("price", serviceDetail.getPrice());
+							serviceInfo.put("additionalPrice", serviceDetail.getAdditionalPrice());
+							serviceInfo.put("areaRange", serviceDetail.getAreaRange());
+							serviceInfo.put("description", serviceDetail.getDescription());
+							serviceInfo.put("discounts", serviceDetail.getDiscounts());
+						}
 
-	            for (JobServiceDetail jobServiceDetail : jobServiceDetails) {
-	                Services service = jobServiceDetail.getService();
-	                if (service != null) {
-	                    Map<String, Object> serviceInfo = new HashMap<>();
-	                    serviceInfo.put("serviceName", service.getName());
-	                    serviceInfo.put("serviceDescription", service.getDescription());
+						serviceList.add(serviceInfo);
+					}
+				}
 
-	                    ServiceDetail serviceDetail = jobServiceDetail.getServiceDetail();
-	                    if (serviceDetail != null) {
-	                        serviceInfo.put("serviceDetailId", serviceDetail.getId());
-	                        serviceInfo.put("serviceDetailName", serviceDetail.getName());
-	                        serviceInfo.put("price", serviceDetail.getPrice());
-	                        serviceInfo.put("additionalPrice", serviceDetail.getAdditionalPrice());
-	                        serviceInfo.put("areaRange", serviceDetail.getAreaRange());
-	                        serviceInfo.put("description", serviceDetail.getDescription());
-	                        serviceInfo.put("discounts", serviceDetail.getDiscounts());
-	                    }
+				jobDetails.put("services", serviceList);
+			}
 
-	                    serviceList.add(serviceInfo);
-	                }
-	            }
+			// Thêm thông tin về customer đã book job
+			Customers customer = job.getCustomer();
+			if (customer != null) {
+				jobDetails.put("customerId", customer.getId());
+				jobDetails.put("customerName", customer.getFull_name());
+				jobDetails.put("customerPhone", customer.getPhone());
+			}
 
+			// Thêm thông tin về địa chỉ của customer
+			CustomerAddresses customerAddress = job.getCustomerAddress();
+			if (customerAddress != null) {
+				jobDetails.put("customerAddressId", customerAddress.getId());
+				jobDetails.put("customerAddress", customerAddress.getAddress());
+				jobDetails.put("latitude", customerAddress.getLatitude());
+				jobDetails.put("longitude", customerAddress.getLongitude());
+			}
+		}
 
-	            jobDetails.put("services", serviceList);
-	        }
-
-	        // Thêm thông tin về customer đã book job
-	        Customers customer = job.getCustomer();
-	        if (customer != null) {
-	            jobDetails.put("customerId", customer.getId());
-	            jobDetails.put("customerName", customer.getFull_name());
-	            jobDetails.put("customerPhone", customer.getPhone());
-	        }
-
-	        // Thêm thông tin về địa chỉ của customer
-	        CustomerAddresses customerAddress = job.getCustomerAddress();
-	        if (customerAddress != null) {
-	            jobDetails.put("customerAddressId", customerAddress.getId());
-	            jobDetails.put("customerAddress", customerAddress.getAddress());
-	            jobDetails.put("latitude", customerAddress.getLatitude());
-	            jobDetails.put("longitude", customerAddress.getLongitude());
-	        }
-	    }
-
-	    return jobDetails.isEmpty() ? null : jobDetails;
+		return jobDetails.isEmpty() ? null : jobDetails;
 	}
+
 
 
 	// Apply job
@@ -580,6 +582,10 @@ public class CleanerJobService {
 				jobInfo.put("status", job.getStatus());
 				jobInfo.put("totalPrice", job.getTotalPrice());
 
+				// Thêm thông tin mã đơn hàng
+				if (job.getOrderCode() != null) {
+					jobInfo.put("orderCode", job.getOrderCode());
+				}
 
 				// Thêm thông tin về customer đã book job
 				Customers customer = job.getCustomer();
@@ -644,6 +650,7 @@ public class CleanerJobService {
 		return completedJobs; // Trả về danh sách công việc đã hoàn thành
 	}
 
+
 	// ds job đang làm
 	public List<Map<String, Object>> getInProgressJobs(Long cleanerId) {
 		List<Map<String, Object>> inProgressJobs = new ArrayList<>();
@@ -671,6 +678,10 @@ public class CleanerJobService {
 				jobInfo.put("status", job.getStatus());
 				jobInfo.put("totalPrice", job.getTotalPrice());
 
+				// Thêm thông tin mã đơn hàng
+				if (job.getOrderCode() != null) {
+					jobInfo.put("orderCode", job.getOrderCode());
+				}
 
 				// Thêm thông tin về customer đã book job
 				Customers customer = job.getCustomer();
@@ -733,6 +744,7 @@ public class CleanerJobService {
 
 		return inProgressJobs; // Trả về danh sách các công việc đang làm
 	}
+
 
 	// ds job mà cleaner đã apply
 	public List<Map<String, Object>> getAppliedJobsForCleaner2(Long cleanerId) {

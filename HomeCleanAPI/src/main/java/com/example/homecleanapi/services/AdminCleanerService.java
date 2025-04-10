@@ -196,6 +196,11 @@ public class AdminCleanerService {
                     response.setCleanerId(cleanerId);
                     response.setCleanerName(job.getCleaner().getName());
 
+                    // Thêm mã đơn hàng vào response
+                    if (job.getOrderCode() != null) {
+                        response.setOrderCode(job.getOrderCode());  // Thêm orderCode vào response
+                    }
+
                     // Lấy thông tin service của job (job_service_detail)
                     List<String> services = job.getJobServiceDetails().stream()
                             .map(jobServiceDetail -> jobServiceDetail.getService().getName()) // Lấy tên dịch vụ
@@ -210,6 +215,7 @@ public class AdminCleanerService {
 
         return ResponseEntity.ok(jobHistoryResponses);
     }
+
 
     public ResponseEntity<List<JobHistoryResponse>> getJobHistoryByCleanerIdnull(Long cleanerId) {
         // Lấy danh sách các job mà cleaner đã apply từ bảng job_application
@@ -237,6 +243,11 @@ public class AdminCleanerService {
                         response.setCleanerId(null);
                         response.setCleanerName(null);
 
+                        // Thêm mã đơn hàng vào response
+                        if (job.getOrderCode() != null) {
+                            response.setOrderCode(job.getOrderCode()); // Thêm orderCode vào response
+                        }
+
                         // Lấy thông tin dịch vụ của job
                         List<String> services = job.getJobServiceDetails().stream()
                                 .map(jobServiceDetail -> jobServiceDetail.getService().getName())
@@ -253,6 +264,7 @@ public class AdminCleanerService {
 
         return ResponseEntity.ok(jobHistoryResponses);
     }
+
 
     public ResponseEntity<List<Map<String, Object>>> getUnverifiedCleaners() {
         List<Employee> unverifiedCleaners = cleanerRepository.findUnverifiedCleaners();
