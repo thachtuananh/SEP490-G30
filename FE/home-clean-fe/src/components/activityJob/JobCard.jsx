@@ -22,6 +22,8 @@ const getStatusColor = (status) => {
       return "#f1c40f";
     case "IN_PROGRESS":
       return "#e67e22";
+    case "ARRIVED":
+      return "#9b59b6";
     case "COMPLETED":
       return "#2ecc71";
     case "CANCELLED":
@@ -40,7 +42,8 @@ const getStatusLabel = (status) => {
     OPEN: "Đang mở",
     PAID: "Đang chờ thanh toán",
     PENDING_APPROVAL: "Chờ phê duyệt",
-    IN_PROGRESS: "Đang đến ",
+    IN_PROGRESS: "Đang đến",
+    ARRIVED: "Đã đến",
     COMPLETED: "Đã hoàn thành công việc",
     CANCELLED: "Đã hủy",
     DONE: "Hoàn tất công việc",
@@ -286,6 +289,15 @@ const JobCard = ({ job, refreshJobs }) => {
           <Button className={styles.cancelBtn}>Hủy công việc</Button>
         )}
         {job.status === "IN_PROGRESS" && (
+          <Button
+            className={styles.completeBtn}
+            onClick={() => handleStatusUpdate("arrived")}
+            loading={loading}
+          >
+            Đã đến nơi
+          </Button>
+        )}
+        {job.status === "ARRIVED" && (
           <Button
             className={styles.completeBtn}
             onClick={() => handleStatusUpdate("completed")}

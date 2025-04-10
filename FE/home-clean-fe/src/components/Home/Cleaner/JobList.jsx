@@ -178,7 +178,10 @@ function JobList() {
           title="Bạn cần đăng nhập"
           subTitle="Bạn cần đăng nhập để xem danh sách công việc."
           extra={
-            <Button type="primary" onClick={() => navigate("/login")}>
+            <Button
+              type="primary"
+              onClick={() => navigate("/homeclean/login/cleaner")}
+            >
               Đăng nhập ngay
             </Button>
           }

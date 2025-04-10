@@ -102,14 +102,111 @@ const JobHistoryTable = ({
 
   // Define responsive columns for job history table
   const getJobColumns = () => {
-    // Basic columns for all screen sizes
-    const baseColumns = [
-      // {
-      //   title: "Khách hàng",
-      //   dataIndex: "fullName",
-      //   key: "fullName",
-      //   ellipsis: isMobile,
-      // },
+    // Desktop columns (all columns)
+    if (!isMobile && !isTablet) {
+      return [
+        {
+          title: "Ngày",
+          dataIndex: "scheduledTime",
+          key: "scheduledTime",
+          render: (text) =>
+            new Date(text).toLocaleDateString("vi-VN", {
+              day: "2-digit",
+              month: "2-digit",
+              year: "numeric",
+            }),
+          sorter: (a, b) =>
+            new Date(a.scheduledTime) - new Date(b.scheduledTime),
+        },
+        {
+          title: "Tổng tiền (VND)",
+          dataIndex: "totalPrice",
+          key: "totalPrice",
+          render: (price) => `${price.toLocaleString("vi-VN")}`,
+          sorter: (a, b) => a.totalPrice - b.totalPrice,
+        },
+        {
+          title: "Dịch vụ",
+          dataIndex: "services",
+          key: "services",
+          render: (services) => (
+            <span>
+              {services.map((service, index) => (
+                <Tag key={index} color="blue">
+                  {service}
+                </Tag>
+              ))}
+            </span>
+          ),
+        },
+        {
+          title: "Trạng thái",
+          dataIndex: "jobStatus",
+          key: "jobStatus",
+          render: (status) => {
+            const color = getStatusColor(status);
+            const text = getStatusText(status);
+            return (
+              <Tag
+                color={color}
+                style={{ color: "#fff", backgroundColor: color }}
+              >
+                {text}
+              </Tag>
+            );
+          },
+          filters: [
+            { text: "Đang chờ người nhận", value: "OPEN" },
+            { text: "Đang chờ thanh toán qua VNPay", value: "PAID" },
+            { text: "Chờ phê duyệt", value: "PENDING_APPROVAL" },
+            { text: "Người nhận việc đang tới", value: "IN_PROGRESS" },
+            { text: "Người nhận việc đã hoàn thành", value: "COMPLETED" },
+            { text: "Đã hủy", value: "CANCELLED" },
+            { text: "Hoàn tất công việc", value: "DONE" },
+            { text: "Đã đặt lịch", value: "BOOKED" },
+          ],
+          onFilter: (value, record) => record.jobStatus === value,
+        },
+        {
+          title: "Hành động",
+          key: "action",
+          render: (_, record) => (
+            <Button
+              type="link"
+              onClick={() => fetchJobDetails(record.jobId)}
+              loading={loading}
+            >
+              Chi tiết
+            </Button>
+          ),
+        },
+      ];
+    }
+
+    // Mobile and tablet columns (prioritized columns)
+    return [
+      {
+        title: "Tổng tiền (VND)",
+        dataIndex: "totalPrice",
+        key: "totalPrice",
+        render: (price) => `${price.toLocaleString("vi-VN")}`,
+        sorter: (a, b) => a.totalPrice - b.totalPrice,
+      },
+      {
+        title: "Dịch vụ",
+        dataIndex: "services",
+        key: "services",
+        render: (services) => (
+          <span>
+            {services.length > 0 && (
+              <Tag color="blue">
+                {services[0]}
+                {services.length > 1 ? ` +${services.length - 1}` : ""}
+              </Tag>
+            )}
+          </span>
+        ),
+      },
       {
         title: "Trạng thái",
         dataIndex: "jobStatus",
@@ -122,7 +219,7 @@ const JobHistoryTable = ({
               color={color}
               style={{ color: "#fff", backgroundColor: color }}
             >
-              {isMobile ? status : text}
+              {text}
             </Tag>
           );
         },
@@ -152,50 +249,6 @@ const JobHistoryTable = ({
         ),
       },
     ];
-
-    // Add more columns for tablet and desktop
-    if (!isMobile) {
-      baseColumns.splice(0, 0, {
-        title: "Ngày",
-        dataIndex: "scheduledTime",
-        key: "scheduledTime",
-        render: (text) =>
-          new Date(text).toLocaleDateString("vi-VN", {
-            day: "2-digit",
-            month: "2-digit",
-            year: "numeric",
-          }),
-        sorter: (a, b) => new Date(a.scheduledTime) - new Date(b.scheduledTime),
-      });
-
-      baseColumns.splice(2, 0, {
-        title: "Tổng tiền (VND)",
-        dataIndex: "totalPrice",
-        key: "totalPrice",
-        render: (price) => `${price.toLocaleString("vi-VN")}`,
-        sorter: (a, b) => a.totalPrice - b.totalPrice,
-      });
-    }
-
-    // Add services column only for desktop
-    if (!isMobile && !isTablet) {
-      baseColumns.splice(3, 0, {
-        title: "Dịch vụ",
-        dataIndex: "services",
-        key: "services",
-        render: (services) => (
-          <span>
-            {services.map((service, index) => (
-              <Tag key={index} color="blue">
-                {service}
-              </Tag>
-            ))}
-          </span>
-        ),
-      });
-    }
-
-    return baseColumns;
   };
 
   // Format date time for modal display
@@ -248,6 +301,13 @@ const JobHistoryTable = ({
         expandable={{
           expandedRowRender: (record) => (
             <Descriptions column={isMobile ? 1 : 2} size="small" bordered>
+              <Descriptions.Item label="Ngày">
+                {new Date(record.scheduledTime).toLocaleDateString("vi-VN", {
+                  day: "2-digit",
+                  month: "2-digit",
+                  year: "numeric",
+                })}
+              </Descriptions.Item>
               <Descriptions.Item label="Số điện thoại">
                 {record.phone}
               </Descriptions.Item>
@@ -259,6 +319,22 @@ const JobHistoryTable = ({
               <Descriptions.Item label="Ghi chú" span={isMobile ? 1 : 2}>
                 {record.reminder || "Không có ghi chú"}
               </Descriptions.Item>
+              {(isMobile || isTablet) && (
+                <Descriptions.Item
+                  label="Tất cả dịch vụ"
+                  span={isMobile ? 1 : 2}
+                >
+                  {record.services?.map((service, index) => (
+                    <Tag
+                      key={index}
+                      color="blue"
+                      style={{ marginRight: "5px", marginBottom: "5px" }}
+                    >
+                      {service}
+                    </Tag>
+                  ))}
+                </Descriptions.Item>
+              )}
               {record.feedback && (
                 <Descriptions.Item label="Phản hồi" span={isMobile ? 1 : 2}>
                   {record.feedback}

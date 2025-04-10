@@ -115,7 +115,7 @@ export const PersonaInformation = () => {
       dispatch({ type: "LOGOUT" });
 
       // Redirect to login page
-      navigate("/login");
+      navigate("/login/user");
     } catch (error) {
       message.error("Xóa tài khoản thất bại!");
     } finally {

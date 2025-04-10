@@ -1,6 +1,5 @@
 import React, { useState, useContext } from "react";
 import { message } from "antd";
-
 import Footer from "../../components/Home/Owner/Footer";
 import logo from "../../assets/HouseClean_logo.png";
 import { Link, useNavigate } from "react-router-dom";
@@ -89,7 +88,7 @@ function Login() {
 
         <div className="login-container login-container-right">
           <div className="logo login-logo">
-            <Link to="/">
+            <Link to="/homeclean">
               <img
                 src={logo}
                 alt="House Clean Logo"
@@ -98,7 +97,7 @@ function Login() {
             </Link>
           </div>
           <div className="login-box">
-            <h2>Đăng nhập người giúp việc</h2>
+            <h2>Đăng nhập</h2>
 
             <form className="login-form" onSubmit={handleLogin}>
               <div className={`form-group ${phoneError ? "error" : ""}`}>
@@ -138,7 +137,7 @@ function Login() {
               </div>
 
               <div className="form-checkbox">
-                <Link to="/forgot-password" className="forgot-password">
+                <Link to="/forgot-password/cleaner" className="forgot-password">
                   Quên mật khẩu?
                 </Link>
               </div>
@@ -149,7 +148,8 @@ function Login() {
             </form>
 
             <p className="signup-link">
-              Chưa có tài khoản? <Link to="/register">Đăng kí ngay</Link>
+              Chưa có tài khoản?{" "}
+              <Link to="/homeclean/register/cleaner">Đăng kí ngay</Link>
             </p>
           </div>
         </div>

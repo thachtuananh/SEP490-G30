@@ -154,6 +154,21 @@ const JobInfomation = ({
 
       const responseData = await createJob(customerId, jobData);
 
+      // Handle VNPay payment URL if present
+      if (paymentMethod === "VNPay" && responseData.paymentUrl) {
+        // Open VNPay payment gateway in a new window
+        window.open(responseData.paymentUrl, "_blank", "noopener,noreferrer");
+
+        // Show notification that payment window has been opened
+        message.success(
+          "Cửa sổ thanh toán VNPay đã được mở. Vui lòng hoàn tất thanh toán!"
+        );
+
+        // Navigate to home page after successful job creation
+        navigate("/");
+        return;
+      }
+
       if (responseData.status === "OPEN") {
         message.success("Đăng việc thành công!");
         try {
@@ -251,16 +266,12 @@ const JobInfomation = ({
             </Text>
           )}
         </Paragraph>
-        {/* <Paragraph className={styles.infoRow}>
-                    <Text>Số nhân công</Text>
-                    <Text>1 người</Text>
-                </Paragraph> */}
         <Paragraph className={styles.infoRow}>
           <Text>Phương thức thanh toán</Text>
           <Text>
             {paymentMethod === "cash" && "Thanh toán tiền mặt"}
-            {paymentMethod === "vnpay" && "Thanh toán VNPay"}
-            {paymentMethod === "zalo" && "Thanh toán ZaloPay"}
+            {paymentMethod === "VNPay" && "Thanh toán VNPay"}
+            {paymentMethod === "Zalo" && "Thanh toán ZaloPay"}
             {!paymentMethod && "Chưa chọn"}
           </Text>
         </Paragraph>

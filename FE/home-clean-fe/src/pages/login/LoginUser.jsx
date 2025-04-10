@@ -97,7 +97,7 @@ function Login() {
             </Link>
           </div>
           <div className="login-box">
-            <h2>Đăng nhập người sử dụng dịch vụ</h2>
+            <h2>Đăng nhập</h2>
 
             <form className="login-form" onSubmit={handleLogin}>
               <div className={`form-group ${phoneError ? "error" : ""}`}>
@@ -137,7 +137,7 @@ function Login() {
               </div>
 
               <div className="form-checkbox">
-                <Link to="/forgot-password" className="forgot-password">
+                <Link to="/forgot-password/user" className="forgot-password">
                   Quên mật khẩu?
                 </Link>
               </div>
@@ -148,7 +148,7 @@ function Login() {
             </form>
 
             <p className="signup-link">
-              Chưa có tài khoản? <Link to="/register">Đăng kí ngay</Link>
+              Chưa có tài khoản? <Link to="/register/user">Đăng kí ngay</Link>
             </p>
           </div>
         </div>

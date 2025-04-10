@@ -9,7 +9,7 @@ const ConversationList = ({ onSelect, userId, role }) => {
 
   useEffect(() => {
     if (!userId || !role) return;
-
+    console.log("Fetching conversations for userId:", userId, "role:", role);
     const apiUrl =
       role === "customer"
         ? `${BASE_URL}/conversations/${userId}/getConversationByCustomerId`
@@ -50,7 +50,9 @@ const ConversationList = ({ onSelect, userId, role }) => {
               onSelect({
                 id: conversation.conversation_id,
                 customerId: conversation.customer_id,
+                customerName: conversation.customer_name,
                 employeeId: conversation.cleaner_id,
+                employeeName: conversation.cleaner_name,
               })
             }
             className={styles.conversationItem}

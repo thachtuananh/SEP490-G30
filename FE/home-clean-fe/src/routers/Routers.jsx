@@ -6,13 +6,15 @@ import HomeCleaner from "../pages/Home/Cleaner/HomeCleaner";
 
 import LoginUser from "../pages/login/LoginUser";
 import LoginCleaner from "../pages/login/LoginCleaner";
-import LoginSelection from "../pages/login/LoginSelection";
+// import LoginSelection from "../pages/login/LoginSelection";
 
 import RegisterUser from "../pages/register/RegisterUser";
 import RegisterSelection from "../pages/register/RegisterSelection";
 import RegisterCleaner from "../pages/register/RegisterCleaner";
 
-import ForgotPassword from "../pages/ForgotPass";
+import ForgotPasswordUser from "../pages/profile/owner/ForgotPass";
+import ForgotPasswordCleaner from "../pages/profile/cleanner/ForgotPass";
+
 import Infomation from "../pages/profile/owner/infomation";
 import InfomationCleaner from "../pages/profile/cleanner/infomationCleaner";
 
@@ -48,11 +50,15 @@ const Routers = () => {
       <Route path="/" element={<HomeOwner />} />
       <Route path="/homeclean" element={<HomeCleaner />} />
 
-      <Route path="/login" element={<LoginSelection />} />
+      {/* <Route path="/login" element={<LoginSelection />} /> */}
       <Route path="/login/user" element={<LoginUser />} />
       <Route path="/homeclean/login/cleaner" element={<LoginCleaner />} />
 
-      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/forgot-password/user" element={<ForgotPasswordUser />} />
+      <Route
+        path="/forgot-password/cleaner"
+        element={<ForgotPasswordCleaner />}
+      />
 
       <Route path="/register" element={<RegisterSelection />} />
       <Route path="/register/user" element={<RegisterUser />} />
