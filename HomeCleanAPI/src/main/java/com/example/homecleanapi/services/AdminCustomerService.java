@@ -52,7 +52,7 @@ public class AdminCustomerService {
         customer.setPhone(request.getPhone());
         customer.setPassword_hash(passwordEncoder.encode(request.getPassword()));
         customer.setFull_name(request.getName());
-        customer.setIs_deleted(false); // Mặc định là không bị xóa
+        customer.setDeleted(false); // Mặc định là không bị xóa
 
         // Lưu vào cơ sở dữ liệu
         customerRepository.save(customer);
@@ -63,7 +63,7 @@ public class AdminCustomerService {
                 "customerId", customer.getId(),
                 "phone", customer.getPhone(),
                 "name", customer.getFull_name(),
-                "is_deleted", customer.isIs_deleted() // Cập nhật với is_deleted
+                "is_deleted", customer.isDeleted() // Cập nhật với is_deleted
         ));
     }
 
@@ -93,7 +93,7 @@ public class AdminCustomerService {
         }
 
         if (request.getAccountStatus() != null) {
-            customer.setIs_deleted(request.getAccountStatus());  // Cập nhật is_deleted
+            customer.setDeleted(request.getAccountStatus());  // Cập nhật is_deleted
         }
 
         customerRepository.save(customer);
@@ -103,7 +103,7 @@ public class AdminCustomerService {
                 "customerId", customer.getId(),
                 "phone", customer.getPhone(),
                 "name", customer.getFull_name(),
-                "is_deleted", customer.isIs_deleted()
+                "is_deleted", customer.isDeleted()
         ));
     }
 
@@ -120,7 +120,7 @@ public class AdminCustomerService {
 
         Customers customer = existingCustomerOpt.get();
 
-        customer.setIs_deleted(true);
+        customer.setDeleted(true);
         customerRepository.save(customer);
 
         return ResponseEntity.ok(Map.of("message", "Khóa tài khoản khách hàng thành công"));
@@ -143,7 +143,7 @@ public class AdminCustomerService {
                 "phone", customer.getPhone(),
                 "name", customer.getFull_name(),
                 "created_at", customer.getCreated_at(),
-                "is_deleted", customer.isIs_deleted(),  // Cập nhật với is_deleted
+                "is_deleted", customer.isDeleted(),  // Cập nhật với is_deleted
                 "password_hash", customer.getPassword_hash()
         ));
     }
@@ -159,7 +159,7 @@ public class AdminCustomerService {
             map.put("phone", customer.getPhone());
             map.put("name", customer.getFull_name());
             map.put("created_at", customer.getCreated_at());
-            map.put("is_deleted", customer.isIs_deleted());  // Cập nhật với is_deleted
+            map.put("is_deleted", customer.isDeleted());  // Cập nhật với is_deleted
             return map;
         }).toList();
 

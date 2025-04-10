@@ -36,7 +36,7 @@ public class EmployeeController {
         return employeeService.employeeCreateAddress(request, employeeId);
     }
 
-    @PutMapping(value = "/{employeeId}//update-address/{addressId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping(value = "/{employeeId}/update-address/{addressId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Map<String, Object>> updateEmployeeAddress(@RequestBody EmployeeLocationsDTO request, @PathVariable int employeeId, @PathVariable int addressId) throws IOException {
         // Gọi service để xử lý update địa chỉ
         return employeeService.updateEmployeeAddress(request, employeeId, addressId);
@@ -64,9 +64,9 @@ public class EmployeeController {
         return cleanerAuthService.cleanerLogin(request);
     }
 
-    @PostMapping(value = "/{employeeId}/forgot-password", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Map<String, Object>> forgotPassword(@RequestBody ForgotPasswordRequest request, @PathVariable Integer employeeId) {
-        return cleanerAuthService.cleanerForgotPassword(request, employeeId);
+    @PostMapping(value = "/forgot-password", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Map<String, Object>> forgotPassword(@RequestBody ForgotPasswordRequest request) {
+        return cleanerAuthService.cleanerForgotPassword(request);
     }
 
     @PatchMapping(value = "/{employeeId}/update_profile", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -77,5 +77,10 @@ public class EmployeeController {
     @DeleteMapping(value = "/{employeeId}/delete_account", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Map<String, Object>> deleteEmployeeAccount(@PathVariable int employeeId) throws IOException {
         return employeeService.deleteEmployeeAccount(employeeId);
+    }
+
+    @PutMapping(value = "/{cleanerId}/change_password", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Map<String, Object>> changePassword(@PathVariable Integer cleanerId, @RequestBody ChangePasswordRequest request) {
+        return cleanerAuthService.cleanerChangePassword(request, cleanerId);
     }
 }
