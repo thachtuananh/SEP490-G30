@@ -4,6 +4,7 @@ import java.util.Optional;
 
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -47,9 +48,13 @@ public class VnpayController {
             if (jobOpt.isPresent()) {
                 Job job = jobOpt.get();
                 job.setStatus(JobStatus.OPEN);  
-                jobRepository.save(job);  
+                jobRepository.save(job);
 
-                return ResponseEntity.ok("Thanh toán thành công! Job đã được xác nhận.");
+                // Thành công thì redirect về URL frontend
+                String redirectUrl = "https://house-clean-platform.web.app/activitylist?status=success";
+                return ResponseEntity.status(HttpStatus.FOUND) // HTTP 302 Redirect
+                        .header(HttpHeaders.LOCATION, redirectUrl)
+                        .build();
             } else {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Job không tồn tại.");
             }
