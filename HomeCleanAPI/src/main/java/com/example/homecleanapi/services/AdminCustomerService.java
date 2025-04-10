@@ -244,7 +244,7 @@ public class AdminCustomerService {
 
                     return response;
                 })
-                .collect(Collectors.toList()); // Thu thập các job thành list
+                .collect(Collectors.toList());
     }
 
 
