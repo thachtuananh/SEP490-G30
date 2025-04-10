@@ -276,11 +276,11 @@ function Navbar() {
   // Login and Register buttons
   const authButtons = (
     <div style={{ display: "flex", gap: "10px" }}>
-      <Link to="/login" className="login-btn" style={{ width: "110px" }}>
+      <Link to="/login/user" className="login-btn" style={{ width: "110px" }}>
         Đăng nhập
       </Link>
       <Link
-        to="/register"
+        to="/register/user"
         className="login-btn"
         style={{
           width: "110px",

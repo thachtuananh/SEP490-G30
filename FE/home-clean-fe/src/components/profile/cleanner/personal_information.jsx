@@ -24,7 +24,7 @@ export const PersonaInformation = () => {
   const [cleanerExp, setExperience] = useState(cleaner?.cleanerExp || "");
   const [cleanerImg, setImg] = useState(cleaner?.cleanerImg || "");
 
-  // Update API call function
+  // Updated API call function - removed identity_number from the request body
   const updateProfileAPI = async () => {
     const token = localStorage.getItem("token");
     const cleanerId = localStorage.getItem("cleanerId");
@@ -49,8 +49,8 @@ export const PersonaInformation = () => {
             phone: cleanerPhone,
             email: cleanerEmail,
             age: parseInt(cleanerAge),
-            identity_number: cleanerIDnum,
             experience: cleanerExp,
+            identity_number: cleanerIDnum,
           }),
         }
       );
@@ -66,8 +66,8 @@ export const PersonaInformation = () => {
         cleanerPhone: cleanerPhone,
         cleanerEmail: cleanerEmail,
         cleanerAge: cleanerAge,
-        cleanerIDnum: cleanerIDnum,
         cleanerExp: cleanerExp,
+        cleanerIDnum: cleanerIDnum,
       };
 
       dispatch({ type: "UPDATE_CLEANER", payload: updatedData });
@@ -110,7 +110,7 @@ export const PersonaInformation = () => {
       dispatch({ type: "LOGOUT" });
 
       // Redirect to login page
-      navigate("/login");
+      navigate("/homeclean/login/cleaner");
     } catch (error) {
       message.error("Xóa tài khoản thất bại!");
     } finally {
@@ -237,7 +237,8 @@ export const PersonaInformation = () => {
         <input
           type="text"
           value={cleanerIDnum}
-          onChange={(e) => setIdentityNumber(e.target.value)}
+          readOnly
+          style={{ backgroundColor: "#f0f0f0", cursor: "not-allowed" }}
         />
       </div>
 
