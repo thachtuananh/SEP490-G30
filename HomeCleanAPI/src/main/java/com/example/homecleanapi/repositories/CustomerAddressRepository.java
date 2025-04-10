@@ -13,5 +13,7 @@ public interface CustomerAddressRepository extends JpaRepository<CustomerAddress
     List<CustomerAddresses> findByCustomerId(Integer customerId);
 
     CustomerAddresses findCustomerAddressesById(Integer id);
+
+    CustomerAddresses findCustomerAddressesByCustomer_IdAndCurrentIsTrue(Integer customerId);
 }
 

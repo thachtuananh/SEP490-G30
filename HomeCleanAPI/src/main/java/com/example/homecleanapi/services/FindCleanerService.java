@@ -24,6 +24,8 @@ public class FindCleanerService {
     @Autowired
     private EmployeeAddressRepository employeeAddressRepository;
 
+
+    // Lấy list cleaner gần customer nhất
     private List<EmployeeDTO> executeNearbyQuery(double latitude, double longitude, double radiusInMeters, int limit) {
         String query = "SELECT c.id, c.full_name, c.email, c.experience, c.phone_number, c.profile_image, " +
                 "       ca.latitude, ca.longitude, " +
@@ -68,7 +70,7 @@ public class FindCleanerService {
         return employees;
     }
 
-    public List<EmployeeDTO> findNearbyEmployees(double latitude, double longitude, double radiusInMeters, int limit) {
+    public List<EmployeeDTO> findNearbyEmployees(double latitude, double longitude, int limit) {
         double[] radiusLevels = {15000, 30000, 60000}; // Các mức bán kính
         List<EmployeeDTO> employees = new ArrayList<>();
 
@@ -76,11 +78,11 @@ public class FindCleanerService {
             employees = executeNearbyQuery(latitude, longitude, radius, limit);
 
             if (employees.size() >= limit) {
-                break; // Nếu đã đủ số lượng nhân viên, dừng lại
+                break;
             }
         }
-
-        return employees; // Trả về danh sách nhân viên gần nhất
+        System.out.println(employees);
+        return employees;
     }
 
 
@@ -166,7 +168,6 @@ public class FindCleanerService {
 
         return nativeQuery.getResultList();
     }
-
 
 
 
