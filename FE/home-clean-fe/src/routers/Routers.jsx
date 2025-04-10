@@ -27,6 +27,7 @@ import ServiceDetails from "../pages/ServiceDetails/ServiceDetails";
 import CleanerDetails from "../pages/CleanerDetails/CleanerDetails";
 import CreateJob from "../pages/ServiceDetails/CreateJob";
 import CreateJobToCleaner from "../pages/ServiceDetails/CreateJobToCleaner";
+import CleanerSection from "../pages/Home/Owner/CleanerSectionPage";
 import OrderSuccess from "../pages/order_success/OrderSuccess";
 import ApplySuccess from "../pages/order_success/ApplySuccess";
 import WorkDetail from "../pages/work/WorkDetail";
@@ -53,7 +54,7 @@ const Routers = () => {
       {/* <Route path="/login" element={<LoginSelection />} /> */}
       <Route path="/login/user" element={<LoginUser />} />
       <Route path="/homeclean/login/cleaner" element={<LoginCleaner />} />
-
+      <Route path="/cleaner-section" element={<CleanerSection />} />
       <Route path="/forgot-password/user" element={<ForgotPasswordUser />} />
       <Route
         path="/forgot-password/cleaner"

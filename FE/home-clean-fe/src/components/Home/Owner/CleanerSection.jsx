@@ -53,44 +53,104 @@ function CleanerSection() {
     }
   };
 
+  // Fix for CleanerSection.jsx
   useEffect(() => {
     if (!client || isSub) return;
 
     const trySub = () => {
       console.log("connect");
-      const subscription = client.subscribe(
-        "/topic/onlineCleaners",
-        (message) => {
-          try {
-            const cleanerId = JSON.parse(message.body);
-            console.log("🚀 ~ subscription ~ message.body:", message.body);
-            setCleaners((prev) => {
-              if (prev.some((cleaner) => cleaner === cleanerId)) {
-                return prev;
-              }
-              return [...prev, cleanerId];
-            });
-          } catch (error) {
-            console.error("❌ Lỗi khi nhận thông tin cleaner online:", error);
-          }
-        }
-      );
-      setIsSub(true);
 
-      return subscription;
+      // Make sure we're getting valid subscription objects
+      let subscriptions = [];
+
+      try {
+        // Subscribe to online cleaners
+        const onlineSub = client.subscribe(
+          "/topic/onlineCleaners",
+          (message) => {
+            try {
+              const cleanerId = JSON.parse(message.body);
+              console.log("🚀 ~ subscription ~ message.body:", message.body);
+              setCleaners((prev) => {
+                if (prev.some((cleaner) => cleaner.cleanerId === cleanerId)) {
+                  return prev;
+                }
+                return [...prev, cleanerId];
+              });
+
+              // Update online cleaner IDs
+              setOnlineCleanerIds((prev) => {
+                if (prev.includes(cleanerId)) {
+                  return prev;
+                }
+                return [...prev, cleanerId];
+              });
+            } catch (error) {
+              console.error("❌ Error processing online cleaner:", error);
+            }
+          }
+        );
+        subscriptions.push(onlineSub);
+
+        // Subscribe to offline cleaners
+        const offlineSub = client.subscribe(
+          "/topic/offlineCleaners",
+          (message) => {
+            try {
+              const cleanerId = JSON.parse(message.body);
+              console.log("🚀 ~ subscription ~ offline message:", message.body);
+
+              // Remove cleaner from online list
+              setOnlineCleanerIds((prev) =>
+                prev.filter((id) => id !== cleanerId)
+              );
+            } catch (error) {
+              console.error("❌ Error processing offline cleaner:", error);
+            }
+          }
+        );
+        subscriptions.push(offlineSub);
+
+        setIsSub(true);
+      } catch (error) {
+        console.error("Failed to subscribe:", error);
+      }
+
+      // Return cleanup function
+      return () => {
+        subscriptions.forEach((sub) => {
+          if (sub && typeof sub.unsubscribe === "function") {
+            try {
+              sub.unsubscribe();
+            } catch (err) {
+              console.error("Error unsubscribing:", err);
+            }
+          }
+        });
+      };
     };
 
     if (client.connected) {
-      const sub = trySub();
-      return () => sub?.unsubscribe();
+      const cleanup = trySub();
+      return cleanup; // Return the cleanup function directly
     } else {
+      // Store the original onConnect if it exists
+      const originalOnConnect = client.onConnect;
+
       client.onConnect = () => {
-        const sub = trySub();
-        client.cleanupSub = () => sub?.unsubscribe();
+        // Call original onConnect if it exists
+        if (originalOnConnect) originalOnConnect();
+
+        const cleanup = trySub();
+        client.cleanupSub = cleanup; // Store cleanup function
       };
 
       return () => {
-        if (client.cleanupSub) {
+        // Restore original onConnect
+        client.onConnect = originalOnConnect;
+
+        // Call cleanup if it exists
+        if (client.cleanupSub && typeof client.cleanupSub === "function") {
           client.cleanupSub();
         }
       };
@@ -103,9 +163,9 @@ function CleanerSection() {
     fetchAllCleaners();
   }, []);
 
-  useEffect(() => {
-    console.log("🚀 ~ CleanersSection ~ cleaners:", cleaners);
-  }, [cleaners]);
+  // useEffect(() => {
+  //   console.log("🚀 ~ CleanersSection ~ cleaners:", cleaners);
+  // }, [cleaners]);
 
   const onlineCount = cleaners.filter((cleaner) =>
     isOnline(cleaner.cleanerId)
