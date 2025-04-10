@@ -10,6 +10,8 @@ import org.springframework.mail.MailSender;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -46,6 +48,8 @@ public class CustomerAuthService {
         customer.setPhone(request.getPhone());
         customer.setPassword_hash(passwordEncoder.encode(request.getPassword()));
         customer.setFull_name(request.getName());
+        customer.setEmail(request.getEmail());
+        customer.setCreated_at(ZonedDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh")).toLocalDate());
 //    customer.setRole("USER"); // Kiểm tra lại nếu role là enum hoặc bảng riêng
 
         customerRepository.save(customer);
@@ -97,13 +101,13 @@ public class CustomerAuthService {
     }
 
 
-    public ResponseEntity<Map<String, Object>> customerForgotPassword(ForgotPasswordRequest request, Integer customerId) {
-        Customers customer = customerRepository.findCustomersById(customerId);
+    public ResponseEntity<Map<String, Object>> customerForgotPassword(ForgotPasswordRequest request) {
+        Customers customer = customerRepository.findCustomersByEmail(request.getEmail());
 
         Map<String, Object> response = new HashMap<>();
 
         if (customer == null) {
-            response.put("message", "Số điện thoại không tồn tại!");
+            response.put("message", "Sai địa chỉ email hoặc tài khoản không tồn tại");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
 
@@ -122,7 +126,7 @@ public class CustomerAuthService {
         return ResponseEntity.ok(response);
     }
 
-    public ResponseEntity<Map<String, String>> customerChangePassword(ChangePasswordRequest request, Integer customerId) {
+    public ResponseEntity<Map<String, Object>> customerChangePassword(ChangePasswordRequest request, Integer customerId) {
         Customers customer = customerRepository.findCustomersById(customerId);
         if (customer == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", "Khách hàng không tồn tại"));

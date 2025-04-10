@@ -28,7 +28,7 @@ public interface CleanerRepository extends JpaRepository<Employee, Long> {
     @Query("UPDATE Employee e SET e.is_verified = :status, e.isDeleted = :isDeleted WHERE e.id = :id")
     void updateIdentityVerifiedAndDeletedStatus(@Param("id") Integer id, @Param("status") Boolean status, @Param("isDeleted") Boolean isDeleted);
 
-    @Query("SELECT COUNT(c) FROM Customers c WHERE c.is_deleted = :isDeleted")
+    @Query("SELECT COUNT(c) FROM Customers c WHERE c.isDeleted = :isDeleted")
     long countByIsDeleted(@Param("isDeleted") Boolean isDeleted);
 
     @Query("SELECT c FROM Employee c WHERE c.is_verified = false")

@@ -3,6 +3,10 @@ package com.example.homecleanapi.controllers;
 
 import com.example.homecleanapi.dtos.EmployeeDTO;
 import com.example.homecleanapi.dtos.ServiceDTO;
+import com.example.homecleanapi.models.CustomerAddresses;
+import com.example.homecleanapi.models.Customers;
+import com.example.homecleanapi.repositories.CustomerAddressRepository;
+import com.example.homecleanapi.repositories.CustomerRepository;
 import com.example.homecleanapi.services.FindCleanerService;
 import com.example.homecleanapi.services.ServiceDisplayService;
 
@@ -22,6 +26,10 @@ public class ServiceController {
     private ServiceDisplayService serviceDisplayService;
     @Autowired
     private FindCleanerService findCleanerService;
+    @Autowired
+    private CustomerRepository customerRepository;
+    @Autowired
+    private CustomerAddressRepository customerAddressRepository;
 
 
     // api lấy ra hết dịch vụ ở trang homepage
@@ -46,14 +54,12 @@ public class ServiceController {
         return ResponseEntity.ok(serviceDTO);
     }
 
-    @GetMapping("/nearby")
+    @GetMapping("/{customerId}/nearby")
     public ResponseEntity<List<EmployeeDTO>> getNearbyEmployees(
-            @RequestParam double latitude,
-            @RequestParam double longitude,
-//            @RequestParam(defaultValue = "20000") double radius,
-            @RequestParam(defaultValue = "10") int limit) {
-
-        List<EmployeeDTO> employees = findCleanerService.findNearbyEmployees(latitude, longitude, 15000, limit);
+            @RequestParam(defaultValue = "10") int limit,
+            @PathVariable Integer customerId) {
+        CustomerAddresses customerAddresses = customerAddressRepository.findCustomerAddressesByCustomer_IdAndCurrentIsTrue(customerId);
+        List<EmployeeDTO> employees = findCleanerService.findNearbyEmployees(customerAddresses.getLatitude(), customerAddresses.getLongitude(), limit);
         return ResponseEntity.ok(employees);
     }
 

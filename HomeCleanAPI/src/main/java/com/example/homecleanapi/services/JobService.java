@@ -13,6 +13,7 @@ import com.example.homecleanapi.repositories.*;
 
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
 
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -66,7 +67,7 @@ public class JobService {
 
     
   
-    public Map<String, Object> bookJob(@PathVariable Long customerId, @RequestBody BookJobRequest request) {
+    public Map<String, Object> bookJob(@PathVariable Long customerId, @RequestBody BookJobRequest request, HttpServletRequest requestIp) {
         Map<String, Object> response = new HashMap<>();
 
         // Kiểm tra khách hàng có tồn tại không
@@ -178,7 +179,7 @@ public class JobService {
                 vnpayRequest.setAmount(String.valueOf(amount)); // Gửi số tiền đã được nhân với 100
 
                 // Tạo URL thanh toán VNPay
-                String paymentUrl = vnpayService.createPayment(vnpayRequest);
+                String paymentUrl = vnpayService.createPayment(vnpayRequest, requestIp);
 
                 // Lấy txnRef từ URL của VNPay
                 String txnRef = extractTxnRefFromUrl(paymentUrl);  // Lấy txnRef từ URL của VNPay
@@ -287,14 +288,14 @@ public class JobService {
 
         // Cập nhật trạng thái is_default của tất cả các địa chỉ của customer thành false
         for (CustomerAddresses address : addresses) {
-            address.setIs_current(false); // Hoặc nếu bạn dùng "is_default", hãy đổi theo thuộc tính đó
+            address.setCurrent(false); // Hoặc nếu bạn dùng "is_default", hãy đổi theo thuộc tính đó
             customerAddressRepository.save(address);
         }
 
         // Cập nhật địa chỉ được chọn thành mặc định
         CustomerAddresses defaultAddress = customerAddressRepository.findById(addressId).orElse(null);
         if (defaultAddress != null) {
-            defaultAddress.setIs_current(true); // Hoặc nếu bạn dùng "is_default", hãy đổi theo thuộc tính đó
+            defaultAddress.setCurrent(true); // Hoặc nếu bạn dùng "is_default", hãy đổi theo thuộc tính đó
             customerAddressRepository.save(defaultAddress);
             return true;
         }
@@ -491,16 +492,5 @@ public class JobService {
         response.put("status", job.getStatus());
         return response;
     }
-    
-    
-    
-    
-    // LU
-
-
-    
-
-
-
 }
 

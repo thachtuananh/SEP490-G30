@@ -14,7 +14,8 @@ public interface CustomerRepository extends JpaRepository<Customers, Long> {
 
     Customers findCustomersById(Integer id);
 
-    @Query("SELECT COUNT(c) FROM Customers c WHERE c.is_deleted = :isDeleted")
+    @Query("SELECT COUNT(c) FROM Customers c WHERE c.isDeleted = :isDeleted")
     long countByIsDeleted(@Param("isDeleted") Boolean isDeleted);
 
+    Customers findCustomersByEmail(String email);
 }
