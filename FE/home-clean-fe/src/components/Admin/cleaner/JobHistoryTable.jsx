@@ -66,13 +66,34 @@ const JobHistoryTable = ({
 
   // Define responsive columns for job history table
   const getJobColumns = () => {
-    // Basic columns for all screen sizes
+    // Base columns for all screen sizes (prioritizing the most important columns)
     const baseColumns = [
       {
         title: "Khách hàng",
         dataIndex: "fullName",
         key: "fullName",
-        ellipsis: isMobile,
+        // ellipsis: isMobile || isTablet,
+      },
+      {
+        title: "Dịch vụ",
+        dataIndex: "services",
+        key: "services",
+        render: (services) => (
+          <span>
+            {services
+              .slice(0, isMobile || isTablet ? 1 : 2)
+              .map((service, index) => (
+                <Tag key={index} color="blue">
+                  {service}
+                </Tag>
+              ))}
+            {services.length > (isMobile || isTablet ? 1 : 2) && (
+              <Tag color="blue">
+                +{services.length - (isMobile || isTablet ? 1 : 2)}
+              </Tag>
+            )}
+          </span>
+        ),
       },
       {
         title: "Trạng thái",
@@ -86,7 +107,7 @@ const JobHistoryTable = ({
               color={color}
               style={{ color: "#fff", backgroundColor: color }}
             >
-              {isMobile ? status : text}
+              {text}
             </Tag>
           );
         },
@@ -116,8 +137,8 @@ const JobHistoryTable = ({
       },
     ];
 
-    // Add more columns for tablet and desktop
-    if (!isMobile) {
+    // Add date and total price columns only for desktop view
+    if (!isMobile && !isTablet) {
       baseColumns.splice(1, 0, {
         title: "Ngày",
         dataIndex: "scheduledTime",
@@ -137,24 +158,6 @@ const JobHistoryTable = ({
         key: "totalPrice",
         render: (price) => `${price.toLocaleString("vi-VN")}`,
         sorter: (a, b) => a.totalPrice - b.totalPrice,
-      });
-    }
-
-    // Add services column only for desktop
-    if (!isMobile && !isTablet) {
-      baseColumns.splice(4, 0, {
-        title: "Dịch vụ",
-        dataIndex: "services",
-        key: "services",
-        render: (services) => (
-          <span>
-            {services.map((service, index) => (
-              <Tag key={index} color="blue">
-                {service}
-              </Tag>
-            ))}
-          </span>
-        ),
       });
     }
 
@@ -202,12 +205,30 @@ const JobHistoryTable = ({
         expandable={{
           expandedRowRender: (record) => (
             <Descriptions column={isMobile ? 1 : 2} size="small" bordered>
+              {(isMobile || isTablet) && (
+                <Descriptions.Item label="Ngày">
+                  {new Date(record.scheduledTime).toLocaleDateString("vi-VN", {
+                    day: "2-digit",
+                    month: "2-digit",
+                    year: "numeric",
+                  })}
+                </Descriptions.Item>
+              )}
+              {(isMobile || isTablet) && (
+                <Descriptions.Item label="Tổng tiền">
+                  <strong>
+                    {record.totalPrice.toLocaleString("vi-VN")} VND
+                  </strong>
+                </Descriptions.Item>
+              )}
               <Descriptions.Item label="Số điện thoại">
                 {record.phone}
               </Descriptions.Item>
               <Descriptions.Item label="Phương thức thanh toán">
                 {record.paymentMethod === "cash"
                   ? "Tiền mặt"
+                  : record.paymentMethod === "vnpay"
+                  ? "VNPay"
                   : record.paymentMethod}
               </Descriptions.Item>
               <Descriptions.Item label="Ghi chú" span={isMobile ? 1 : 2}>
@@ -216,6 +237,15 @@ const JobHistoryTable = ({
               {record.feedback && (
                 <Descriptions.Item label="Phản hồi" span={isMobile ? 1 : 2}>
                   {record.feedback}
+                </Descriptions.Item>
+              )}
+              {(isMobile || isTablet) && record.services.length > 1 && (
+                <Descriptions.Item label="Tất cả dịch vụ" span={1}>
+                  {record.services.map((service, index) => (
+                    <Tag key={index} color="blue" style={{ margin: "2px" }}>
+                      {service}
+                    </Tag>
+                  ))}
                 </Descriptions.Item>
               )}
             </Descriptions>

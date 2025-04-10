@@ -36,6 +36,12 @@ const ChatWindow = ({ messages, onSendMessage, conversation, userId }) => {
                 }
               >
                 <span>{msg.content}</span>
+                {/* <span className={styles.timestamp}>
+                  {new Date(msg.sent_at).toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                </span> */}
               </div>
             ))}
           </div>

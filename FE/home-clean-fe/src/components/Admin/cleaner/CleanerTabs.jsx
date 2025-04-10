@@ -138,9 +138,20 @@ const CleanerTabs = ({
       const token = localStorage.getItem("token");
       const cleanerId = cleanerData.id || cleanerData.cleanerId;
 
+      // Lấy giá trị hiện tại từ state, không phụ thuộc vào validateFields()
+      // Đây là trạng thái thực tế được theo dõi bởi các nút trong form
+      const identityVerified =
+        values.identityVerified !== undefined
+          ? values.identityVerified
+          : cleanerData.identity_verified;
+      const isDeleted =
+        values.accountStatus !== undefined
+          ? values.accountStatus
+          : cleanerData.is_deleted;
+
       // Using the updated API endpoint from the requirements
       const response = await fetch(
-        `${BASE_URL}/admin/cleaners/${cleanerId}/identity-verified?status=${values.identityVerified}&isDeleted=${values.accountStatus}`,
+        `${BASE_URL}/admin/cleaners/${cleanerId}/identity-verified?identityVerified=${identityVerified}&isDeleted=${isDeleted}`,
         {
           method: "PATCH",
           headers: {

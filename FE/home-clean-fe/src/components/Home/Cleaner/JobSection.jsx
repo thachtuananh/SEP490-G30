@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Row, Col, Typography, Card, Spin, Alert } from "antd";
 import { SearchOutlined, EnvironmentOutlined } from "@ant-design/icons";
-import "../Cleaner/home.css"
+import "../Cleaner/home.css";
 import JobCard from "./JobCard";
 import iconKhach from "../../../assets/icon-pageClean/icon-clean-phongkhach.svg";
 import iconNgu from "../../../assets/icon-pageClean/icon-clean-phongngu.svg";
@@ -21,21 +21,24 @@ const initialServices = [
     id: 1,
     image: iconKhach,
     title: "Dọn phòng khách",
-    description: "Lau sàn, hút bụi, lau bàn ghế, vệ sinh cửa kính, sắp xếp gọn gàng",
+    description:
+      "Lau sàn, hút bụi, lau bàn ghế, vệ sinh cửa kính, sắp xếp gọn gàng",
     count: "0 việc làm",
   },
   {
     id: 2,
     image: iconBep,
     title: "Dọn phòng bếp",
-    description: "Lau chùi bếp, vệ sinh bồn rửa, dọn dẹp bàn ăn, lau sàn, hút bụi",
+    description:
+      "Lau chùi bếp, vệ sinh bồn rửa, dọn dẹp bàn ăn, lau sàn, hút bụi",
     count: "0 việc làm",
   },
   {
     id: 3,
     image: iconNgu,
     title: "Dọn phòng ngủ",
-    description: "Gấp chăn gối, thay ga giường, lau bụi, hút bụi, lau sàn, sắp xếp đồ đạc",
+    description:
+      "Gấp chăn gối, thay ga giường, lau bụi, hút bụi, lau sàn, sắp xếp đồ đạc",
     count: "0 việc làm",
   },
   {
@@ -59,22 +62,21 @@ const initialServices = [
     description: "Dọn dẹp bụi bẩn, lau chùi cửa kính, tường, sàn nhà, hút bụi",
     count: "0 việc làm",
   },
-  {
-    id: 7,
-    image: iconVanPhong,
-    title: "Dọn dẹp văn phòng, cửa hàng",
-    description: "Lau bàn ghế, quét và lau sàn, vệ sinh cửa kính, sắp xếp lại không gian",
-    count: "0 việc làm",
-  },
-  {
-    id: 8,
-    image: iconDinhKy,
-    title: "Dọn dẹp nhà theo định kỳ",
-    description: "Vệ sinh nhà cửa định kỳ theo tuần/tháng, duy trì không gian sạch sẽ",
-    count: "0 việc làm",
-  },
+  // {
+  //   id: 7,
+  //   image: iconVanPhong,
+  //   title: "Dọn dẹp văn phòng, cửa hàng",
+  //   description: "Lau bàn ghế, quét và lau sàn, vệ sinh cửa kính, sắp xếp lại không gian",
+  //   count: "0 việc làm",
+  // },
+  // {
+  //   id: 8,
+  //   image: iconDinhKy,
+  //   title: "Dọn dẹp nhà theo định kỳ",
+  //   description: "Vệ sinh nhà cửa định kỳ theo tuần/tháng, duy trì không gian sạch sẽ",
+  //   count: "0 việc làm",
+  // },
 ];
-
 
 function JobSection({ title }) {
   const [services, setServices] = useState(initialServices);
@@ -86,28 +88,28 @@ function JobSection({ title }) {
       setIsLoading(true);
       try {
         // Get token from localStorage
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem("token");
 
         if (!token) {
-          throw new Error('No authentication token found');
+          throw new Error("No authentication token found");
         }
 
         const response = await fetch(`${BASE_URL}/cleaner/jobs/by-service`, {
           headers: {
-            'accept': 'application/json',
-            'Authorization': `Bearer ${token}`
-          }
+            accept: "application/json",
+            Authorization: `Bearer ${token}`,
+          },
         });
 
         if (!response.ok) {
-          throw new Error('Failed to fetch job counts');
+          throw new Error("Failed to fetch job counts");
         }
 
         const data = await response.json();
 
         // Update services with job counts from API
-        setServices(prevServices => {
-          return prevServices.map(service => {
+        setServices((prevServices) => {
+          return prevServices.map((service) => {
             // Initialize job count to 0
             let jobCount = 0;
 
@@ -118,8 +120,8 @@ function JobSection({ title }) {
             // Match based on serviceId instead of title
             else {
               // Find the service in the API response based on serviceId
-              const serviceData = Object.values(data).find(item =>
-                item.serviceId === service.id
+              const serviceData = Object.values(data).find(
+                (item) => item.serviceId === service.id
               );
 
               if (serviceData && serviceData.jobCount !== undefined) {
@@ -129,7 +131,7 @@ function JobSection({ title }) {
 
             return {
               ...service,
-              count: `${jobCount} việc làm`
+              count: `${jobCount} việc làm`,
             };
           });
         });
@@ -145,7 +147,7 @@ function JobSection({ title }) {
   }, []);
 
   return (
-    <div className="jobsection" >
+    <div className="jobsection">
       {/* Search bar section - commented out as in original
       <div style={{ marginBottom: 24 }}>
         <Row gutter={16} align="middle">
@@ -176,9 +178,17 @@ function JobSection({ title }) {
       </div>
       */}
 
-      <Title level={2} style={{ marginBottom: 24 }}>{title}</Title>
+      <Title level={2} style={{ marginBottom: 24 }}>
+        {title}
+      </Title>
 
-      {isLoading && <Spin tip="Đang tải..." size="large" style={{ display: "block", margin: "20px auto" }} />}
+      {/* {isLoading && (
+        <Spin
+          tip="Đang tải..."
+          size="large"
+          style={{ display: "block", margin: "20px auto" }}
+        />
+      )} */}
 
       {/* {error && (
         <Alert
@@ -193,9 +203,7 @@ function JobSection({ title }) {
       <Row gutter={[16, 16]}>
         {services.map((service) => (
           <Col xs={24} sm={12} md={8} lg={6} key={service.id}>
-            <JobCard
-              {...service}
-            />
+            <JobCard {...service} />
           </Col>
         ))}
       </Row>

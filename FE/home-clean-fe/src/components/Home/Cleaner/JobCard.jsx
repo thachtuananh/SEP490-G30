@@ -91,12 +91,13 @@ function JobCard({ image, title, description, count, id }) {
         background: "#f5f5f5",
         display: "flex",
         flexDirection: "column",
-      }}
-      bodyStyle={{
-        display: "flex",
-        flexDirection: "column",
-        flex: 1,
-        padding: "0 16px 16px 16px",
+        body: {
+          // This is using style.body as requested
+          display: "flex",
+          flexDirection: "column",
+          flex: 1,
+          padding: "0 16px 16px 16px",
+        },
       }}
       onClick={handleCardClick}
       cover={

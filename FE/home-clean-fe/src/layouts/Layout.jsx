@@ -12,7 +12,8 @@ const Layout = () => {
     [
       "/login",
       "/register",
-      "/forgot-password",
+      "/forgot-password/user",
+      "/forgot-password/cleaner",
       "/register/user",
       "/register/cleaner",
       "/login",

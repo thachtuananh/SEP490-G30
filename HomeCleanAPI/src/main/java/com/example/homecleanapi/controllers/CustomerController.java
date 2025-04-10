@@ -20,14 +20,12 @@ import java.util.Map;
 @SecurityRequirement(name = "BearerAuth")
 public class CustomerController {
 
-    private JwtUtils jwtUtils;
     private final CustomerAuthService customerAuthService;
     private CustomerService customerService;
 
 
-    public CustomerController(CustomerAuthService customerAuthService, JwtUtils jwtUtils, CustomerService customerService) {
+    public CustomerController(CustomerAuthService customerAuthService, CustomerService customerService) {
         this.customerAuthService = customerAuthService;
-        this.jwtUtils = jwtUtils;
         this.customerService = customerService;
     }
 
@@ -41,9 +39,9 @@ public class CustomerController {
         return customerAuthService.customerLogin(request);
     }
 
-    @PostMapping(value = "/{customerId}/forgot-password",  produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Map<String, Object>> forgotPassword(@RequestBody ForgotPasswordRequest request, @PathVariable Integer customerId) {
-        return customerAuthService.customerForgotPassword(request, customerId);
+    @PostMapping(value = "/forgot-password",  produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Map<String, Object>> forgotPassword(@RequestBody ForgotPasswordRequest request) {
+        return customerAuthService.customerForgotPassword(request);
     }
 
     @PatchMapping(value = "/{customer_id}/profile",  produces = MediaType.APPLICATION_JSON_VALUE)
@@ -83,5 +81,10 @@ public class CustomerController {
     @DeleteMapping(value = "/{customer_id}/delete_account", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Map<String, Object>> deleteAccount(@PathVariable Long customer_id) {
         return customerService.deleteCustomerAccount(customer_id);
+    }
+
+    @PutMapping(value = "/{customerId}/change_password", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Map<String, Object>> changePassword(@PathVariable Integer customerId, @RequestBody ChangePasswordRequest request) {
+        return customerAuthService.customerChangePassword(request, customerId);
     }
 }

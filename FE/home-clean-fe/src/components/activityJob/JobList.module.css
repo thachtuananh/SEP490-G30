@@ -242,7 +242,7 @@
 }
 
 .completeBtn:hover {
-  background-color: #027a48;
+  border: 2px solid #027a48 !important;
 }
 
 @keyframes spin {

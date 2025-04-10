@@ -121,9 +121,9 @@ const JobUpload = () => {
     });
   };
 
-  if (loading) {
-    return <div className={styles.loading}>Đang tải dịch vụ...</div>;
-  }
+  // if (loading) {
+  //   return <div className={styles.loading}>Đang tải dịch vụ...</div>;
+  // }
 
   return (
     <>

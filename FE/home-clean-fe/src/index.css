@@ -1195,7 +1195,7 @@ body {
   }
 
   .main-content > *:last-child {
-    flex: 1;
+    flex: 0;
     width: 100%;
     max-width: 400px;
     margin: 0 auto;
@@ -1245,6 +1245,11 @@ body {
     padding: 2rem;
     display: grid;
     grid-auto-rows: auto;
+  }
+
+  .mobile-notification {
+    display: flex;
+    gap: 20px;
   }
 }
 

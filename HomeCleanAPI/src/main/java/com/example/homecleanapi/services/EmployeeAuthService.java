@@ -1,8 +1,10 @@
 package com.example.homecleanapi.services;
 
+import com.example.homecleanapi.dtos.ChangePasswordRequest;
 import com.example.homecleanapi.dtos.CleanerRegisterRequest;
 import com.example.homecleanapi.dtos.ForgotPasswordRequest;
 import com.example.homecleanapi.dtos.LoginRequest;
+import com.example.homecleanapi.models.Customers;
 import com.example.homecleanapi.models.Employee;
 import com.example.homecleanapi.repositories.EmployeeRepository;
 import com.example.homecleanapi.utils.JwtUtils;
@@ -121,13 +123,13 @@ public class EmployeeAuthService {
     }
 
 
-    public ResponseEntity<Map<String, Object>> cleanerForgotPassword(ForgotPasswordRequest request, Integer employeeId) {
-        Employee employee = employeeRepository.findEmployeeById(employeeId);
+    public ResponseEntity<Map<String, Object>> cleanerForgotPassword(ForgotPasswordRequest request) {
+        Employee employee = employeeRepository.findByEmail(request.getEmail());
 
         Map<String, Object> response = new HashMap<>();
 
         if (employee == null) {
-            response.put("message", "Số điện thoại không tồn tại!");
+            response.put("message", "Email không đúng hoặc tài khoản không tồn tại!");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
 
@@ -144,5 +146,21 @@ public class EmployeeAuthService {
         response.put("message", "Mật khẩu mới đã được gửi!");
         response.put("newPassword", newPassword);
         return ResponseEntity.ok(response);
+    }
+
+    public ResponseEntity<Map<String, Object>> cleanerChangePassword(ChangePasswordRequest request, Integer clenaerId) {
+        Employee employee = employeeRepository.findEmployeeById(clenaerId);
+        if (employee == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", "Khách hàng không tồn tại"));
+        }
+
+        if (!passwordEncoder.matches(request.getOldPassword(), employee.getPassword())) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", "Mật khẩu cũ không chính xác"));
+        }
+
+        employee.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        employeeRepository.save(employee);
+
+        return ResponseEntity.ok(Map.of("message", "Mật khẩu đã được cập nhật thành công"));
     }
 }
