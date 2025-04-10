@@ -32,6 +32,9 @@ public class CleanerJobController {
     @Autowired
     private FindCleanerService findCleanerService;
 
+    @Autowired
+    private CleanerJobService jobService;
+
     // Xem danh sách các công việc "Open"
     @GetMapping(value = "/jobs/{cleanerId}")
     public ResponseEntity<List<JobSummaryDTO>> getNearbyOpenJobs(@PathVariable Long cleanerId) {
@@ -160,6 +163,17 @@ public class CleanerJobController {
         return ResponseEntity.ok(comboJobs);
     }
 
+    @PutMapping("/{cleanerId}/addresses/{addressId}/set-current")
+    public ResponseEntity<String> setCurrentAddress(@PathVariable("cleanerId") Integer cleanerId,
+                                                    @PathVariable("addressId") Integer addressId) {
+        boolean success = jobService.setCurrentAddress(cleanerId, addressId);
+
+        if (success) {
+            return ResponseEntity.ok("Address set as current successfully");
+        } else {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Failed to update address status");
+        }
+    }
 
 
 

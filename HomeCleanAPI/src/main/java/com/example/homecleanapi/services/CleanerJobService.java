@@ -4,29 +4,8 @@ import com.example.homecleanapi.dtos.BookJobRequest;
 import com.example.homecleanapi.dtos.BookJobRequest.ServiceRequest;
 import com.example.homecleanapi.dtos.JobSummaryDTO;
 import com.example.homecleanapi.enums.JobStatus;
-import com.example.homecleanapi.models.CustomerAddresses;
-import com.example.homecleanapi.models.Customers;
-import com.example.homecleanapi.models.Employee;
-import com.example.homecleanapi.models.Feedback;
-import com.example.homecleanapi.models.Job;
-import com.example.homecleanapi.models.JobApplication;
-import com.example.homecleanapi.models.JobDetails;
-import com.example.homecleanapi.models.JobServiceDetail;
-import com.example.homecleanapi.models.ServiceDetail;
-import com.example.homecleanapi.models.Services;
-import com.example.homecleanapi.models.Wallet;
-import com.example.homecleanapi.repositories.CleanerRepository;
-import com.example.homecleanapi.repositories.CustomerAddressRepository;
-import com.example.homecleanapi.repositories.CustomerRepo;
-
-import com.example.homecleanapi.repositories.FeedbackRepository;
-import com.example.homecleanapi.repositories.JobApplicationRepository;
-import com.example.homecleanapi.repositories.JobDetailsRepository;
-import com.example.homecleanapi.repositories.JobRepository;
-import com.example.homecleanapi.repositories.JobServiceDetailRepository;
-import com.example.homecleanapi.repositories.ServiceDetailRepository;
-import com.example.homecleanapi.repositories.ServiceRepository;
-import com.example.homecleanapi.repositories.WalletRepository;
+import com.example.homecleanapi.models.*;
+import com.example.homecleanapi.repositories.*;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -83,6 +62,9 @@ public class CleanerJobService {
 	
 	@Autowired
     private WalletRepository walletRepository;
+
+	@Autowired
+	private EmployeeAddressRepository employeeAddressRepository;
 
 
 
@@ -1064,6 +1046,32 @@ public class CleanerJobService {
 		}
 
 		return comboJobs;
+	}
+
+	public boolean setCurrentAddress(Integer cleanerId, Integer addressId) {
+		// Lấy tất cả các địa chỉ của cleaner
+		List<EmployeeLocations> addresses = employeeAddressRepository.findByEmployeeId(cleanerId);
+
+		// Nếu không có địa chỉ nào
+		if (addresses.isEmpty()) {
+			return false;
+		}
+
+		// Cập nhật trạng thái is_current của tất cả các địa chỉ thành false
+		for (EmployeeLocations address : addresses) {
+			address.setIs_current(false);
+			employeeAddressRepository.save(address);
+		}
+
+		// Lấy địa chỉ cần set làm hiện tại
+		EmployeeLocations defaultAddress = employeeAddressRepository.findById(addressId).orElse(null);
+		if (defaultAddress != null) {
+			defaultAddress.setIs_current(true); // Set trạng thái là true
+			employeeAddressRepository.save(defaultAddress);  // Lưu thay đổi
+			return true;  // Trả về true nếu cập nhật thành công
+		}
+
+		return false;  // Trả về false nếu không tìm thấy địa chỉ
 	}
 
 	// LUỒNG CODE 2
