@@ -14,3 +14,6 @@ spring.mail.username=ohohoh20052002@gmail.com
 spring.mail.password=wwbn fkkw apkz hndd
 spring.mail.properties.mail.smtp.auth=true
 spring.mail.properties.mail.smtp.starttls.enable=true
+
+#Test CICD
+set CI=false

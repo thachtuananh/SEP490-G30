@@ -1,18 +1,41 @@
 import React, { useContext, useState, useEffect } from "react";
 import { AuthContext } from "../../../context/AuthContext";
-import { message, Modal, Input, Button } from "antd";
+import { message, Modal, Input, Button, Select } from "antd";
 import { BASE_URL } from "../../../utils/config";
 import "../owner/profile.css";
+// Import the address data from external JSON file
+import addressDataJSON from "../../../utils/address-data.json";
+
+const { Option } = Select;
 
 export const Address = () => {
   const { cleaner, dispatch } = useContext(AuthContext);
   const [addresses, setAddresses] = useState([]);
   const [isAddModalVisible, setIsAddModalVisible] = useState(false);
   const [isUpdateModalVisible, setIsUpdateModalVisible] = useState(false);
-  const [newAddress, setNewAddress] = useState("");
-  const [updateAddress, setUpdateAddress] = useState("");
   const [currentAddressId, setCurrentAddressId] = useState(null);
   const [loading, setLoading] = useState(false);
+
+  // Address selection state
+  const [addressData, setAddressData] = useState([]);
+  const [selectedCity, setSelectedCity] = useState(null);
+  const [selectedDistrict, setSelectedDistrict] = useState(null);
+  const [selectedWard, setSelectedWard] = useState(null);
+  const [streetAddress, setStreetAddress] = useState("");
+
+  // Districts and wards based on selection
+  const [districts, setDistricts] = useState([]);
+  const [wards, setWards] = useState([]);
+
+  const loadAddressData = () => {
+    try {
+      // Use the imported JSON data
+      setAddressData(addressDataJSON);
+    } catch (error) {
+      console.error("Error loading address data:", error);
+      message.error("Không thể tải dữ liệu địa chỉ.");
+    }
+  };
 
   const fetchAddresses = async () => {
     const token = localStorage.getItem("token");
@@ -55,34 +78,225 @@ export const Address = () => {
 
   useEffect(() => {
     fetchAddresses();
+    loadAddressData();
   }, [dispatch]);
+
+  // Update districts when city changes
+  useEffect(() => {
+    if (selectedCity) {
+      const city = addressData.find((city) => city.code === selectedCity);
+      if (city) {
+        setDistricts(city.districts);
+        if (!selectedDistrict) {
+          setSelectedWard(null);
+          setWards([]);
+        }
+      }
+    }
+  }, [selectedCity, addressData]);
+
+  // Update wards when district changes
+  useEffect(() => {
+    if (selectedCity && selectedDistrict) {
+      const city = addressData.find((city) => city.code === selectedCity);
+      if (city) {
+        const district = city.districts.find(
+          (district) => district.code === selectedDistrict
+        );
+        if (district) {
+          setWards(district.wards);
+        }
+      }
+    }
+  }, [selectedDistrict, selectedCity, addressData]);
+
+  const resetAddressForm = () => {
+    setSelectedCity(null);
+    setSelectedDistrict(null);
+    setSelectedWard(null);
+    setStreetAddress("");
+  };
 
   const showAddModal = () => {
     setIsAddModalVisible(true);
+    resetAddressForm();
   };
 
-  const handleAddCancel = () => {
-    setIsAddModalVisible(false);
-    setNewAddress("");
+  // Improved parsing logic for address components
+  const findCityByName = (cityName) => {
+    if (!cityName) return null;
+    const normalizedCityName = cityName.toLowerCase().trim();
+    return addressData.find(
+      (city) =>
+        city.name.toLowerCase().includes(normalizedCityName) ||
+        normalizedCityName.includes(city.name.toLowerCase())
+    );
+  };
+
+  const findDistrictByName = (cityCode, districtName) => {
+    if (!cityCode || !districtName) return null;
+    const city = addressData.find((city) => city.code === cityCode);
+    if (!city) return null;
+
+    const normalizedDistrictName = districtName.toLowerCase().trim();
+    return city.districts.find(
+      (district) =>
+        district.name.toLowerCase().includes(normalizedDistrictName) ||
+        normalizedDistrictName.includes(district.name.toLowerCase())
+    );
+  };
+
+  const findWardByName = (cityCode, districtCode, wardName) => {
+    if (!cityCode || !districtCode || !wardName) return null;
+    const city = addressData.find((city) => city.code === cityCode);
+    if (!city) return null;
+
+    const district = city.districts.find(
+      (district) => district.code === districtCode
+    );
+    if (!district) return null;
+
+    const normalizedWardName = wardName.toLowerCase().trim();
+    return district.wards.find(
+      (ward) =>
+        ward.name.toLowerCase().includes(normalizedWardName) ||
+        normalizedWardName.includes(ward.name.toLowerCase())
+    );
+  };
+
+  const parseAddress = (address) => {
+    // Expected format "Street Address, Ward, District, City"
+    const addressParts = address.split(", ");
+    if (addressParts.length < 2) return { streetAddress: address };
+
+    // Try different parsing approaches - starting from the end which is usually City
+    const possibleCity = addressParts[addressParts.length - 1];
+    const possibleDistrict = addressParts[addressParts.length - 2];
+    const possibleWard =
+      addressParts.length >= 3 ? addressParts[addressParts.length - 3] : null;
+
+    // The remaining parts are the street address
+    const streetParts = addressParts.slice(
+      0,
+      Math.max(1, addressParts.length - 3)
+    );
+    const streetAddress = streetParts.join(", ");
+
+    return {
+      cityName: possibleCity,
+      districtName: possibleDistrict,
+      wardName: possibleWard,
+      streetAddress: streetAddress || addressParts[0], // Fallback
+    };
   };
 
   const showUpdateModal = (addressId, currentAddress) => {
     setCurrentAddressId(addressId);
-    setUpdateAddress(currentAddress);
     setIsUpdateModalVisible(true);
+
+    try {
+      // Parse the current address
+      const {
+        cityName,
+        districtName,
+        wardName,
+        streetAddress: parsedStreet,
+      } = parseAddress(currentAddress);
+
+      // Pre-fill the street address
+      setStreetAddress(parsedStreet || currentAddress);
+
+      // Find matching data for dropdowns
+      const cityObj = findCityByName(cityName);
+      if (cityObj) {
+        setSelectedCity(cityObj.code);
+
+        // Wait for districts to update based on city selection
+        setTimeout(() => {
+          const districtObj = findDistrictByName(cityObj.code, districtName);
+          if (districtObj) {
+            setSelectedDistrict(districtObj.code);
+
+            // Wait for wards to update based on district selection
+            setTimeout(() => {
+              const wardObj = findWardByName(
+                cityObj.code,
+                districtObj.code,
+                wardName
+              );
+              if (wardObj) {
+                setSelectedWard(wardObj.code);
+              }
+            }, 300);
+          }
+        }, 300);
+      }
+    } catch (error) {
+      console.error("Error parsing address:", error);
+      // If parsing fails, just set the street address to the full address
+      setStreetAddress(currentAddress);
+    }
+  };
+
+  const handleAddCancel = () => {
+    setIsAddModalVisible(false);
+    resetAddressForm();
   };
 
   const handleUpdateCancel = () => {
     setIsUpdateModalVisible(false);
-    setUpdateAddress("");
+    resetAddressForm();
     setCurrentAddressId(null);
   };
 
+  // Format the full address from selections
+  const formatFullAddress = () => {
+    const cityName =
+      addressData.find((city) => city.code === selectedCity)?.name || "";
+
+    let districtName = "";
+    if (selectedCity && selectedDistrict) {
+      const city = addressData.find((city) => city.code === selectedCity);
+      if (city) {
+        districtName =
+          city.districts.find((district) => district.code === selectedDistrict)
+            ?.name || "";
+      }
+    }
+
+    let wardName = "";
+    if (selectedCity && selectedDistrict && selectedWard) {
+      const city = addressData.find((city) => city.code === selectedCity);
+      if (city) {
+        const district = city.districts.find(
+          (district) => district.code === selectedDistrict
+        );
+        if (district) {
+          wardName =
+            district.wards.find((ward) => ward.code === selectedWard)?.name ||
+            "";
+        }
+      }
+    }
+
+    const parts = [streetAddress, wardName, districtName, cityName].filter(
+      Boolean
+    );
+    return parts.join(", ");
+  };
+
   const handleAddAddress = async () => {
-    if (!newAddress.trim()) {
-      message.error("Vui lòng nhập địa chỉ.");
+    if (
+      !selectedCity ||
+      !selectedDistrict ||
+      !selectedWard ||
+      !streetAddress.trim()
+    ) {
+      message.error("Vui lòng nhập đầy đủ thông tin địa chỉ.");
       return;
     }
+
+    const fullAddress = formatFullAddress();
 
     setLoading(true);
     const token = localStorage.getItem("token");
@@ -98,14 +312,14 @@ export const Address = () => {
             "Content-Type": "application/json",
             Accept: "application/json",
           },
-          body: JSON.stringify({ address: newAddress }),
+          body: JSON.stringify({ address: fullAddress }),
         }
       );
 
       if (response.ok) {
         message.success("Thêm địa chỉ mới thành công!");
         setIsAddModalVisible(false);
-        setNewAddress("");
+        resetAddressForm();
         fetchAddresses(); // Refresh the addresses list
       } else {
         message.error("Không thể thêm địa chỉ mới.");
@@ -118,18 +332,23 @@ export const Address = () => {
   };
 
   const handleUpdateAddressSubmit = async () => {
-    if (!updateAddress.trim()) {
-      message.error("Vui lòng nhập địa chỉ.");
+    if (
+      !selectedCity ||
+      !selectedDistrict ||
+      !selectedWard ||
+      !streetAddress.trim()
+    ) {
+      message.error("Vui lòng nhập đầy đủ thông tin địa chỉ.");
       return;
     }
+
+    const fullAddress = formatFullAddress();
 
     setLoading(true);
     const token = localStorage.getItem("token");
     const cleanerId = localStorage.getItem("cleanerId");
 
     try {
-      console.log("Updating address:", updateAddress); // Debug log
-
       const response = await fetch(
         `${BASE_URL}/employee/${cleanerId}/update_address/${currentAddressId}`,
         {
@@ -139,14 +358,14 @@ export const Address = () => {
             "Content-Type": "application/json",
             Accept: "application/json",
           },
-          body: JSON.stringify({ address: updateAddress }),
+          body: JSON.stringify({ address: fullAddress }),
         }
       );
 
       if (response.ok) {
         message.success("Cập nhật địa chỉ thành công!");
         setIsUpdateModalVisible(false);
-        setUpdateAddress("");
+        resetAddressForm();
         setCurrentAddressId(null);
         fetchAddresses(); // Refresh the addresses list
       } else {
@@ -191,6 +410,78 @@ export const Address = () => {
       },
     });
   };
+
+  const renderAddressForm = () => (
+    <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+      <div>
+        <label style={{ display: "block", marginBottom: "8px" }}>
+          Tỉnh/Thành phố:
+        </label>
+        <Select
+          placeholder="Chọn Tỉnh/Thành phố"
+          style={{ width: "100%" }}
+          value={selectedCity}
+          onChange={(value) => setSelectedCity(value)}
+        >
+          {addressData.map((city) => (
+            <Option key={city.code} value={city.code}>
+              {city.name}
+            </Option>
+          ))}
+        </Select>
+      </div>
+
+      <div>
+        <label style={{ display: "block", marginBottom: "8px" }}>
+          Quận/Huyện:
+        </label>
+        <Select
+          placeholder="Chọn Quận/Huyện"
+          style={{ width: "100%" }}
+          value={selectedDistrict}
+          onChange={(value) => setSelectedDistrict(value)}
+          disabled={!selectedCity}
+        >
+          {districts.map((district) => (
+            <Option key={district.code} value={district.code}>
+              {district.name}
+            </Option>
+          ))}
+        </Select>
+      </div>
+
+      <div>
+        <label style={{ display: "block", marginBottom: "8px" }}>
+          Phường/Xã:
+        </label>
+        <Select
+          placeholder="Chọn Phường/Xã"
+          style={{ width: "100%" }}
+          value={selectedWard}
+          onChange={(value) => setSelectedWard(value)}
+          disabled={!selectedDistrict}
+        >
+          {wards.map((ward) => (
+            <Option key={ward.code} value={ward.code}>
+              {ward.name}
+            </Option>
+          ))}
+        </Select>
+      </div>
+
+      <div>
+        <label style={{ display: "block", marginBottom: "8px" }}>
+          Địa chỉ chi tiết:
+        </label>
+        <Input.TextArea
+          value={streetAddress}
+          onChange={(e) => setStreetAddress(e.target.value)}
+          placeholder="Số nhà, tên đường, tòa nhà..."
+          autoSize={{ minRows: 2, maxRows: 4 }}
+        />
+      </div>
+    </div>
+  );
 
   return (
     <div className="address-container">
@@ -259,7 +550,7 @@ export const Address = () => {
                   margin: "0 0 15px",
                   fontSize: "15px",
                   lineHeight: "1.5",
-                  width: "30%",
+                  width: "100%",
                 }}
               >
                 {address.address || "Chưa có địa chỉ"}
@@ -334,13 +625,9 @@ export const Address = () => {
             Thêm
           </Button>,
         ]}
+        width={600}
       >
-        <Input.TextArea
-          value={newAddress}
-          onChange={(e) => setNewAddress(e.target.value)}
-          placeholder="Nhập địa chỉ mới"
-          autoSize={{ minRows: 3, maxRows: 6 }}
-        />
+        {renderAddressForm()}
       </Modal>
 
       {/* Update Address Modal */}
@@ -361,16 +648,9 @@ export const Address = () => {
             Cập nhật
           </Button>,
         ]}
+        width={600}
       >
-        <Input.TextArea
-          value={updateAddress}
-          onChange={(e) => {
-            console.log("New value:", e.target.value); // Debug log
-            setUpdateAddress(e.target.value);
-          }}
-          placeholder="Nhập địa chỉ mới"
-          autoSize={{ minRows: 3, maxRows: 6 }}
-        />
+        {renderAddressForm()}
       </Modal>
     </div>
   );

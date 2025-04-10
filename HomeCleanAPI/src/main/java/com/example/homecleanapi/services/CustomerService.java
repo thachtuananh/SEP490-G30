@@ -55,6 +55,7 @@ public class CustomerService {
 
         response.put("phone", customer.getPhone());
         response.put("name", customer.getFull_name());
+        response.put("email", customer.getEmail());
         response.put("created_at", customer.getCreated_at());
         return ResponseEntity.ok(response);
     }
@@ -98,7 +99,7 @@ public class CustomerService {
         List<CustomerAddresses> customerAddresses = customerAddressRepository.findCustomerAddressesByCustomer_Id(customer.getId());
 
         // Kiểm tra xem có địa chỉ nào có is_current = true không
-        boolean hasCurrentAddress = customerAddresses.stream().anyMatch(CustomerAddresses::isIs_current);
+        boolean hasCurrentAddress = customerAddresses.stream().anyMatch(CustomerAddresses::isCurrent);
 
         // Tạo địa chỉ mới
         CustomerAddresses newAddress = new CustomerAddresses();
@@ -121,7 +122,7 @@ public class CustomerService {
         }
 
         // Nếu chưa có địa chỉ nào, set is_current = true, ngược lại set false
-        newAddress.setIs_current(customerAddresses.isEmpty());
+        newAddress.setCurrent(customerAddresses.isEmpty());
 
         customerAddressRepository.save(newAddress);
         response.put("information", newAddress);
@@ -162,11 +163,11 @@ public class CustomerService {
         customerAddressRepository.save(existingLocation);
 
         response.put("status", "success");
-        response.put("message", "Employee address successfully updated");
+        response.put("message", "Customer address successfully updated");
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
-    // Xóa địa chỉ của employee theo locationId
+    // Xóa địa chỉ của Customer theo locationId
     public ResponseEntity<Map<String, Object>> deleteCustomerAddress(Integer locationId) {
         Map<String, Object> response = new HashMap<>();
 
@@ -175,7 +176,7 @@ public class CustomerService {
                 .orElseThrow(() -> new RuntimeException("Location not found"));
 
         // Nếu địa chỉ là is_current = true, không cho phép xóa
-        if (existingLocation.isIs_current()) {
+        if (existingLocation.isCurrent()) {
             response.put("status", "error");
             response.put("message", "Cannot delete current address");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
@@ -185,7 +186,7 @@ public class CustomerService {
         customerAddressRepository.delete(existingLocation);
 
         response.put("status", "success");
-        response.put("message", "Employee address successfully deleted");
+        response.put("message", "Customer address successfully deleted");
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
@@ -206,7 +207,7 @@ public class CustomerService {
                     Map<String, Object> addressMap = new HashMap<>();
                     addressMap.put("id", location.getId());
                     addressMap.put("address", location.getAddress());
-                    addressMap.put("is_current", location.isIs_current());
+                    addressMap.put("is_current", location.isCurrent());
                     return addressMap;
                 })
                 .collect(Collectors.toList());
@@ -218,14 +219,14 @@ public class CustomerService {
     // Delete account
     public ResponseEntity<Map<String, Object>> deleteCustomerAccount(@PathVariable Long customerId) {
         Map<String, Object> response = new HashMap<>();
-        if (!customerAddressRepository.existsById(Math.toIntExact(customerId))) {
-            response.put("message", "Employee not found");
+        if (!customerRepository.existsById(customerId)) {
+            response.put("message", "Customer not found");
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         }
 
         Customers customer = customerRepository.findById(customerId).orElseThrow(() -> new RuntimeException("Customer not found"));
 
-        customer.setIs_deleted(true);
+        customer.setDeleted(true);
         customerRepository.save(customer);
         response.put("status", "Delete customer successfully");
         return ResponseEntity.status(HttpStatus.OK).body(response);

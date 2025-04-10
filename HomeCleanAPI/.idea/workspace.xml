@@ -5,8 +5,140 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="6dd32c25-99a1-4da0-a769-374f6713cd9c" name="Changes" comment="update application">
+      <change afterPath="$PROJECT_DIR$/../.github/workflows/deploy-firebase.yml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../.vscode/settings.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../FE/home-clean-fe/.firebaserc" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../FE/home-clean-fe/firebase.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/assets/CSS/Service/ServiceDescription.module.css" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/assets/CSS/createjob/Reminder.module.css" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/components/Admin/cleaner/CleanerTabs.jsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/components/Admin/cleaner/JobHistoryTable.jsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/components/Admin/owner/JobHistoryTable.jsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/components/Admin/owner/OwnerTabs.jsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/components/profile/owner/wallet_balance.jsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/pages/Admin/ManageUser/Cleaner/CleanerListBan.jsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/pages/profile/cleanner/ForgotPass.jsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/pages/profile/owner/ForgotPass.jsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/routers/ProtectedAdminRoute.jsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/styles/hero.module.css" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/utils/address-data.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../FE/fe.txt" beforeDir="false" afterPath="$PROJECT_DIR$/../FE/fe.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../FE/home-clean-fe/src/assets/CSS/Notification/Notification.module.css" beforeDir="false" afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/assets/CSS/Notification/Notification.module.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../FE/home-clean-fe/src/assets/CSS/Service/AddLocationModal.module.css" beforeDir="false" afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/assets/CSS/Service/AddLocationModal.module.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../FE/home-clean-fe/src/assets/CSS/Service/SelectLocationModal.module.css" beforeDir="false" afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/assets/CSS/Service/SelectLocationModal.module.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../FE/home-clean-fe/src/assets/CSS/Service/ServiceCard.module.css" beforeDir="false" afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/assets/CSS/Service/ServiceCard.module.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../FE/home-clean-fe/src/assets/CSS/Service/ServiceContent.module.css" beforeDir="false" afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/assets/CSS/Service/ServiceContent.module.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../FE/home-clean-fe/src/assets/CSS/createjob/JobInformation.module.css" beforeDir="false" afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/assets/CSS/createjob/JobInformation.module.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../FE/home-clean-fe/src/components/Admin/AppHeader.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/components/Admin/AppHeader.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../FE/home-clean-fe/src/components/Admin/AppSidebar.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/components/Admin/AppSidebar.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../FE/home-clean-fe/src/components/Admin/DealsTable.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/components/Admin/DealsTable.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../FE/home-clean-fe/src/components/Admin/SalesChart.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/components/Admin/SalesChart.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../FE/home-clean-fe/src/components/Admin/StatCard.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/components/Admin/StatCard.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../FE/home-clean-fe/src/components/Chat/ChatWindow.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/components/Chat/ChatWindow.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../FE/home-clean-fe/src/components/Chat/ConversationList.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/components/Chat/ConversationList.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../FE/home-clean-fe/src/components/Home/Cleaner/JobCard.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/components/Home/Cleaner/JobCard.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../FE/home-clean-fe/src/components/Home/Cleaner/JobList.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/components/Home/Cleaner/JobList.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../FE/home-clean-fe/src/components/Home/Cleaner/JobSection.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/components/Home/Cleaner/JobSection.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../FE/home-clean-fe/src/components/Home/Cleaner/Navbar.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/components/Home/Cleaner/Navbar.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../FE/home-clean-fe/src/components/Home/Cleaner/home.css" beforeDir="false" afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/components/Home/Cleaner/home.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../FE/home-clean-fe/src/components/Home/Owner/CleanerCard.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/components/Home/Owner/CleanerCard.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../FE/home-clean-fe/src/components/Home/Owner/CleanerSection.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/components/Home/Owner/CleanerSection.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../FE/home-clean-fe/src/components/Home/Owner/Hero.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/components/Home/Owner/Hero.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../FE/home-clean-fe/src/components/Home/Owner/Navbar.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/components/Home/Owner/Navbar.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../FE/home-clean-fe/src/components/Home/Owner/NewsSection.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/components/Home/Owner/NewsSection.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../FE/home-clean-fe/src/components/Home/Owner/TestimonialSection.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/components/Home/Owner/TestimonialSection.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../FE/home-clean-fe/src/components/activity/ActivityCard.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/components/activity/ActivityCard.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../FE/home-clean-fe/src/components/activity/ActivityCard.module.css" beforeDir="false" afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/components/activity/ActivityCard.module.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../FE/home-clean-fe/src/components/activity/ActivityList.module.css" beforeDir="false" afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/components/activity/ActivityList.module.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../FE/home-clean-fe/src/components/activity/FeedbackModal.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/components/activity/FeedbackModal.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../FE/home-clean-fe/src/components/activity/InfoCleanerCard.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/components/activity/InfoCleanerCard.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../FE/home-clean-fe/src/components/activityJob/JobCard.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/components/activityJob/JobCard.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../FE/home-clean-fe/src/components/activityJob/JobList.module.css" beforeDir="false" afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/components/activityJob/JobList.module.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../FE/home-clean-fe/src/components/combo-service/AddressSelectionModal.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/components/combo-service/AddressSelectionModal.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../FE/home-clean-fe/src/components/combo-service/JobUpload.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/components/combo-service/JobUpload.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../FE/home-clean-fe/src/components/combo-service/JobUpload.module.css" beforeDir="false" afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/components/combo-service/JobUpload.module.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../FE/home-clean-fe/src/components/combo-service/JobUploadCard.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/components/combo-service/JobUploadCard.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../FE/home-clean-fe/src/components/create-job-to-cleaner/JobInfomation.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/components/create-job-to-cleaner/JobInfomation.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../FE/home-clean-fe/src/components/create-job-to-cleaner/Note.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/components/create-job-to-cleaner/Note.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../FE/home-clean-fe/src/components/create-job-to-cleaner/Pay.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/components/create-job-to-cleaner/Pay.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../FE/home-clean-fe/src/components/create-job/JobInfomation.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/components/create-job/JobInfomation.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../FE/home-clean-fe/src/components/create-job/Note.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/components/create-job/Note.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../FE/home-clean-fe/src/components/create-job/Pay.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/components/create-job/Pay.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../FE/home-clean-fe/src/components/profile/cleanner/address.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/components/profile/cleanner/address.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../FE/home-clean-fe/src/components/profile/cleanner/menu_Infomation.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/components/profile/cleanner/menu_Infomation.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../FE/home-clean-fe/src/components/profile/cleanner/personal_information.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/components/profile/cleanner/personal_information.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../FE/home-clean-fe/src/components/profile/cleanner/wallet_balance.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/components/profile/cleanner/wallet_balance.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../FE/home-clean-fe/src/components/profile/owner/address.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/components/profile/owner/address.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../FE/home-clean-fe/src/components/profile/owner/menu_Infomation.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/components/profile/owner/menu_Infomation.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../FE/home-clean-fe/src/components/profile/owner/personal_information.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/components/profile/owner/personal_information.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../FE/home-clean-fe/src/components/profile/owner/profile.css" beforeDir="false" afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/components/profile/owner/profile.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../FE/home-clean-fe/src/components/service-details/AddLocationModal.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/components/service-details/AddLocationModal.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../FE/home-clean-fe/src/components/service-details/SelectLocationModal.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/components/service-details/SelectLocationModal.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../FE/home-clean-fe/src/components/service-details/ServiceCard.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/components/service-details/ServiceCard.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../FE/home-clean-fe/src/components/service-details/ServiceContent.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/components/service-details/ServiceContent.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../FE/home-clean-fe/src/components/service-details/ServiceDescription.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/components/service-details/ServiceDescription.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../FE/home-clean-fe/src/index.css" beforeDir="false" afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/index.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../FE/home-clean-fe/src/layouts/Layout.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/layouts/Layout.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../FE/home-clean-fe/src/pages/ActivityJob.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/pages/ActivityJob.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../FE/home-clean-fe/src/pages/ActivityList.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/pages/ActivityList.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../FE/home-clean-fe/src/pages/Admin/LoginAdmin.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/pages/Admin/LoginAdmin.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../FE/home-clean-fe/src/pages/Admin/MainDashboard.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/pages/Admin/MainDashboard.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../FE/home-clean-fe/src/pages/Admin/ManageUser/Cleaner/CleanerDetails.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/pages/Admin/ManageUser/Cleaner/CleanerDetails.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../FE/home-clean-fe/src/pages/Admin/ManageUser/Cleaner/CleanerList.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/pages/Admin/ManageUser/Cleaner/CleanerList.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../FE/home-clean-fe/src/pages/Admin/ManageUser/Owner/OwnerDetails.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/pages/Admin/ManageUser/Owner/OwnerDetails.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../FE/home-clean-fe/src/pages/Admin/ManageUser/Owner/OwnerList.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/pages/Admin/ManageUser/Owner/OwnerList.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../FE/home-clean-fe/src/pages/ForgotPass.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/pages/ForgotPass.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../FE/home-clean-fe/src/pages/ServiceDetails/CreateJob.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/pages/ServiceDetails/CreateJob.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../FE/home-clean-fe/src/pages/ServiceDetails/CreateJobToCleaner.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/pages/ServiceDetails/CreateJobToCleaner.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../FE/home-clean-fe/src/pages/login/LoginCleaner.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/pages/login/LoginCleaner.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../FE/home-clean-fe/src/pages/login/LoginSelection.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/pages/login/LoginSelection.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../FE/home-clean-fe/src/pages/login/LoginUser.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/pages/login/LoginUser.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../FE/home-clean-fe/src/pages/profile/owner/infomation.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/pages/profile/owner/infomation.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../FE/home-clean-fe/src/pages/profile/owner/infor.css" beforeDir="false" afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/pages/profile/owner/infor.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../FE/home-clean-fe/src/pages/register/RegisterCleaner.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/pages/register/RegisterCleaner.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../FE/home-clean-fe/src/pages/register/RegisterSelection.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/pages/register/RegisterSelection.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../FE/home-clean-fe/src/pages/register/RegisterUser.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/pages/register/RegisterUser.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../FE/home-clean-fe/src/routers/Routers.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/routers/Routers.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../FE/home-clean-fe/src/services/ChatService.js" beforeDir="false" afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/services/ChatService.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../FE/home-clean-fe/src/services/NotificationService.js" beforeDir="false" afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/services/NotificationService.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../FE/home-clean-fe/src/services/owner/StatusJobAPI.js" beforeDir="false" afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/services/owner/StatusJobAPI.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../FE/home-clean-fe/src/styles/contact.css" beforeDir="false" afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/styles/contact.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../FE/home-clean-fe/src/utils/config.js" beforeDir="false" afterPath="$PROJECT_DIR$/../FE/home-clean-fe/src/utils/config.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/HomeCleanApiApplication.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/HomeCleanApiApplication.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/controllers/AdminCleanerController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/controllers/AdminCleanerController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/controllers/CustomerController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/controllers/CustomerController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/controllers/CustomerJobController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/controllers/CustomerJobController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/controllers/EmployeeController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/controllers/EmployeeController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/controllers/ReportController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/controllers/ReportController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/controllers/ServiceController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/controllers/ServiceController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/dtos/ChatMessage.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/dtos/ChatMessage.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/dtos/CustomerRegisterRequest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/dtos/CustomerRegisterRequest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/dtos/ReportRequestDTO.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/dtos/ReportRequestDTO.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/enums/JobStatus.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/enums/JobStatus.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/models/CustomerAddresses.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/models/CustomerAddresses.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/models/Customers.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/models/Customers.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/models/Report.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/models/Report.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/paymentForWallets/VnpayConfigWallet.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/paymentForWallets/VnpayConfigWallet.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/paymentForWallets/VnpayServiceWallet.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/paymentForWallets/VnpayServiceWallet.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/repositories/CleanerRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/repositories/CleanerRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/repositories/CustomerAddressRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/repositories/CustomerAddressRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/repositories/CustomerRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/repositories/CustomerRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/repositories/JobRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/repositories/JobRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/repositories/ReportRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/repositories/ReportRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/security/SecurityConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/security/SecurityConfig.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/services/AdminCustomerService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/services/AdminCustomerService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/services/CustomerAuthService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/services/CustomerAuthService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/services/CustomerService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/services/CustomerService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/services/EmployeeAuthService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/services/EmployeeAuthService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/services/FindCleanerService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/services/FindCleanerService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/services/JobService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/services/JobService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/services/ReportService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/services/ReportService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/services/WalletService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/services/WalletService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/vnPay/VnpayConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/vnPay/VnpayConfig.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/vnPay/VnpayController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/vnPay/VnpayController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/vnPay/VnpayService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/vnPay/VnpayService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/application.properties" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -56,27 +188,27 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;RequestMappingsPanelOrder0&quot;: &quot;0&quot;,
-    &quot;RequestMappingsPanelOrder1&quot;: &quot;1&quot;,
-    &quot;RequestMappingsPanelWidth0&quot;: &quot;75&quot;,
-    &quot;RequestMappingsPanelWidth1&quot;: &quot;75&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;Spring Boot.HomeCleanApiApplication.executor&quot;: &quot;Run&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;manhtt3-adminandpayment&quot;,
-    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;D:/doan/SEP490-G30/HomeCleanAPI&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;advanced.settings&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "RequestMappingsPanelOrder0": "0",
+    "RequestMappingsPanelOrder1": "1",
+    "RequestMappingsPanelWidth0": "75",
+    "RequestMappingsPanelWidth1": "75",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "Spring Boot.HomeCleanApiApplication.executor": "Run",
+    "git-widget-placeholder": "Merging manhtt3-adminandpayment",
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "D:/doan/SEP490-G30/HomeCleanAPI",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "advanced.settings",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="RunManager">
     <configuration name="HomeCleanApiApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
       <option name="FRAME_DEACTIVATION_UPDATE_POLICY" value="UpdateClassesAndResources" />

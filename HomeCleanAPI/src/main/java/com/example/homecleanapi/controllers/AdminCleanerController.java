@@ -103,7 +103,7 @@ public class AdminCleanerController {
         return ResponseEntity.status(403).body(Map.of("message", "Access denied"));
     }
 
-    @PatchMapping("/{id}/identity-verified")
+    @PutMapping("/{id}/identity-verified")
     public ResponseEntity<String> updateCleanerIdentityVerifiedAndDeleted(
             @PathVariable Integer id,
             @RequestParam(required = false) Boolean identityVerified,
@@ -119,7 +119,6 @@ public class AdminCleanerController {
         cleanerService.updateIdentityVerifiedAndDeletedStatus(id, identityVerified, isDeleted);
         return ResponseEntity.ok("Identity verified and deleted status updated successfully.");
     }
-
 
 
 

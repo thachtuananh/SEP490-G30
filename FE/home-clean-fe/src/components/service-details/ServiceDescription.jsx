@@ -1,33 +1,37 @@
+import style from "../../assets/CSS/Service/ServiceDescription.module.css";
+
 const ServiceDescription = ({ description }) => {
+  const tabs = [
+    { id: "desc", label: "Mô tả dịch vụ", active: true },
+    // { id: "reviews", label: "Đánh giá", active: false },
+  ];
+
   return (
-    <div>
-      <div style={{ display: "flex", alignItems: "center", gap: 50, margin: '20px 0' }}>
-        <div
-          style={{
-            fontSize: 20,
-            fontWeight: 500,
-            borderBottom: "4px solid #039855",
-            paddingBottom: 10,
-          }}
-        >
-          Mô tả dịch vụ
-        </div>
-        <div
-          style={{
-            fontSize: 20,
-            fontWeight: 500,
-            paddingBottom: 10,
-            borderBottom: "4px solid transparent",
-            color: "#475467",
-          }}
-        >
-          Đánh giá
-        </div>
+    <div className={style.serviceDescriptionContainer}>
+      <div className={style.serviceTabs}>
+        {tabs.map((tab) => (
+          <div
+            key={tab.id}
+            className={`${style.serviceTab} ${
+              tab.active ? style.activeTab : ""
+            }`}
+          >
+            {tab.label}
+          </div>
+        ))}
       </div>
-      <p style={{ color: "#667085", marginTop: 14, maxWidth: "70%" }}>{description}</p>
 
+      <div className={style.serviceTabContent}>
+        {description ? (
+          <p className={style.descriptionText}>{description}</p>
+        ) : (
+          <div className={style.noDescription}>
+            <i className={style.noDescriptionIcon}>ℹ️</i>
+            <p>Không có mô tả dịch vụ</p>
+          </div>
+        )}
+      </div>
     </div>
-
   );
 };
 

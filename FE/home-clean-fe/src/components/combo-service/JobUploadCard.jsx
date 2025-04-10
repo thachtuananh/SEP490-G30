@@ -1,46 +1,69 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import styles from "./JobUpload.module.css";
+import { Card } from "antd";
 
 const JobUploadCard = ({ id, icon, title, description, onComboSelect }) => {
-  // Handle click for service with ID 5 (Combo service)
-  const handleServiceClick = () => {
-    if (id === 5) {
-      onComboSelect();
+  const [truncatedDescription, setTruncatedDescription] = useState("");
+
+  // Hàm cập nhật độ dài chuỗi theo kích thước màn hình
+  const updateDescription = () => {
+    if (!description) return;
+
+    if (window.innerWidth <= 700) {
+      setTruncatedDescription(`${description.substring(0, 40)}...`);
+    } else if (window.innerWidth <= 3000) {
+      setTruncatedDescription(`${description.substring(0, 20)}...`);
+    } else {
+      setTruncatedDescription(description);
     }
   };
 
-  // Truncate description if it's too long
-  const truncatedDescription =
-    description && description.length > 100
-      ? `${description.substring(0, 35)}...`
-      : description;
+  // Cập nhật mô tả khi component mount và khi thay đổi kích thước màn hình
+  useEffect(() => {
+    updateDescription();
+    window.addEventListener("resize", updateDescription);
+
+    return () => {
+      window.removeEventListener("resize", updateDescription);
+    };
+  }, [description]);
 
   return (
-    <div className={styles.serviceCard}>
-      <div className={styles.iconWrapper}>
-        <img src={icon} alt={title} className={styles.serviceIcon} />
-      </div>
-      <div className={styles.serviceContent}>
-        <h3 className={styles.serviceTitle}>{title}</h3>
-        <p className={styles.serviceDescription}>{truncatedDescription}</p>
-        {id === 5 ? (
-          <button className={styles.serviceButton} onClick={handleServiceClick}>
-            Đăng việc
-          </button>
-        ) : (
-          <button className={styles.serviceButton}>
-            <Link
-              to={`/service/${id}`}
-              state={id}
-              style={{ textDecoration: "none", color: "#29322e" }}
-            >
+    <Card
+      hoverable
+      style={{ height: "100%", position: "relative", cursor: "default" }}
+      styles={{ body: { height: "100%" } }}
+    >
+      <div className={styles.serviceCard}>
+        <div className={styles.iconWrapper}>
+          <img src={icon} alt={title} className={styles.serviceIcon} />
+        </div>
+        <div className={styles.serviceContent}>
+          <h3 className={styles.serviceTitle}>{title}</h3>
+          <p className={styles.serviceDescription}>
+            {truncatedDescription || description}
+          </p>
+        </div>
+        <div className={styles.buttonContainer}>
+          {id === 5 ? (
+            <button className={styles.serviceButton} onClick={onComboSelect}>
               Đăng việc
-            </Link>
-          </button>
-        )}
+            </button>
+          ) : (
+            <button className={styles.serviceButton}>
+              <Link
+                to={`/service/${id}`}
+                state={id}
+                style={{ textDecoration: "none", color: "#29322e" }}
+              >
+                Đăng việc
+              </Link>
+            </button>
+          )}
+        </div>
       </div>
-    </div>
+    </Card>
   );
 };
 

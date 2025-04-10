@@ -1,0 +1,99 @@
+/* Hero styles */
+.hero {
+  background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
+    url("https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=1200&q=80");
+  background-size: cover;
+  background-position: center;
+  color: white;
+  padding: 3rem 1rem;
+  border-radius: 10px;
+  margin: 1rem auto;
+  max-width: 1200px;
+}
+
+.heroContent {
+  max-width: 60%;
+  padding: 2rem;
+  align-items: flex-start; /* Đảm bảo mọi thành phần bám trái */
+}
+
+.hero h1 {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+}
+
+.heroStats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2rem;
+  margin: 2rem 0;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 120px;
+}
+
+.statValue {
+  font-size: 1.3rem;
+  font-weight: bold;
+}
+
+.statLabel {
+  font-size: 0.9rem;
+  opacity: 0.8;
+}
+
+.hireBtn {
+  background: #00a651;
+  color: white;
+  border: none;
+  padding: 0.7rem 1.5rem;
+  border-radius: 6px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.hireBtn:hover {
+  background: #008c44;
+  transform: scale(1.05);
+}
+
+/* Responsive for small screens */
+@media (max-width: 768px) {
+  .hero {
+    padding: 2rem 1rem;
+  }
+
+  .hero h1 {
+    font-size: 2rem;
+  }
+
+  .heroStats {
+    justify-content: center;
+    align-items: center;
+  }
+
+  .stat {
+    min-width: unset;
+  }
+  .herohireBtn {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 1rem;
+  }
+  .hireBtn {
+    width: 100%;
+    max-width: 200px;
+    font-size: 1rem;
+  }
+  .heroContent {
+    max-width: 100%;
+    text-align: center;
+    padding: 1rem;
+  }
+}

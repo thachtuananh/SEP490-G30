@@ -29,7 +29,7 @@ public class VnpayController {
     @PostMapping
     public ResponseEntity<String> createPayment(@RequestBody VnpayRequest paymentRequest, HttpServletRequest request) {
         try {
-            String paymentUrl = vnpayService.createPayment(paymentRequest,request);
+            String paymentUrl = vnpayService.createPayment(paymentRequest, request);
             return ResponseEntity.ok(paymentUrl);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());

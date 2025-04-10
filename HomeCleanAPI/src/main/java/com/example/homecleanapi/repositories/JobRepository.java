@@ -43,9 +43,6 @@ public interface JobRepository extends JpaRepository<Job, Long> {
     List<Object[]> findRevenueByYearAndMonthNative();
 
 
-
-
-
-
+    List<Job> getJobsByStatus(JobStatus status);
 }
 

@@ -71,7 +71,7 @@ const DealsTable = () => {
     <Card
       title="Deals Details"
       extra={
-        <Dropdown overlay={<Menu items={monthMenuItems} />}>
+        <Dropdown>
           <Button>
             October <CaretDownOutlined />
           </Button>

@@ -16,6 +16,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -61,14 +62,9 @@ public class JobService {
     @Autowired
     private CustomerWalletRepository customerWalletRepository;
 
-    @Autowired
-    private WalletRepository WalletRepository;
 
 
-
-
-
-    public Map<String, Object> bookJob(@PathVariable Long customerId, @RequestBody BookJobRequest request, HttpServletRequest requestvn) {
+    public Map<String, Object> bookJob(@PathVariable Long customerId, @RequestBody BookJobRequest request, HttpServletRequest requestIp) {
         Map<String, Object> response = new HashMap<>();
 
         // Kiểm tra khách hàng có tồn tại không
@@ -225,7 +221,7 @@ public class JobService {
                 vnpayRequest.setAmount(String.valueOf(amount)); // Gửi số tiền đã được nhân với 100
 
                 // Tạo URL thanh toán VNPay
-                String paymentUrl = vnpayService.createPayment(vnpayRequest, requestvn);
+                String paymentUrl = vnpayService.createPayment(vnpayRequest, requestIp);
 
                 // Lấy txnRef từ URL của VNPay
                 String txnRef = extractTxnRefFromUrl(paymentUrl);  // Lấy txnRef từ URL của VNPay
@@ -252,8 +248,6 @@ public class JobService {
 
         return response;
     }
-
-
 
 
 
@@ -337,14 +331,14 @@ public class JobService {
 
         // Cập nhật trạng thái is_default của tất cả các địa chỉ của customer thành false
         for (CustomerAddresses address : addresses) {
-            address.setIs_current(false); // Hoặc nếu bạn dùng "is_default", hãy đổi theo thuộc tính đó
+            address.setCurrent(false); // Hoặc nếu bạn dùng "is_default", hãy đổi theo thuộc tính đó
             customerAddressRepository.save(address);
         }
 
         // Cập nhật địa chỉ được chọn thành mặc định
         CustomerAddresses defaultAddress = customerAddressRepository.findById(addressId).orElse(null);
         if (defaultAddress != null) {
-            defaultAddress.setIs_current(true); // Hoặc nếu bạn dùng "is_default", hãy đổi theo thuộc tính đó
+            defaultAddress.setCurrent(true); // Hoặc nếu bạn dùng "is_default", hãy đổi theo thuộc tính đó
             customerAddressRepository.save(defaultAddress);
             return true;
         }
@@ -404,7 +398,6 @@ public class JobService {
         response.put("message", "Job status updated to DONE, and cleaner's wallet has been credited with 85% of the job value");
         return response;
     }
-
 
 
 
@@ -498,8 +491,6 @@ public class JobService {
 
 
 
-
-
     // huy job ddax book
     public Map<String, Object> cancelJobForCustomer(Long customerId, Long jobId) {
         Map<String, Object> response = new HashMap<>();
@@ -525,6 +516,7 @@ public class JobService {
             response.put("message", "You are not authorized to cancel this job");
             return response;
         }
+
 
         // Kiểm tra trạng thái của job
         if (job.getStatus().equals(JobStatus.ARRIVED) || job.getStatus().equals(JobStatus.COMPLETED) || job.getStatus().equals(JobStatus.DONE)) {
@@ -563,12 +555,11 @@ public class JobService {
         job.setStatus(JobStatus.CANCELLED);
         jobRepository.save(job);
 
+        response.put("message", "Job has been cancelled successfully");
         response.put("jobId", jobId);
         response.put("status", job.getStatus());
         return response;
     }
-
-
 
 
 

@@ -16,8 +16,10 @@ import { Stomp } from "@stomp/stompjs";
 import ChatWindow from "../../Chat/ChatWindow";
 import ConversationList from "../../Chat/ConversationList";
 import { getUnreadNotificationCount } from "../../../services/NotificationService";
-import { getUnreadMessageCount } from "../../../services/ChatService";
-import { BASE_URL } from "../../../utils/config";
+import {
+  getUnreadMessageCount,
+  handleConversationSelect as serviceHandleConversationSelect,
+} from "../../../services/ChatService";
 import { URL_WEB_SOCKET } from "../../../utils/config";
 
 function Navbar() {
@@ -131,6 +133,10 @@ function Navbar() {
 
   const toggleNotification = () => {
     setIsPopupNotification(!isPopupNotification);
+    // Reset notification count when opening the notification panel
+    if (!isPopupNotification) {
+      setNotificationCount(0);
+    }
     // Close menu when toggling notification on mobile
     if (isMobile && isMenuOpen) {
       setIsMenuOpen(false);
@@ -142,8 +148,8 @@ function Navbar() {
     if (cleaner) {
       try {
         setIsLoading(true);
-        const count = await getUnreadNotificationCount();
-        setNotificationCount(count);
+        // const count = await getUnreadNotificationCount();
+        setNotificationCount(0);
       } catch (error) {
         console.error("Failed to refresh notifications:", error);
       } finally {
@@ -167,7 +173,9 @@ function Navbar() {
     items: [
       {
         key: "1",
-        label: <Link to="/infomationcleaner">Thông tin tài khoản</Link>,
+        label: (
+          <Link to="/homeclean/infomationcleaner">Thông tin tài khoản</Link>
+        ),
         icon: <UserOutlined />,
       },
       {
@@ -247,6 +255,8 @@ function Navbar() {
       onOpenChange={(visible) => {
         setIsPopupNotification(visible);
         if (visible) {
+          // Reset notification count when opening the popover
+          setNotificationCount(0);
           // Refresh notification count when opening the popover
           refreshNotifications();
         }
@@ -270,11 +280,15 @@ function Navbar() {
   // Login and Register buttons
   const authButtons = (
     <div style={{ display: "flex", gap: "10px" }}>
-      <Link to="/login" className="login-btn" style={{ width: "110px" }}>
+      <Link
+        to="/homeclean/login/cleaner"
+        className="login-btn"
+        style={{ width: "110px" }}
+      >
         Đăng nhập
       </Link>
       <Link
-        to="/register"
+        to="/homeclean/register/cleaner"
         className="login-btn"
         style={{
           width: "110px",
@@ -369,31 +383,13 @@ function Navbar() {
   };
 
   const handleConversationSelect = (conversation) => {
-    console.log("🔍 Chọn cuộc trò chuyện:", conversation);
-
-    if (!conversation || !conversation.id) {
-      console.error("Lỗi: Cuộc trò chuyện không hợp lệ!", conversation);
-      return;
-    }
-
-    setSelectedConversation(conversation);
-
-    const apiUrl = `${BASE_URL}/messages/${conversation.id}`;
-
-    fetch(apiUrl)
-      .then((response) => response.json())
-      .then((data) => {
-        if (data && Array.isArray(data.messages)) {
-          setMessages(data.messages);
-        } else {
-          console.error("API không trả về mảng tin nhắn hợp lệ:", data);
-          setMessages([]);
-        }
-      })
-      .catch((error) => {
-        console.error("Lỗi khi tải tin nhắn cũ:", error);
-        setMessages([]);
-      });
+    serviceHandleConversationSelect(
+      conversation,
+      setSelectedConversation,
+      setMessages
+    );
+    // Reset message count when a conversation is selected
+    setMessageCount(0);
   };
 
   const sendMessage = (messageContent) => {
@@ -435,8 +431,6 @@ function Navbar() {
                 <ConversationList
                   onSelect={(conversation) => {
                     handleConversationSelect(conversation);
-                    // Reset message count when a conversation is selected
-                    setMessageCount(0);
                   }}
                   userId={userId}
                   role={role}
@@ -473,6 +467,51 @@ function Navbar() {
     </Popover>
   ) : null;
 
+  // Mobile message content
+  const mobileMessageContent =
+    isPopupMessage && isMobile && cleaner ? (
+      <div
+        className={styles.mobile_notification_overlay}
+        onClick={() => setIsPopupMessage(false)}
+      >
+        <div
+          className={styles.mobile_notification_container}
+          style={{ maxWidth: "95%", width: "350px", maxHeight: "80vh" }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div
+            className={styles.message_container}
+            style={{ width: "100%", height: "100%" }}
+          >
+            <div className={styles.message__title}>
+              <h2>Tin nhắn</h2>
+            </div>
+            <div className={styles.message__main}>
+              <div className={styles.message_sidebar}>
+                <div className={styles.message_user_list}>
+                  <ConversationList
+                    onSelect={(conversation) => {
+                      handleConversationSelect(conversation);
+                    }}
+                    userId={userId}
+                    role={role}
+                  />
+                </div>
+              </div>
+              <div className={styles.message_outlet}>
+                <ChatWindow
+                  messages={messages}
+                  onSendMessage={sendMessage}
+                  conversation={selectedConversation}
+                  userId={userId}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    ) : null;
+
   return (
     <div className="Container">
       <nav className="navbar">
@@ -496,8 +535,8 @@ function Navbar() {
           <ul className="menu">
             {/* <li><Link to="/homeclean" className="nav-link"></Link></li> */}
             <li>
-              <Link to="/activityjob" className="nav-link">
-                Công việc{" "}
+              <Link to="/homeclean/activityjob" className="nav-link">
+                Công việc
               </Link>
             </li>
             <li>
@@ -554,6 +593,7 @@ function Navbar() {
 
       {/* Render mobile notification panel outside navbar structure */}
       {mobileNotificationContent}
+      {mobileMessageContent}
     </div>
   );
 }
