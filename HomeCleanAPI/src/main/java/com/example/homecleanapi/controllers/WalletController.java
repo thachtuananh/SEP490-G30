@@ -212,7 +212,6 @@ public class WalletController {
                 Map<String, Object> response = walletService.depositMoney(customerId, amount, request);
                 return ResponseEntity.ok(response);
             }else {
-                // Nếu phương thức thanh toán không hợp lệ
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                         .body(Map.of("message", "Invalid payment method"));
             }

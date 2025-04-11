@@ -317,25 +317,6 @@ public class WalletService {
         }
         Customers customer = customerOpt.get();
 
-        // Lấy ví của customer
-        Optional<CustomerWallet> walletOpt = customerWalletRepository.findByCustomerId(customerId);
-        CustomerWallet wallet;
-        if (walletOpt.isPresent()) {
-            wallet = walletOpt.get();
-        } else {
-            wallet = new CustomerWallet();
-            wallet.setCustomer(customer);
-            wallet.setBalance(0.0);  // Nếu ví không tồn tại, khởi tạo ví mới với số dư 0
-        }
-
-        // Cập nhật số dư ví
-        double newBalance = wallet.getBalance() + amount;
-        wallet.setBalance(newBalance);
-        wallet.setUpdatedAt(LocalDateTime.now());
-
-        // Lưu cập nhật vào ví
-        customerWalletRepository.save(wallet);
-
         // Tạo VNPay Request với số tiền thanh toán
         VnpayRequestWallet vnpayRequest = new VnpayRequestWallet();
         long paymentAmount = (long) (amount); // Chuyển số tiền thành long và nhân với 100
@@ -348,7 +329,7 @@ public class WalletService {
             // Tạo txnRef từ VNPay để theo dõi giao dịch
             String txnRef = extractTxnRefFromUrl(paymentUrl);  // Lấy txnRef từ URL của VNPay
 
-            // Lưu thông tin vào bảng transaction_history
+            // Lưu thông tin vào bảng transaction_history (với trạng thái PENDING)
             TransactionHistory transactionHistory = new TransactionHistory();
             transactionHistory.setCustomer(customer);
             transactionHistory.setCleaner(null); // Không có cleaner đối với customer
@@ -369,9 +350,10 @@ public class WalletService {
         }
 
         response.put("message", "Nạp tiền vào ví thành công!");
-        response.put("newBalance", newBalance);
         return response;
     }
+
+
 
 
 

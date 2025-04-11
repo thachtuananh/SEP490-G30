@@ -173,73 +173,72 @@ public class CleanerJobService {
 
 	// Apply job
 	public Map<String, Object> applyForJob(Long jobId) {
-	    Map<String, Object> response = new HashMap<>();
+		Map<String, Object> response = new HashMap<>();
 
-	    String phoneNumber = SecurityContextHolder.getContext().getAuthentication().getName();
-	    System.out.println("phone = " + phoneNumber);
+		String phoneNumber = SecurityContextHolder.getContext().getAuthentication().getName();
+		System.out.println("phone = " + phoneNumber);
 
-	    Optional<Employee> cleanerOpt = cleanerRepository.findByPhone(phoneNumber);
+		Optional<Employee> cleanerOpt = cleanerRepository.findByPhone(phoneNumber);
 
-	    if (!cleanerOpt.isPresent()) {
-	        response.put("message", "Cleaner not found");
-	        return response;
-	    }
+		if (!cleanerOpt.isPresent()) {
+			response.put("message", "Cleaner not found");
+			return response;
+		}
 
-	    Employee cleaner = cleanerOpt.get();
+		Employee cleaner = cleanerOpt.get();
 
-	    // Tìm công việc theo jobId
-	    Optional<Job> jobOpt = jobRepository.findById(jobId);
-	    if (!jobOpt.isPresent()) {
-	        response.put("message", "Job not found");
-	        return response;
-	    }
+		// Tìm công việc theo jobId
+		Optional<Job> jobOpt = jobRepository.findById(jobId);
+		if (!jobOpt.isPresent()) {
+			response.put("message", "Job not found");
+			return response;
+		}
 
-	    Job job = jobOpt.get();
+		Job job = jobOpt.get();
 
-	    // Kiểm tra trạng thái công việc
-	    if (!job.getStatus().equals(JobStatus.OPEN)) {
-	        response.put("message", "Job is no longer open or has been taken");
-	        return response;
-	    }
+		// Kiểm tra trạng thái công việc
+		if (!job.getStatus().equals(JobStatus.OPEN)) {
+			response.put("message", "Job is no longer open or has been taken");
+			return response;
+		}
 
+		// Kiểm tra phương thức thanh toán của job
+//		if (job.getPaymentMethod().trim().equalsIgnoreCase("Cash")) {
+//			// Kiểm tra ví của cleaner để kiểm tra số dư trước khi ứng tuyển
+//			Optional<Wallet> walletOpt = walletRepository.findByCleanerId(cleaner.getId());
+//			if (!walletOpt.isPresent()) {
+//				response.put("message", "Cleaner wallet not found");
+//				return response;
+//			}
+//			Wallet wallet = walletOpt.get();
+//
+//			// Tính hoa hồng (20% của tổng giá trị đơn hàng)
+//			double commission = 0.2 * job.getTotalPrice();
+//
+//			// Kiểm tra số dư ví của cleaner có đủ để trừ hoa hồng không
+//			if (wallet.getBalance() - commission < -200000) {
+//				response.put("message", "Your balance is not sufficient. You can only owe up to 200,000 VND.");
+//				return response;  // Return immediately to prevent job application creation
+//			}
+//		}
 
-	    // Kiểm tra phương thức thanh toán của job
-	    if (job.getPaymentMethod().trim().equalsIgnoreCase("Cash")) {
-	    	
-	    	
-	        // Kiểm tra ví của cleaner để kiểm tra số dư trước khi ứng tuyển
-	        Optional<Wallet> walletOpt = walletRepository.findByCleanerId(cleaner.getId());
-	        if (!walletOpt.isPresent()) {
-	            response.put("message", "Cleaner wallet not found");
-	            return response;
-	        }
-	        Wallet wallet = walletOpt.get();
+		// Tạo job application và lưu vào database
+		JobApplication jobApplication = new JobApplication();
+		jobApplication.setJob(job);
+		jobApplication.setCleaner(cleaner);
+		jobApplication.setStatus("Pending");
 
-	        // Tính hoa hồng (20% của tổng giá trị đơn hàng)
-	        double commission = 0.2 * job.getTotalPrice();
+		jobApplicationRepository.save(jobApplication);
 
-	        // Kiểm tra số dư ví của cleaner có đủ để trừ hoa hồng không
-	        if (wallet.getBalance() - commission < -200000) {  
-	            response.put("message", "Your balance is not sufficient. You can only owe up to 200,000 VND.");
-	            return response;  // Return immediately to prevent job application creation
-	        }
-	    }
+		// Thêm thông báo thành công khi không có lỗi
+		response.put("message", "Cleaner has successfully applied for the job");
+		response.put("jobId", jobId);
+		response.put("cleanerId", cleaner.getId());
+		response.put("status", "Pending");
 
-	    // Tạo job application và lưu vào database
-	    JobApplication jobApplication = new JobApplication();
-	    jobApplication.setJob(job);
-	    jobApplication.setCleaner(cleaner);
-	    jobApplication.setStatus("Pending");
-
-	    jobApplicationRepository.save(jobApplication);
-
-	    response.put("message", "Cleaner has successfully applied for the job");
-	    response.put("jobId", jobId);
-	    response.put("cleanerId", cleaner.getId());
-	    response.put("status", "Pending");
-
-	    return response;
+		return response;
 	}
+
 
 
 
