@@ -88,6 +88,7 @@ const JobInfomation = ({
 
     return true;
   };
+
   const handleCreateJob = async () => {
     if (!termsAccepted) {
       message.error("Vui lòng đồng ý với Điều khoản và dịch vụ để tiếp tục!");
@@ -163,6 +164,22 @@ const JobInfomation = ({
         message.error("Không thể tìm thấy thông tin nhân công!");
         return;
       }
+
+      // Xử lý nếu là VNPay và có URL thanh toán
+      if (paymentMethod === "vnpay" && responseData.paymentUrl) {
+        message.success(
+          "Bạn sẽ được chuyển đến cổng thanh toán VNPay trong 3 giây. Vui lòng hoàn tất thanh toán!"
+        );
+
+        // Set timeout trước khi chuyển hướng
+        setTimeout(() => {
+          // Chuyển hướng trong tab hiện tại
+          window.location.href = responseData.paymentUrl;
+        }, 3000); // Đợi 3 giây
+
+        return;
+      }
+
       if (responseData.status === "BOOKED") {
         console.log("Job created successfully");
         message.success("Đăng việc thành công!");

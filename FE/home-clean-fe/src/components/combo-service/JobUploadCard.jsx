@@ -1,9 +1,16 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import styles from "./JobUpload.module.css";
+import styles from "./JobUpload.module.css"; // Import your CSS module here
 import { Card } from "antd";
 
-const JobUploadCard = ({ id, icon, title, description, onComboSelect }) => {
+const JobUploadCard = ({
+  id,
+  icon,
+  title,
+  description,
+  onComboSelect,
+  isDisabled = false,
+}) => {
   const [truncatedDescription, setTruncatedDescription] = useState("");
 
   // Hàm cập nhật độ dài chuỗi theo kích thước màn hình
@@ -29,10 +36,26 @@ const JobUploadCard = ({ id, icon, title, description, onComboSelect }) => {
     };
   }, [description]);
 
+  // Xử lý sự kiện click cho nút Đăng việc
+  const handleComboClick = (e) => {
+    if (isDisabled) {
+      e.preventDefault(); // Ngăn mọi hành động nếu bị vô hiệu hóa
+      return;
+    }
+    if (id === 5 && onComboSelect) {
+      onComboSelect();
+    }
+  };
+
   return (
     <Card
-      hoverable
-      style={{ height: "100%", position: "relative", cursor: "default" }}
+      hoverable={!isDisabled} // Chỉ hover nếu không bị vô hiệu hóa
+      style={{
+        height: "100%",
+        position: "relative",
+        cursor: isDisabled ? "not-allowed" : "default",
+        opacity: isDisabled ? 0.6 : 1, // Làm mờ card nếu bị vô hiệu hóa
+      }}
       styles={{ body: { height: "100%" } }}
     >
       <div className={styles.serviceCard}>
@@ -47,15 +70,31 @@ const JobUploadCard = ({ id, icon, title, description, onComboSelect }) => {
         </div>
         <div className={styles.buttonContainer}>
           {id === 5 ? (
-            <button className={styles.serviceButton} onClick={onComboSelect}>
+            <button
+              className={`${styles.serviceButton} ${
+                isDisabled ? styles.disabledButton : ""
+              }`}
+              onClick={handleComboClick}
+              disabled={isDisabled}
+            >
               Đăng việc
             </button>
           ) : (
-            <button className={styles.serviceButton}>
+            <button
+              className={`${styles.serviceButton} ${
+                isDisabled ? styles.disabledButton : ""
+              }`}
+              disabled={isDisabled}
+            >
               <Link
-                to={`/service/${id}`}
+                to={isDisabled ? "#" : `/service/${id}`} // Không điều hướng nếu bị vô hiệu hóa
                 state={id}
-                style={{ textDecoration: "none", color: "#29322e" }}
+                style={{
+                  textDecoration: "none",
+                  color: isDisabled ? "#999" : "#29322e",
+                  pointerEvents: isDisabled ? "none" : "auto", // Ngăn click vào Link
+                }}
+                onClick={(e) => isDisabled && e.preventDefault()} // Ngăn hành động mặc định
               >
                 Đăng việc
               </Link>

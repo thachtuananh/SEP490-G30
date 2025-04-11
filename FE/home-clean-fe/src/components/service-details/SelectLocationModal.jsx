@@ -50,7 +50,7 @@ const SelectLocationModal = ({
       setLocations((prevLocations) =>
         prevLocations.map((loc) => ({
           ...loc,
-          is_current: loc.id === addressId,
+          current: loc.id === addressId,
         }))
       );
 
@@ -84,7 +84,7 @@ const SelectLocationModal = ({
         <div className={styles.modal} ref={listLocationRef}>
           <div className={styles.header}>
             <div>
-              <p className={styles.title}>Sổ địa chỉ</p>
+              <p className={styles.title}>Danh sách địa chỉ</p>
               <p className={styles.subtitle}>
                 Quản lý thông tin địa chỉ của bạn
               </p>
@@ -109,7 +109,7 @@ const SelectLocationModal = ({
                       <p className={styles.phone}>
                         (+84) {location.customer.phone}
                       </p>
-                      {location.is_current && (
+                      {location.current && (
                         <p className={styles.defaultTag}>Mặc định</p>
                       )}
                     </div>
