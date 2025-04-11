@@ -54,6 +54,20 @@ public class WalletController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/{customerId}/walletcustomer")
+    public ResponseEntity<Map<String, Object>> getCustomerWalletBalance(@PathVariable Long customerId) {
+        // Gọi service để lấy số dư ví của customer
+        Map<String, Object> response = walletService.getCustomerWalletBalance(customerId);
+
+        // Kiểm tra response để quyết định trả về status code và message
+        if (response.containsKey("message") && response.get("message").equals("Customer not found")) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response); // Trả về 404 nếu không tìm thấy customer
+        }
+
+        return ResponseEntity.ok(response); // Trả về 200 OK nếu tìm thấy thông tin ví
+    }
+
+
     @PostMapping("/{cleanerId}/deposit")
     public ResponseEntity<Map<String, Object>> depositMoney(@PathVariable Long cleanerId, @RequestBody Map<String, Object> orderRequest, HttpServletRequest request) {
         try {

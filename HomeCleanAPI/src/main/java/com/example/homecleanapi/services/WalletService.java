@@ -68,9 +68,37 @@ public class WalletService {
         return response;
     }
 
+    public Map<String, Object> getCustomerWalletBalance(Long customerId) {
+        Map<String, Object> response = new HashMap<>();
+
+        // Tìm customer dựa trên customerId
+        Optional<Customers> customerOpt = customerRepository.findById(customerId);
+        if (!customerOpt.isPresent()) {
+            response.put("message", "Customer not found");
+            return response;
+        }
+
+        Customers customer = customerOpt.get();
+
+        // Tìm ví của customer
+        Optional<CustomerWallet> walletOpt = customerWalletRepository.findByCustomerId(customerId);
+        if (!walletOpt.isPresent()) {
+            response.put("message", "Customer wallet not found");
+            return response;
+        }
+
+        CustomerWallet wallet = walletOpt.get();
+
+        // Tạo phản hồi trả về số dư ví
+        response.put("message", "Wallet balance retrieved successfully");
+        response.put("walletBalance", wallet.getBalance());
+        return response;
+    }
 
 
-    
+
+
+
     // cleaner nạp tiền
     public Map<String, Object> createPaymentForDepositVnpay(Long cleanerId, double amount, HttpServletRequest request) {
         Map<String, Object> response = new HashMap<>();
