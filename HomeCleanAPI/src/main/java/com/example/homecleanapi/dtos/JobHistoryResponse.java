@@ -18,8 +18,19 @@ public class JobHistoryResponse {
     private List<String> services;
     private List<String> feedback;
     private List<String> cleanerApplications;
+    private String orderCode;
 
     // Getter và Setter
+
+
+    public String getOrderCode() {
+        return orderCode;
+    }
+
+    public void setOrderCode(String orderCode) {
+        this.orderCode = orderCode;
+    }
+
     public Long getJobId() {
         return jobId;
     }

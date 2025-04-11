@@ -196,10 +196,16 @@ public class AdminCustomerService {
                     // Thêm dịch vụ vào response (nếu là combo, sẽ có nhiều dịch vụ)
                     response.setServices(services);
 
+                    // Thêm orderCode vào response
+                    if (job.getOrderCode() != null) {
+                        response.setOrderCode(job.getOrderCode()); // Thêm orderCode vào JobHistoryResponse
+                    }
+
                     return response;
                 })
                 .collect(Collectors.toList()); // Thu thập các job thành list
     }
+
 
     public List<JobHistoryResponse> getJobHistoryByCustomerIdForCleaner(Long customerId) {
         // Lấy tất cả job của customer từ JobRepository
@@ -231,10 +237,16 @@ public class AdminCustomerService {
                     // Thêm dịch vụ vào response (nếu là combo, sẽ có nhiều dịch vụ)
                     response.setServices(services);
 
+                    // Thêm orderCode vào response
+                    if (job.getOrderCode() != null) {
+                        response.setOrderCode(job.getOrderCode()); // Thêm orderCode vào JobHistoryResponse
+                    }
+
                     return response;
                 })
-                .collect(Collectors.toList()); // Thu thập các job thành list
+                .collect(Collectors.toList());
     }
+
 
 
     public JobHistoryResponse getJobDetailsByJobId(Long jobId) {
@@ -278,8 +290,14 @@ public class AdminCustomerService {
                 .collect(Collectors.toList());
         response.setCleanerApplications(cleanerApplications);
 
+        // Thêm orderCode vào response
+        if (job.getOrderCode() != null) {
+            response.setOrderCode(job.getOrderCode()); // Thêm orderCode vào JobHistoryResponse
+        }
+
         return response;
     }
+
 
 
 

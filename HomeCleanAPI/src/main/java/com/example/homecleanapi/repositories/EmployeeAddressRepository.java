@@ -15,5 +15,7 @@ public interface EmployeeAddressRepository extends JpaRepository<EmployeeLocatio
     @Query("SELECT e FROM EmployeeLocations e WHERE e.employee.id = :cleanerId AND e.is_current = true")
     EmployeeLocations findByEmployee_IdAndIs_currentTrue(@Param("cleanerId") Long cleanerId);
 
+    List<EmployeeLocations> findByEmployeeId(Integer cleanerId);
+
 
 }

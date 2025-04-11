@@ -1,4 +1,4 @@
-package com.example.homecleanapi.Payment;
+package com.example.homecleanapi.vnPay;
 
 import lombok.Data;
 
