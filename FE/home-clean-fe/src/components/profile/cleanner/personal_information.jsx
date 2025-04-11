@@ -3,14 +3,26 @@ import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../../../context/AuthContext";
 import "../owner/profile.css";
 import profileImg from "../../../assets/imgProfile/imgProfile.svg";
-import { message, Modal } from "antd";
+import { message, Modal, Input } from "antd"; // Thêm Input từ antd
+import { EyeInvisibleOutlined, EyeTwoTone } from "@ant-design/icons"; // Import icons
 import { BASE_URL } from "../../../utils/config";
+import {
+  validatePhone,
+  validateName,
+  validatePassword,
+  validateConfirmPassword,
+  validateEmail,
+  validateAge,
+  validateIdentityNumber,
+} from "../../../utils/validate";
 
 export const PersonaInformation = () => {
   const { cleaner, dispatch } = useContext(AuthContext);
   const [isLoading, setIsLoading] = useState(false);
   const [isDeleteLoading, setIsDeleteLoading] = useState(false);
   const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
+  const [isPasswordModalVisible, setIsPasswordModalVisible] = useState(false);
+  const [isPasswordLoading, setIsPasswordLoading] = useState(false);
   const navigate = useNavigate();
 
   const [cleanerName, setName] = useState(cleaner?.cleanerName || "");
@@ -24,17 +36,36 @@ export const PersonaInformation = () => {
   const [cleanerExp, setExperience] = useState(cleaner?.cleanerExp || "");
   const [cleanerImg, setImg] = useState(cleaner?.cleanerImg || "");
 
+  const [nameError, setNameError] = useState("");
+  const [phoneError, setPhoneError] = useState("");
+  const [emailError, setEmailError] = useState("");
+  const [ageError, setAgeError] = useState("");
+  const [experienceError, setExperienceError] = useState("");
+
+  // State for password change
+  const [oldPassword, setOldPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [oldPasswordError, setOldPasswordError] = useState("");
+  const [newPasswordError, setNewPasswordError] = useState("");
+  const [confirmPasswordError, setConfirmPasswordError] = useState("");
+
   // Updated API call function - removed identity_number from the request body
   const updateProfileAPI = async () => {
-    const token = localStorage.getItem("token");
-    const cleanerId = localStorage.getItem("cleanerId");
-    if (!cleanerId || !token) {
-      message.error("Không tìm thấy thông tin người dùng!");
+    if (!validateFormFields()) {
+      message.error("Vui lòng kiểm tra lại thông tin!");
       return;
     }
-
-    setIsLoading(true);
     try {
+      const token = localStorage.getItem("token");
+      const cleanerId = localStorage.getItem("cleanerId");
+      if (!cleanerId || !token) {
+        message.error("Không tìm thấy thông tin người dùng!");
+        return;
+      }
+
+      setIsLoading(true);
+
       const response = await fetch(
         `${BASE_URL}/employee/${cleanerId}/update_profile`,
         {
@@ -142,6 +173,113 @@ export const PersonaInformation = () => {
     }
   };
 
+  // Hàm mở modal đổi mật khẩu
+  const showPasswordModal = () => {
+    setIsPasswordModalVisible(true);
+    // Reset password fields and errors when opening modal
+    setOldPassword("");
+    setNewPassword("");
+    setConfirmPassword("");
+    setOldPasswordError("");
+    setNewPasswordError("");
+    setConfirmPasswordError("");
+  };
+
+  // Validate form fields
+  const validateFormFields = () => {
+    const nameValidation = validateName(cleanerName);
+    const phoneValidation = validatePhone(cleanerPhone);
+    const emailValidation = validateEmail(cleanerEmail);
+    const ageValidation = validateAge(cleanerAge);
+
+    setNameError(nameValidation);
+    setPhoneError(phoneValidation);
+    setEmailError(emailValidation);
+    setAgeError(ageValidation);
+
+    return (
+      !nameValidation && !phoneValidation && !emailValidation && !ageValidation
+    );
+  };
+
+  // Validate password fields
+  const validatePasswordFields = () => {
+    // For old password, just check if it's not empty
+    const oldPasswordValidation = oldPassword
+      ? ""
+      : "Vui lòng nhập mật khẩu hiện tại!";
+    const newPasswordValidation = validatePassword(newPassword);
+    const confirmPasswordValidation = validateConfirmPassword(
+      newPassword,
+      confirmPassword
+    );
+
+    setOldPasswordError(oldPasswordValidation);
+    setNewPasswordError(newPasswordValidation);
+    setConfirmPasswordError(confirmPasswordValidation);
+
+    return (
+      !oldPasswordValidation &&
+      !newPasswordValidation &&
+      !confirmPasswordValidation
+    );
+  };
+
+  // Function to handle password change API call
+  const handleChangePassword = async () => {
+    // Validate passwords using imported validation functions
+    if (!validatePasswordFields()) {
+      return;
+    }
+
+    setIsPasswordLoading(true);
+
+    const token = localStorage.getItem("token");
+    const cleanerId = localStorage.getItem("cleanerId");
+
+    if (!cleanerId || !token) {
+      message.error("Không tìm thấy thông tin người dùng!");
+      setIsPasswordLoading(false);
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `${BASE_URL}/employee/${cleanerId}/change_password`,
+        {
+          method: "PUT",
+          headers: {
+            accept: "application/json",
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            oldPassword: oldPassword,
+            newPassword: newPassword,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to change password");
+      }
+
+      message.success("Mật khẩu đã được thay đổi thành công!");
+      dispatch({ type: "LOGOUT" });
+      message.info("Bạn sẽ được chuyển hướng đến trang đăng nhập sau 3 giây.");
+      setTimeout(() => {
+        navigate("/homeclean/login/cleaner");
+      }, 3000);
+      setIsPasswordModalVisible(false);
+    } catch (error) {
+      setOldPasswordError("Mật khẩu hiện tại không đúng");
+      message.error("Thay đổi mật khẩu thất bại!");
+    } finally {
+      setIsPasswordLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (cleaner) {
       // Nếu có thông tin cleaner trong context, cập nhật các trường input
@@ -201,8 +339,12 @@ export const PersonaInformation = () => {
         <input
           type="text"
           value={cleanerName}
-          onChange={(e) => setName(e.target.value)}
+          onChange={(e) => {
+            setName(e.target.value);
+            setNameError(""); // Clear error on change
+          }}
         />
+        {nameError && <div className="error-message">{nameError}</div>}
       </div>
 
       <div className="form-group">
@@ -210,8 +352,12 @@ export const PersonaInformation = () => {
         <input
           type="text"
           value={cleanerPhone}
-          onChange={(e) => setPhone(e.target.value)}
+          onChange={(e) => {
+            setPhone(e.target.value);
+            setPhoneError(""); // Clear error on change
+          }}
         />
+        {phoneError && <div className="error-message">{phoneError}</div>}
       </div>
 
       <div className="form-group">
@@ -219,8 +365,12 @@ export const PersonaInformation = () => {
         <input
           type="email"
           value={cleanerEmail}
-          onChange={(e) => setEmail(e.target.value)}
+          onChange={(e) => {
+            setEmail(e.target.value);
+            setEmailError(""); // Clear error on change
+          }}
         />
+        {emailError && <div className="error-message">{emailError}</div>}
       </div>
 
       <div className="form-group">
@@ -228,8 +378,12 @@ export const PersonaInformation = () => {
         <input
           type="text"
           value={cleanerAge}
-          onChange={(e) => setAge(e.target.value)}
+          onChange={(e) => {
+            setAge(e.target.value);
+            setAgeError(""); // Clear error on change
+          }}
         />
+        {ageError && <div className="error-message">{ageError}</div>}
       </div>
 
       <div className="form-group">
@@ -247,12 +401,18 @@ export const PersonaInformation = () => {
         <input
           type="text"
           value={cleanerExp}
-          onChange={(e) => setExperience(e.target.value)}
+          onChange={(e) => {
+            setExperience(e.target.value);
+            setExperienceError(""); // Clear error on change
+          }}
         />
+        {experienceError && (
+          <div className="error-message">{experienceError}</div>
+        )}
       </div>
 
       {/* Nút Lưu và Đăng xuất */}
-      <div className="button-group">
+      <div className="button-group" style={{ width: "100%" }}>
         <button
           className="save-button"
           type="button"
@@ -269,6 +429,14 @@ export const PersonaInformation = () => {
           disabled={isDeleteLoading}
         >
           {isDeleteLoading ? "Đang xóa..." : "Xoá tài khoản"}
+        </button>
+        <button
+          className="save-button"
+          style={{ backgroundColor: "#1890ff" }}
+          type="button"
+          onClick={showPasswordModal}
+        >
+          Đổi mật khẩu
         </button>
       </div>
 
@@ -288,6 +456,84 @@ export const PersonaInformation = () => {
         <p>
           Bạn có chắc chắn muốn xóa tài khoản này? Hành động này không thể hoàn
           tác.
+        </p>
+      </Modal>
+
+      {/* Modal đổi mật khẩu */}
+      <Modal
+        title="Đổi mật khẩu"
+        open={isPasswordModalVisible}
+        onOk={handleChangePassword}
+        onCancel={() => setIsPasswordModalVisible(false)}
+        okText="Đổi mật khẩu"
+        cancelText="Hủy"
+        okButtonProps={{
+          style: { backgroundColor: "#1890ff" },
+          loading: isPasswordLoading,
+        }}
+      >
+        <div style={{ marginBottom: "16px" }}>
+          <label style={{ display: "block", marginBottom: "8px" }}>
+            Mật khẩu hiện tại:
+          </label>
+          <Input.Password
+            value={oldPassword}
+            onChange={(e) => {
+              setOldPassword(e.target.value);
+              setOldPasswordError("");
+            }}
+            iconRender={(visible) =>
+              visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />
+            }
+          />
+          {oldPasswordError && (
+            <div style={{ color: "red", fontSize: "12px", marginTop: "4px" }}>
+              {oldPasswordError}
+            </div>
+          )}
+        </div>
+        <div style={{ marginBottom: "16px" }}>
+          <label style={{ display: "block", marginBottom: "8px" }}>
+            Mật khẩu mới:
+          </label>
+          <Input.Password
+            value={newPassword}
+            onChange={(e) => {
+              setNewPassword(e.target.value);
+              setNewPasswordError("");
+            }}
+            iconRender={(visible) =>
+              visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />
+            }
+          />
+          {newPasswordError && (
+            <div style={{ color: "red", fontSize: "12px", marginTop: "4px" }}>
+              {newPasswordError}
+            </div>
+          )}
+        </div>
+        <div style={{ marginBottom: "16px" }}>
+          <label style={{ display: "block", marginBottom: "8px" }}>
+            Xác nhận mật khẩu mới:
+          </label>
+          <Input.Password
+            value={confirmPassword}
+            onChange={(e) => {
+              setConfirmPassword(e.target.value);
+              setConfirmPasswordError("");
+            }}
+            iconRender={(visible) =>
+              visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />
+            }
+          />
+          {confirmPasswordError && (
+            <div style={{ color: "red", fontSize: "12px", marginTop: "4px" }}>
+              {confirmPasswordError}
+            </div>
+          )}
+        </div>
+        <p style={{ marginTop: "8px", color: "#999" }}>
+          Mật khẩu phải có ít nhất 8 ký tự và chứa ít nhất 1 ký tự đặc biệt.
         </p>
       </Modal>
     </div>

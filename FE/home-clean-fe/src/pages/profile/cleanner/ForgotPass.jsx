@@ -1,28 +1,86 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
+import axios from "axios";
 import logo from "../../../assets/HouseClean_logo.png";
 import { Link, useNavigate } from "react-router-dom";
 import ImgLeft from "../../../assets/image-left.png";
 import "../../../index.css";
+import { validateEmail } from "../../../utils/validate";
+import { BASE_URL } from "../../../utils/config";
+import { message } from "antd";
+
 function ForgotPassword() {
   const [errors, setErrors] = useState({});
-  const [errorMessage, setErrorMessage] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
     email: "",
   });
 
-  useEffect(() => {
-    if (errorMessage) {
-      const timer = setTimeout(() => setErrorMessage(""), 3000);
-      return () => clearTimeout(timer);
-    }
-  }, [errorMessage]);
-
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
+    // Clear errors when user types
+    if (errors[name]) {
+      setErrors({
+        ...errors,
+        [name]: "",
+      });
+    }
   };
+
+  const validateForm = () => {
+    const newErrors = {};
+
+    // Use the validateEmail function from utilities
+    const emailError = validateEmail(formData.email);
+    if (emailError) {
+      newErrors.email = emailError;
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!validateForm()) {
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      await axios.post(
+        `${BASE_URL}/employee/forgot-password`,
+        { email: formData.email },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            accept: "application/json",
+          },
+        }
+      );
+
+      message.success(
+        "Email khôi phục mật khẩu đã được gửi. Bạn sẽ được chuyển hướng đến trang đăng nhập."
+      );
+
+      // Chuyển hướng sau khi thông báo thành công
+      setTimeout(() => {
+        navigate("/homeclean/login/cleaner");
+      }, 2000);
+    } catch (error) {
+      message.error(
+        error.response?.data?.message ||
+          "Không thể gửi yêu cầu khôi phục mật khẩu"
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="app">
       <main className="main-content">
@@ -43,7 +101,7 @@ function ForgotPassword() {
           <div className="login-box">
             <h2>Quên Mật Khẩu</h2>
 
-            <form className="login-form">
+            <form className="login-form" onSubmit={handleSubmit}>
               <div className={`form-group ${errors.email ? "error" : ""}`}>
                 <label>Email</label>
                 <input
@@ -53,43 +111,25 @@ function ForgotPassword() {
                   value={formData.email}
                   onChange={handleChange}
                 />
+                {errors.email && (
+                  <span className="error-message">{errors.email}</span>
+                )}
               </div>
-
-              {/* <div className="form-group form-group-otp">
-                                <label>Mã xác nhận</label>
-                                <div className="otp-input">
-                                    <button type="submit" className="otp-button">Lấy mã</button>
-                                </div>
-                            </div> */}
-
-              <div className="error-message-container">
-                <div className={`error-message ${errorMessage ? "show" : ""}`}>
-                  {errorMessage}
-                </div>
-              </div>
-              <button type="submit" className="login-button">
-                Quên mật khẩu
+              <button
+                type="submit"
+                className="login-button"
+                disabled={isLoading}
+              >
+                {isLoading ? "Đang xử lý..." : "Gửi yêu cầu"}
               </button>
             </form>
 
-            {/* <div className="social-login">
-              <p>Hoặc đăng nhập bằng</p>
-              <div className="social-buttons">
-                <button className="google-btn">
-                  <img src="/google-icon.png" alt="Google" />
-                  Google
-                </button>
-                <button className="facebook-btn">
-                  <img src="/facebook-icon.png" alt="Facebook" />
-                  Facebook
-                </button>
-              </div>
-            </div> */}
-
-            <p className="signup-link">
-              Chưa có tài khoản?{" "}
-              <Link to="/homeclean/register/cleaner">Đăng kí ngay</Link>
+            {/* <p className="signup-link">
+              Chưa có tài khoản? <Link to="/register/user">Đăng kí ngay</Link>
             </p>
+            <p className="signup-link">
+              Đã có tài khoản? <Link to="/login/user">Đăng nhập ngay</Link>
+            </p> */}
           </div>
         </div>
       </main>
