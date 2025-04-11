@@ -26,22 +26,38 @@ export const WebSocketProvider = ({ children }) => {
             reconnectDelay: 5000,
             heartbeatIncoming: 4000,
             heartbeatOutgoing: 4000,
-            onConnect: () => {
-                console.log("✅ WebSocket connected (global)");
-                setStompClient(client);
 
-                // 👉 Gửi cleanerId duy nhất
-                const cleanerData = JSON.parse(localStorage.getItem("cleaner"));
-                if (cleanerData?.cleanerId) {
-                    client.publish({
-                        destination: "/app/cleaner-online",
-                        body: JSON.stringify({
-                            cleanerId: cleanerData.cleanerId, // chỉ gửi cleanerId
-                        }),
-                    });
-                    // console.log("📡 Sent cleaner-online message");
-                }
-            },
+             onConnect: () => {
+            console.log("✅ WebSocket connected (global)");
+            setStompClient(client);
+
+            // Send cleaner online status
+            const cleanerData = JSON.parse(localStorage.getItem("cleaner"));
+            if (cleanerData?.cleanerId) {
+                client.publish({
+                    destination: "/app/cleaner-online",
+                    body: JSON.stringify({
+                        cleanerId: cleanerData.cleanerId,
+                        status: "online" // Add status field
+                    }),
+                });
+            }
+        },
+        
+             beforeDisconnect: () => {
+            // Send offline status before disconnection
+            const cleanerData = JSON.parse(localStorage.getItem("cleaner"));
+            if (cleanerData?.cleanerId && client.connected) {
+                client.publish({
+                    destination: "/app/cleaner-offline",
+                    body: JSON.stringify({
+                        cleanerId: cleanerData.cleanerId,
+                        status: "offline"
+                    }),
+                });
+                console.log("📡 Sent cleaner-offline message");
+            }
+        },
 
             onStompError: (frame) => {
                 console.error("❌ STOMP error:", frame);

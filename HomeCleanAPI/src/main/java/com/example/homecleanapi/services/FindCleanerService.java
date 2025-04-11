@@ -13,7 +13,9 @@ import org.springframework.stereotype.Service;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class FindCleanerService {
@@ -103,7 +105,8 @@ public class FindCleanerService {
         // Các mức bán kính cần tìm kiếm (bạn có thể điều chỉnh bán kính này)
         double[] radiusLevels = {15000, 30000, 60000};
 
-        List<JobSummaryDTO> jobSummaryList = new ArrayList<>();
+        // Sử dụng Map để đảm bảo không có trùng lặp jobId
+        Map<Long, JobSummaryDTO> jobSummaryMap = new HashMap<>();
 
         // Lặp qua các mức bán kính để tìm kiếm job
         for (double radius : radiusLevels) {
@@ -116,24 +119,24 @@ public class FindCleanerService {
                 dto.setJobId(((Number) row[0]).longValue());  // jobId
                 dto.setServiceName((String) row[1]);  // serviceName
                 dto.setPrice((Double) row[2]);  // total_price
-                // Sử dụng toLocalDateTime() để chuyển đổi từ Timestamp sang LocalDateTime
                 dto.setScheduledTime(((Timestamp) row[3]).toLocalDateTime());  // scheduled_time
-                dto.setDistance((Double) row[4]);  // distance_m
+                dto.setDistance((Double) row[4]);  // distance_km (khoảng cách tính bằng km)
 
-                jobSummaryList.add(dto);
+                // Chỉ thêm job nếu chưa có trong Map (dựa trên jobId)
+                jobSummaryMap.putIfAbsent(dto.getJobId(), dto);
             }
 
-
-            if (jobSummaryList.size() >= limit) {
+            // Nếu đã đủ số lượng job, thoát khỏi vòng lặp
+            if (jobSummaryMap.size() >= limit) {
                 break;
             }
         }
-        if (jobSummaryList.isEmpty()) {
-            return jobSummaryList;
-        }
 
-        return jobSummaryList;
+        // Chuyển Map thành List trước khi trả về
+        return new ArrayList<>(jobSummaryMap.values());
     }
+
+
 
 
 
@@ -143,22 +146,23 @@ public class FindCleanerService {
                 "           JOIN services s ON jsd.service_id = s.id WHERE jsd.job_id = j.id) AS service_name, " +
                 "       j.total_price, j.scheduled_time, " +
                 "       ST_Distance(" +
-                "               ST_SetSRID(ST_MakePoint(ca.longitude, ca.latitude), 4326), " + // Sử dụng SRID 4326
-                "               ST_SetSRID(ST_MakePoint(:longitude, :latitude), 4326)" + // Sử dụng SRID 4326
-                "       ) AS distance_m " +
+                "               ST_Transform(ca.geom, 3857), " +
+                "               ST_Transform(ST_SetSRID(ST_MakePoint(:longitude, :latitude), 4326), 3857)" +
+                "       ) / 1000 AS distance_km " +
                 "FROM jobs j " +
                 "JOIN customer_addresses ca ON j.customer_address_id = ca.id " +
                 "WHERE j.status = 'OPEN' " +
                 "AND ST_DWithin(" +
                 "        ca.geom, " +
-                "        ST_SetSRID(ST_MakePoint(:longitude, :latitude), 4326), " + // Sử dụng SRID 4326
+                "        ST_SetSRID(ST_MakePoint(:longitude, :latitude), 4326), " +
                 "        :radius) " +
                 "AND j.id NOT IN (" +
-                "    SELECT job_id FROM job_application WHERE cleaner_id = :cleanerId AND status = 'Pending'" +
+                "    SELECT job_id FROM job_application WHERE cleaner_id = :cleanerId" +
                 ") " +
-                "ORDER BY distance_m ASC " +
+                "ORDER BY distance_km ASC " +
                 "LIMIT :limit";
 
+        // Cập nhật cách gọi tham số
         Query nativeQuery = entityManager.createNativeQuery(query)
                 .setParameter("latitude", latitude)
                 .setParameter("longitude", longitude)
@@ -168,6 +172,13 @@ public class FindCleanerService {
 
         return nativeQuery.getResultList();
     }
+
+
+
+
+
+
+
 
 
 

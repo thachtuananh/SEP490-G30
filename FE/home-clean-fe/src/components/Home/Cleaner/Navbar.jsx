@@ -126,6 +126,21 @@ function Navbar() {
   };
 
   const handleLogout = () => {
+    if (stompClient && stompClient.connected) {
+      const cleanerData = JSON.parse(localStorage.getItem("cleaner"));
+      if (cleanerData?.cleanerId) {
+        stompClient.publish({
+          destination: "/app/cleaner-offline",
+          body: JSON.stringify({
+            cleanerId: cleanerData.cleanerId,
+            status: "offline",
+          }),
+        });
+      }
+    }
+    if (stompClient) {
+      stompClient.deactivate();
+    }
     dispatch({ type: "LOGOUT" });
     message.success("Đăng xuất thành công!");
     navigate("/homeclean");
