@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -169,10 +170,28 @@ public class JobService {
             totalPrice += serviceDetail.getPrice() + serviceDetail.getAdditionalPrice();
         }
 
-        // Kiểm tra nếu totalPrice lớn hơn 1 triệu và phương thức thanh toán là tiền mặt
-        if (totalPrice > 1000000 && "cash".equalsIgnoreCase(request.getPaymentMethod())) {
-            response.put("message", "Total price exceeds 1 million. Cash payment is not allowed.");
-            return response;  // Dừng lại và trả về phản hồi, không tạo job
+        // Kiểm tra ngày và giờ để tính phí tăng thêm
+        LocalDateTime jobScheduledTime = job.getScheduledTime();
+        DayOfWeek dayOfWeek = jobScheduledTime.getDayOfWeek();
+        int hour = jobScheduledTime.getHour();
+        double priceIncrease = 0;
+
+        if (dayOfWeek == DayOfWeek.SATURDAY || dayOfWeek == DayOfWeek.SUNDAY) {
+            // Nếu là thứ 7 hoặc chủ nhật
+            if (hour >= 18 && hour <= 22) {
+                // Nếu giờ từ 18h đến 22h vào thứ 7 hoặc chủ nhật
+                priceIncrease = 0.2; // Tăng 20%
+            } else {
+                priceIncrease = 0.1; // Tăng 10% vào thứ 7, chủ nhật ngoài giờ cao điểm
+            }
+        } else if (hour >= 18 && hour <= 22) {
+            // Nếu vào giờ từ 18h đến 22h từ thứ 2 đến thứ 6
+            priceIncrease = 0.1; // Tăng 10%
+        }
+
+        if (priceIncrease > 0) {
+            totalPrice += totalPrice * priceIncrease;
+            response.put("message", "The total price includes a " + (priceIncrease * 100) + "% increase due to time or day");
         }
 
         // Lưu Job vào cơ sở dữ liệu
@@ -249,6 +268,7 @@ public class JobService {
 
         return response;
     }
+
 
 
 
@@ -554,7 +574,7 @@ public class JobService {
         transactionHistory.setCleaner(null);
         transactionHistory.setAmount(refundAmount);
         transactionHistory.setTransactionType("Refund");
-        transactionHistory.setStatus("Completed");
+        transactionHistory.setStatus("SUCCESS");
         transactionHistory.setPaymentMethod("Wallet");
 
 

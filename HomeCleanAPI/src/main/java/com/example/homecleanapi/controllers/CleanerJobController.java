@@ -67,6 +67,17 @@ public class CleanerJobController {
         return ResponseEntity.ok(response);
     }
 
+    // hủy job mà cleaner đã apply
+    @PostMapping(value = "/cancel-application/{jobId}")
+    public ResponseEntity<Map<String, Object>> cancelJobApplication(@PathVariable Long jobId) {
+        Map<String, Object> response = jobService.cancelJobApplication(jobId);
+        if (response.containsKey("message") && response.get("message").equals("Job application not found")) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        }
+        return ResponseEntity.ok(response);
+    }
+
+
 
     // Chuyển trạng thái công việc sang ARRIVED
     @PostMapping(value = "/job/arrived/{jobId}")

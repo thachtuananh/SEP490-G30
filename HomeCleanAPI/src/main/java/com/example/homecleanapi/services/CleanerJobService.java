@@ -66,8 +66,10 @@ public class CleanerJobService {
 	@Autowired
 	private EmployeeAddressRepository employeeAddressRepository;
 
-
-
+	@Autowired
+	private CustomerWalletRepository customerWalletRepository;
+    @Autowired
+    private TransactionHistoryRepository transactionHistoryRepository;
 
 
 	// Lấy danh sách các công việc đang mở
@@ -238,6 +240,92 @@ public class CleanerJobService {
 
 		return response;
 	}
+
+
+
+	// hủy job mà cleaner đã apply
+	public Map<String, Object> cancelJobApplication(Long jobId) {
+		Map<String, Object> response = new HashMap<>();
+
+		// Lấy thông tin Job qua jobId
+		Optional<Job> jobOpt = jobRepository.findById(jobId);
+		if (!jobOpt.isPresent()) {
+			response.put("message", "Job not found");
+			return response;
+		}
+
+		Job job = jobOpt.get();
+
+		// Lấy thông tin JobApplication của Job này
+		Optional<JobApplication> jobApplicationOpt = jobApplicationRepository.findByJobId(jobId);
+		if (!jobApplicationOpt.isPresent()) {
+			response.put("message", "Job application not found");
+			return response;
+		}
+
+		JobApplication jobApplication = jobApplicationOpt.get();
+
+		// Kiểm tra trạng thái của JobApplication
+		if ("Pending".equalsIgnoreCase(jobApplication.getStatus())) {
+			// Nếu trạng thái là Pending, có thể hủy
+			jobApplication.setStatus("Rejected");  // Cập nhật trạng thái JobApplication thành Rejected
+			jobApplicationRepository.save(jobApplication);  // Lưu thay đổi vào database
+
+			// Cập nhật trạng thái Job thành CANCELLED
+			job.setStatus(JobStatus.CANCELLED);  // Cập nhật trạng thái Job thành CANCELLED
+			jobRepository.save(job);  // Lưu thay đổi vào Job
+
+			response.put("message", "Hủy ứng tuyển thành công");
+			return response;
+		} else if ("Accepted".equalsIgnoreCase(jobApplication.getStatus())) {
+			// Nếu trạng thái là Accepted, kiểm tra trạng thái Job
+			if (job.getStatus() == JobStatus.IN_PROGRESS) {
+				// Nếu Job đang IN_PROGRESS, hủy job và chuyển Job thành CANCELLED
+				job.setStatus(JobStatus.CANCELLED);
+				jobRepository.save(job);  // Lưu trạng thái cập nhật của Job
+
+				jobApplication.setStatus("Rejected");  // Cập nhật trạng thái JobApplication thành Rejected
+				jobApplicationRepository.save(jobApplication);  // Lưu thay đổi vào JobApplication
+
+				// Hoàn tiền cho Customer
+				double refundAmount = job.getTotalPrice(); // Hoàn trả toàn bộ số tiền
+				Optional<CustomerWallet> walletOpt = customerWalletRepository.findByCustomerId(Long.valueOf(job.getCustomer().getId()));
+
+				if (walletOpt.isPresent()) {
+					CustomerWallet wallet = walletOpt.get();
+					wallet.setBalance(wallet.getBalance() + refundAmount); // Cộng số tiền hoàn lại vào ví của customer
+					customerWalletRepository.save(wallet);  // Lưu thay đổi vào ví của customer
+
+					// Lưu giao dịch hoàn tiền vào bảng transaction_history
+					TransactionHistory transactionHistory = new TransactionHistory();
+					transactionHistory.setCustomer(job.getCustomer());
+					transactionHistory.setCleaner(null);
+					transactionHistory.setAmount(refundAmount);
+					transactionHistory.setTransactionType("Refund");
+					transactionHistory.setStatus("SUCCESS");
+					transactionHistory.setPaymentMethod("Wallet");
+
+					transactionHistoryRepository.save(transactionHistory);
+
+					response.put("message", "Job cancelled and refund of " + refundAmount + " has been credited to the wallet");
+				} else {
+					response.put("message", "Customer wallet not found for refund");
+				}
+
+				return response;
+			} else if (job.getStatus() == JobStatus.ARRIVED ||
+					job.getStatus() == JobStatus.COMPLETED ||
+					job.getStatus() == JobStatus.DONE) {
+				// Nếu Job đã ARRIVED, COMPLETED, hoặc DONE, không thể hủy
+				response.put("message", "Cannot cancel the job as it is already completed or arrived");
+				return response;
+			}
+		}
+
+		response.put("message", "Invalid status for cancellation");
+		return response;
+	}
+
 
 
 
@@ -823,46 +911,34 @@ public class CleanerJobService {
 		Map<String, Object> comboJobs = new HashMap<>(); // Dành cho các công việc combo (chỉ đếm số lượng)
 		String comboKey = "combo"; // Sử dụng một ID duy nhất cho combo
 
-		List<Services> services = serviceRepository.findAll(); // Lấy tất cả các dịch vụ
-
 		Set<Long> countedJobIds = new HashSet<Long>(); // Set để theo dõi các job_id đã đếm
 
-		// Duyệt qua tất cả các dịch vụ
-		for (Services service : services) {
-			String serviceName = service.getName(); // Lấy tên dịch vụ
-			Long serviceId = service.getId(); // Lấy ID dịch vụ
+		// Lấy tất cả các JobServiceDetail và phân loại theo dịch vụ
+		List<JobServiceDetail> jobServiceDetails = jobServiceDetailRepository.findAll();
 
-			// Nếu dịch vụ chưa tồn tại trong danh sách, tạo mới
-			if (!jobsByService.containsKey(serviceName)) {
-				Map<String, Object> serviceInfo = new HashMap<>();
-				serviceInfo.put("serviceId", serviceId); // Thêm serviceId vào service info
-				serviceInfo.put("serviceName", serviceName);
-				serviceInfo.put("jobCount", 0); // Bắt đầu đếm số lượng công việc
-				jobsByService.put(serviceName, serviceInfo);
-			}
+		// Duyệt qua tất cả các JobServiceDetail
+		for (JobServiceDetail jobServiceDetail : jobServiceDetails) {
+			Job job = jobServiceDetail.getJob();
+			Long serviceId = jobServiceDetail.getService().getId();  // Sửa phần này để lấy đúng serviceId từ đối tượng Service
 
-			// Lấy tất cả các JobServiceDetail cho dịch vụ này
-			List<JobServiceDetail> jobServiceDetailsForService = jobServiceDetailRepository
-					.findByServiceId(service.getId());
-
-			// Duyệt qua các JobServiceDetail liên kết với dịch vụ này
-			for (JobServiceDetail jobServiceDetail : jobServiceDetailsForService) {
-				Job job = jobServiceDetail.getJob();
+			// Truy vấn thông tin dịch vụ từ bảng Services theo serviceId
+			Optional<Services> serviceOpt = serviceRepository.findById(serviceId);
+			if (serviceOpt.isPresent()) {
+				Services service = serviceOpt.get();
+				String serviceName = service.getName(); // Lấy tên dịch vụ từ bảng Services
 
 				if (job != null && job.getStatus() == JobStatus.OPEN) { // Kiểm tra job có trạng thái OPEN
+					// Nếu dịch vụ chưa tồn tại trong danh sách, tạo mới
+					if (!jobsByService.containsKey(serviceName)) {
+						Map<String, Object> serviceInfo = new HashMap<>();
+						serviceInfo.put("serviceId", serviceId); // Thêm serviceId vào service info
+						serviceInfo.put("serviceName", serviceName);
+						serviceInfo.put("jobCount", 0); // Bắt đầu đếm số lượng công việc
+						jobsByService.put(serviceName, serviceInfo);
+					}
+
 					// Kiểm tra nếu job chưa được đếm
 					if (!countedJobIds.contains(job.getId())) {
-						// Lấy thông tin dịch vụ từ Map jobsByService
-						Map<String, Object> serviceInfo = (Map<String, Object>) jobsByService.get(serviceName);
-						if (serviceInfo != null) {
-							int jobCount = (int) serviceInfo.get("jobCount");
-							serviceInfo.put("jobCount", jobCount + 1);
-						} else {
-
-							System.err.println("serviceInfo is null for service: " + serviceName);
-						}
-
-
 						// Kiểm tra nếu job có nhiều dịch vụ (tức là combo)
 						List<JobServiceDetail> jobServiceDetailsForJob = jobServiceDetailRepository
 								.findByJobId(job.getId());
@@ -881,22 +957,26 @@ public class CleanerJobService {
 							Map<String, Object> comboInfo = (Map<String, Object>) comboJobs.get(comboKey);
 							int comboCount = (int) comboInfo.get("jobCount");
 							comboInfo.put("jobCount", comboCount + 1);
-						} else {
-							// Nếu job chỉ có một dịch vụ thì đếm vào dịch vụ
-							int jobCount = (int) serviceInfo.get("jobCount");
-							serviceInfo.put("jobCount", jobCount + 1);
-						}
 
-						// Đánh dấu job này đã được đếm
-						countedJobIds.add(job.getId());
+							// Đánh dấu job này đã được đếm vào combo
+							countedJobIds.add(job.getId());
+						} else {
+							// Nếu job chỉ có một dịch vụ thì đếm vào dịch vụ lẻ
+							Map<String, Object> serviceInfo = (Map<String, Object>) jobsByService.get(serviceName);
+							if (serviceInfo != null) {
+								int jobCount = (int) serviceInfo.get("jobCount");
+								serviceInfo.put("jobCount", jobCount + 1);
+							}
+
+							// Đánh dấu job này đã được đếm
+							countedJobIds.add(job.getId());
+						}
 					}
 				}
 			}
 		}
 
 		// Kết hợp kết quả của comboJobs với jobsByService
-//		jobsByService.put("combo", comboJobs.get(comboKey));
-		// Đảm bảo combo luôn tồn tại trong map comboJobs
 		if (!comboJobs.containsKey(comboKey)) {
 			Map<String, Object> comboInfo = new HashMap<>();
 			comboInfo.put("jobCount", 0);
@@ -906,21 +986,13 @@ public class CleanerJobService {
 
 		jobsByService.put("combo", comboJobs.get(comboKey));
 
-
-		// Đảm bảo nếu dịch vụ không có công việc nào thì hiển thị jobCount là 0
-		for (String serviceName : jobsByService.keySet()) {
-			Map<String, Object> serviceInfo = (Map<String, Object>) jobsByService.get(serviceName);
-			if (serviceInfo != null) {
-				int jobCount = (int) serviceInfo.getOrDefault("jobCount", 0);
-				serviceInfo.put("jobCount", jobCount + 1);
-			} else {
-				System.err.println("⚠️ serviceInfo is null for service: " + serviceName);
-			}
-
-		}
-
 		return jobsByService; // Trả về danh sách các công việc phân loại theo dịch vụ, bao gồm cả combo
 	}
+
+
+
+
+
 
 	// xem các job thuộc phần filter service
 	public List<Map<String, Object>> getJobsDetailsByService(Long serviceId) {
@@ -1110,54 +1182,62 @@ public class CleanerJobService {
 
 	// xem detail cleaner không cần đk
 	public Map<String, Object> getCleanerDetailnone(Long cleanerId) {
-	    // Tìm cleaner theo cleanerId
-	    Optional<Employee> cleanerOpt = cleanerRepository.findById(cleanerId);
-	    if (!cleanerOpt.isPresent()) {
-	        return Map.of("message", "Cleaner not found");
-	    }
+		// Tìm cleaner theo cleanerId
+		Optional<Employee> cleanerOpt = cleanerRepository.findById(cleanerId);
+		if (!cleanerOpt.isPresent()) {
+			return Map.of("message", "Cleaner not found");
+		}
 
-	    Employee cleaner = cleanerOpt.get();
+		Employee cleaner = cleanerOpt.get();
 
-	    // Tạo map chứa thông tin của cleaner
-	    Map<String, Object> cleanerInfo = new HashMap<>();
-	    cleanerInfo.put("cleanerId", cleaner.getId());
-	    cleanerInfo.put("cleanerName", cleaner.getName());
-	    cleanerInfo.put("profileImage", cleaner.getProfile_image());
+		// Tạo map chứa thông tin của cleaner
+		Map<String, Object> cleanerInfo = new HashMap<>();
+		cleanerInfo.put("cleanerId", cleaner.getId());
+		cleanerInfo.put("cleanerName", cleaner.getName());
+		cleanerInfo.put("profileImage", cleaner.getProfile_image() != null ? cleaner.getProfile_image() : "No image available");
+		cleanerInfo.put("phoneNumber", cleaner.getPhone());
+		cleanerInfo.put("email", cleaner.getEmail());
+		cleanerInfo.put("age", cleaner.getAge());
+		cleanerInfo.put("address", cleaner.getAddress());
+		cleanerInfo.put("identityNumber", cleaner.getIdentity_number());
+		cleanerInfo.put("isVerified", cleaner.getIs_verified());
+		cleanerInfo.put("experience", cleaner.getExperience());
+		cleanerInfo.put("status", cleaner.getStatus() ? "Active" : "Inactive");
 
-	    // Lấy tất cả các Job mà cleaner đã làm từ JobApplication
-	    List<JobApplication> jobApplications = jobApplicationRepository.findByCleanerId(cleanerId);
-	    if (jobApplications.isEmpty()) {
-	        cleanerInfo.put("averageRating", 0); // Nếu không có công việc nào, trả về trung bình rating là 0
-	        return cleanerInfo;
-	    }
+		// Lấy tất cả các Job mà cleaner đã làm từ JobApplication
+		List<JobApplication> jobApplications = jobApplicationRepository.findByCleanerId(cleanerId);
+		if (jobApplications.isEmpty()) {
+			cleanerInfo.put("averageRating", 0); // Nếu không có công việc nào, trả về trung bình rating là 0
+		} else {
+			// Tính toán trung bình rating từ các feedbacks của các job mà cleaner đã làm
+			int totalRating = 0;
+			int feedbackCount = 0;
 
-	    // Tính toán trung bình rating từ các feedbacks của các job mà cleaner đã làm
-	    int totalRating = 0;
-	    int feedbackCount = 0;
+			for (JobApplication jobApplication : jobApplications) {
+				Job job = jobApplication.getJob(); // Lấy Job từ JobApplication
 
-	    for (JobApplication jobApplication : jobApplications) {
-	        Job job = jobApplication.getJob(); // Lấy Job từ JobApplication
+				// Lấy feedbacks cho Job này
+				List<Feedback> feedbacks = feedbackRepository.findByJobId(job.getId());
+				for (Feedback feedback : feedbacks) {
+					totalRating += feedback.getRating(); // Cộng dồn rating
+					feedbackCount++;
+				}
+			}
 
-	        // Lấy feedbacks cho Job này
-	        List<Feedback> feedbacks = feedbackRepository.findByJobId(job.getId());
-	        for (Feedback feedback : feedbacks) {
-	            totalRating += feedback.getRating(); // Cộng dồn rating
-	            feedbackCount++;
-	        }
-	    }
+			// Tính trung bình rating nếu có feedback
+			double averageRating = feedbackCount > 0 ? (double) totalRating / feedbackCount : 0;
 
-	    // Tính trung bình rating nếu có feedback
-	    double averageRating = feedbackCount > 0 ? (double) totalRating / feedbackCount : 0;
+			// Định dạng trung bình rating chỉ với 1 chữ số sau dấu phẩy
+			DecimalFormat df = new DecimalFormat("#.#");
+			String formattedAverageRating = df.format(averageRating);
 
-	    // Định dạng trung bình rating chỉ với 1 chữ số sau dấu phẩy
-	    DecimalFormat df = new DecimalFormat("#.#");
-	    String formattedAverageRating = df.format(averageRating);
+			// Thêm thông tin vào map cleanerInfo
+			cleanerInfo.put("averageRating", formattedAverageRating); // Thêm trung bình rating vào thông tin cleaner
+		}
 
-	    // Thêm thông tin vào map cleanerInfo
-	    cleanerInfo.put("averageRating", formattedAverageRating); // Thêm trung bình rating vào thông tin cleaner
-
-	    return cleanerInfo;
+		return cleanerInfo;
 	}
+
 
 
 	public Map<String, Object> getCleanerDetails(Long cleanerId) {
