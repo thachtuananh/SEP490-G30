@@ -18,7 +18,6 @@ function JobCard({ image, title, description, count, id }) {
       let url = `${BASE_URL}/cleaner/jobs/details/by-service/${id}`;
       let isCombo = false;
 
-      // Sử dụng API riêng cho dịch vụ combo
       if (title === "Dọn dẹp theo Combo") {
         url = `${BASE_URL}/cleaner/jobs/combo`;
         isCombo = true;
@@ -44,13 +43,9 @@ function JobCard({ image, title, description, count, id }) {
       const data = await response.json();
       message.destroy("jobLoading");
 
-      // Xử lý dữ liệu cho combo service
       if (isCombo) {
-        // Đảm bảo mỗi job trong combo có thuộc tính serviceName
         const processedData = data.map((job) => {
-          // Nếu job có services array, lấy tên dịch vụ từ đó
           if (job.services && job.services.length > 0) {
-            // Tạo tên dịch vụ từ danh sách services
             const serviceNames = job.services
               .map((service) => service.serviceName)
               .join(", ");
@@ -65,12 +60,10 @@ function JobCard({ image, title, description, count, id }) {
           };
         });
 
-        // Chuyển hướng với dữ liệu đã xử lý
         navigate("/homeclean/job-list", {
           state: { jobs: processedData, serviceTitle: title },
         });
       } else {
-        // Chuyển hướng với dữ liệu gốc cho các dịch vụ không phải combo
         navigate("/homeclean/job-list", {
           state: { jobs: data, serviceTitle: title },
         });
@@ -87,17 +80,10 @@ function JobCard({ image, title, description, count, id }) {
     <Card
       hoverable
       style={{
-        height: "100%",
+        height: "100%", // Ensure card takes full height of parent
         background: "#f5f5f5",
         display: "flex",
         flexDirection: "column",
-        body: {
-          // This is using style.body as requested
-          display: "flex",
-          flexDirection: "column",
-          flex: 1,
-          padding: "0 16px 16px 16px",
-        },
       }}
       onClick={handleCardClick}
       cover={
@@ -107,7 +93,8 @@ function JobCard({ image, title, description, count, id }) {
             justifyContent: "center",
             alignItems: "center",
             padding: "16px 16px 0 16px",
-            height: "120px",
+            height: "120px", // Fixed height for image section
+            overflow: "hidden",
           }}
         >
           <img
@@ -126,20 +113,63 @@ function JobCard({ image, title, description, count, id }) {
     >
       <div
         style={{
-          textAlign: "center",
-          flex: 1,
           display: "flex",
           flexDirection: "column",
+          padding: "16px",
+          flex: 1, // Allow content to take remaining space
         }}
       >
-        <Title level={4} style={{ margin: 0 }}>
+        {/* Title Section */}
+        <Title
+          level={4}
+          style={{
+            margin: 0,
+            fontSize: "18px", // Consistent font size
+            lineHeight: "24px", // Fixed line height
+            height: "24px", // Single line height
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap",
+            textAlign: "center",
+          }}
+        >
           {title}
         </Title>
-        <Paragraph style={{ margin: "8px 0", flex: 1 }}>
+
+        {/* Description Section */}
+        <Paragraph
+          style={{
+            margin: "8px 0",
+            fontSize: "14px", // Consistent font size
+            lineHeight: "20px", // Fixed line height for exactly 2 lines
+            height: "40px", // Height for exactly 2 lines (2 * 20px)
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            display: "-webkit-box",
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: "vertical",
+            textAlign: "center",
+            color: "#595959", // Subtle color for description
+          }}
+        >
           {description}
         </Paragraph>
-        <div style={{ marginTop: "auto" }}>
-          <Text strong style={{ color: "#039855", fontSize: "16px" }}>
+
+        {/* Count Section */}
+        <div
+          style={{
+            marginTop: "auto", // Push to bottom
+            textAlign: "center",
+          }}
+        >
+          <Text
+            strong
+            style={{
+              fontSize: "16px", // Consistent font size
+              lineHeight: "24px",
+              color: "#039855",
+            }}
+          >
             {count}
           </Text>
         </div>

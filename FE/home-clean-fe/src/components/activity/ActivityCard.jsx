@@ -127,6 +127,8 @@ export const ActivityCard = ({ data, onDelete }) => {
         return 3;
       case "COMPLETED":
         return 4;
+      case "DONE":
+        return 4;
       default:
         return 1;
     }

@@ -225,8 +225,8 @@ const ActivityJob = () => {
                   pageSize={pageSize}
                   total={totalJobs}
                   onChange={handlePageChange}
-                  showSizeChanger
-                  pageSizeOptions={["5", "10", "20"]}
+                  // showSizeChanger
+                  // pageSizeOptions={["5", "10", "20"]}
                   style={{
                     display: "flex",
                     justifyContent: "center",

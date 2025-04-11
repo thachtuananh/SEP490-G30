@@ -63,7 +63,7 @@ export const Address = () => {
           const formattedAddresses = responseData.map((item) => ({
             id: item.id, // Using the actual ID from the response
             address: item.address,
-            isDefault: item.is_current,
+            isDefault: item.current,
             name: item.customer?.full_name || user?.name || "",
             phone: item.customer?.phone || user?.phone || "",
           }));

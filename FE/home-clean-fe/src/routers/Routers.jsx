@@ -28,8 +28,11 @@ import CleanerDetails from "../pages/CleanerDetails/CleanerDetails";
 import CreateJob from "../pages/ServiceDetails/CreateJob";
 import CreateJobToCleaner from "../pages/ServiceDetails/CreateJobToCleaner";
 import CleanerSection from "../pages/Home/Owner/CleanerSectionPage";
+
 import OrderSuccess from "../pages/order_success/OrderSuccess";
-import ApplySuccess from "../pages/order_success/ApplySuccess";
+import DepositOwner from "../pages/order_success/DepositOwner";
+import DepositCleaner from "../pages/order_success/DepositCleaner";
+
 import WorkDetail from "../pages/work/WorkDetail";
 import ActivityJob from "../pages/ActivityJob";
 import JobListFilter from "../pages/JobListFilter";
@@ -83,8 +86,9 @@ const Routers = () => {
       <Route path="/createjobtocleaner" element={<CreateJobToCleaner />} />
       <Route path="/homeclean/activityjob" element={<ActivityJob />} />
 
-      {/* <Route path="/ordersuccess" element={<OrderSuccess />} /> */}
-      {/* <Route path="/applysuccess" element={<ApplySuccess />} /> */}
+      <Route path="/ordersuccess" element={<OrderSuccess />} />
+      <Route path="/depositOwner" element={<DepositOwner />} />
+      <Route path="/homeclean/depositCleaner" element={<DepositCleaner />} />
 
       <Route path="/workdetail/:jobId?" element={<WorkDetail />} />
 
