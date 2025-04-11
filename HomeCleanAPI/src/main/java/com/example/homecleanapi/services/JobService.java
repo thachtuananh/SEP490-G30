@@ -2,9 +2,8 @@ package com.example.homecleanapi.services;
 
 
 
-import com.example.homecleanapi.Payment.VnpayConfig;
-import com.example.homecleanapi.Payment.VnpayRequest;
-import com.example.homecleanapi.Payment.VnpayService;
+import com.example.homecleanapi.vnPay.VnpayRequest;
+import com.example.homecleanapi.vnPay.VnpayService;
 import com.example.homecleanapi.dtos.BookJobRequest;
 import com.example.homecleanapi.dtos.BookJobRequest.ServiceRequest;
 import com.example.homecleanapi.enums.JobStatus;
@@ -19,14 +18,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class JobService {
@@ -63,10 +58,13 @@ public class JobService {
     
     @Autowired
     private VnpayService vnpayService;
-    
 
-    
-  
+    @Autowired
+    private CustomerWalletRepository customerWalletRepository;
+    @Autowired
+    private TransactionHistoryRepository transactionHistoryRepository;
+
+
     public Map<String, Object> bookJob(@PathVariable Long customerId, @RequestBody BookJobRequest request, HttpServletRequest requestIp) {
         Map<String, Object> response = new HashMap<>();
 
@@ -108,6 +106,45 @@ public class JobService {
             job.setStatus(JobStatus.OPEN);  // Nếu thanh toán bằng tiền mặt, đặt status là OPEN
         } else if ("vnpay".equalsIgnoreCase(request.getPaymentMethod())) {
             job.setStatus(JobStatus.PAID);  // Nếu thanh toán qua VNPay, đặt status là PAID
+        } else if ("wallet".equalsIgnoreCase(request.getPaymentMethod())) {
+            // Kiểm tra ví của customer và số dư trong ví
+            Optional<CustomerWallet> walletOpt = customerWalletRepository.findByCustomerId(customerId);
+            if (!walletOpt.isPresent()) {
+                response.put("message", "Customer wallet not found");
+                return response;
+            }
+
+            CustomerWallet wallet = walletOpt.get();
+
+            double totalPrice = 0;
+            for (ServiceRequest serviceRequest : request.getServices()) {
+                Optional<Services> serviceOpt = serviceRepository.findById(serviceRequest.getServiceId());
+                if (!serviceOpt.isPresent()) {
+                    response.put("message", "Service not found with serviceId: " + serviceRequest.getServiceId());
+                    return response;
+                }
+                Services service = serviceOpt.get();
+                Optional<ServiceDetail> serviceDetailOpt = serviceDetailRepository.findById(serviceRequest.getServiceDetailId());
+                if (!serviceDetailOpt.isPresent()) {
+                    response.put("message", "Service Detail not found for serviceId: " + serviceRequest.getServiceDetailId());
+                    return response;
+                }
+                ServiceDetail serviceDetail = serviceDetailOpt.get();
+                totalPrice += serviceDetail.getPrice() + serviceDetail.getAdditionalPrice();
+            }
+
+            // Kiểm tra nếu số dư trong ví không đủ
+            if (wallet.getBalance() < totalPrice) {
+                response.put("message", "không đủ tiền trong ví, hãy nạp thêm");
+                return response;
+            }
+
+            // Cộng tiền vào ví của customer
+            wallet.setBalance(wallet.getBalance() - totalPrice);  // Giảm số dư ví
+            customerWalletRepository.save(wallet);  // Lưu cập nhật vào ví của customer
+
+            // Cập nhật trạng thái job
+            job.setStatus(JobStatus.OPEN);
         }
 
         job.setPaymentMethod(request.getPaymentMethod());
@@ -140,6 +177,12 @@ public class JobService {
 
         // Lưu Job vào cơ sở dữ liệu
         job.setTotalPrice(totalPrice);
+
+        // Tạo mã đơn hàng orderCode theo format customerId + ddMMyy + RandomString
+        String orderCode = customerId + LocalDate.now().format(DateTimeFormatter.ofPattern("ddMMyy")) + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+
+        job.setOrderCode(orderCode);  // Gán mã đơn hàng
+
         job = jobRepository.save(job);
 
         // Lưu các JobServiceDetail nếu có
@@ -200,6 +243,7 @@ public class JobService {
         // Nếu chọn phương thức thanh toán tiền mặt, hoàn tất tạo job
         response.put("message", "Job booked successfully");
         response.put("jobId", job.getId());
+        response.put("orderCode", job.getOrderCode());  // Trả về orderCode
         response.put("status", job.getStatus());
         response.put("totalPrice", totalPrice);
 
@@ -302,7 +346,7 @@ public class JobService {
 
         return false;
     }
-    
+
     public Map<String, Object> updateJobStatusToDone(Long jobId) {
         Map<String, Object> response = new HashMap<>();
 
@@ -332,38 +376,27 @@ public class JobService {
         // Lấy cleaner từ jobApplication
         Employee cleaner = jobApplication.getCleaner();
 
-        // Chuyển trạng thái công việc sang "DONE"
+        // Cập nhật trạng thái công việc sang "DONE"
         job.setStatus(JobStatus.DONE);
         jobRepository.save(job);
 
-        // Nếu phương thức thanh toán là "Cash", tiến hành trừ tiền hoa hồng từ ví của cleaner
-        if (job.getPaymentMethod().equalsIgnoreCase("Cash")) {
-            // Lấy thông tin ví của cleaner
-            Optional<Wallet> walletOpt = walletRepository.findByCleanerId(cleaner.getId());
-            if (!walletOpt.isPresent()) {
-                response.put("message", "Cleaner wallet not found");
-                return response;
-            }
+        // Tính toán số tiền sẽ trả cho cleaner (85% tổng giá trị đơn hàng)
+        double totalPrice = job.getTotalPrice();
+        double cleanerPayment = totalPrice * 0.85;
 
-            Wallet wallet = walletOpt.get();
-
-            // Tính hoa hồng (20% của tổng giá)
-            double commission = 0.2 * job.getTotalPrice();
-
-            // Kiểm tra số dư ví của cleaner có đủ để trừ hoa hồng không
-            if (wallet.getBalance() < commission) {
-                response.put("message", "Insufficient balance in cleaner's wallet to cover the commission");
-                return response;
-            }
-
-            // Trừ đi hoa hồng từ ví của cleaner
-            wallet.setBalance(wallet.getBalance() - commission);
-            walletRepository.save(wallet);
-
-            response.put("message", "Commission deducted from cleaner's wallet");
+        // Lấy ví của cleaner
+        Optional<Wallet> walletOpt = walletRepository.findByCleanerId(cleaner.getId());
+        if (!walletOpt.isPresent()) {
+            response.put("message", "Cleaner wallet not found");
+            return response;
         }
+        Wallet wallet = walletOpt.get();
 
-        response.put("message", "Job status updated to DONE");
+        // Cộng 85% giá trị đơn vào ví của cleaner
+        wallet.setBalance(wallet.getBalance() + cleanerPayment);
+        walletRepository.save(wallet);
+
+        response.put("message", "Job status updated to DONE, and cleaner's wallet has been credited with 85% of the job value");
         return response;
     }
 
@@ -371,7 +404,7 @@ public class JobService {
 
 
 
-    
+
     // list tất cả job đã book
     public List<Map<String, Object>> getBookedJobsForCustomer(Long customerId) {
         List<Map<String, Object>> bookedJobs = new ArrayList<Map<String,Object>>();
@@ -388,7 +421,6 @@ public class JobService {
             jobInfo.put("customerAddress", job.getCustomerAddress().getAddress());  // Địa chỉ
             jobInfo.put("status", job.getStatus());  // Trạng thái
             jobInfo.put("totalPrice", job.getTotalPrice());  // Giá
-//            jobInfo.put("createdAt", job.getCreatedAt());  // Thời gian tạo
 
             // Thêm thông tin về customer đã đặt job
             Customers customer = job.getCustomer();
@@ -442,6 +474,16 @@ public class JobService {
                 jobInfo.put("services", "No services found for this job");
             }
 
+            // Lấy thông tin cleaner đã nhận công việc này (nếu có)
+            JobApplication jobApplication = jobApplicationRepository.findByJobIdAndStatus(job.getId(), "Accepted");
+            if (jobApplication != null) {
+                Employee cleaner = jobApplication.getCleaner();
+                if (cleaner != null) {
+                    jobInfo.put("cleanerId", cleaner.getId());
+
+                }
+            }
+
             bookedJobs.add(jobInfo);
         }
 
@@ -449,7 +491,7 @@ public class JobService {
     }
 
 
-    
+
     // huy job ddax book
     public Map<String, Object> cancelJobForCustomer(Long customerId, Long jobId) {
         Map<String, Object> response = new HashMap<>();
@@ -476,12 +518,51 @@ public class JobService {
             return response;
         }
 
-
         // Kiểm tra trạng thái của job
-        if (job.getStatus().equals(JobStatus.STARTED) || job.getStatus().equals(JobStatus.COMPLETED) || job.getStatus().equals(JobStatus.DONE) ) {
-            response.put("message", "You cannot cancel a job that has already started");
+        if (job.getStatus().equals(JobStatus.ARRIVED) || job.getStatus().equals(JobStatus.COMPLETED) || job.getStatus().equals(JobStatus.DONE)) {
+            response.put("message", "You cannot cancel a job that has already ARRIVED or completed");
             return response;
         }
+
+        // Khai báo biến refundPercentage (phần trăm hoàn tiền)
+        double refundPercentage = 1.0; // Mặc định hoàn 100%
+
+        // Nếu job có trạng thái IN_PROGRESS, chỉ hoàn 90%
+        if (job.getStatus().equals(JobStatus.IN_PROGRESS)) {
+            refundPercentage = 0.9; // Hoàn 90% khi job đang trong trạng thái IN_PROGRESS
+        }
+
+        // Tính toán số tiền hoàn lại
+        double totalPrice = job.getTotalPrice();
+        double refundAmount = totalPrice * refundPercentage;
+
+        // Lấy ví của customer
+        Optional<CustomerWallet> walletOpt = customerWalletRepository.findByCustomerId(customerId);
+        if (!walletOpt.isPresent()) {
+            response.put("message", "Customer wallet not found");
+            return response;
+        }
+        CustomerWallet wallet = walletOpt.get();
+
+        // Cộng tiền vào ví của customer
+        wallet.setBalance(wallet.getBalance() + refundAmount);
+        customerWalletRepository.save(wallet);  // Lưu cập nhật vào ví của customer
+
+        // Lưu giao dịch hoàn tiền vào bảng transaction_history
+        TransactionHistory transactionHistory = new TransactionHistory();
+        transactionHistory.setCustomer(customer);
+        transactionHistory.setCleaner(null);
+        transactionHistory.setAmount(refundAmount);
+        transactionHistory.setTransactionType("Refund");
+        transactionHistory.setStatus("Completed");
+        transactionHistory.setPaymentMethod("Wallet");
+
+
+        // Lưu vào bảng transaction_history
+        transactionHistoryRepository.save(transactionHistory);
+
+        // Thêm thông báo hoàn tiền
+        response.put("message", "Job has been cancelled successfully and " + (refundPercentage * 100) + "% refund has been credited to the wallet");
 
         // Cập nhật trạng thái công việc thành "CANCELLED"
         job.setStatus(JobStatus.CANCELLED);
@@ -492,5 +573,17 @@ public class JobService {
         response.put("status", job.getStatus());
         return response;
     }
+
+
+
+
+
+    // LU
+
+
+    
+
+
+
 }
 

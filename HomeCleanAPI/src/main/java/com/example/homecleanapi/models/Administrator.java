@@ -12,6 +12,8 @@ public class Administrator {
 
     private String email;
     private String passwordHash;
+
+    @Column(name = "fullname")
     private String fullName;
 
     @ManyToOne

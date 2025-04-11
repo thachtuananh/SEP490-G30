@@ -63,10 +63,21 @@ public class Job {
     private String txnRef;
     
     @Column(name = "reminder")
-    private String reminder;  
+    private String reminder;
+
+    @Column(name = "order_code")
+    private String orderCode;
 
     // Getters and Setters
 
+
+    public String getOrderCode() {
+        return orderCode;
+    }
+
+    public void setOrderCode(String orderCode) {
+        this.orderCode = orderCode;
+    }
 
     public LocalDateTime getUpdatedAt() {
         return updatedAt;

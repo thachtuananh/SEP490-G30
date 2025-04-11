@@ -4,29 +4,8 @@ import com.example.homecleanapi.dtos.BookJobRequest;
 import com.example.homecleanapi.dtos.BookJobRequest.ServiceRequest;
 import com.example.homecleanapi.dtos.JobSummaryDTO;
 import com.example.homecleanapi.enums.JobStatus;
-import com.example.homecleanapi.models.CustomerAddresses;
-import com.example.homecleanapi.models.Customers;
-import com.example.homecleanapi.models.Employee;
-import com.example.homecleanapi.models.Feedback;
-import com.example.homecleanapi.models.Job;
-import com.example.homecleanapi.models.JobApplication;
-import com.example.homecleanapi.models.JobDetails;
-import com.example.homecleanapi.models.JobServiceDetail;
-import com.example.homecleanapi.models.ServiceDetail;
-import com.example.homecleanapi.models.Services;
-import com.example.homecleanapi.models.Wallet;
-import com.example.homecleanapi.repositories.CleanerRepository;
-import com.example.homecleanapi.repositories.CustomerAddressRepository;
-import com.example.homecleanapi.repositories.CustomerRepo;
-
-import com.example.homecleanapi.repositories.FeedbackRepository;
-import com.example.homecleanapi.repositories.JobApplicationRepository;
-import com.example.homecleanapi.repositories.JobDetailsRepository;
-import com.example.homecleanapi.repositories.JobRepository;
-import com.example.homecleanapi.repositories.JobServiceDetailRepository;
-import com.example.homecleanapi.repositories.ServiceDetailRepository;
-import com.example.homecleanapi.repositories.ServiceRepository;
-import com.example.homecleanapi.repositories.WalletRepository;
+import com.example.homecleanapi.models.*;
+import com.example.homecleanapi.repositories.*;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -84,6 +63,9 @@ public class CleanerJobService {
 	@Autowired
     private WalletRepository walletRepository;
 
+	@Autowired
+	private EmployeeAddressRepository employeeAddressRepository;
+
 
 
 
@@ -117,145 +99,146 @@ public class CleanerJobService {
 
 	// Lấy chi tiết công việc
 	public Map<String, Object> getJobDetails(Long jobId) {
-	    Map<String, Object> jobDetails = new HashMap<>();
+		Map<String, Object> jobDetails = new HashMap<>();
 
-	    // Tìm job theo jobId
-	    Job job = jobRepository.findById(jobId).orElse(null);
-	    if (job != null) {
-	        // Thêm thông tin về job
-	        jobDetails.put("jobId", job.getId());
-	        jobDetails.put("status", job.getStatus());
-	        jobDetails.put("totalPrice", job.getTotalPrice());
-	        jobDetails.put("scheduledTime", job.getScheduledTime());
+		// Tìm job theo jobId
+		Job job = jobRepository.findById(jobId).orElse(null);
+		if (job != null) {
+			// Thêm thông tin về job
+			jobDetails.put("jobId", job.getId());
+			jobDetails.put("status", job.getStatus());
+			jobDetails.put("totalPrice", job.getTotalPrice());
+			jobDetails.put("scheduledTime", job.getScheduledTime());
 
+			// Thêm thông tin orderCode của job
+			if (job.getOrderCode() != null) {
+				jobDetails.put("orderCode", job.getOrderCode());
+			}
 
-	        if (job.getReminder() != null) {
-	            jobDetails.put("reminder", job.getReminder());  
-	        }
+			if (job.getReminder() != null) {
+				jobDetails.put("reminder", job.getReminder());
+			}
 
+			List<JobServiceDetail> jobServiceDetails = jobServiceDetailRepository.findByJobId(jobId);
+			if (jobServiceDetails != null && !jobServiceDetails.isEmpty()) {
+				List<Map<String, Object>> serviceList = new ArrayList<>();
 
-	        List<JobServiceDetail> jobServiceDetails = jobServiceDetailRepository.findByJobId(jobId);
-	        if (jobServiceDetails != null && !jobServiceDetails.isEmpty()) {
-	            List<Map<String, Object>> serviceList = new ArrayList<>();
+				for (JobServiceDetail jobServiceDetail : jobServiceDetails) {
+					Services service = jobServiceDetail.getService();
+					if (service != null) {
+						Map<String, Object> serviceInfo = new HashMap<>();
+						serviceInfo.put("serviceName", service.getName());
+						serviceInfo.put("serviceDescription", service.getDescription());
 
+						ServiceDetail serviceDetail = jobServiceDetail.getServiceDetail();
+						if (serviceDetail != null) {
+							serviceInfo.put("serviceDetailId", serviceDetail.getId());
+							serviceInfo.put("serviceDetailName", serviceDetail.getName());
+							serviceInfo.put("price", serviceDetail.getPrice());
+							serviceInfo.put("additionalPrice", serviceDetail.getAdditionalPrice());
+							serviceInfo.put("areaRange", serviceDetail.getAreaRange());
+							serviceInfo.put("description", serviceDetail.getDescription());
+							serviceInfo.put("discounts", serviceDetail.getDiscounts());
+						}
 
-	            for (JobServiceDetail jobServiceDetail : jobServiceDetails) {
-	                Services service = jobServiceDetail.getService();
-	                if (service != null) {
-	                    Map<String, Object> serviceInfo = new HashMap<>();
-	                    serviceInfo.put("serviceName", service.getName());
-	                    serviceInfo.put("serviceDescription", service.getDescription());
+						serviceList.add(serviceInfo);
+					}
+				}
 
-	                    ServiceDetail serviceDetail = jobServiceDetail.getServiceDetail();
-	                    if (serviceDetail != null) {
-	                        serviceInfo.put("serviceDetailId", serviceDetail.getId());
-	                        serviceInfo.put("serviceDetailName", serviceDetail.getName());
-	                        serviceInfo.put("price", serviceDetail.getPrice());
-	                        serviceInfo.put("additionalPrice", serviceDetail.getAdditionalPrice());
-	                        serviceInfo.put("areaRange", serviceDetail.getAreaRange());
-	                        serviceInfo.put("description", serviceDetail.getDescription());
-	                        serviceInfo.put("discounts", serviceDetail.getDiscounts());
-	                    }
+				jobDetails.put("services", serviceList);
+			}
 
-	                    serviceList.add(serviceInfo);
-	                }
-	            }
+			// Thêm thông tin về customer đã book job
+			Customers customer = job.getCustomer();
+			if (customer != null) {
+				jobDetails.put("customerId", customer.getId());
+				jobDetails.put("customerName", customer.getFull_name());
+				jobDetails.put("customerPhone", customer.getPhone());
+			}
 
+			// Thêm thông tin về địa chỉ của customer
+			CustomerAddresses customerAddress = job.getCustomerAddress();
+			if (customerAddress != null) {
+				jobDetails.put("customerAddressId", customerAddress.getId());
+				jobDetails.put("customerAddress", customerAddress.getAddress());
+				jobDetails.put("latitude", customerAddress.getLatitude());
+				jobDetails.put("longitude", customerAddress.getLongitude());
+			}
+		}
 
-	            jobDetails.put("services", serviceList);
-	        }
-
-	        // Thêm thông tin về customer đã book job
-	        Customers customer = job.getCustomer();
-	        if (customer != null) {
-	            jobDetails.put("customerId", customer.getId());
-	            jobDetails.put("customerName", customer.getFull_name());
-	            jobDetails.put("customerPhone", customer.getPhone());
-	        }
-
-	        // Thêm thông tin về địa chỉ của customer
-	        CustomerAddresses customerAddress = job.getCustomerAddress();
-	        if (customerAddress != null) {
-	            jobDetails.put("customerAddressId", customerAddress.getId());
-	            jobDetails.put("customerAddress", customerAddress.getAddress());
-	            jobDetails.put("latitude", customerAddress.getLatitude());
-	            jobDetails.put("longitude", customerAddress.getLongitude());
-	        }
-	    }
-
-	    return jobDetails.isEmpty() ? null : jobDetails;
+		return jobDetails.isEmpty() ? null : jobDetails;
 	}
+
 
 
 	// Apply job
 	public Map<String, Object> applyForJob(Long jobId) {
-	    Map<String, Object> response = new HashMap<>();
+		Map<String, Object> response = new HashMap<>();
 
-	    String phoneNumber = SecurityContextHolder.getContext().getAuthentication().getName();
-	    System.out.println("phone = " + phoneNumber);
+		String phoneNumber = SecurityContextHolder.getContext().getAuthentication().getName();
+		System.out.println("phone = " + phoneNumber);
 
-	    Optional<Employee> cleanerOpt = cleanerRepository.findByPhone(phoneNumber);
+		Optional<Employee> cleanerOpt = cleanerRepository.findByPhone(phoneNumber);
 
-	    if (!cleanerOpt.isPresent()) {
-	        response.put("message", "Cleaner not found");
-	        return response;
-	    }
+		if (!cleanerOpt.isPresent()) {
+			response.put("message", "Cleaner not found");
+			return response;
+		}
 
-	    Employee cleaner = cleanerOpt.get();
+		Employee cleaner = cleanerOpt.get();
 
-	    // Tìm công việc theo jobId
-	    Optional<Job> jobOpt = jobRepository.findById(jobId);
-	    if (!jobOpt.isPresent()) {
-	        response.put("message", "Job not found");
-	        return response;
-	    }
+		// Tìm công việc theo jobId
+		Optional<Job> jobOpt = jobRepository.findById(jobId);
+		if (!jobOpt.isPresent()) {
+			response.put("message", "Job not found");
+			return response;
+		}
 
-	    Job job = jobOpt.get();
+		Job job = jobOpt.get();
 
-	    // Kiểm tra trạng thái công việc
-	    if (!job.getStatus().equals(JobStatus.OPEN)) {
-	        response.put("message", "Job is no longer open or has been taken");
-	        return response;
-	    }
+		// Kiểm tra trạng thái công việc
+		if (!job.getStatus().equals(JobStatus.OPEN)) {
+			response.put("message", "Job is no longer open or has been taken");
+			return response;
+		}
 
+		// Kiểm tra phương thức thanh toán của job
+//		if (job.getPaymentMethod().trim().equalsIgnoreCase("Cash")) {
+//			// Kiểm tra ví của cleaner để kiểm tra số dư trước khi ứng tuyển
+//			Optional<Wallet> walletOpt = walletRepository.findByCleanerId(cleaner.getId());
+//			if (!walletOpt.isPresent()) {
+//				response.put("message", "Cleaner wallet not found");
+//				return response;
+//			}
+//			Wallet wallet = walletOpt.get();
+//
+//			// Tính hoa hồng (20% của tổng giá trị đơn hàng)
+//			double commission = 0.2 * job.getTotalPrice();
+//
+//			// Kiểm tra số dư ví của cleaner có đủ để trừ hoa hồng không
+//			if (wallet.getBalance() - commission < -200000) {
+//				response.put("message", "Your balance is not sufficient. You can only owe up to 200,000 VND.");
+//				return response;  // Return immediately to prevent job application creation
+//			}
+//		}
 
-	    // Kiểm tra phương thức thanh toán của job
-	    if (job.getPaymentMethod().trim().equalsIgnoreCase("Cash")) {
-	    	
-	    	
-	        // Kiểm tra ví của cleaner để kiểm tra số dư trước khi ứng tuyển
-	        Optional<Wallet> walletOpt = walletRepository.findByCleanerId(cleaner.getId());
-	        if (!walletOpt.isPresent()) {
-	            response.put("message", "Cleaner wallet not found");
-	            return response;
-	        }
-	        Wallet wallet = walletOpt.get();
+		// Tạo job application và lưu vào database
+		JobApplication jobApplication = new JobApplication();
+		jobApplication.setJob(job);
+		jobApplication.setCleaner(cleaner);
+		jobApplication.setStatus("Pending");
 
-	        // Tính hoa hồng (20% của tổng giá trị đơn hàng)
-	        double commission = 0.2 * job.getTotalPrice();
+		jobApplicationRepository.save(jobApplication);
 
-	        // Kiểm tra số dư ví của cleaner có đủ để trừ hoa hồng không
-	        if (wallet.getBalance() - commission < -200000) {  
-	            response.put("message", "Your balance is not sufficient. You can only owe up to 200,000 VND.");
-	            return response;  // Return immediately to prevent job application creation
-	        }
-	    }
+		// Thêm thông báo thành công khi không có lỗi
+		response.put("message", "Cleaner has successfully applied for the job");
+		response.put("jobId", jobId);
+		response.put("cleanerId", cleaner.getId());
+		response.put("status", "Pending");
 
-	    // Tạo job application và lưu vào database
-	    JobApplication jobApplication = new JobApplication();
-	    jobApplication.setJob(job);
-	    jobApplication.setCleaner(cleaner);
-	    jobApplication.setStatus("Pending");
-
-	    jobApplicationRepository.save(jobApplication);
-
-	    response.put("message", "Cleaner has successfully applied for the job");
-	    response.put("jobId", jobId);
-	    response.put("cleanerId", cleaner.getId());
-	    response.put("status", "Pending");
-
-	    return response;
+		return response;
 	}
+
 
 
 
@@ -467,7 +450,7 @@ public class CleanerJobService {
 		}
 
 		// Kiểm tra trạng thái của công việc
-		if (!job.getStatus().equals(JobStatus.IN_PROGRESS)) {
+		if (!job.getStatus().equals(JobStatus.ARRIVED)) {
 			response.put("message", "Job is not in 'IN_PROGRESS' state");
 			return response;
 		}
@@ -580,6 +563,10 @@ public class CleanerJobService {
 				jobInfo.put("status", job.getStatus());
 				jobInfo.put("totalPrice", job.getTotalPrice());
 
+				// Thêm thông tin mã đơn hàng
+				if (job.getOrderCode() != null) {
+					jobInfo.put("orderCode", job.getOrderCode());
+				}
 
 				// Thêm thông tin về customer đã book job
 				Customers customer = job.getCustomer();
@@ -644,6 +631,7 @@ public class CleanerJobService {
 		return completedJobs; // Trả về danh sách công việc đã hoàn thành
 	}
 
+
 	// ds job đang làm
 	public List<Map<String, Object>> getInProgressJobs(Long cleanerId) {
 		List<Map<String, Object>> inProgressJobs = new ArrayList<>();
@@ -671,6 +659,10 @@ public class CleanerJobService {
 				jobInfo.put("status", job.getStatus());
 				jobInfo.put("totalPrice", job.getTotalPrice());
 
+				// Thêm thông tin mã đơn hàng
+				if (job.getOrderCode() != null) {
+					jobInfo.put("orderCode", job.getOrderCode());
+				}
 
 				// Thêm thông tin về customer đã book job
 				Customers customer = job.getCustomer();
@@ -733,6 +725,7 @@ public class CleanerJobService {
 
 		return inProgressJobs; // Trả về danh sách các công việc đang làm
 	}
+
 
 	// ds job mà cleaner đã apply
 	public List<Map<String, Object>> getAppliedJobsForCleaner2(Long cleanerId) {
@@ -1052,6 +1045,32 @@ public class CleanerJobService {
 		}
 
 		return comboJobs;
+	}
+
+	public boolean setCurrentAddress(Integer cleanerId, Integer addressId) {
+		// Lấy tất cả các địa chỉ của cleaner
+		List<EmployeeLocations> addresses = employeeAddressRepository.findByEmployeeId(cleanerId);
+
+		// Nếu không có địa chỉ nào
+		if (addresses.isEmpty()) {
+			return false;
+		}
+
+		// Cập nhật trạng thái is_current của tất cả các địa chỉ thành false
+		for (EmployeeLocations address : addresses) {
+			address.setIs_current(false);
+			employeeAddressRepository.save(address);
+		}
+
+		// Lấy địa chỉ cần set làm hiện tại
+		EmployeeLocations defaultAddress = employeeAddressRepository.findById(addressId).orElse(null);
+		if (defaultAddress != null) {
+			defaultAddress.setIs_current(true); // Set trạng thái là true
+			employeeAddressRepository.save(defaultAddress);  // Lưu thay đổi
+			return true;  // Trả về true nếu cập nhật thành công
+		}
+
+		return false;  // Trả về false nếu không tìm thấy địa chỉ
 	}
 
 	// LUỒNG CODE 2
