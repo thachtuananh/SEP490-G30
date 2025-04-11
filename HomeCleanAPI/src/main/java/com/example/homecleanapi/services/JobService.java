@@ -61,7 +61,8 @@ public class JobService {
 
     @Autowired
     private CustomerWalletRepository customerWalletRepository;
-
+    @Autowired
+    private TransactionHistoryRepository transactionHistoryRepository;
 
 
     public Map<String, Object> bookJob(@PathVariable Long customerId, @RequestBody BookJobRequest request, HttpServletRequest requestIp) {
@@ -517,7 +518,6 @@ public class JobService {
             return response;
         }
 
-
         // Kiểm tra trạng thái của job
         if (job.getStatus().equals(JobStatus.ARRIVED) || job.getStatus().equals(JobStatus.COMPLETED) || job.getStatus().equals(JobStatus.DONE)) {
             response.put("message", "You cannot cancel a job that has already ARRIVED or completed");
@@ -548,6 +548,19 @@ public class JobService {
         wallet.setBalance(wallet.getBalance() + refundAmount);
         customerWalletRepository.save(wallet);  // Lưu cập nhật vào ví của customer
 
+        // Lưu giao dịch hoàn tiền vào bảng transaction_history
+        TransactionHistory transactionHistory = new TransactionHistory();
+        transactionHistory.setCustomer(customer);
+        transactionHistory.setCleaner(null);
+        transactionHistory.setAmount(refundAmount);
+        transactionHistory.setTransactionType("Refund");
+        transactionHistory.setStatus("Completed");
+        transactionHistory.setPaymentMethod("Wallet");
+
+
+        // Lưu vào bảng transaction_history
+        transactionHistoryRepository.save(transactionHistory);
+
         // Thêm thông báo hoàn tiền
         response.put("message", "Job has been cancelled successfully and " + (refundPercentage * 100) + "% refund has been credited to the wallet");
 
@@ -560,6 +573,7 @@ public class JobService {
         response.put("status", job.getStatus());
         return response;
     }
+
 
 
 

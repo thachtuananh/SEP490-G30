@@ -1,13 +1,11 @@
 package com.example.homecleanapi.services;
 
 import java.net.http.HttpRequest;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.time.LocalDateTime;
+import java.util.*;
+import java.util.stream.Collectors;
 
-import com.example.homecleanapi.models.Customers;
-import com.example.homecleanapi.models.TransactionHistory;
+import com.example.homecleanapi.models.*;
 import com.example.homecleanapi.repositories.*;
 import com.example.homecleanapi.zaloPay.ZalopayService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -17,8 +15,6 @@ import org.springframework.stereotype.Service;
 
 import com.example.homecleanapi.paymentForWallets.VnpayRequestWallet;
 import com.example.homecleanapi.paymentForWallets.VnpayServiceWallet;
-import com.example.homecleanapi.models.Employee;
-import com.example.homecleanapi.models.Wallet;
 
 @Service
 public class WalletService {
@@ -34,8 +30,15 @@ public class WalletService {
 
     @Autowired
     private ZalopayService zalopayService;
+
     @Autowired
     private TransactionHistoryRepository transactionHistoryRepository;
+
+    @Autowired
+    private CustomerWalletRepository customerWalletRepository;
+
+    @Autowired
+    private CustomerRepository customerRepository;
 
 
     public Map<String, Object> getWalletBalance(Long cleanerId) {
@@ -187,40 +190,167 @@ public class WalletService {
         }
         return null;
     }
-    
-    public void updateWalletBalance(String txnRef, double depositAmount) {
-        // Tìm ví theo txnRef
-        Optional<Wallet> walletOpt = walletRepository.findByTxnRef(txnRef);
+
+    public void updateCleanerWalletBalance(Long cleanerId, double depositAmount) {
+        Optional<Wallet> walletOpt = walletRepository.findByCleanerId(cleanerId); // Tìm ví theo cleanerId
 
         if (walletOpt.isPresent()) {
             Wallet wallet = walletOpt.get();
 
-            System.out.println("đây là tiền ban đầu" + wallet.getBalance());
-            System.out.println("đây là tiền muốn cộng" + depositAmount);
-            // Cập nhật số dư ví của cleaner
-            double newBalance = wallet.getBalance() + depositAmount;  
-            wallet.setBalance(newBalance);  
-            walletRepository.save(wallet);  // Lưu cập nhật số dư ví
+            // Debug thông tin ví trước khi cập nhật
+            System.out.println("Cleaner ID: " + cleanerId);
+            System.out.println("Current Balance: " + wallet.getBalance());
+            System.out.println("Deposit Amount: " + depositAmount);
 
-            
-            
+            double newBalance = wallet.getBalance() + depositAmount;
+
+            // Debug thông tin sau khi tính số dư mới
+            System.out.println("New Balance: " + newBalance);
+
+            wallet.setBalance(newBalance); // Cập nhật số dư ví
+            walletRepository.save(wallet); // Lưu ví cập nhật
+
+            // Debug sau khi lưu ví
+            System.out.println("Wallet updated successfully for Cleaner ID: " + cleanerId);
         } else {
-            // Xử lý trường hợp không tìm thấy giao dịch ví theo txnRef
-            throw new RuntimeException("Wallet not found for txnRef: " + txnRef);
+            throw new RuntimeException("Wallet not found for cleanerId: " + cleanerId); // Nếu không tìm thấy ví, ném ngoại lệ
         }
     }
 
-    public List<TransactionHistory> getTransactionHistoryByCleanerId(Long cleanerId) {
-        return transactionHistoryRepository.findByCleanerId(cleanerId);
+
+
+
+    public void updateCustomerWalletBalance(Long customerId, double depositAmount) {
+        Optional<CustomerWallet> walletOpt = customerWalletRepository.findByCustomerId(customerId);
+
+        if (walletOpt.isPresent()) {
+            CustomerWallet wallet = walletOpt.get();
+
+            // Debug thông tin ví trước khi cập nhật
+            System.out.println("Customer ID: " + customerId);
+            System.out.println("Current Balance: " + wallet.getBalance());
+            System.out.println("Deposit Amount: " + depositAmount);
+
+            double newBalance = wallet.getBalance() + depositAmount;
+
+            // Debug thông tin sau khi tính số dư mới
+            System.out.println("New Balance: " + newBalance);
+
+            wallet.setBalance(newBalance); // Cập nhật số dư ví
+            wallet.setUpdatedAt(LocalDateTime.now());
+
+            customerWalletRepository.save(wallet); // Lưu ví cập nhật
+
+            // Debug sau khi lưu ví
+            System.out.println("Customer wallet updated successfully for Customer ID: " + customerId);
+        } else {
+            System.out.println("Customer wallet not found for Customer ID: " + customerId);
+            throw new RuntimeException("Customer wallet not found"); // Nếu không tìm thấy ví, ném ngoại lệ
+        }
     }
+
+
+    public List<TransactionHistory> getTransactionHistoryByCleanerId(Long cleanerId) {
+        List<TransactionHistory> allTransactions = transactionHistoryRepository.findByCleanerId(cleanerId);
+        return allTransactions.stream()
+                .filter(transaction -> "SUCCESS".equals(transaction.getStatus()))
+                .collect(Collectors.toList());
+    }
+
 
     // Phương thức lấy lịch sử giao dịch của customer
     public List<TransactionHistory> getTransactionHistoryByCustomerId(Long customerId) {
-        return transactionHistoryRepository.findByCustomerId(customerId);
+        // Lọc các giao dịch có status = "SUCCESS" cho customer
+        List<TransactionHistory> allTransactions = transactionHistoryRepository.findByCustomerId(customerId);
+        return allTransactions.stream()
+                .filter(transaction -> "SUCCESS".equals(transaction.getStatus())) // Lọc chỉ những giao dịch thành công
+                .collect(Collectors.toList());
     }
-    
 
 
-    
+
+
+
+    // nạp tiền vào ví của customer
+    public Map<String, Object> depositMoney(Long customerId, double amount, HttpServletRequest request) {
+        Map<String, Object> response = new HashMap<>();
+
+        // Kiểm tra số tiền nạp vào ví phải là một giá trị hợp lệ (lớn hơn 0)
+        if (amount <= 0) {
+            response.put("message", "Số tiền nạp phải lớn hơn 0.");
+            return response;
+        }
+
+        // Lấy thông tin customer
+        Optional<Customers> customerOpt = customerRepository.findById(customerId);
+        if (!customerOpt.isPresent()) {
+            response.put("message", "Customer not found");
+            return response;
+        }
+        Customers customer = customerOpt.get();
+
+        // Lấy ví của customer
+        Optional<CustomerWallet> walletOpt = customerWalletRepository.findByCustomerId(customerId);
+        CustomerWallet wallet;
+        if (walletOpt.isPresent()) {
+            wallet = walletOpt.get();
+        } else {
+            wallet = new CustomerWallet();
+            wallet.setCustomer(customer);
+            wallet.setBalance(0.0);  // Nếu ví không tồn tại, khởi tạo ví mới với số dư 0
+        }
+
+        // Cập nhật số dư ví
+        double newBalance = wallet.getBalance() + amount;
+        wallet.setBalance(newBalance);
+        wallet.setUpdatedAt(LocalDateTime.now());
+
+        // Lưu cập nhật vào ví
+        customerWalletRepository.save(wallet);
+
+        // Tạo VNPay Request với số tiền thanh toán
+        VnpayRequestWallet vnpayRequest = new VnpayRequestWallet();
+        long paymentAmount = (long) (amount); // Chuyển số tiền thành long và nhân với 100
+        vnpayRequest.setAmount(String.valueOf(paymentAmount));  // VNPay yêu cầu số tiền nhân với 100
+
+        try {
+            // Tạo URL thanh toán VNPay
+            String paymentUrl = vnpayServiceWallet.createPayment(vnpayRequest, request);
+
+            // Tạo txnRef từ VNPay để theo dõi giao dịch
+            String txnRef = extractTxnRefFromUrl(paymentUrl);  // Lấy txnRef từ URL của VNPay
+
+            // Lưu thông tin vào bảng transaction_history
+            TransactionHistory transactionHistory = new TransactionHistory();
+            transactionHistory.setCustomer(customer);
+            transactionHistory.setCleaner(null); // Không có cleaner đối với customer
+            transactionHistory.setAmount(amount);
+            transactionHistory.setTransactionType("DEPOSIT");
+            transactionHistory.setPaymentMethod("VNPay");
+            transactionHistory.setStatus("PENDING");
+            transactionHistory.setTxnRef(txnRef);  // Lấy txnRef từ VNPay và lưu vào transaction history
+            transactionHistoryRepository.save(transactionHistory);
+
+            // Trả về URL thanh toán cho customer
+            response.put("paymentUrl", paymentUrl);
+            response.put("txnRef", txnRef);  // Trả lại txnRef cho customer để theo dõi
+
+        } catch (Exception e) {
+            response.put("message", "Failed to create payment through VNPay: " + e.getMessage());
+            return response;
+        }
+
+        response.put("message", "Nạp tiền vào ví thành công!");
+        response.put("newBalance", newBalance);
+        return response;
+    }
+
+
+
+
+
+
+
+
 
 }
