@@ -25,15 +25,12 @@ public class ServiceDetail {
     @JoinColumn(name = "service_id", nullable = false)
     private Services service; // Liên kết với bảng Services
 
-    private String name;             // Tên chi tiết dịch vụ
-    private Double additionalPrice;  // Phụ phí
-    private String description;      // Mô tả
-    private String areaRange;        // Phạm vi diện tích
-    private Double price;            // Giá dịch vụ
+    private String name;
+    private String description;
+    private Double price;
     private Integer minRoomSize;    
     private Integer maxRoomSize; 
-    private Double peakTimeFee;      // Phụ phí giờ cao điểm
-    private String discounts;        // Chiết khấu hoặc ưu đãi
+          // Chiết khấu hoặc ưu đãi
 
     @OneToMany(mappedBy = "serviceDetail", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<JobServiceDetail> jobServiceDetails; 
@@ -83,13 +80,6 @@ public class ServiceDetail {
         this.name = name;
     }
 
-    public Double getAdditionalPrice() {
-        return additionalPrice;
-    }
-
-    public void setAdditionalPrice(Double additionalPrice) {
-        this.additionalPrice = additionalPrice;
-    }
 
     public String getDescription() {
         return description;
@@ -99,13 +89,7 @@ public class ServiceDetail {
         this.description = description;
     }
 
-    public String getAreaRange() {
-        return areaRange;
-    }
 
-    public void setAreaRange(String areaRange) {
-        this.areaRange = areaRange;
-    }
 
     public Double getPrice() {
         return price;
@@ -117,21 +101,6 @@ public class ServiceDetail {
 
  
 
-    public Double getPeakTimeFee() {
-        return peakTimeFee;
-    }
-
-    public void setPeakTimeFee(Double peakTimeFee) {
-        this.peakTimeFee = peakTimeFee;
-    }
-
-    public String getDiscounts() {
-        return discounts;
-    }
-
-    public void setDiscounts(String discounts) {
-        this.discounts = discounts;
-    }
 
 	public List<JobServiceDetail> getJobServiceDetails() {
 		return jobServiceDetails;

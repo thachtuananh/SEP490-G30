@@ -37,7 +37,7 @@ public class ServiceDisplayService {
         serviceDTO.setServiceId(service.getId());
         serviceDTO.setServiceName(service.getName());
         serviceDTO.setDescription(service.getDescription());  // Thêm description
-        serviceDTO.setBasePrice(service.getBasePrice());
+
         
         // Lấy danh sách ServiceDetails cho dịch vụ này
         List<ServiceDTO.ServiceDetailDTO> serviceDetailDTOs = service.getServiceDetails().stream()
@@ -54,7 +54,6 @@ public class ServiceDisplayService {
         ServiceDTO.ServiceDetailDTO serviceDetailDTO = new ServiceDTO.ServiceDetailDTO();
         serviceDetailDTO.setServiceDetailId(serviceDetail.getId());
         serviceDetailDTO.setName(serviceDetail.getName());
-        serviceDetailDTO.setAdditionalPrice(serviceDetail.getAdditionalPrice());
         serviceDetailDTO.setPrice(serviceDetail.getPrice());          // Thêm giá
         serviceDetailDTO.setMinRoomSize(serviceDetail.getMinRoomSize());  // Thêm minRoomSize
         serviceDetailDTO.setMaxRoomSize(serviceDetail.getMaxRoomSize());  // Thêm maxRoomSize

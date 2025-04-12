@@ -137,10 +137,9 @@ public class CleanerJobService {
 							serviceInfo.put("serviceDetailId", serviceDetail.getId());
 							serviceInfo.put("serviceDetailName", serviceDetail.getName());
 							serviceInfo.put("price", serviceDetail.getPrice());
-							serviceInfo.put("additionalPrice", serviceDetail.getAdditionalPrice());
-							serviceInfo.put("areaRange", serviceDetail.getAreaRange());
+
 							serviceInfo.put("description", serviceDetail.getDescription());
-							serviceInfo.put("discounts", serviceDetail.getDiscounts());
+
 						}
 
 						serviceList.add(serviceInfo);
@@ -606,10 +605,8 @@ public class CleanerJobService {
 							serviceInfo.put("serviceDetailId", serviceDetail.getId());
 							serviceInfo.put("serviceDetailName", serviceDetail.getName());
 							serviceInfo.put("price", serviceDetail.getPrice());
-							serviceInfo.put("additionalPrice", serviceDetail.getAdditionalPrice());
-							serviceInfo.put("areaRange", serviceDetail.getAreaRange());
 							serviceInfo.put("description", serviceDetail.getDescription());
-							serviceInfo.put("discounts", serviceDetail.getDiscounts());
+
 						}
 
 						serviceList.add(serviceInfo);
@@ -695,10 +692,7 @@ public class CleanerJobService {
 								serviceInfo.put("serviceDetailId", serviceDetail.getId());
 								serviceInfo.put("serviceDetailName", serviceDetail.getName());
 								serviceInfo.put("price", serviceDetail.getPrice());
-								serviceInfo.put("additionalPrice", serviceDetail.getAdditionalPrice());
-								serviceInfo.put("areaRange", serviceDetail.getAreaRange());
 								serviceInfo.put("description", serviceDetail.getDescription());
-								serviceInfo.put("discounts", serviceDetail.getDiscounts());
 							}
 
 							serviceList.add(serviceInfo);
@@ -790,10 +784,7 @@ public class CleanerJobService {
 								serviceInfo.put("serviceDetailId", serviceDetail.getId());
 								serviceInfo.put("serviceDetailName", serviceDetail.getName());
 								serviceInfo.put("price", serviceDetail.getPrice());
-								serviceInfo.put("additionalPrice", serviceDetail.getAdditionalPrice());
-								serviceInfo.put("areaRange", serviceDetail.getAreaRange());
 								serviceInfo.put("description", serviceDetail.getDescription());
-								serviceInfo.put("discounts", serviceDetail.getDiscounts());
 							}
 
 							serviceList.add(serviceInfo);
@@ -881,10 +872,7 @@ public class CleanerJobService {
 	                        serviceInfo.put("serviceDetailId", serviceDetail.getId());
 	                        serviceInfo.put("serviceDetailName", serviceDetail.getName());
 	                        serviceInfo.put("price", serviceDetail.getPrice());
-	                        serviceInfo.put("additionalPrice", serviceDetail.getAdditionalPrice());
-	                        serviceInfo.put("areaRange", serviceDetail.getAreaRange());
 	                        serviceInfo.put("description", serviceDetail.getDescription());
-	                        serviceInfo.put("discounts", serviceDetail.getDiscounts());
 	                    }
 
 	                    serviceList.add(serviceInfo);
@@ -1365,18 +1353,29 @@ public class CleanerJobService {
 			double peakTimeFee = 0;
 			DayOfWeek dayOfWeek = job.getScheduledTime().getDayOfWeek();
 			int hour = job.getScheduledTime().getHour();
+			int minute = job.getScheduledTime().getMinute();
 
 			if (dayOfWeek == DayOfWeek.SATURDAY || dayOfWeek == DayOfWeek.SUNDAY) {
 				// Nếu là thứ 7 hoặc chủ nhật
-				if (hour >= 18 && hour <= 22) {
-					peakTimeFee = 0.2 * finalPrice; // 20% phụ phí vào thứ 7 hoặc chủ nhật từ 18h đến 22h
-				} else {
-					peakTimeFee = 0.1 * finalPrice; // 10% phụ phí vào thứ 7 hoặc chủ nhật ngoài giờ cao điểm
+				if (hour > 18 || (hour == 18 && minute >= 0)) {
+					if (hour < 22 || (hour == 22 && minute == 0)) {
+						// Nếu giờ từ 18h00 đến 21h59 vào thứ 7 hoặc chủ nhật
+						peakTimeFee = 0.2 * finalPrice; // 20% phụ phí vào thứ 7 hoặc chủ nhật từ 18h đến 22h
+					} else {
+						// Nếu sau 22h chủ nhật hoặc thứ 7
+						peakTimeFee = 0.1 * finalPrice; // 10% phụ phí vào chủ nhật ngoài giờ cao điểm
+					}
 				}
-			} else if (hour >= 18 && hour <= 22) {
-				// Nếu vào giờ từ 18h đến 22h từ thứ 2 đến thứ 6
+			} else if (hour >= 18 && hour < 22) {
+				// Nếu vào giờ từ 18h00 đến 21h59 từ thứ 2 đến thứ 6
 				peakTimeFee = 0.1 * finalPrice; // 10% phụ phí vào giờ cao điểm
+			} else if (hour == 22 && minute == 0) {
+				// Nếu vào giờ 22h00 từ thứ 2 đến thứ 6
+				peakTimeFee = 0.1 * finalPrice; // 10% phụ phí vào giờ 22h00
 			}
+
+			finalPrice += peakTimeFee; // Cộng phụ phí vào giá cuối
+
 
 			finalPrice += peakTimeFee;
 
@@ -1566,10 +1565,7 @@ public class CleanerJobService {
 	                    if (serviceDetail != null) {
 	                        serviceInfo.put("serviceDetailName", serviceDetail.getName());
 	                        serviceInfo.put("price", serviceDetail.getPrice());
-	                        serviceInfo.put("additionalPrice", serviceDetail.getAdditionalPrice());
-	                        serviceInfo.put("areaRange", serviceDetail.getAreaRange());
 	                        serviceInfo.put("description", serviceDetail.getDescription());
-	                        serviceInfo.put("discounts", serviceDetail.getDiscounts());
 	                    }
 
 	                    serviceList.add(serviceInfo);

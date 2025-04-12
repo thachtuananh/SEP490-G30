@@ -178,16 +178,22 @@ public class JobService {
 
         if (dayOfWeek == DayOfWeek.SATURDAY || dayOfWeek == DayOfWeek.SUNDAY) {
             // Nếu là thứ 7 hoặc chủ nhật
-            if (hour >= 18 && hour <= 22) {
-                // Nếu giờ từ 18h đến 22h vào thứ 7 hoặc chủ nhật
-                priceIncrease = 0.2; // Tăng 20%
-            } else {
-                priceIncrease = 0.1; // Tăng 10% vào thứ 7, chủ nhật ngoài giờ cao điểm
+            if (hour > 18 || (hour == 18 && jobScheduledTime.getMinute() >= 0)) {
+                if (hour < 22 || (hour == 22 && jobScheduledTime.getMinute() == 0)) {
+                    // Nếu giờ từ 18h đến 21h59 vào thứ 7 hoặc chủ nhật
+                    priceIncrease = 0.2; // Tăng 20%
+                } else {
+                    priceIncrease = 0.1; // Tăng 10% vào thứ 7, chủ nhật ngoài giờ cao điểm
+                }
             }
-        } else if (hour >= 18 && hour <= 22) {
-            // Nếu vào giờ từ 18h đến 22h từ thứ 2 đến thứ 6
+        } else if (hour >= 18 && hour < 22) {
+            // Nếu vào giờ từ 18h đến 21h59 từ thứ 2 đến thứ 6
+            priceIncrease = 0.1; // Tăng 10%
+        } else if (hour == 22 && jobScheduledTime.getMinute() == 0) {
+            // Nếu vào giờ 22h từ thứ 2 đến thứ 6
             priceIncrease = 0.1; // Tăng 10%
         }
+
 
         if (priceIncrease > 0) {
             totalPrice += totalPrice * priceIncrease;
@@ -520,10 +526,9 @@ public class JobService {
                             serviceInfo.put("serviceDetailId", serviceDetail.getId());
                             serviceInfo.put("serviceDetailName", serviceDetail.getName());
                             serviceInfo.put("serviceDetailPrice", serviceDetail.getPrice());
-                            serviceInfo.put("serviceDetailAdditionalPrice", serviceDetail.getAdditionalPrice());
-                            serviceInfo.put("serviceDetailAreaRange", serviceDetail.getAreaRange());
+
                             serviceInfo.put("serviceDetailDescription", serviceDetail.getDescription());
-                            serviceInfo.put("serviceDetailDiscounts", serviceDetail.getDiscounts());
+
                         }
 
                         serviceList.add(serviceInfo);
