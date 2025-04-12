@@ -1399,6 +1399,11 @@ public class CleanerJobService {
 		job.setTotalPrice(totalPrice);
 		jobRepository.save(job);  // Lưu lại Job với tổng giá đã cập nhật
 
+		// Tạo mã đơn hàng (orderCode) luôn luôn trước khi kiểm tra phương thức thanh toán
+		String orderCode = customerId + LocalDate.now().format(DateTimeFormatter.ofPattern("ddMMyy")) + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+		job.setOrderCode(orderCode);  // Gán mã đơn hàng cho job
+		jobRepository.save(job);  // Lưu lại Job với orderCode
+
 		// Kiểm tra phương thức thanh toán
 		if ("wallet".equalsIgnoreCase(request.getPaymentMethod())) {
 			// Kiểm tra ví của customer và số dư trong ví
@@ -1421,7 +1426,7 @@ public class CleanerJobService {
 			customerWalletRepository.save(wallet);  // Lưu cập nhật vào ví của customer
 
 			// Cập nhật trạng thái job
-			job.setStatus(JobStatus.OPEN);
+			job.setStatus(JobStatus.PAID);  // Cập nhật trạng thái job thành PAID sau khi thanh toán
 			jobRepository.save(job);
 		} else if ("vnpay".equalsIgnoreCase(request.getPaymentMethod())) {
 			// Tạo VNPay Request với số tiền thanh toán
@@ -1449,11 +1454,6 @@ public class CleanerJobService {
 			response.put("message", "Invalid payment method");
 			return response;
 		}
-		String orderCode = customerId + LocalDate.now().format(DateTimeFormatter.ofPattern("ddMMyy")) + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
-
-		job.setOrderCode(orderCode);  // Gán mã đơn hàng
-
-		job = jobRepository.save(job);
 
 		// Tạo JobApplication cho cleaner
 		JobApplication jobApplication = new JobApplication();
@@ -1474,6 +1474,7 @@ public class CleanerJobService {
 
 		return response;
 	}
+
 
 
 
