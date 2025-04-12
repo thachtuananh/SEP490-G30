@@ -270,6 +270,48 @@ public class JobService {
     }
 
 
+    public Map<String, Object> retryPayment(Long jobId, HttpServletRequest requestIp) {
+        Map<String, Object> response = new HashMap<>();
+
+        // Kiểm tra job tồn tại
+        Optional<Job> jobOpt = jobRepository.findById(jobId);
+        if (!jobOpt.isPresent()) {
+            response.put("message", "Job not found");
+            return response;
+        }
+
+        Job job = jobOpt.get();
+
+        // Kiểm tra trạng thái job, chỉ cho phép thanh toán lại khi job có trạng thái PAID
+        if (!job.getStatus().equals(JobStatus.PAID)) {
+            response.put("message", "Job is not in a valid state for payment retry");
+            return response;
+        }
+
+        // Tạo lại VNPay request hoặc các phương thức thanh toán khác
+        try {
+            double totalPrice = job.getTotalPrice();
+            VnpayRequest vnpayRequest = new VnpayRequest();
+            long amount = (long) (totalPrice);
+            vnpayRequest.setAmount(String.valueOf(amount));
+
+            // Tạo lại URL thanh toán
+            String paymentUrl = vnpayService.createPayment(vnpayRequest, requestIp);
+
+            // Cập nhật txnRef cho job để theo dõi giao dịch
+            String txnRef = extractTxnRefFromUrl(paymentUrl);
+            job.setTxnRef(txnRef);  // Lưu txnRef vào job
+            jobRepository.save(job);  // Lưu cập nhật txnRef vào job
+
+            // Trả về URL thanh toán cho người dùng
+            response.put("paymentUrl", paymentUrl);
+            return response;
+
+        } catch (Exception e) {
+            response.put("message", "Failed to create payment link: " + e.getMessage());
+            return response;
+        }
+    }
 
 
 
