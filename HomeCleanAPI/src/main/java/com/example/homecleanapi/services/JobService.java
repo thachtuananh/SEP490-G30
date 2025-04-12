@@ -131,7 +131,7 @@ public class JobService {
                     return response;
                 }
                 ServiceDetail serviceDetail = serviceDetailOpt.get();
-                totalPrice += serviceDetail.getPrice() + serviceDetail.getAdditionalPrice();
+                totalPrice += serviceDetail.getPrice() ;
             }
 
             // Kiểm tra nếu số dư trong ví không đủ
@@ -167,7 +167,7 @@ public class JobService {
             ServiceDetail serviceDetail = serviceDetailOpt.get();
 
             // Tính toán giá dịch vụ
-            totalPrice += serviceDetail.getPrice() + serviceDetail.getAdditionalPrice();
+            totalPrice += serviceDetail.getPrice() ;
         }
 
         // Kiểm tra ngày và giờ để tính phí tăng thêm

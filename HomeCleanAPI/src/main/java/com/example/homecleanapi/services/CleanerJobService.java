@@ -1358,8 +1358,8 @@ public class CleanerJobService {
 
 			// Tính giá dịch vụ
 			double serviceDetailPrice = serviceDetail.getPrice();
-			double additionalPrice = serviceDetail.getAdditionalPrice();
-			double finalPrice = serviceDetailPrice + additionalPrice;
+
+			double finalPrice = serviceDetailPrice ;
 
 			// Kiểm tra giờ cao điểm và phụ phí
 			double peakTimeFee = 0;
