@@ -11,6 +11,7 @@ const { Option } = Select;
 export const Address = () => {
   const { cleaner, dispatch } = useContext(AuthContext);
   const [addresses, setAddresses] = useState([]);
+  const [defaultAddress, setDefaultAddress] = useState("");
   const [isAddModalVisible, setIsAddModalVisible] = useState(false);
   const [isUpdateModalVisible, setIsUpdateModalVisible] = useState(false);
   const [currentAddressId, setCurrentAddressId] = useState(null);
@@ -350,9 +351,9 @@ export const Address = () => {
 
     try {
       const response = await fetch(
-        `${BASE_URL}/employee/${cleanerId}/update_address/${currentAddressId}`,
+        `${BASE_URL}/employee/${cleanerId}/update-address/${currentAddressId}`,
         {
-          method: "POST",
+          method: "PUT",
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
@@ -409,6 +410,34 @@ export const Address = () => {
         }
       },
     });
+  };
+
+  const handleSetDefaultAddress = async (addressId) => {
+    const token = localStorage.getItem("token");
+    const cleanerId = localStorage.getItem("cleanerId");
+    try {
+      const response = await fetch(
+        `${BASE_URL}/cleaner/${cleanerId}/addresses/${addressId}/set-current`,
+        {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: "application/json",
+          },
+        }
+      );
+
+      if (response.ok) {
+        message.success("Đã đặt địa chỉ mặc định!");
+
+        // Refresh the addresses list to get updated is_current status
+        fetchAddresses();
+      } else {
+        message.error("Không thể đặt địa chỉ mặc định.");
+      }
+    } catch (error) {
+      message.error("Lỗi máy chủ, vui lòng thử lại sau.");
+    }
   };
 
   const renderAddressForm = () => (
@@ -588,6 +617,28 @@ export const Address = () => {
                   >
                     Xóa
                   </b>
+                </div>
+                <div
+                  className="default-checkbox"
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px",
+                  }}
+                >
+                  <p style={{ margin: "0", fontSize: "14px" }}>
+                    Chọn làm mặc định
+                  </p>
+                  <input
+                    type="checkbox"
+                    checked={address.is_current}
+                    onChange={() => handleSetDefaultAddress(address.id)}
+                    style={{
+                      width: "16px",
+                      height: "16px",
+                      cursor: "pointer",
+                    }}
+                  />
                 </div>
               </div>
             </div>

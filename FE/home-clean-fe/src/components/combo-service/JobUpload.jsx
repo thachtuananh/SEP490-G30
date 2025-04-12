@@ -41,12 +41,28 @@ const JobUpload = () => {
   const [allServices, setAllServices] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Hardcoded combo service
+  // Hardcoded combo service (only ID 5)
   const comboService = {
     serviceId: 5,
     serviceName: "Dọn dẹp theo Combo",
     description: "Chọn nhiều dịch vụ cùng 1 lúc",
   };
+
+  // Hardcoded display-only services (ID 7 and 8)
+  const displayOnlyServices = [
+    {
+      serviceId: 7,
+      serviceName: "Dọn dẹp văn phòng, khu làm việc",
+      description:
+        "Vệ sinh văn phòng, lau bàn ghế, hút bụi, dọn dẹp không gian làm việc",
+    },
+    {
+      serviceId: 8,
+      serviceName: "Dọn dẹp nhà theo định kỳ",
+      description:
+        "Vệ sinh nhà cửa định kỳ theo tuần/tháng, duy trì không gian sạch sẽ",
+    },
+  ];
 
   // Fetch services from API
   useEffect(() => {
@@ -59,9 +75,9 @@ const JobUpload = () => {
         }
         const data = await response.json();
 
-        // Filter out any service with ID 5 from the API response to avoid duplicates
+        // Filter out any service with ID 5, 7, 8 from the API response to avoid duplicates
         const filteredServices = data.filter(
-          (service) => service.serviceId !== 5
+          (service) => ![5, 7, 8].includes(service.serviceId)
         );
 
         // Set all services including our hardcoded combo service
@@ -78,15 +94,17 @@ const JobUpload = () => {
   }, []);
 
   // For display in the main page - split the services into two rows
-  // Get services with ID 1-4 for first row (excluding hardcoded combo)
+  // Get services with ID 1-4 for first row
   const regularServices = allServices.filter(
-    (service) => service.serviceId !== 5 && service.serviceId <= 4
+    (service) => service.serviceId <= 4
   );
 
-  // Get services with ID > 4 for second row (including hardcoded combo)
-  const specialServices = allServices.filter(
-    (service) => service.serviceId >= 5
-  );
+  // Get services with ID >= 5 for second row (including combo and display-only services)
+  const specialServices = [
+    comboService,
+    ...allServices.filter((service) => service.serviceId > 5),
+    ...displayOnlyServices,
+  ];
 
   const showServiceModal = () => {
     setIsServiceModalVisible(true);
@@ -143,29 +161,17 @@ const JobUpload = () => {
           ))}
         </section>
         <section className={styles.servicesGrid}>
-          {/* Always include the hardcoded combo card first */}
-          <JobUploadCard
-            key={comboService.serviceId}
-            id={comboService.serviceId}
-            icon={donDepSauTiec}
-            title={comboService.serviceName}
-            description={comboService.description}
-            onComboSelect={showServiceModal}
-          />
-
-          {/* Then display other special services (excluding combo) */}
-          {specialServices
-            .filter((service) => service.serviceId !== 5)
-            .map((service) => (
-              <JobUploadCard
-                key={service.serviceId}
-                id={service.serviceId}
-                icon={getIconByServiceId(service.serviceId)}
-                title={service.serviceName}
-                description={service.description}
-                onComboSelect={showServiceModal}
-              />
-            ))}
+          {specialServices.map((service) => (
+            <JobUploadCard
+              key={service.serviceId}
+              id={service.serviceId}
+              icon={getIconByServiceId(service.serviceId)}
+              title={service.serviceName}
+              description={service.description}
+              onComboSelect={showServiceModal}
+              isDisabled={[7, 8].includes(service.serviceId)} // Disable for ID 7 and 8
+            />
+          ))}
         </section>
       </div>
 

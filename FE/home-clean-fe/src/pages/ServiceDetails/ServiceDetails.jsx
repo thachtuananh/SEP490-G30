@@ -17,15 +17,18 @@ const ServiceDetails = () => {
     const fetchDefaultAddress = async () => {
       try {
         if (!token) return;
-        const response = await fetch(`${BASE_URL}/customer/${customerId}/addresses`, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        });
+        const response = await fetch(
+          `${BASE_URL}/customer/${customerId}/addresses`,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
 
         if (response.ok) {
           const addresses = await response.json();
-          const defaultAddress = addresses.find((address) => address.is_current); // Tìm địa chỉ mặc định
+          const defaultAddress = addresses.find((address) => address.current); // Tìm địa chỉ mặc định
 
           if (defaultAddress) {
             setCustomerAddressId(defaultAddress.id);

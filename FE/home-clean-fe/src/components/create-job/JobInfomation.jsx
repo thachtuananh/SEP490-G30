@@ -156,16 +156,17 @@ const JobInfomation = ({
 
       // Handle VNPay payment URL if present
       if (paymentMethod === "VNPay" && responseData.paymentUrl) {
-        // Open VNPay payment gateway in a new window
-        window.open(responseData.paymentUrl, "_blank", "noopener,noreferrer");
-
-        // Show notification that payment window has been opened
-        message.success(
-          "Cửa sổ thanh toán VNPay đã được mở. Vui lòng hoàn tất thanh toán!"
+        // Show notification that user will be redirected
+        message.info(
+          "Bạn sẽ được chuyển đến cổng thanh toán VNPay trong 3 giây. Vui lòng hoàn tất thanh toán!"
         );
 
-        // Navigate to home page after successful job creation
-        navigate("/");
+        // Set timeout before redirecting to payment gateway
+        setTimeout(() => {
+          // Redirect to VNPay payment gateway in the current tab
+          window.location.href = responseData.paymentUrl;
+        }, 3000);
+
         return;
       }
 

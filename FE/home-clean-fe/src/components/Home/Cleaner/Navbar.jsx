@@ -561,7 +561,7 @@ function Navbar() {
             </li>
             <li>
               <Link to="/homeclean" className="nav-link">
-                Bảng giá dịch vụ
+                Bảng tiền công
               </Link>
             </li>
 

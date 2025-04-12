@@ -205,7 +205,7 @@ const AddressSelectionModal = ({
   return (
     <>
       <Modal
-        title="Sổ địa chỉ"
+        title="Danh sách địa chỉ"
         open={isMainModalVisible}
         onCancel={handleMainModalCancel}
         footer={null}
