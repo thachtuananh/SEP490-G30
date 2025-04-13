@@ -203,3 +203,32 @@ export async function rejectCleaner(jobId, cleanerId, customerId) {
         throw error;
     }
 }
+
+export async function retryPayment(jobId) {
+    try {
+        const token = localStorage.getItem("token");
+
+        if (!token) {
+            throw new Error("No authentication token found");
+        }
+
+        const response = await fetch(`${BASE_URL}/vnpayment/retry-payment/${jobId}`, {
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${token}`,
+                "Accept": "application/json",
+            },
+        });
+
+        if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Failed to retry payment');
+    }
+    
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error retrying payment:', error);
+    throw error;
+  }
+}

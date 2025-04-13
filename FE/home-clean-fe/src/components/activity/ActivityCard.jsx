@@ -30,6 +30,7 @@ import {
   completeJob,
   deleteJobPosting,
   rejectCleaner,
+  retryPayment,
 } from "../../services/owner/StatusJobAPI";
 import { FeedbackModal } from "../../components/activity/FeedbackModal";
 import { createConversation } from "../../services/ChatService";
@@ -301,6 +302,27 @@ export const ActivityCard = ({ data, onDelete }) => {
     } catch (error) {
       console.error("❌ Lỗi khi bắt đầu công việc:", error);
       message.error("❌ Không thể bắt đầu công việc.");
+    }
+  };
+
+  // Thêm hàm handleRetryPayment vào component ActivityCard
+  const handleRetryPayment = async (jobId) => {
+    try {
+      const result = await retryPayment(jobId);
+      // Kiểm tra kết quả từ API và hiển thị thông báo thành công
+      if (result && result.paymentUrl) {
+        message.info(
+          "Bạn sẽ được chuyển đến cổng thanh toán VNPay trong 3 giây. Vui lòng hoàn tất thanh toán!"
+        );
+        setTimeout(() => {
+          window.location.href = result.paymentUrl;
+        }, 3000);
+      } else {
+        message.error("Không thể tạo URL thanh toán");
+      }
+    } catch (error) {
+      console.error("Lỗi khi thử thanh toán lại:", error);
+      message.error("Không thể thử thanh toán lại. Vui lòng thử lại sau.");
     }
   };
 
@@ -689,6 +711,15 @@ export const ActivityCard = ({ data, onDelete }) => {
                       onClick={() => handleCompleteJob(activity.jobId)}
                     >
                       Đã hoàn thành
+                    </Button>
+                  )}
+                  {activity.status === "PAID" && (
+                    <Button
+                      type="primary"
+                      className={styles.statusButton}
+                      onClick={() => handleRetryPayment(activity.jobId)}
+                    >
+                      Thanh toán lại
                     </Button>
                   )}
                 </div>

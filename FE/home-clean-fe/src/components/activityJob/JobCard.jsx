@@ -106,6 +106,63 @@ const JobCard = ({ job, refreshJobs }) => {
     });
   };
 
+  const handleCancelJob = () => {
+    Modal.confirm({
+      title: "Xác nhận hủy ứng tuyển",
+      content: "Bạn có chắc muốn hủy ứng tuyển công việc này không?",
+      onOk: () => {
+        setLoading(true);
+        const token = localStorage.getItem("token");
+        const customerId = job.customerId;
+        const jobId = job.jobId;
+        fetch(`${BASE_URL}/cleaner/cancel-application/${jobId}`, {
+          method: "POST",
+          headers: {
+            Accept: "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        })
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error(`API responded with status: ${response.status}`);
+            }
+            return response.json();
+          })
+          .then((data) => {
+            console.log("Job application cancelled:", data);
+            setCurrentStatus("CANCELLED");
+            message.success("Đã hủy ứng tuyển công việc thành công");
+
+            // Notify customer about cancellation
+            sendNotification(
+              customerId,
+              `Người dọn ${localStorage.getItem(
+                "name"
+              )} đã hủy ứng tuyển dịch vụ: ${
+                job.services[0]?.serviceName || "Dọn dẹp"
+              }`,
+              "CANCELLED",
+              "Customer"
+            ).catch((error) => {
+              console.error("Error sending cancellation notification:", error);
+            });
+
+            // Refresh job list if refreshJobs function is provided
+            if (typeof refreshJobs === "function") {
+              refreshJobs();
+            }
+          })
+          .catch((error) => {
+            console.error("Error cancelling job application:", error);
+            message.error("Không thể hủy ứng tuyển. Vui lòng thử lại sau.");
+          })
+          .finally(() => {
+            setLoading(false);
+          });
+      },
+    });
+  };
+
   const handleJobAction = (action) => {
     setLoading(true);
     const token = localStorage.getItem("token");
@@ -286,7 +343,13 @@ const JobCard = ({ job, refreshJobs }) => {
 
       <footer className={styles.actionButtons}>
         {currentStatus === "OPEN" && (
-          <Button className={styles.cancelBtn}>Hủy ứng tuyển</Button>
+          <Button
+            className={styles.cancelBtn}
+            onClick={handleCancelJob}
+            loading={loading}
+          >
+            Hủy ứng tuyển
+          </Button>
         )}
         {currentStatus === "IN_PROGRESS" && (
           <Button

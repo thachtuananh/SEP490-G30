@@ -276,11 +276,6 @@
 
 /* Fix cho layout 1024-1200px */
 @media (max-width: 1200px) {
-  /* Điều chỉnh card address */
-  .ant-card-body {
-    padding: 12px;
-  }
-
   /* Đảm bảo đủ không gian cho nút */
   .action-buttons button {
     padding: 4px 8px;
@@ -388,9 +383,7 @@
   .address-container {
     padding: 15px;
   }
-  .ant-space {
-    flex-wrap: nowrap !important;
-  }
+
   .address-header {
     flex-direction: column;
     align-items: flex-start;
@@ -456,64 +449,4 @@
   .action-buttons button {
     width: 100%;
   }
-
-  /* Pagination ở mobile */
-  .ant-pagination {
-    display: flex;
-    justify-content: center;
-  }
-
-  .ant-select {
-    width: 100%;
-  }
-}
-
-/* Fixes for Ant Design components */
-.ant-card {
-  width: 100%;
-  overflow: hidden;
-}
-
-.ant-row {
-  flex-wrap: wrap;
-}
-
-/* Điều chỉnh chiều rộng cột trong Row của Ant Design */
-.ant-col {
-  word-break: break-word;
-}
-@media (max-width: 1300px) {
-  .ant-space {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px !important;
-  }
-  .ant-space-item button,
-  .ant-space-item {
-    width: 100%;
-  }
-}
-
-/* Điều chỉnh button cập nhật và xóa */
-@media (max-width: 1024px) {
-  /* .ant-space {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px !important;
-  } */
-
-  .ant-btn {
-    padding: 4px 8px;
-    height: auto;
-    font-size: 13px;
-  }
-
-  /* Fix nút trong card */
-  /* .ant-card .ant-space {
-    margin-bottom: 8px;
-  } */
-  /* .ant-space-item button,
-  .ant-space-item {
-    width: 100%;
-  } */
 }
