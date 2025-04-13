@@ -18,6 +18,7 @@ import {
 } from "antd";
 import { PlusOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import { BASE_URL } from "../../../utils/config";
+import "../owner/profile.css";
 import addressDataJSON from "../../../utils/address-data.json";
 
 const { Option } = Select;
@@ -516,33 +517,47 @@ export const Address = () => {
                   </div>
                 </Col>
                 <Col xs={24} sm={6} md={6} style={{ textAlign: "right" }}>
-                  <Space>
+                  <Space
+                    direction="vertical"
+                    size="small"
+                    style={{ width: "100%" }}
+                  >
+                    <Space>
+                      <Button
+                        type="primary"
+                        ghost
+                        icon={<EditOutlined />}
+                        onClick={() =>
+                          showUpdateModal(address.id, address.address)
+                        }
+                      >
+                        Cập nhật
+                      </Button>
+                      <Button
+                        danger
+                        icon={<DeleteOutlined />}
+                        onClick={() => handleDeleteAddress(address.id)}
+                      >
+                        Xóa
+                      </Button>
+                    </Space>
                     <Button
                       type="primary"
-                      ghost
-                      icon={<EditOutlined />}
-                      onClick={() =>
-                        showUpdateModal(address.id, address.address)
-                      }
+                      onClick={() => handleSetDefaultAddress(address.id)}
+                      style={{ width: "100%" }}
                     >
-                      Cập nhật
-                    </Button>
-                    <Button
-                      danger
-                      icon={<DeleteOutlined />}
-                      onClick={() => handleDeleteAddress(address.id)}
-                    >
-                      Xóa
+                      Chọn làm mặc định
                     </Button>
                   </Space>
-                  <div style={{ marginTop: 8 }}>
+
+                  {/* <div style={{ marginTop: 8 }}>
                     <Checkbox
                       checked={address.isDefault}
                       onChange={() => handleSetDefaultAddress(address.id)}
                     >
                       Chọn làm mặc định
                     </Checkbox>
-                  </div>
+                  </div> */}
                 </Col>
               </Row>
             </Card>

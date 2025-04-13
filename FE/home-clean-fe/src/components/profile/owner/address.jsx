@@ -608,33 +608,39 @@ export const Address = () => {
                   </div>
                 </Col>
                 <Col xs={24} sm={6} md={6} style={{ textAlign: "right" }}>
-                  <Space>
+                  <Space
+                    direction="vertical"
+                    size="small"
+                    style={{ width: "100%" }}
+                    className="ant-space-buttons"
+                  >
+                    <Space>
+                      <Button
+                        type="primary"
+                        ghost
+                        icon={<EditOutlined />}
+                        onClick={() =>
+                          showUpdateModal(address.id, address.address)
+                        }
+                      >
+                        Cập nhật
+                      </Button>
+                      <Button
+                        danger
+                        icon={<DeleteOutlined />}
+                        onClick={() => handleDeleteAddress(address.id)}
+                      >
+                        Xóa
+                      </Button>
+                    </Space>
                     <Button
                       type="primary"
-                      ghost
-                      icon={<EditOutlined />}
-                      onClick={() =>
-                        showUpdateModal(address.id, address.address)
-                      }
+                      onClick={() => handleSetDefaultAddress(address.id)}
+                      style={{ width: "100%" }}
                     >
-                      Cập nhật
-                    </Button>
-                    <Button
-                      danger
-                      icon={<DeleteOutlined />}
-                      onClick={() => handleDeleteAddress(address.id)}
-                    >
-                      Xóa
+                      Chọn mặc định
                     </Button>
                   </Space>
-                  <div style={{ marginTop: 8 }}>
-                    <Checkbox
-                      checked={address.isDefault}
-                      onChange={() => handleSetDefaultAddress(address.id)}
-                    >
-                      Chọn làm mặc định
-                    </Checkbox>
-                  </div>
                 </Col>
               </Row>
             </Card>
