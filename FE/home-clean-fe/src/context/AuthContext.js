@@ -42,6 +42,7 @@ const AuthReducer = (state, action) => {
                 customerPhone: action.payload.phone,
                 token: action.payload.token,
                 customerId: action.payload.customerId,
+                customerEmail: action.payload.email,
                 // role: action.payload.role
             };
             localStorage.setItem("user", JSON.stringify(customerLogin));
@@ -53,23 +54,6 @@ const AuthReducer = (state, action) => {
                 loading: false,
                 error: null
             };
-
-        // case "LOGIN_SUCCESS_CLEANER":
-        //     const { name: empName, token: tokenC, cleanerId, phone: empPhone } = action.payload;
-
-        //     // Lưu thông tin của cleaner vào localStorage
-        //     localStorage.setItem("name", empName);
-        //     localStorage.setItem("cleanerId", cleanerId);
-        //     localStorage.setItem("token", tokenC);
-
-        //     return {
-        //         ...state,
-        //         cleaner: { empName, empPhone },
-        //         token: tokenC,
-        //         cleanerId,
-        //         loading: false,
-        //         error: null
-        //     };
 
         case "LOGIN_SUCCESS_CLEANER":
             const cleanerLogin = {
@@ -109,8 +93,8 @@ const AuthReducer = (state, action) => {
             };
 
         case "FETCH_PROFILE_SUCCESS_CUSTOMER":
-            const { name: customerName, phone: customerPhone } = action.payload;
-            const customerProfile = { customerName, customerPhone };
+            const { name: customerName, phone: customerPhone,email:customerEmail } = action.payload;
+            const customerProfile = { customerName, customerPhone,customerEmail };
             localStorage.setItem("user", JSON.stringify(customerProfile));
             return { ...state, user: customerProfile };
 

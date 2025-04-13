@@ -10,12 +10,14 @@ import {
   validateName,
   validatePassword,
   validateConfirmPassword,
+  validateEmail,
 } from "../../utils/validate";
 
 function RegisterUser() {
   const [formData, setFormData] = useState({
     phone: "",
     name: "",
+    email: "",
     password: "",
     confirmPassword: "",
   });
@@ -42,12 +44,13 @@ function RegisterUser() {
   };
 
   const handleSubmit = async () => {
-    const { phone, name, password, confirmPassword } = formData;
+    const { phone, name, email, password, confirmPassword } = formData;
 
     // Kiểm tra trường rỗng
     const emptyErrors = {
       phone: validateEmpty(phone, "số điện thoại"),
       name: validateEmpty(name, "họ và tên"),
+      email: validateEmpty(email, "email"),
       password: validateEmpty(password, "mật khẩu"),
       confirmPassword: validateEmpty(confirmPassword, "xác nhận mật khẩu"),
     };
@@ -70,6 +73,7 @@ function RegisterUser() {
     // Kiểm tra lỗi validate
     const phoneErr = validatePhone(phone);
     const nameErr = validateName(name);
+    const emailErr = validateEmail(email);
     const passwordErr = validatePassword(password);
     const confirmPasswordErr = validateConfirmPassword(
       password,
@@ -82,6 +86,10 @@ function RegisterUser() {
     }
     if (nameErr) {
       message.error(nameErr);
+      return;
+    }
+    if (emailErr) {
+      message.error(emailErr);
       return;
     }
     if (passwordErr) {
@@ -97,7 +105,7 @@ function RegisterUser() {
       const response = await fetch(`${BASE_URL}/customer/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone, password, name }),
+        body: JSON.stringify({ phone, password, name, email }),
       });
 
       const result = await response.json();
@@ -197,6 +205,25 @@ function RegisterUser() {
                   value={formData.name}
                   onChange={(e) => handleInputChange("name", e.target.value)}
                   name="name"
+                />
+              </Form.Item>
+
+              <Form.Item
+                label={
+                  <span style={requiredLabel}>
+                    Email
+                    <span style={requiredStar}>*</span>
+                  </span>
+                }
+                style={{ marginBottom: "16px" }}
+              >
+                <Input
+                  style={inputStyle}
+                  placeholder="Nhập địa chỉ email"
+                  value={formData.email}
+                  onChange={(e) => handleInputChange("email", e.target.value)}
+                  name="email"
+                  type="email"
                 />
               </Form.Item>
 
