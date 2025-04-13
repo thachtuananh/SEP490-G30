@@ -314,6 +314,10 @@ const JobHistoryTable = ({
               <Descriptions.Item label="Phương thức thanh toán">
                 {record.paymentMethod === "cash"
                   ? "Tiền mặt"
+                  : record.paymentMethod === "vnpay"
+                  ? "VNPay"
+                  : record.paymentMethod === "wallet"
+                  ? "Ví điện tử"
                   : record.paymentMethod}
               </Descriptions.Item>
               <Descriptions.Item label="Ghi chú" span={isMobile ? 1 : 2}>
@@ -407,6 +411,10 @@ const JobHistoryTable = ({
             <Descriptions.Item label="Phương thức thanh toán">
               {jobDetails.paymentMethod === "cash"
                 ? "Tiền mặt"
+                : jobDetails.paymentMethod === "vnpay"
+                ? "VNPay"
+                : jobDetails.paymentMethod === "wallet"
+                ? "Ví điện tử"
                 : jobDetails.paymentMethod}
             </Descriptions.Item>
             <Descriptions.Item label="Ghi chú" span={2}>
