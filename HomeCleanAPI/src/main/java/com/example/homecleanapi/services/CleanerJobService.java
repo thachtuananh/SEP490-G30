@@ -11,6 +11,7 @@ import com.example.homecleanapi.vnPay.VnpayRequest;
 import com.example.homecleanapi.vnPay.VnpayService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -72,33 +73,47 @@ public class CleanerJobService {
     @Autowired
     private VnpayService vnpayService;
 
+	@Autowired
+	private CustomerRepo customerRepository;
 
-	// Lấy danh sách các công việc đang mở
-//	public List<JobSummaryDTO> getOpenJobs(Long cleanerId) {
-//		// Lấy tất cả các Job có trạng thái OPEN
-//		List<Job> openJobs = jobRepository.findByStatus(JobStatus.OPEN);
-//
-//		// Lấy tất cả các jobId đã có ứng viên (cleaner) cho cleanerId
-//		List<Long> appliedJobIds = jobApplicationRepository.findByCleanerIdAndStatus(cleanerId, "Pending").stream()
-//				.map(jobApplication -> jobApplication.getJob().getId()).collect(Collectors.toList());
-//
-//		// Lọc ra các công việc mà cleaner này chưa ứng tuyển
-//		List<Job> jobsWithoutCleaner = openJobs.stream().filter(job -> !appliedJobIds.contains(job.getId()))
-//				.collect(Collectors.toList());
-//
-//		List<JobServiceDetail> jobServiceDetails = jobServiceDetailRepository
-//				.findByJobIdIn(jobsWithoutCleaner.stream().map(Job::getId).collect(Collectors.toList()));
-//
-//		return jobsWithoutCleaner.stream().map(job -> {
-//			List<String> serviceNames = jobServiceDetails.stream()
-//					.filter(jobServiceDetail -> jobServiceDetail.getJob().getId().equals(job.getId()))
-//					.map(jobServiceDetail -> jobServiceDetail.getService().getName()).collect(Collectors.toList());
-//
-//			String serviceName = serviceNames.isEmpty() ? "N/A" : String.join(", ", serviceNames);
-//
-//			return new JobSummaryDTO(job.getId(), serviceName, job.getTotalPrice(), job.getScheduledTime());
-//		}).collect(Collectors.toList());
-//	}
+
+	public Map<String, Object> getCustomerDetails(Long cleanerId, Long customerId) {
+		Map<String, Object> response = new HashMap<>();
+
+		// Optional: Check if the cleaner has access to customer details (business logic)
+		// You can check if the cleaner is authorized to view this customer's details based on their job or other criteria
+		if (!isCleanerAuthorized(cleanerId, customerId)) {
+			response.put("message", "You are not authorized to view this customer's details.");
+			response.put("status", HttpStatus.FORBIDDEN);
+			return response;
+		}
+
+		// Find the customer by customerId
+		Optional<Customers> customerOpt = customerRepository.findById(customerId);
+		if (!customerOpt.isPresent()) {
+			response.put("message", "Customer not found");
+			response.put("status", HttpStatus.NOT_FOUND);
+			return response;
+		}
+
+		Customers customer = customerOpt.get();
+
+		// Prepare the response with customer details
+		response.put("customerId", customer.getId());
+		response.put("fullName", customer.getFull_name());
+		response.put("phoneNumber", customer.getPhone());
+		response.put("email", customer.getEmail());
+		response.put("createdAt", customer.getCreated_at());
+		response.put("isDeleted", customer.isDeleted());
+
+
+		return response;
+	}
+
+	private boolean isCleanerAuthorized(Long cleanerId, Long customerId) {
+		return true;
+	}
+
 
 	// Lấy chi tiết công việc
 	public Map<String, Object> getJobDetails(Long jobId) {

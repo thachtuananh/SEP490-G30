@@ -32,8 +32,7 @@ public class CleanerJobController {
     @Autowired
     private FindCleanerService findCleanerService;
 
-    @Autowired
-    private CleanerJobService jobService;
+
 
     // Xem danh sách các công việc "Open"
     @GetMapping(value = "/jobs/{cleanerId}")
@@ -70,7 +69,7 @@ public class CleanerJobController {
     // hủy job mà cleaner đã apply
     @PostMapping(value = "/cancel-application/{jobId}")
     public ResponseEntity<Map<String, Object>> cancelJobApplication(@PathVariable Long jobId) {
-        Map<String, Object> response = jobService.cancelJobApplication(jobId);
+        Map<String, Object> response = cleanerJobService.cancelJobApplication(jobId);
         if (response.containsKey("message") && response.get("message").equals("Job application not found")) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         }
@@ -177,7 +176,7 @@ public class CleanerJobController {
     @PutMapping("/{cleanerId}/addresses/{addressId}/set-current")
     public ResponseEntity<String> setCurrentAddress(@PathVariable("cleanerId") Integer cleanerId,
                                                     @PathVariable("addressId") Integer addressId) {
-        boolean success = jobService.setCurrentAddress(cleanerId, addressId);
+        boolean success = cleanerJobService.setCurrentAddress(cleanerId, addressId);
 
         if (success) {
             return ResponseEntity.ok("Address set as current successfully");
@@ -213,6 +212,13 @@ public class CleanerJobController {
         Map<String, Object> response = cleanerJobService.acceptOrRejectJob(jobId, action);
 
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/{cleanerId}/viewcustomer/{customerId}")
+    public ResponseEntity<Map<String, Object>> getCustomerDetails(@PathVariable Long cleanerId, @PathVariable Long customerId) {
+        // Call service to get customer details
+        Map<String, Object> response = cleanerJobService.getCustomerDetails(cleanerId, customerId);
+        return new ResponseEntity<>(response, (HttpStatus) response.get("status"));
     }
 
 
