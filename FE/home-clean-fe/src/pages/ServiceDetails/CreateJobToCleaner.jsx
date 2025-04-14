@@ -13,13 +13,14 @@ const CreateJob = () => {
   const [selectedDate, setSelectedDate] = useState(null);
   const [hour, setHour] = useState(0);
   const [minute, setMinute] = useState(0);
-  const [paymentMethod, setPaymentMethod] = useState("cash"); // Default payment method
+  const [paymentMethod, setPaymentMethod] = useState("VNPay"); // Default payment method
   const [reminder, setReminder] = useState(""); // State for cleaner note/reminder
-
-  const handleTimeChange = (date, hour, minute) => {
+  const [priceAdjustment, setPriceAdjustment] = useState(null); // State for price adjustment
+  const handleTimeChange = (date, hour, minute, adjustment) => {
     setSelectedDate(date);
     setHour(hour);
     setMinute(minute);
+    setPriceAdjustment(adjustment);
   };
 
   const handlePaymentMethodChange = (method) => {
@@ -52,6 +53,7 @@ const CreateJob = () => {
           minute={minute}
           paymentMethod={paymentMethod}
           reminder={reminder}
+          priceAdjustment={priceAdjustment}
         />
       </div>
     </div>

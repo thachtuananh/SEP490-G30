@@ -256,14 +256,25 @@ function Navbar() {
   ) : cleaner ? (
     <Popover
       content={
-        <Notification
-          onClose={() => setIsPopupNotification(false)}
-          onViewAll={() => {
-            setIsPopupNotification(false);
-            // Navigate to full notification page if you have one
-            // navigate("/notifications");
-          }}
-        />
+        <>
+          <div
+            style={{
+              cursor: "pointer",
+            }}
+            onClick={() => {
+              navigate("/homeclean/activityjob");
+            }}
+          >
+            <Notification
+              onClose={() => setIsPopupNotification(false)}
+              onViewAll={() => {
+                setIsPopupNotification(false);
+                // Navigate to full notification page if you have one
+                // navigate("/notifications");
+              }}
+            />
+          </div>
+        </>
       }
       trigger="click"
       open={isPopupNotification}
@@ -561,7 +572,7 @@ function Navbar() {
             </li>
             <li>
               <Link to="/homeclean" className="nav-link">
-                Bảng giá dịch vụ
+                Bảng tiền công
               </Link>
             </li>
 

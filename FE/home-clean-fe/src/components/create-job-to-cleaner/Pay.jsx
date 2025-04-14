@@ -11,7 +11,7 @@ import styles from "../../assets/CSS/createjob/Pay.module.css";
 const { Title, Text } = Typography;
 
 const Pay = ({ onPaymentMethodChange }) => {
-  const [selectedMethod, setSelectedMethod] = useState("cash");
+  const [selectedMethod, setSelectedMethod] = useState("vnpay");
 
   const handleMethodChange = (e) => {
     const method = e.target.value;
@@ -41,8 +41,8 @@ const Pay = ({ onPaymentMethodChange }) => {
         style={{ width: "100%" }}
       >
         <Space direction="vertical" style={{ width: "100%" }} size="middle">
-          {/* Thanh toán tiền mặt */}
-          <div className={styles.paymentOption}>
+          {/* Thanh toán tiền mặt - giữ lại nhưng không kích hoạt */}
+          {/* <div className={styles.paymentOption}>
             <Row
               align="middle"
               justify="space-between"
@@ -64,9 +64,9 @@ const Pay = ({ onPaymentMethodChange }) => {
                 <Radio value="cash" />
               </Col>
             </Row>
-          </div>
+          </div> */}
 
-          {/* Thanh toán chuyển khoản */}
+          {/* Thanh toán VNPay */}
           <div className={styles.paymentOption}>
             <Row
               align="middle"
@@ -86,34 +86,35 @@ const Pay = ({ onPaymentMethodChange }) => {
                 </Space>
               </Col>
               <Col>
-                <Radio value="VNPay" />
+                <Radio value="vnpay" />
               </Col>
             </Row>
           </div>
 
-          {/* Thanh toán ZaloPay */}
-          {/* <div className={styles.paymentOption}>
-                        <Row align="middle" justify="space-between" style={{ width: '100%' }}>
-                            <Col>
-                                <Space>
-                                    <CreditCardOutlined
-                                        style={{
-                                            color: '#00A67E',
-                                            fontSize: '18px',
-                                            marginRight: '8px'
-                                        }}
-                                    />
-                                    <Text>Thanh toán qua ví điện tử</Text>
-                                    <Text type="secondary" style={{ fontSize: '12px', marginLeft: '8px' }}>
-                                        *********687
-                                    </Text>
-                                </Space>
-                            </Col>
-                            <Col>
-                                <Radio value="Zalo" />
-                            </Col>
-                        </Row>
-                    </div> */}
+          {/* Thanh toán Ví điện tử */}
+          <div className={styles.paymentOption}>
+            <Row
+              align="middle"
+              justify="space-between"
+              style={{ width: "100%" }}
+            >
+              <Col>
+                <Space>
+                  <CreditCardOutlined
+                    style={{
+                      color: "#00A67E",
+                      fontSize: "18px",
+                      marginRight: "8px",
+                    }}
+                  />
+                  <Text>Thanh toán qua ví điện tử</Text>
+                </Space>
+              </Col>
+              <Col>
+                <Radio value="wallet" />
+              </Col>
+            </Row>
+          </div>
         </Space>
       </Radio.Group>
     </Card>

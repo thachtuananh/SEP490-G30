@@ -11,6 +11,7 @@ import {
   validateName,
   validatePassword,
   validateConfirmPassword,
+  validateEmail,
 } from "../../../utils/validate"; // Assuming this is the correct path
 
 export const PersonaInformation = () => {
@@ -25,22 +26,19 @@ export const PersonaInformation = () => {
   // State for form fields
   const [customerName, setName] = useState(user?.customerName || "");
   const [customerPhone, setPhone] = useState(user?.customerPhone || "");
-  const [nameError, setNameError] = useState("");
-  const [phoneError, setPhoneError] = useState("");
+  const [customerEmail, setEmail] = useState(user?.customerEmail || "");
 
   // State for password change
   const [oldPassword, setOldPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [oldPasswordError, setOldPasswordError] = useState("");
-  const [newPasswordError, setNewPasswordError] = useState("");
-  const [confirmPasswordError, setConfirmPasswordError] = useState("");
 
   // Make sure data is updated when the context changes
   useEffect(() => {
     if (user) {
       setName(user.customerName || "");
       setPhone(user.customerPhone || "");
+      setEmail(user.customerEmail || "");
     }
   }, [user]);
 
@@ -52,31 +50,41 @@ export const PersonaInformation = () => {
   // Hàm mở modal đổi mật khẩu
   const showPasswordModal = () => {
     setIsPasswordModalVisible(true);
-    // Reset password fields and errors when opening modal
+    // Reset password fields when opening modal
     setOldPassword("");
     setNewPassword("");
     setConfirmPassword("");
-    setOldPasswordError("");
-    setNewPasswordError("");
-    setConfirmPasswordError("");
   };
 
   // Validate form fields
   const validateFormFields = () => {
     const nameValidation = validateName(customerName);
     const phoneValidation = validatePhone(customerPhone);
+    const emailValidation = validateEmail(customerEmail);
 
-    setNameError(nameValidation);
-    setPhoneError(phoneValidation);
+    // Show error messages using Ant Design message
+    if (nameValidation) {
+      message.error(nameValidation);
+      return false;
+    }
 
-    return !nameValidation && !phoneValidation;
+    if (phoneValidation) {
+      message.error(phoneValidation);
+      return false;
+    }
+
+    if (emailValidation) {
+      message.error(emailValidation);
+      return false;
+    }
+
+    return true;
   };
 
   // Function to call the API and update user profile
   const handleSave = async () => {
     // Validate form fields before submitting
     if (!validateFormFields()) {
-      message.error("Vui lòng kiểm tra lại thông tin!");
       return;
     }
 
@@ -104,6 +112,7 @@ export const PersonaInformation = () => {
           body: JSON.stringify({
             fullName: customerName,
             phone: customerPhone,
+            email: customerEmail,
           }),
         }
       );
@@ -121,6 +130,7 @@ export const PersonaInformation = () => {
           ...user,
           customerName: customerName,
           customerPhone: customerPhone,
+          customerEmail: customerEmail,
         },
       });
 
@@ -184,15 +194,22 @@ export const PersonaInformation = () => {
       confirmPassword
     );
 
-    setOldPasswordError(oldPasswordValidation);
-    setNewPasswordError(newPasswordValidation);
-    setConfirmPasswordError(confirmPasswordValidation);
+    if (oldPasswordValidation) {
+      message.error(oldPasswordValidation);
+      return false;
+    }
 
-    return (
-      !oldPasswordValidation &&
-      !newPasswordValidation &&
-      !confirmPasswordValidation
-    );
+    if (newPasswordValidation) {
+      message.error(newPasswordValidation);
+      return false;
+    }
+
+    if (confirmPasswordValidation) {
+      message.error(confirmPasswordValidation);
+      return false;
+    }
+
+    return true;
   };
 
   // Function to handle password change API call
@@ -243,8 +260,8 @@ export const PersonaInformation = () => {
       }, 3000);
       setIsPasswordModalVisible(false);
     } catch (error) {
-      setOldPasswordError("Mật khẩu hiện tại không đúng");
-      message.error("Thay đổi mật khẩu thất bại!");
+      message.error("Mật khẩu hiện tại không đúng");
+      setIsPasswordLoading(false);
     } finally {
       setIsPasswordLoading(false);
     }
@@ -274,12 +291,8 @@ export const PersonaInformation = () => {
           type="text"
           name="name"
           value={customerName}
-          onChange={(e) => {
-            setName(e.target.value);
-            setNameError(""); // Clear error on change
-          }}
+          onChange={(e) => setName(e.target.value)}
         />
-        {nameError && <div className="error-message">{nameError}</div>}
       </div>
 
       <div className="form-group">
@@ -289,12 +302,19 @@ export const PersonaInformation = () => {
           type="text"
           name="phone"
           value={customerPhone}
-          onChange={(e) => {
-            setPhone(e.target.value);
-            setPhoneError(""); // Clear error on change
-          }}
+          onChange={(e) => setPhone(e.target.value)}
         />
-        {phoneError && <div className="error-message">{phoneError}</div>}
+      </div>
+
+      <div className="form-group">
+        <b className="input-label">Email</b>
+        <input
+          className="input-field"
+          type="email"
+          name="email"
+          value={customerEmail}
+          onChange={(e) => setEmail(e.target.value)}
+        />
       </div>
 
       {/* Save button */}
@@ -364,19 +384,11 @@ export const PersonaInformation = () => {
           </label>
           <Input.Password
             value={oldPassword}
-            onChange={(e) => {
-              setOldPassword(e.target.value);
-              setOldPasswordError("");
-            }}
+            onChange={(e) => setOldPassword(e.target.value)}
             iconRender={(visible) =>
               visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />
             }
           />
-          {oldPasswordError && (
-            <div style={{ color: "red", fontSize: "12px", marginTop: "4px" }}>
-              {oldPasswordError}
-            </div>
-          )}
         </div>
         <div style={{ marginBottom: "16px" }}>
           <label style={{ display: "block", marginBottom: "8px" }}>
@@ -384,19 +396,11 @@ export const PersonaInformation = () => {
           </label>
           <Input.Password
             value={newPassword}
-            onChange={(e) => {
-              setNewPassword(e.target.value);
-              setNewPasswordError("");
-            }}
+            onChange={(e) => setNewPassword(e.target.value)}
             iconRender={(visible) =>
               visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />
             }
           />
-          {newPasswordError && (
-            <div style={{ color: "red", fontSize: "12px", marginTop: "4px" }}>
-              {newPasswordError}
-            </div>
-          )}
         </div>
         <div style={{ marginBottom: "16px" }}>
           <label style={{ display: "block", marginBottom: "8px" }}>
@@ -404,19 +408,11 @@ export const PersonaInformation = () => {
           </label>
           <Input.Password
             value={confirmPassword}
-            onChange={(e) => {
-              setConfirmPassword(e.target.value);
-              setConfirmPasswordError("");
-            }}
+            onChange={(e) => setConfirmPassword(e.target.value)}
             iconRender={(visible) =>
               visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />
             }
           />
-          {confirmPasswordError && (
-            <div style={{ color: "red", fontSize: "12px", marginTop: "4px" }}>
-              {confirmPasswordError}
-            </div>
-          )}
         </div>
         <p style={{ marginTop: "8px", color: "#999" }}>
           Mật khẩu phải có ít nhất 8 ký tự và chứa ít nhất 1 ký tự đặc biệt.

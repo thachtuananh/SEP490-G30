@@ -13,7 +13,7 @@ import iconVanPhong from "../../../assets/icon-pageClean/icon-clean-vanphong.svg
 import iconDinhKy from "../../../assets/icon-pageClean/icon-clean-dinhky.svg";
 import { BASE_URL } from "../../../utils/config";
 
-const { Title } = Typography;
+const { Title, Paragraph, Text } = Typography;
 
 // Initial static service data
 const initialServices = [
@@ -62,20 +62,22 @@ const initialServices = [
     description: "Dọn dẹp bụi bẩn, lau chùi cửa kính, tường, sàn nhà, hút bụi",
     count: "0 việc làm",
   },
-  // {
-  //   id: 7,
-  //   image: iconVanPhong,
-  //   title: "Dọn dẹp văn phòng, cửa hàng",
-  //   description: "Lau bàn ghế, quét và lau sàn, vệ sinh cửa kính, sắp xếp lại không gian",
-  //   count: "0 việc làm",
-  // },
-  // {
-  //   id: 8,
-  //   image: iconDinhKy,
-  //   title: "Dọn dẹp nhà theo định kỳ",
-  //   description: "Vệ sinh nhà cửa định kỳ theo tuần/tháng, duy trì không gian sạch sẽ",
-  //   count: "0 việc làm",
-  // },
+  {
+    id: 7,
+    image: iconVanPhong,
+    title: "Dọn dẹp văn phòng, cửa hàng",
+    description:
+      "Lau bàn ghế, quét và lau sàn, vệ sinh cửa kính, sắp xếp lại không gian",
+    count: "0 việc làm",
+  },
+  {
+    id: 8,
+    image: iconDinhKy,
+    title: "Dọn dẹp nhà theo định kỳ",
+    description:
+      "Vệ sinh nhà cửa định kỳ theo tuần/tháng, duy trì không gian sạch sẽ",
+    count: "0 việc làm",
+  },
 ];
 
 function JobSection({ title }) {
@@ -146,64 +148,127 @@ function JobSection({ title }) {
     fetchJobCounts();
   }, []);
 
+  // Render JobCard or a disabled card based on service id
+  const renderServiceCard = (service) => {
+    if (service.id === 7 || service.id === 8) {
+      // Render a disabled card for services with id 7 and 8
+      return (
+        <Card
+          style={{
+            height: "100%",
+            background: "#f5f5f5",
+            display: "flex",
+            flexDirection: "column",
+            opacity: 0.7,
+            cursor: "not-allowed", // Thay đổi con trỏ
+            pointerEvents: "none", // Vô hiệu hóa các sự kiện chuột
+          }}
+          cover={
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                padding: "16px 16px 0 16px",
+                height: "120px",
+              }}
+            >
+              <img
+                src={service.image}
+                alt={service.title}
+                style={{
+                  width: "60px",
+                  height: "60px",
+                  maxHeight: "80px",
+                  maxWidth: "80px",
+                  objectFit: "contain",
+                  filter: "grayscale(50%)", // Thêm hiệu ứng grayscale để hiển thị bị vô hiệu hóa
+                }}
+              />
+            </div>
+          }
+        >
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              padding: "16px",
+              flex: 1, // Allow content to take remaining space
+            }}
+          >
+            <Title
+              level={4}
+              style={{
+                margin: 0,
+                fontSize: "18px", // Consistent font size
+                lineHeight: "24px", // Fixed line height
+                height: "24px", // Single line height
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+                textAlign: "center",
+              }}
+            >
+              {service.title}
+            </Title>
+            <Paragraph
+              style={{
+                margin: "8px 0",
+                fontSize: "14px", // Consistent font size
+                lineHeight: "20px", // Fixed line height for exactly 2 lines
+                height: "40px", // Height for exactly 2 lines (2 * 20px)
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                display: "-webkit-box",
+                WebkitLineClamp: 2,
+                WebkitBoxOrient: "vertical",
+                textAlign: "center",
+                color: "#595959", // Subtle color for description
+              }}
+            >
+              {service.description}
+            </Paragraph>
+            <div
+              style={{
+                marginTop: "auto", // Push to bottom
+                textAlign: "center",
+              }}
+            >
+              <Text
+                strong
+                style={{
+                  fontSize: "16px", // Consistent font size
+                  lineHeight: "24px",
+                  color: "#039855",
+                }}
+              >
+                {service.count}
+              </Text>
+              {/* <div
+                style={{ marginTop: "4px", fontSize: "12px", color: "#ff4d4f" }}
+              >
+                Sắp ra mắt
+              </div> */}
+            </div>
+          </div>
+        </Card>
+      );
+    } else {
+      // Use the normal JobCard component for other services
+      return <JobCard {...service} />;
+    }
+  };
+
   return (
     <div className="jobsection">
-      {/* Search bar section - commented out as in original
-      <div style={{ marginBottom: 24 }}>
-        <Row gutter={16} align="middle">
-          <Col flex="auto">
-            <Input 
-              placeholder="Tìm tên công việc mong muốn" 
-              size="large"
-            />
-          </Col>
-          <Col>
-            <Button 
-              icon={<EnvironmentOutlined />} 
-              size="large"
-            >
-              Địa điểm
-            </Button>
-          </Col>
-          <Col>
-            <Button 
-              type="primary" 
-              icon={<SearchOutlined />} 
-              size="large"
-            >
-              Tìm kiếm
-            </Button>
-          </Col>
-        </Row>
-      </div>
-      */}
-
       <Title level={2} style={{ marginBottom: 24 }}>
         {title}
       </Title>
 
-      {/* {isLoading && (
-        <Spin
-          tip="Đang tải..."
-          size="large"
-          style={{ display: "block", margin: "20px auto" }}
-        />
-      )} */}
-
-      {/* {error && (
-        <Alert
-          message="Lỗi"
-          description={error}
-          type="error"
-          showIcon
-          style={{ marginBottom: 16 }}
-        />
-      )} */}
-
       <Row gutter={[16, 16]}>
         {services.map((service) => (
           <Col xs={24} sm={12} md={8} lg={6} key={service.id}>
-            <JobCard {...service} />
+            {renderServiceCard(service)}
           </Col>
         ))}
       </Row>

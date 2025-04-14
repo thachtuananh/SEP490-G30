@@ -3,7 +3,7 @@ import { FaCheckCircle } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import { Spin } from "antd";
 
-const OrderSuccess = () => {
+const DepositOwner = () => {
   const [isLoading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -37,9 +37,9 @@ const OrderSuccess = () => {
             }}
           />
           <h1>Thành công</h1>
-          <p>Bạn đã thanh toán thành công. Cảm ơn bạn đã sử dụng dịch vụ</p>
+          <p>Bạn đã nạp tiền thành công. Cảm ơn đã sử dụng dịch vụ</p>
           <Link
-            to="/activitylist"
+            to="/infomation"
             style={{
               textDecoration: "none",
               color: "white",
@@ -67,4 +67,4 @@ const OrderSuccess = () => {
   );
 };
 
-export default OrderSuccess;
+export default DepositOwner;

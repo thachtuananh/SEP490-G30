@@ -16,6 +16,8 @@ import {
   Modal,
   InputNumber,
   Form,
+  Table,
+  Badge,
 } from "antd";
 import {
   WalletOutlined,
@@ -37,6 +39,13 @@ export const WalletBalance = () => {
   const [depositLoading, setDepositLoading] = useState(false);
   const [form] = Form.useForm();
 
+  // Transaction history states
+  const [historyModalVisible, setHistoryModalVisible] = useState(false);
+  const [transactionHistory, setTransactionHistory] = useState([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
+
+  const token = localStorage.getItem("token");
+  const customerId = localStorage.getItem("customerId");
   useEffect(() => {
     fetchWalletBalance();
   }, []);
@@ -44,16 +53,17 @@ export const WalletBalance = () => {
   const fetchWalletBalance = async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem("token");
-      const cleanerId = localStorage.getItem("cleanerId");
 
-      const response = await fetch(`${BASE_URL}/cleaner/${cleanerId}/wallet`, {
-        method: "GET",
-        headers: {
-          accept: "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await fetch(
+        `${BASE_URL}/cleaner/${customerId}/walletcustomer`,
+        {
+          method: "GET",
+          headers: {
+            accept: "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
       const data = await response.json();
       if (response.ok) {
@@ -68,6 +78,34 @@ export const WalletBalance = () => {
     }
   };
 
+  const fetchTransactionHistory = async () => {
+    try {
+      setHistoryLoading(true);
+
+      const response = await fetch(
+        `${BASE_URL}/cleaner/${customerId}/transaction-historycustomer`,
+        {
+          method: "GET",
+          headers: {
+            accept: "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const data = await response.json();
+      if (response.ok) {
+        setTransactionHistory(data);
+      } else {
+        throw new Error(data.message || "Không thể lấy lịch sử giao dịch");
+      }
+    } catch (error) {
+      message.error("Lỗi khi tải lịch sử giao dịch");
+    } finally {
+      setHistoryLoading(false);
+    }
+  };
+
   const handleDepositClick = () => {
     setDepositModalVisible(true);
   };
@@ -77,25 +115,34 @@ export const WalletBalance = () => {
     form.resetFields();
   };
 
+  const handleHistoryClick = () => {
+    setHistoryModalVisible(true);
+    fetchTransactionHistory();
+  };
+
+  const handleHistoryCancel = () => {
+    setHistoryModalVisible(false);
+  };
+
   const handleDepositSubmit = async () => {
     try {
       await form.validateFields();
       setDepositLoading(true);
-
-      const token = localStorage.getItem("token");
-      const cleanerId = localStorage.getItem("cleanerId");
-
-      const response = await fetch(`${BASE_URL}/cleaner/${cleanerId}/deposit`, {
-        method: "POST",
-        headers: {
-          accept: "application/json",
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          amount: depositAmount,
-        }),
-      });
+      const response = await fetch(
+        `${BASE_URL}/cleaner/${customerId}/depositforcustomer`,
+        {
+          method: "POST",
+          headers: {
+            accept: "application/json",
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            amount: `${depositAmount}`,
+            payment_method: "vnpay",
+          }),
+        }
+      );
 
       const data = await response.json();
       if (response.ok && data.paymentUrl) {
@@ -113,6 +160,70 @@ export const WalletBalance = () => {
       setDepositLoading(false);
     }
   };
+
+  // Transaction history columns for the table
+  const historyColumns = [
+    {
+      title: "Mã giao dịch",
+      dataIndex: "transactionId",
+      key: "transactionId",
+    },
+    {
+      title: "Số tiền",
+      dataIndex: "amount",
+      key: "amount",
+      render: (amount) => (
+        <Text
+          style={{
+            color: amount > 0 ? "#3f8600" : "#cf1322",
+            fontWeight: "bold",
+          }}
+        >
+          {amount.toLocaleString()} VNĐ
+        </Text>
+      ),
+    },
+    {
+      title: "Phương thức",
+      dataIndex: "paymentMethod",
+      key: "paymentMethod",
+    },
+    {
+      title: "Trạng thái",
+      dataIndex: "status",
+      key: "status",
+      render: (status) => {
+        let color = "default";
+        let text = status;
+
+        if (status === "SUCCESS") {
+          color = "success";
+          text = "Thành công";
+        } else if (status === "PENDING") {
+          color = "warning";
+          text = "Đang xử lý";
+        } else if (status === "FAILED") {
+          color = "error";
+          text = "Thất bại";
+        }
+
+        return <Badge status={color} text={text} />;
+      },
+    },
+    // {
+    //   title: "Thời gian",
+    //   dataIndex: "createdAt",
+    //   key: "createdAt",
+    //   render: (createdAt) => {
+    //     // If createdAt exists and is a valid date string
+    //     if (createdAt) {
+    //       const date = new Date(createdAt);
+    //       return date.toLocaleString("vi-VN");
+    //     }
+    //     return "N/A";
+    //   },
+    // },
+  ];
 
   return (
     <Card
@@ -152,13 +263,13 @@ export const WalletBalance = () => {
             <Statistic
               value={walletData?.walletBalance}
               precision={0}
-              prefix="₫"
+              // prefix="VNĐ"
               valueStyle={{
                 color: "#3f8600",
                 fontWeight: "bold",
                 fontSize: 28,
               }}
-              formatter={(value) => value.toLocaleString()}
+              formatter={(value) => value.toLocaleString() + " VNĐ"}
             />
           </Space>
         )}
@@ -186,6 +297,7 @@ export const WalletBalance = () => {
                 width: "100%",
                 height: 40,
               }}
+              onClick={handleHistoryClick}
             >
               Lịch sử giao dịch
             </Button>
@@ -243,11 +355,8 @@ export const WalletBalance = () => {
                 `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
               }
               parser={(value) => value.replace(/\$\s?|(,*)/g, "")}
-              min={10000}
-              max={50000000}
-              step={10000}
               onChange={(value) => setDepositAmount(value)}
-              addonBefore="₫"
+              addonBefore="VNĐ"
             />
           </Form.Item>
           <div style={{ marginTop: 16 }}>
@@ -257,6 +366,28 @@ export const WalletBalance = () => {
             </Text>
           </div>
         </Form>
+      </Modal>
+
+      {/* Transaction History Modal */}
+      <Modal
+        title="Lịch sử giao dịch"
+        open={historyModalVisible}
+        onCancel={handleHistoryCancel}
+        footer={[
+          <Button key="close" onClick={handleHistoryCancel}>
+            Đóng
+          </Button>,
+        ]}
+        width={800}
+      >
+        <Table
+          columns={historyColumns}
+          dataSource={transactionHistory}
+          rowKey="transactionId"
+          loading={historyLoading}
+          pagination={{ pageSize: 5 }}
+          scroll={{ x: "max-content" }}
+        />
       </Modal>
     </Card>
   );

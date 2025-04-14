@@ -229,6 +229,8 @@ const JobHistoryTable = ({
                   ? "Tiền mặt"
                   : record.paymentMethod === "vnpay"
                   ? "VNPay"
+                  : record.paymentMethod === "wallet"
+                  ? "Ví điện tử"
                   : record.paymentMethod}
               </Descriptions.Item>
               <Descriptions.Item label="Ghi chú" span={isMobile ? 1 : 2}>
