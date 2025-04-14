@@ -115,14 +115,6 @@
   padding-bottom: 8px;
 }
 
-/* .input-field {
-    height: 30px;
-    border-radius: 5px;
-    border: 0.5px solid gray;
-    padding-left: 20px;
-    width: 855px;
-} */
-
 .info-section {
   padding: 10px 0;
 }
@@ -144,6 +136,7 @@
 
 .gender-options {
   display: flex;
+  flex-wrap: wrap;
 }
 
 .gender-option {
@@ -160,14 +153,11 @@
   padding-top: 5px;
   gap: 10px;
   display: flex;
+  flex-wrap: wrap;
 }
 
 .dob-field {
   width: 15% !important;
-  /* height: 30px;
-    border: 0.5px solid gray;
-    padding: 0 5px;
-    border-radius: 5px; */
 }
 
 .save-button {
@@ -188,12 +178,15 @@
 
 .address-container {
   box-sizing: border-box;
+  width: 100%;
 }
 
 .address-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
 }
 
 .address-subtext {
@@ -217,8 +210,10 @@
   display: flex;
   justify-content: space-between;
   padding-bottom: 30px;
+  flex-wrap: wrap;
 }
 
+/* Sửa lỗi lệch layout ở 1024px */
 .address-info {
   width: 70%;
 }
@@ -238,6 +233,7 @@
   text-align: center;
   height: 25px;
   line-height: 25px;
+  margin-top: 5px;
 }
 
 .address-text {
@@ -254,6 +250,7 @@
 .action-buttons {
   display: flex;
   gap: 20px;
+  flex-wrap: wrap;
 }
 
 .update-button {
@@ -273,15 +270,66 @@
   padding-top: 10px;
 }
 
+.logout-button {
+  margin-left: 10px;
+}
+
+/* Fix cho layout 1024-1200px */
+@media (max-width: 1200px) {
+  /* Điều chỉnh card address */
+  .ant-card-body {
+    padding: 12px;
+  }
+
+  /* Đảm bảo đủ không gian cho nút */
+  .action-buttons button {
+    padding: 4px 8px;
+    font-size: 14px;
+  }
+
+  /* Điều chỉnh kích thước chữ địa chỉ */
+  .address-details {
+    font-size: 14px;
+  }
+}
+
+/* Cải thiện thêm cho 1024px */
 @media (max-width: 1024px) {
   .persona-container,
   .address-container {
     max-width: 100%;
-    /* padding: 0 20px; */
+    padding: 0 10px;
   }
 
   .dob-field {
     width: 30% !important;
+  }
+
+  /* Xử lý layout card địa chỉ */
+  .address-info {
+    width: 60%;
+  }
+
+  .address-actions {
+    width: 40%;
+    margin-top: 0;
+  }
+
+  /* Điều chỉnh kích thước nút ở 1024px */
+  .action-buttons button {
+    padding: 4px 6px;
+    font-size: 13px;
+  }
+
+  /* Điều chỉnh checkbox mặc định */
+  .default-checkbox {
+    font-size: 13px;
+  }
+
+  /* Đảm bảo nội dung địa chỉ không bị tràn */
+  .address-details {
+    max-width: 100%;
+    overflow-wrap: break-word;
   }
 }
 
@@ -310,6 +358,11 @@
     align-items: flex-start;
   }
 
+  .address-info {
+    width: 100%;
+    margin-bottom: 15px;
+  }
+
   .address-actions {
     width: 100%;
     align-items: flex-start;
@@ -317,7 +370,47 @@
 
   .action-buttons {
     width: 100%;
-    justify-content: space-between;
+    justify-content: flex-start;
+    margin-bottom: 10px;
+  }
+
+  .gender-options {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .gender-option {
+    padding: 5px 0;
+  }
+}
+
+@media (max-width: 576px) {
+  .address-container {
+    padding: 15px;
+  }
+  .ant-space {
+    flex-wrap: nowrap !important;
+  }
+  .address-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .address-header button {
+    margin-top: 10px;
+    width: 100%;
+  }
+
+  .address-details {
+    /* flex-direction: column;
+    align-items: flex-start; */
+    gap: 5px;
+    display: flex;
+    padding: 10px 0;
+  }
+
+  .default-badge {
+    margin-left: 0;
   }
 }
 
@@ -342,15 +435,85 @@
     font-size: 14px;
   }
 
+  .dob-inputs {
+    flex-direction: column;
+  }
+
   .dob-field {
     width: 100% !important;
+    margin-bottom: 10px;
   }
 
   .save-button {
     width: 100%;
   }
+
+  .action-buttons {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .action-buttons button {
+    width: 100%;
+  }
+
+  /* Pagination ở mobile */
+  .ant-pagination {
+    display: flex;
+    justify-content: center;
+  }
+
+  .ant-select {
+    width: 100%;
+  }
 }
 
-.logout-button {
-  margin-left: 10px;
+/* Fixes for Ant Design components */
+.ant-card {
+  width: 100%;
+  overflow: hidden;
+}
+
+.ant-row {
+  flex-wrap: wrap;
+}
+
+/* Điều chỉnh chiều rộng cột trong Row của Ant Design */
+.ant-col {
+  word-break: break-word;
+}
+@media (max-width: 1300px) {
+  .ant-space {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px !important;
+  }
+  .ant-space-item button,
+  .ant-space-item {
+    width: 100%;
+  }
+}
+
+/* Điều chỉnh button cập nhật và xóa */
+@media (max-width: 1024px) {
+  /* .ant-space {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px !important;
+  } */
+
+  .ant-btn {
+    padding: 4px 8px;
+    height: auto;
+    font-size: 13px;
+  }
+
+  /* Fix nút trong card */
+  /* .ant-card .ant-space {
+    margin-bottom: 8px;
+  } */
+  /* .ant-space-item button,
+  .ant-space-item {
+    width: 100%;
+  } */
 }

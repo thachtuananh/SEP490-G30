@@ -39,7 +39,7 @@ const getStatusColor = (status) => {
 
 const getStatusLabel = (status) => {
   const statusMap = {
-    OPEN: "Đang mở",
+    OPEN: "Đang tuyển",
     PAID: "Đang chờ thanh toán",
     PENDING_APPROVAL: "Chờ phê duyệt",
     IN_PROGRESS: "Đang đến",
@@ -92,7 +92,6 @@ const JobCard = ({ job, refreshJobs }) => {
               "STATUS",
               "Customer"
             );
-            if (refreshJobs) refreshJobs();
           })
           .catch((error) => {
             console.error("Error updating status:", error);
@@ -132,6 +131,7 @@ const JobCard = ({ job, refreshJobs }) => {
         console.log(`Job ${action}ed:`, data);
 
         if (action === "accept") {
+          setCurrentStatus("IN_PROGRESS");
           Promise.all([
             createConversation(job.customerId, cleanerId),
             sendNotification(
@@ -154,6 +154,7 @@ const JobCard = ({ job, refreshJobs }) => {
               );
             });
         } else if (action === "reject") {
+          setCurrentStatus("CANCELLED");
           sendNotification(
             job.customerId,
             `Người dọn ${localStorage.getItem("name")} đã từ chối dịch vụ: ${
@@ -176,7 +177,6 @@ const JobCard = ({ job, refreshJobs }) => {
             ? "Đã chấp nhận công việc"
             : "Đã từ chối công việc"
         );
-        if (refreshJobs) refreshJobs();
       })
       .catch((error) => {
         console.error(`Error ${action}ing job:`, error);
@@ -285,10 +285,10 @@ const JobCard = ({ job, refreshJobs }) => {
       </section>
 
       <footer className={styles.actionButtons}>
-        {job.status === "OPEN" && (
-          <Button className={styles.cancelBtn}>Hủy công việc</Button>
+        {currentStatus === "OPEN" && (
+          <Button className={styles.cancelBtn}>Hủy ứng tuyển</Button>
         )}
-        {job.status === "IN_PROGRESS" && (
+        {currentStatus === "IN_PROGRESS" && (
           <Button
             className={styles.completeBtn}
             onClick={() => handleStatusUpdate("arrived")}
@@ -297,7 +297,7 @@ const JobCard = ({ job, refreshJobs }) => {
             Đã đến nơi
           </Button>
         )}
-        {job.status === "ARRIVED" && (
+        {currentStatus === "ARRIVED" && (
           <Button
             className={styles.completeBtn}
             onClick={() => handleStatusUpdate("completed")}
@@ -306,7 +306,7 @@ const JobCard = ({ job, refreshJobs }) => {
             Đã hoàn thành
           </Button>
         )}
-        {job.status === "BOOKED" && (
+        {currentStatus === "BOOKED" && (
           <>
             <Button
               className={styles.cancelBtn}

@@ -236,14 +236,25 @@ function Navbar() {
   ) : user ? (
     <Popover
       content={
-        <Notification
-          onClose={() => setIsPopupNotification(false)}
-          onViewAll={() => {
-            setIsPopupNotification(false);
-            // Navigate to full notification page if you have one
-            // navigate("/notifications");
-          }}
-        />
+        <>
+          <div
+            style={{
+              cursor: "pointer",
+            }}
+            onClick={() => {
+              navigate("/activitylist");
+            }}
+          >
+            <Notification
+              onClose={() => setIsPopupNotification(false)}
+              onViewAll={() => {
+                setIsPopupNotification(false);
+                // Navigate to full notification page if you have one
+                // navigate("/notifications");
+              }}
+            />
+          </div>
+        </>
       }
       trigger="click"
       open={isPopupNotification}

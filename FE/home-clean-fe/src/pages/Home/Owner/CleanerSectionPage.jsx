@@ -211,12 +211,12 @@ function CleanersPage() {
       );
     }
 
-    // Then, apply online/offline filter
-    if (filterStatus === "online") {
-      filtered = filtered.filter((cleaner) => isOnline(cleaner.cleanerId));
-    } else if (filterStatus === "offline") {
-      filtered = filtered.filter((cleaner) => !isOnline(cleaner.cleanerId));
-    }
+    // // Then, apply online/offline filter
+    // if (filterStatus === "online") {
+    //   filtered = filtered.filter((cleaner) => isOnline(cleaner.cleanerId));
+    // } else if (filterStatus === "offline") {
+    //   filtered = filtered.filter((cleaner) => !isOnline(cleaner.cleanerId));
+    // }
 
     // Finally, sort the results
     if (sortOption === "nameAsc") {
@@ -384,7 +384,7 @@ function CleanersPage() {
                 size={isMobile ? "middle" : "large"}
               />
             </Col>
-            <Col xs={12} md={5}>
+            {/* <Col xs={12} md={5}>
               <Select
                 style={{ width: "100%" }}
                 placeholder="Trạng thái"
@@ -400,7 +400,7 @@ function CleanersPage() {
                   <Badge status="default" text="Offline" />
                 </Option>
               </Select>
-            </Col>
+            </Col> */}
             <Col xs={12} md={5}>
               <Select
                 style={{ width: "100%" }}

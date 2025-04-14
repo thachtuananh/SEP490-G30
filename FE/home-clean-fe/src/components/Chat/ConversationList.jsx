@@ -34,7 +34,7 @@ const ConversationList = ({ onSelect, userId, role }) => {
   return (
     <div className={styles.conversationList}>
       <h3>
-        Danh sách chat ({role === "customer" ? "Khách hàng" : "Nhân viên"})
+        Danh sách chat ({role === "customer" ? "Nhân viên" : "Khách hàng"})
       </h3>
 
       {loading && <p>Đang tải danh sách cuộc trò chuyện...</p>}

@@ -14,6 +14,7 @@ const JobInfomation = ({
   minute,
   paymentMethod,
   reminder,
+  priceAdjustment,
 }) => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -26,6 +27,8 @@ const JobInfomation = ({
   // State để kiểm tra thời gian
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [currentTime, setCurrentTime] = useState(dayjs());
+  const [basePrice, setBasePrice] = useState(state.price || 0);
+  const [adjustedPrice, setAdjustedPrice] = useState(state.price || 0);
 
   // token
   const { token, customerId } = useContext(AuthContext);
@@ -38,6 +41,32 @@ const JobInfomation = ({
 
     return () => clearInterval(timer);
   }, []);
+
+  // Calculate adjusted price when price adjustment changes
+  useEffect(() => {
+    if (priceAdjustment && basePrice) {
+      const adjustmentAmount = basePrice * (priceAdjustment.percentage / 100);
+      setAdjustedPrice(basePrice + adjustmentAmount);
+    } else {
+      setAdjustedPrice(basePrice);
+    }
+  }, [priceAdjustment, basePrice]);
+
+  // Set base price when state.price changes
+  useEffect(() => {
+    if (state.price) {
+      setBasePrice(state.price);
+
+      // Initially calculate adjusted price
+      if (priceAdjustment) {
+        const adjustmentAmount =
+          state.price * (priceAdjustment.percentage / 100);
+        setAdjustedPrice(state.price + adjustmentAmount);
+      } else {
+        setAdjustedPrice(state.price);
+      }
+    }
+  }, [state.price]);
 
   const validateJobTime = () => {
     if (!selectedDate) {
@@ -142,12 +171,18 @@ const JobInfomation = ({
             },
           ];
 
+      // Đảm bảo gửi đúng định dạng của payment method
+      // Chuyển đổi "wallet" thành "Wallet" để khớp với định dạng mong muốn
+      const normalizedPaymentMethod =
+        paymentMethod === "wallet" ? "Wallet" : paymentMethod;
+
+      // Keep only the required fields as specified
       const jobData = {
         customerAddressId,
         jobTime: formattedJobTime,
         services: services,
-        paymentMethod: paymentMethod, // Add payment method to job data
-        reminder: reminder, // Add reminder to job data
+        paymentMethod: normalizedPaymentMethod, // Sử dụng payment method đã chuẩn hóa
+        reminder: reminder,
       };
 
       console.log("Job data being sent:", jobData); // Add this for debugging
@@ -155,17 +190,18 @@ const JobInfomation = ({
       const responseData = await createJob(customerId, jobData);
 
       // Handle VNPay payment URL if present
-      if (paymentMethod === "VNPay" && responseData.paymentUrl) {
-        // Open VNPay payment gateway in a new window
-        window.open(responseData.paymentUrl, "_blank", "noopener,noreferrer");
-
-        // Show notification that payment window has been opened
-        message.success(
-          "Cửa sổ thanh toán VNPay đã được mở. Vui lòng hoàn tất thanh toán!"
+      if (normalizedPaymentMethod === "VNPay" && responseData.paymentUrl) {
+        // Show notification that user will be redirected
+        message.info(
+          "Bạn sẽ được chuyển đến cổng thanh toán VNPay trong 3 giây. Vui lòng hoàn tất thanh toán!"
         );
 
-        // Navigate to home page after successful job creation
-        navigate("/");
+        // Set timeout before redirecting to payment gateway
+        setTimeout(() => {
+          // Redirect to VNPay payment gateway in the current tab
+          window.location.href = responseData.paymentUrl;
+        }, 3000);
+
         return;
       }
 
@@ -269,20 +305,41 @@ const JobInfomation = ({
         <Paragraph className={styles.infoRow}>
           <Text>Phương thức thanh toán</Text>
           <Text>
-            {paymentMethod === "cash" && "Thanh toán tiền mặt"}
             {paymentMethod === "VNPay" && "Thanh toán VNPay"}
-            {paymentMethod === "Zalo" && "Thanh toán ZaloPay"}
+            {paymentMethod === "wallet" && "Thanh toán ví điện tử"}
             {!paymentMethod && "Chưa chọn"}
           </Text>
         </Paragraph>
+
+        {priceAdjustment && (
+          <Paragraph className={styles.infoRow} style={{ color: "#1890ff" }}>
+            <Text>Phụ phí</Text>
+            <Text style={{ color: "red" }}>
+              +{priceAdjustment.percentage}% do {priceAdjustment.reason}
+            </Text>
+          </Paragraph>
+        )}
 
         <div className={styles.divider}></div>
 
         <div className={styles.totalContainer}>
           <Text>Tổng thanh toán</Text>
-          <Title level={4} className={styles.totalPrice}>
-            {state.price?.toLocaleString() || 0} VNĐ
-          </Title>
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "flex-end",
+            }}
+          >
+            {priceAdjustment && basePrice !== adjustedPrice && (
+              <Text delete style={{ fontSize: "0.9rem", color: "#999" }}>
+                {basePrice.toLocaleString()} VNĐ
+              </Text>
+            )}
+            <Title level={4} className={styles.totalPrice}>
+              {Math.round(adjustedPrice).toLocaleString()} VNĐ
+            </Title>
+          </div>
         </div>
       </div>
       <div style={{ margin: "16px 0px" }}>

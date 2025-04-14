@@ -11,6 +11,7 @@ import {
   message,
   Row,
   Col,
+  Modal,
 } from "antd";
 import {
   ArrowLeftOutlined,
@@ -137,30 +138,38 @@ const OwnerDetails = () => {
     navigate("/admin/owners");
   };
 
-  const handleDelete = async () => {
-    try {
-      const token = localStorage.getItem("token");
-      const response = await fetch(
-        `${BASE_URL}/admin/customers/${customerId}/delete`,
-        {
-          method: "DELETE",
-          headers: {
-            accept: "application/json",
-            Authorization: `Bearer ${token}`,
-          },
+  const handleDelete = () => {
+    Modal.confirm({
+      title: "Xác nhận xoá",
+      content: "Bạn có chắc chắn muốn xoá người dùng này không?",
+      okText: "Xoá",
+      okType: "danger",
+      cancelText: "Huỷ",
+      onOk: async () => {
+        try {
+          const token = localStorage.getItem("token");
+          const response = await fetch(
+            `${BASE_URL}/admin/customers/${customerId}/delete`,
+            {
+              method: "DELETE",
+              headers: {
+                accept: "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+            }
+          );
+
+          if (!response.ok) {
+            throw new Error("Failed to delete user");
+          }
+
+          message.success("Xoá người dùng thành công");
+          navigate("/admin/owners");
+        } catch (error) {
+          message.error("Không thể xoá người dùng. Vui lòng thử lại sau.");
         }
-      );
-
-      if (!response.ok) {
-        throw new Error("Failed to delete user");
-      }
-
-      message.success("Xoá người dùng thành công");
-      navigate("/admin/owners");
-    } catch (error) {
-      console.error("Error deleting user:", error);
-      message.error("Không thể xoá người dùng. Vui lòng thử lại sau.");
-    }
+      },
+    });
   };
 
   // Cập nhật lại margin cho layout
