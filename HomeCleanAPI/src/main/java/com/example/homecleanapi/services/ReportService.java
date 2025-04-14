@@ -4,7 +4,9 @@ import com.example.homecleanapi.dtos.ReportUpdateDTO;
 import com.example.homecleanapi.dtos.ReportRequestDTO;
 import com.example.homecleanapi.enums.ReportStatus;
 import com.example.homecleanapi.models.Job;
+import com.example.homecleanapi.models.JobApplication;
 import com.example.homecleanapi.models.Report;
+import com.example.homecleanapi.repositories.JobApplicationRepository;
 import com.example.homecleanapi.repositories.JobRepository;
 import com.example.homecleanapi.repositories.ReportRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +30,8 @@ public class ReportService {
     @Autowired
     private final ReportRepository reportRepository;
     private final JobRepository jobRepository;
+    @Autowired
+    private JobApplicationRepository jobApplicationRepository;
 
     public ReportService(ReportRepository reportRepository, JobRepository jobRepository) {
 
@@ -39,16 +43,18 @@ public class ReportService {
         Map<String, Object> response = new HashMap<>();
         // Lấy job từ database bằng id (vì bạn chỉ truyền job_id)
         Optional<Job> optionalJob = jobRepository.findById(job_id);
+        Optional<JobApplication> jobApplicationOptional = jobApplicationRepository.findJobApplicationByJob_IdAndStatus(job_id, "Accepted");
         if (optionalJob.isEmpty()) {
             response.put("error", "Job not found with id: " + job_id);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         }
 
         Job job = optionalJob.get();
+        JobApplication job_application = jobApplicationOptional.get();
         Report report = new Report();
         report.setJob(job);
         report.setCustomerId(job.getCustomer().getId());
-        report.setCleanerId(job.getCleaner().getId());
+        report.setCleanerId(job_application.getCleaner().getId());
         report.setStatus(ReportStatus.PENDING);
         report.setReportType(reportRequest.getReport_type());
         report.setDescription(reportRequest.getDescription());
