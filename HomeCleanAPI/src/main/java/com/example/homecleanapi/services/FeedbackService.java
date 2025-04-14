@@ -397,6 +397,86 @@ public class FeedbackService {
     }
 
 
+    public Map<String, Object> getFeedbackDetailsForCleaner(Long cleanerId, Long jobId) {
+        Map<String, Object> response = new HashMap<>();
+
+        // Tìm feedback cho job và cleaner
+        Optional<CleanerFeedback> feedbackOpt = cleanerFeedbackRepository.findByJob_IdAndCleaner_Id(jobId, cleanerId);
+        if (!feedbackOpt.isPresent()) {
+            response.put("message", "Feedback not found for the specified job and cleaner");
+            response.put("status", HttpStatus.NOT_FOUND);
+            return response;
+        }
+
+        CleanerFeedback feedback = feedbackOpt.get();
+
+        // Trả về thông tin feedback
+        response.put("jobId", feedback.getJob().getId());
+        response.put("cleanerId", feedback.getCleaner().getId());
+        response.put("rating", feedback.getRating());
+        response.put("comment", feedback.getComment());
+        response.put("createdAt", feedback.getCreatedAt());
+        response.put("updatedAt", feedback.getUpdatedAt());
+        response.put("status", HttpStatus.OK);
+
+        return response;
+    }
+
+
+    public List<Map<String, Object>> getFeedbacksForCustomerByCleaner(Long cleanerId, Long customerId) {
+        List<Map<String, Object>> feedbackList = new ArrayList<>();
+
+        // Lấy tất cả công việc của customer từ bảng jobs
+        List<Job> customerJobs = jobRepository.findByCustomerId(customerId);
+
+        // Lấy đối tượng Employee từ cleanerId
+        Optional<Employee> cleanerOpt = cleanerRepository.findById(cleanerId);
+        if (!cleanerOpt.isPresent()) {
+            throw new RuntimeException("Cleaner not found");
+        }
+        Employee cleaner = cleanerOpt.get();
+
+        // Biến để tính tổng điểm và số lượng feedbacks
+        double totalRating = 0;
+        int feedbackCount = 0;
+
+        // Duyệt qua tất cả công việc của customer
+        for (Job job : customerJobs) {
+            // Lấy feedback cho từng job đó từ bảng cleaner_feedback
+            Optional<CleanerFeedback> feedbackOpt = cleanerFeedbackRepository.findByJobAndCleaner(job, cleaner);
+
+            if (feedbackOpt.isPresent()) {
+                CleanerFeedback feedback = feedbackOpt.get();
+
+                // Tạo thông tin feedback để trả về cho cleaner
+                Map<String, Object> feedbackInfo = new HashMap<>();
+                feedbackInfo.put("jobId", job.getId());
+                feedbackInfo.put("rating", feedback.getRating());
+                feedbackInfo.put("comment", feedback.getComment());
+
+                totalRating += feedback.getRating();
+                feedbackCount++;
+
+                feedbackList.add(feedbackInfo);
+            }
+        }
+
+        // Tính điểm trung bình
+        double averageRating = 0;
+        if (feedbackCount > 0) {
+            averageRating = totalRating / feedbackCount;
+        }
+
+        // Thêm điểm trung bình vào response
+        Map<String, Object> averageRatingInfo = new HashMap<>();
+        averageRatingInfo.put("averageRating", averageRating);
+        feedbackList.add(averageRatingInfo);
+
+        return feedbackList;
+    }
+
+
+
 
 
 }

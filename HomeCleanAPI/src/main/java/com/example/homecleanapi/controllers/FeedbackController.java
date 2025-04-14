@@ -88,6 +88,30 @@ public class FeedbackController {
         return new ResponseEntity<>(response, (HttpStatus) response.get("status"));
     }
 
+
+    @GetMapping("/cleaners/{cleanerId}/job/{jobId}/feedback")
+    public ResponseEntity<Map<String, Object>> getCleanerFeedbackDetails(@PathVariable Long cleanerId, @PathVariable Long jobId) {
+        Map<String, Object> response = feedbackService.getFeedbackDetailsForCleaner(cleanerId, jobId);
+        return new ResponseEntity<>(response, (HttpStatus) response.get("status"));
+    }
+
+
+    @GetMapping("/cleaners/{cleanerId}/customer/{customerId}/feedbacks")
+    public ResponseEntity<List<Map<String, Object>>> getCustomerFeedbacksForCleaner(
+            @PathVariable Long cleanerId,
+            @PathVariable Long customerId) {
+
+        List<Map<String, Object>> feedbacks = feedbackService.getFeedbacksForCustomerByCleaner(cleanerId, customerId);
+
+        if (feedbacks.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(feedbacks);
+    }
+
+
+
+
 }
 
 
