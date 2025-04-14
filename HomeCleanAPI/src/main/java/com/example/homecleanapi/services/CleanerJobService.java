@@ -22,6 +22,7 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -137,9 +138,10 @@ public class CleanerJobService {
 							serviceInfo.put("serviceDetailId", serviceDetail.getId());
 							serviceInfo.put("serviceDetailName", serviceDetail.getName());
 							serviceInfo.put("price", serviceDetail.getPrice());
-
+							serviceInfo.put("additionalPrice", serviceDetail.getAdditionalPrice());
+							serviceInfo.put("areaRange", serviceDetail.getAreaRange());
 							serviceInfo.put("description", serviceDetail.getDescription());
-
+							serviceInfo.put("discounts", serviceDetail.getDiscounts());
 						}
 
 						serviceList.add(serviceInfo);
@@ -203,25 +205,24 @@ public class CleanerJobService {
 			return response;
 		}
 
-		// Kiểm tra phương thức thanh toán của job
-//		if (job.getPaymentMethod().trim().equalsIgnoreCase("Cash")) {
-//			// Kiểm tra ví của cleaner để kiểm tra số dư trước khi ứng tuyển
-//			Optional<Wallet> walletOpt = walletRepository.findByCleanerId(cleaner.getId());
-//			if (!walletOpt.isPresent()) {
-//				response.put("message", "Cleaner wallet not found");
-//				return response;
-//			}
-//			Wallet wallet = walletOpt.get();
-//
-//			// Tính hoa hồng (20% của tổng giá trị đơn hàng)
-//			double commission = 0.2 * job.getTotalPrice();
-//
-//			// Kiểm tra số dư ví của cleaner có đủ để trừ hoa hồng không
-//			if (wallet.getBalance() - commission < -200000) {
-//				response.put("message", "Your balance is not sufficient. You can only owe up to 200,000 VND.");
-//				return response;  // Return immediately to prevent job application creation
-//			}
-//		}
+		// Kiểm tra các công việc trước đó của cleaner
+		List<JobApplication> existingApplications = jobApplicationRepository.findByCleanerAndStatusIn(cleaner, Arrays.asList("Pending", "Accepted"));
+		LocalDateTime jobScheduledTime = job.getScheduledTime();
+
+		// Kiểm tra xem cleaner có công việc nào đã apply và trong vòng 2 giờ so với công việc này không
+		for (JobApplication existingApplication : existingApplications) {
+			Job existingJob = existingApplication.getJob();
+			LocalDateTime existingJobTime = existingJob.getScheduledTime();
+
+			// Tính sự khác biệt giữa thời gian công việc hiện tại và công việc đã có, tính theo phút
+			long differenceInMinutes = Math.abs(ChronoUnit.MINUTES.between(existingJobTime, jobScheduledTime));
+
+			// Kiểm tra nếu sự khác biệt giữa hai công việc nhỏ hơn 120 phút (2 giờ)
+			if (differenceInMinutes < 120) {
+				response.put("message", "Bạn đang ứng tuyển hoặc đã có lịch làm việc trong một công việc cách công việc này nhỏ hơn 2 giờ");
+				return response;
+			}
+		}
 
 		// Tạo job application và lưu vào database
 		JobApplication jobApplication = new JobApplication();
@@ -239,6 +240,9 @@ public class CleanerJobService {
 
 		return response;
 	}
+
+
+
 
 
 
@@ -605,8 +609,10 @@ public class CleanerJobService {
 							serviceInfo.put("serviceDetailId", serviceDetail.getId());
 							serviceInfo.put("serviceDetailName", serviceDetail.getName());
 							serviceInfo.put("price", serviceDetail.getPrice());
+							serviceInfo.put("additionalPrice", serviceDetail.getAdditionalPrice());
+							serviceInfo.put("areaRange", serviceDetail.getAreaRange());
 							serviceInfo.put("description", serviceDetail.getDescription());
-
+							serviceInfo.put("discounts", serviceDetail.getDiscounts());
 						}
 
 						serviceList.add(serviceInfo);
@@ -692,7 +698,10 @@ public class CleanerJobService {
 								serviceInfo.put("serviceDetailId", serviceDetail.getId());
 								serviceInfo.put("serviceDetailName", serviceDetail.getName());
 								serviceInfo.put("price", serviceDetail.getPrice());
+								serviceInfo.put("additionalPrice", serviceDetail.getAdditionalPrice());
+								serviceInfo.put("areaRange", serviceDetail.getAreaRange());
 								serviceInfo.put("description", serviceDetail.getDescription());
+								serviceInfo.put("discounts", serviceDetail.getDiscounts());
 							}
 
 							serviceList.add(serviceInfo);
@@ -784,7 +793,10 @@ public class CleanerJobService {
 								serviceInfo.put("serviceDetailId", serviceDetail.getId());
 								serviceInfo.put("serviceDetailName", serviceDetail.getName());
 								serviceInfo.put("price", serviceDetail.getPrice());
+								serviceInfo.put("additionalPrice", serviceDetail.getAdditionalPrice());
+								serviceInfo.put("areaRange", serviceDetail.getAreaRange());
 								serviceInfo.put("description", serviceDetail.getDescription());
+								serviceInfo.put("discounts", serviceDetail.getDiscounts());
 							}
 
 							serviceList.add(serviceInfo);
@@ -872,7 +884,10 @@ public class CleanerJobService {
 	                        serviceInfo.put("serviceDetailId", serviceDetail.getId());
 	                        serviceInfo.put("serviceDetailName", serviceDetail.getName());
 	                        serviceInfo.put("price", serviceDetail.getPrice());
+	                        serviceInfo.put("additionalPrice", serviceDetail.getAdditionalPrice());
+	                        serviceInfo.put("areaRange", serviceDetail.getAreaRange());
 	                        serviceInfo.put("description", serviceDetail.getDescription());
+	                        serviceInfo.put("discounts", serviceDetail.getDiscounts());
 	                    }
 
 	                    serviceList.add(serviceInfo);
@@ -1353,7 +1368,7 @@ public class CleanerJobService {
 			double peakTimeFee = 0;
 			DayOfWeek dayOfWeek = job.getScheduledTime().getDayOfWeek();
 			int hour = job.getScheduledTime().getHour();
-			int minute = job.getScheduledTime().getMinute();
+			int minute = job.getScheduledTime().getMinute(); // Lấy phút
 
 			if (dayOfWeek == DayOfWeek.SATURDAY || dayOfWeek == DayOfWeek.SUNDAY) {
 				// Nếu là thứ 7 hoặc chủ nhật
@@ -1565,7 +1580,10 @@ public class CleanerJobService {
 	                    if (serviceDetail != null) {
 	                        serviceInfo.put("serviceDetailName", serviceDetail.getName());
 	                        serviceInfo.put("price", serviceDetail.getPrice());
+	                        serviceInfo.put("additionalPrice", serviceDetail.getAdditionalPrice());
+	                        serviceInfo.put("areaRange", serviceDetail.getAreaRange());
 	                        serviceInfo.put("description", serviceDetail.getDescription());
+	                        serviceInfo.put("discounts", serviceDetail.getDiscounts());
 	                    }
 
 	                    serviceList.add(serviceInfo);

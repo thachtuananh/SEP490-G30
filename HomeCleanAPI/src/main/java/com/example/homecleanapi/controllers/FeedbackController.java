@@ -66,6 +66,28 @@ public class FeedbackController {
 
         return ResponseEntity.ok(feedbacks); 
     }
+
+
+    // PHÍA CLEANER
+    @PostMapping("/{cleanerId}/job/{jobId}/feedback")
+    public ResponseEntity<Map<String, Object>> createFeedbackcleaner(
+            @PathVariable Long cleanerId,
+            @PathVariable Long jobId,
+            @RequestBody FeedbackRequest feedbackRequest) {
+
+        Map<String, Object> response = feedbackService.createFeedbackCleaner(cleanerId, jobId, feedbackRequest);
+
+        return new ResponseEntity<>(response, (HttpStatus) response.get("status"));
+    }
+
+    @PutMapping("/{cleanerId}/job/{jobId}/cleaner/updatefeedback")
+    public ResponseEntity<Map<String, Object>> updateCleanerFeedback(@PathVariable Long cleanerId,
+                                                                     @PathVariable Long jobId,
+                                                                     @RequestBody FeedbackRequest feedbackRequest) {
+        Map<String, Object> response = feedbackService.updateCleanerFeedback(cleanerId, jobId, feedbackRequest);
+        return new ResponseEntity<>(response, (HttpStatus) response.get("status"));
+    }
+
 }
 
 

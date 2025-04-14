@@ -526,9 +526,10 @@ public class JobService {
                             serviceInfo.put("serviceDetailId", serviceDetail.getId());
                             serviceInfo.put("serviceDetailName", serviceDetail.getName());
                             serviceInfo.put("serviceDetailPrice", serviceDetail.getPrice());
-
+                            serviceInfo.put("serviceDetailAdditionalPrice", serviceDetail.getAdditionalPrice());
+                            serviceInfo.put("serviceDetailAreaRange", serviceDetail.getAreaRange());
                             serviceInfo.put("serviceDetailDescription", serviceDetail.getDescription());
-
+                            serviceInfo.put("serviceDetailDiscounts", serviceDetail.getDiscounts());
                         }
 
                         serviceList.add(serviceInfo);
