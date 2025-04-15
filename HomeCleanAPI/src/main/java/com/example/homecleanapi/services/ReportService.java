@@ -145,7 +145,19 @@ public class ReportService {
 
         Page<Report> reports = reportRepository.findReportsByCleanerId(cleanerId, pageable);
 
-        response.put("reports", reports.getContent());
+        List<Map<String, Object>> cleanerReportList = reports.getContent().stream().map(report -> {
+            Map<String, Object> dto = new HashMap<>();
+            dto.put("id", report.getId());
+            dto.put("jobId", report.getJob() != null ? report.getJob().getId() : null);
+            dto.put("reportType", report.getReportType());
+            dto.put("description", report.getDescription());
+            dto.put("status", report.getStatus().name());
+            dto.put("resolvedAt", report.getResolvedAt());
+            dto.put("adminResponse", report.getAdminResponse());
+            return dto;
+        }).collect(Collectors.toList());
+
+        response.put("reports", cleanerReportList);
         response.put("totalItems", reports.getTotalElements());
         response.put("totalPages", reports.getTotalPages());
         response.put("currentPage", reports.getNumber());
