@@ -79,7 +79,8 @@ public class CustomerService {
 
         
         customer.setFull_name(request.getFullName());
-
+        customer.setEmail(request.getEmail());
+        customer.setPhone(request.getPhone());
         customerRepository.save(customer);  
 
         response.put("message", "Cập nhật thông tin profile thành công!");
