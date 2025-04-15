@@ -139,30 +139,6 @@ export const ActivityCard = ({ data, onDelete }) => {
     }
   };
 
-  let serviceInfoText = "";
-  if (data.services) {
-    if (Array.isArray(data.services)) {
-      serviceInfoText = data.services
-        .map((service) => `${service.serviceName} (${service.areaRange})`)
-        .join(", ");
-    } else {
-      serviceInfoText = `${data.services.serviceName || "Không xác định"} (${
-        data.services.areaRange || "Không xác định"
-      })`;
-    }
-  } else {
-    serviceInfoText = "Không xác định";
-  }
-
-  // Format date for SMS
-  const formattedDate = new Date(data.scheduledTime).toLocaleString("vi-VN", {
-    hour: "2-digit",
-    minute: "2-digit",
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  });
-
   // Fetch cleaner applications
   const fetchCleaners = async (jobId) => {
     setLoading(true);
@@ -263,7 +239,7 @@ export const ActivityCard = ({ data, onDelete }) => {
     );
   };
 
-  // Hire a cleaner
+  // Handle hire cleaner
   const handleHireCleaner = async (jobId, cleanerId, customerId) => {
     if (!jobId) {
       console.error("Không tìm thấy jobId!");
@@ -277,11 +253,49 @@ export const ActivityCard = ({ data, onDelete }) => {
       // Then create a conversation
       await createConversation(customerId, cleanerId);
 
+      // Find the specific activity/job data using jobId
+      const jobData = activities.find((activity) => activity.jobId === jobId);
+
+      // Find the cleaner in the cleanerList to get the phone number
+      const selectedCleanerData = cleanerList.find(
+        (cleaner) => cleaner.cleanerId === cleanerId
+      );
+      const cleanerPhone = selectedCleanerData?.phoneNumber; // Fallback to default if not found
+
       console.log("Thuê cleaner thành công!", { jobId, cleanerId, customerId });
       message.success("Thuê cleaner thành công!");
-      const smsMessageHire = `[HouseClean] Bạn được ${customerName} chấp nhận. SĐT: ${customerPhone}. Dịch vụ: ${serviceInfoText}, ${formattedDate},${
-        data.customerAddress
-      }. Tạm tính: ${data.totalPrice.toLocaleString()} VNĐ (+20% nếu cao điểm).`;
+
+      // Create SMS message using the specific job data
+      let serviceInfoText = "";
+      if (jobData.services) {
+        if (Array.isArray(jobData.services)) {
+          serviceInfoText = jobData.services
+            .map((service) => `${service.serviceName} (${service.areaRange})`)
+            .join(", ");
+        } else {
+          serviceInfoText = `${
+            jobData.services.serviceName || "Không xác định"
+          } (${jobData.services.areaRange || "Không xác định"})`;
+        }
+      } else {
+        serviceInfoText = "Không xác định";
+      }
+
+      // Format date for the specific job
+      const formattedDate = new Date(jobData.scheduledTime).toLocaleString(
+        "vi-VN",
+        {
+          hour: "2-digit",
+          minute: "2-digit",
+          day: "2-digit",
+          month: "2-digit",
+          year: "numeric",
+        }
+      );
+      const smsMessageHire = `[HouseClean] Bạn được ${customerName} chấp nhận. Dịch vụ: ${serviceInfoText}, lúc ${formattedDate}, tại ${
+        jobData.customerAddress
+      }. SĐT chủ nhà: ${customerPhone}. Tạm tính: ${jobData.totalPrice.toLocaleString()} VNĐ.`;
+
       Promise.all([
         sendNotification(
           cleanerId,
@@ -291,8 +305,9 @@ export const ActivityCard = ({ data, onDelete }) => {
           "BOOKED",
           "Cleaner"
         ),
-        sendSms("0384244398", smsMessageHire),
+        sendSms(cleanerPhone, smsMessageHire),
       ]);
+
       updateActivityStatus(jobId, "IN_PROGRESS");
       setIsModalOpen(false);
     } catch (error) {
