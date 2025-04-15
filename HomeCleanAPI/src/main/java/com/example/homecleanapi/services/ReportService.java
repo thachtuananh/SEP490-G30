@@ -80,26 +80,32 @@ public class ReportService {
 
     public ResponseEntity<Map<String, Object>> getAllReport(int offset, int limit) {
         Map<String, Object> response = new HashMap<>();
-        Pageable pageable = PageRequest.of(offset, limit);
+        // Tính page từ offset
+        int page = offset / limit;
+
+        Pageable pageable = PageRequest.of(page, limit);
         Page<Report> reports = reportRepository.findAll(pageable);
 
         response.put("reports", reports.getContent());
         response.put("totalItems", reports.getTotalElements());
         response.put("totalPages", reports.getTotalPages());
-        response.put("currentPage", reports.getNumber());
-        return ResponseEntity.status(HttpStatus.OK).body(response);
+        response.put("currentPage", reports.getNumber() * limit); // trả về offset hiện tại
+        return ResponseEntity.ok(response);
     }
 
     public ResponseEntity<Map<String, Object>> getReportByCustomerId(Long customerId, int offset, int limit) {
         Map<String, Object> response = new HashMap<>();
-        Pageable pageable = PageRequest.of(offset, limit);
+
+        int page = offset / limit;
+        Pageable pageable = PageRequest.of(page, limit);
 
         Page<Report> reports = reportRepository.findReportsByCustomerId(customerId, pageable);
 
         response.put("reports", reports.getContent());
         response.put("totalItems", reports.getTotalElements());
         response.put("totalPages", reports.getTotalPages());
-        response.put("currentPage", reports.getNumber());
+        response.put("offset", page * limit); // hoặc dùng luôn offset nếu muốn giữ đầu vào
+        response.put("limit", limit);
 
         return ResponseEntity.ok(response);
     }
