@@ -12,15 +12,21 @@ public class ChatGPTService {
     @Value("${openai.api.key}")
     private String apiKey;
 
-    private final String API_URL = "https://api.openai.com/v1/completions";
+    private final String API_URL = "https://api.openai.com/v1/chat/completions";  // Cập nhật API endpoint mới cho chat
 
     private final RestTemplate restTemplate = new RestTemplate();
 
     // Gọi API ChatGPT
     public String askChatGPT(String prompt) {
+        // Định dạng prompt mới để tương thích với API chat
         Map<String, Object> requestBody = new HashMap<>();
-        requestBody.put("model", "text-davinci-003");
-        requestBody.put("prompt", prompt);
+        requestBody.put("model", "gpt-3.5-turbo");  // Cập nhật mô hình mới
+        requestBody.put("messages", Arrays.asList(
+                new HashMap<String, String>() {{
+                    put("role", "user");
+                    put("content", prompt);
+                }}
+        ));
         requestBody.put("max_tokens", 150);
 
         HttpHeaders headers = new HttpHeaders();
@@ -29,18 +35,10 @@ public class ChatGPTService {
 
         HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
 
-        try {
-            ResponseEntity<String> response = restTemplate.exchange(API_URL, HttpMethod.POST, entity, String.class);
+        ResponseEntity<String> response = restTemplate.exchange(API_URL, HttpMethod.POST, entity, String.class);
 
-            if (response.getStatusCode() == HttpStatus.OK) {
-                return response.getBody();
-            } else {
-                return "Error: " + response.getStatusCode() + " - " + response.getBody();
-            }
-        } catch (Exception e) {
-            return "Exception occurred: " + e.getMessage();
-        }
+        return response.getBody();
     }
-
 }
+
 
