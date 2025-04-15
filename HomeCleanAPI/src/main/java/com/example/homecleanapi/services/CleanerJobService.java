@@ -80,39 +80,44 @@ public class CleanerJobService {
 	public Map<String, Object> getCustomerDetails(Long cleanerId, Long customerId) {
 		Map<String, Object> response = new HashMap<>();
 
-		// Optional: Check if the cleaner has access to customer details (business logic)
-		// You can check if the cleaner is authorized to view this customer's details based on their job or other criteria
+		// Kiểm tra xem cleaner có quyền truy cập vào thông tin customer hay không
 		if (!isCleanerAuthorized(cleanerId, customerId)) {
 			response.put("message", "You are not authorized to view this customer's details.");
-			response.put("status", HttpStatus.FORBIDDEN);
+			response.put("status", HttpStatus.FORBIDDEN);  // Trả về trạng thái FORBIDDEN nếu không được phép
 			return response;
 		}
 
-		// Find the customer by customerId
+		// Tìm customer theo customerId
 		Optional<Customers> customerOpt = customerRepository.findById(customerId);
 		if (!customerOpt.isPresent()) {
 			response.put("message", "Customer not found");
-			response.put("status", HttpStatus.NOT_FOUND);
+			response.put("status", HttpStatus.NOT_FOUND);  // Trả về trạng thái NOT_FOUND nếu không tìm thấy customer
 			return response;
 		}
 
 		Customers customer = customerOpt.get();
 
-		// Prepare the response with customer details
+		// Chuẩn bị dữ liệu để trả về thông tin chi tiết customer
 		response.put("customerId", customer.getId());
 		response.put("fullName", customer.getFull_name());
 		response.put("phoneNumber", customer.getPhone());
 		response.put("email", customer.getEmail());
 		response.put("createdAt", customer.getCreated_at());
 		response.put("isDeleted", customer.isDeleted());
-
+		response.put("status", HttpStatus.OK);  // Trả về trạng thái OK khi thành công
 
 		return response;
 	}
 
+
 	private boolean isCleanerAuthorized(Long cleanerId, Long customerId) {
-		return true;
+		// Kiểm tra xem cleanerId có phải là người thực hiện công việc với customerId không
+		List<JobApplication> jobApplications = jobApplicationRepository.findByCleanerIdAndJobCustomerId(cleanerId, customerId);
+
+		return !jobApplications.isEmpty();  // Nếu có công việc nào thì trả về true, không thì false
 	}
+
+
 
 
 	// Lấy chi tiết công việc

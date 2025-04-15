@@ -218,8 +218,15 @@ public class CleanerJobController {
     public ResponseEntity<Map<String, Object>> getCustomerDetails(@PathVariable Long cleanerId, @PathVariable Long customerId) {
         // Call service to get customer details
         Map<String, Object> response = cleanerJobService.getCustomerDetails(cleanerId, customerId);
-        return new ResponseEntity<>(response, (HttpStatus) response.get("status"));
+
+        // Kiểm tra xem trạng thái của response có phải là HttpStatus hay không
+        if (response.get("status") instanceof HttpStatus) {
+            return new ResponseEntity<>(response, (HttpStatus) response.get("status"));
+        } else {
+            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);  // Nếu có lỗi, trả về lỗi server
+        }
     }
+
 
 
 }
