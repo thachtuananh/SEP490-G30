@@ -27,7 +27,7 @@ public class ChatGPTService {
                     put("content", prompt);
                 }}
         ));
-        requestBody.put("max_tokens", 500);
+        requestBody.put("max_tokens", 150);
 
         HttpHeaders headers = new HttpHeaders();
         headers.set("Authorization", "Bearer " + apiKey);
@@ -39,6 +39,28 @@ public class ChatGPTService {
 
         return response.getBody();
     }
-}
 
+    public List<Float> getEmbedding(String text) {
+        String url = "https://api.openai.com/v1/embeddings";
+
+        Map<String, Object> requestBody = new HashMap<>();
+        requestBody.put("model", "text-embedding-3-small");
+        requestBody.put("input", text);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setBearerAuth(apiKey);
+
+        HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
+
+        try {
+            ResponseEntity<Map> response = restTemplate.postForEntity(url, entity, Map.class);
+            List<Double> embedding = (List<Double>) ((Map) ((List) response.getBody().get("data")).get(0)).get("embedding");
+            return embedding.stream().map(Double::floatValue).toList(); // Chuyển về float
+        } catch (Exception e) {
+            throw new RuntimeException("Embedding failed: " + e.getMessage());
+        }
+    }
+
+}
 

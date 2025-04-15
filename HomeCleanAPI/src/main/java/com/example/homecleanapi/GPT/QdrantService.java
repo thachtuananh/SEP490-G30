@@ -1,8 +1,11 @@
 package com.example.homecleanapi.GPT;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.http.*;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import java.util.*;
 
@@ -16,30 +19,39 @@ public class QdrantService {
 
     // Tạo collection nếu chưa tồn tại
     public String createCollection(String collectionName) {
-        String url = qdrantUrl + "/collections";
+        String url = qdrantUrl + "/collections/" + collectionName;
+
+        Map<String, Object> vectorsConfig = new HashMap<>();
+        vectorsConfig.put("size", 1536); // đúng với OpenAI Embedding
+        vectorsConfig.put("distance", "Cosine");
+
 
         Map<String, Object> requestBody = new HashMap<>();
-        requestBody.put("name", collectionName);
-        requestBody.put("vector_size", 768);
-        requestBody.put("distance", "Cosine");
+        requestBody.put("vectors", vectorsConfig);
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
 
         HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
 
-        ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.POST, entity, String.class);
+        ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.PUT, entity, String.class);
         return response.getBody();
     }
 
+
     // Lưu trữ vector vào Qdrant
     public String storeVector(String collectionName, List<Float> vector, String documentId, Map<String, Object> metadata) {
+
         String url = qdrantUrl + "/collections/" + collectionName + "/points";
 
+        // Tạo point đúng định dạng
+        Map<String, Object> point = new HashMap<>();
+        point.put("id", documentId);
+        point.put("vector", vector);
+        point.put("payload", metadata);
+
         Map<String, Object> requestBody = new HashMap<>();
-        requestBody.put("vector", vector);
-        requestBody.put("id", documentId);
-        requestBody.put("payload", metadata);  // Thêm thông tin metadata vào payload
+        requestBody.put("points", Collections.singletonList(point)); // Đưa vào mảng "points"
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
@@ -47,12 +59,13 @@ public class QdrantService {
         HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
 
         try {
-            ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.POST, entity, String.class);
+            ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.PUT, entity, String.class);
             return response.getBody();
         } catch (Exception e) {
             return "Exception occurred: " + e.getMessage();
         }
     }
+
 
 
     // Tìm kiếm vector tương đồng trong Qdrant
@@ -61,7 +74,9 @@ public class QdrantService {
 
         Map<String, Object> requestBody = new HashMap<>();
         requestBody.put("vector", queryVector);
-        requestBody.put("top", 5);  // Lấy 5 kết quả tương đồng nhất
+        requestBody.put("top", 5);
+        requestBody.put("with_payload", true);
+
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
@@ -86,17 +101,46 @@ public class QdrantService {
         String url = qdrantUrl + "/collections/" + collectionName;
 
         try {
-            ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, null, String.class);
-            if (response.getStatusCode() == HttpStatus.NOT_FOUND) {
-                // Nếu collection chưa tồn tại, tạo mới
-                return createCollection(collectionName);
-            }
+            restTemplate.exchange(url, HttpMethod.GET, null, String.class);
+            return "Collection already exists.";
+        } catch (HttpClientErrorException.NotFound e) {
+            // Nếu collection không tồn tại, tạo mới
+            return createCollection(collectionName);
         } catch (Exception e) {
-            // Xử lý lỗi nếu cần thiết
+            return "Error checking collection existence: " + e.getMessage();
         }
-        return "Collection already exists.";
     }
 
-}
+    public String extractTopPayloadTexts(String qdrantRawResponse, int topN) {
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode root = mapper.readTree(qdrantRawResponse);
+            JsonNode resultArray = root.path("result");
 
+            StringBuilder sb = new StringBuilder();
+            int count = 0;
+
+            for (JsonNode item : resultArray) {
+                if (count++ >= topN) break;
+                String content = item.path("payload").path("documentText").asText();
+                sb.append("- ").append(content).append("\n\n");
+            }
+
+            return sb.toString();
+        } catch (Exception e) {
+            return "Lỗi khi trích nội dung từ kết quả Qdrant: " + e.getMessage();
+        }
+    }
+
+    // Xóa collection (nếu muốn khởi tạo lại collection với vector size khác)
+    public String deleteCollection(String collectionName) {
+        String url = qdrantUrl + "/collections/" + collectionName;
+        ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.DELETE, null, String.class);
+        return response.getBody();
+    }
+
+
+
+
+}
 
