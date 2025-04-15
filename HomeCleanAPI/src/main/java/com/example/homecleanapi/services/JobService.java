@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -130,7 +131,7 @@ public class JobService {
                     return response;
                 }
                 ServiceDetail serviceDetail = serviceDetailOpt.get();
-                totalPrice += serviceDetail.getPrice() + serviceDetail.getAdditionalPrice();
+                totalPrice += serviceDetail.getPrice() ;
             }
 
             // Kiểm tra nếu số dư trong ví không đủ
@@ -166,13 +167,37 @@ public class JobService {
             ServiceDetail serviceDetail = serviceDetailOpt.get();
 
             // Tính toán giá dịch vụ
-            totalPrice += serviceDetail.getPrice() + serviceDetail.getAdditionalPrice();
+            totalPrice += serviceDetail.getPrice() ;
         }
 
-        // Kiểm tra nếu totalPrice lớn hơn 1 triệu và phương thức thanh toán là tiền mặt
-        if (totalPrice > 1000000 && "cash".equalsIgnoreCase(request.getPaymentMethod())) {
-            response.put("message", "Total price exceeds 1 million. Cash payment is not allowed.");
-            return response;  // Dừng lại và trả về phản hồi, không tạo job
+        // Kiểm tra ngày và giờ để tính phí tăng thêm
+        LocalDateTime jobScheduledTime = job.getScheduledTime();
+        DayOfWeek dayOfWeek = jobScheduledTime.getDayOfWeek();
+        int hour = jobScheduledTime.getHour();
+        double priceIncrease = 0;
+
+        if (dayOfWeek == DayOfWeek.SATURDAY || dayOfWeek == DayOfWeek.SUNDAY) {
+            // Nếu là thứ 7 hoặc chủ nhật
+            if (hour > 18 || (hour == 18 && jobScheduledTime.getMinute() >= 0)) {
+                if (hour < 22 || (hour == 22 && jobScheduledTime.getMinute() == 0)) {
+                    // Nếu giờ từ 18h đến 21h59 vào thứ 7 hoặc chủ nhật
+                    priceIncrease = 0.2; // Tăng 20%
+                } else {
+                    priceIncrease = 0.1; // Tăng 10% vào thứ 7, chủ nhật ngoài giờ cao điểm
+                }
+            }
+        } else if (hour >= 18 && hour < 22) {
+            // Nếu vào giờ từ 18h đến 21h59 từ thứ 2 đến thứ 6
+            priceIncrease = 0.1; // Tăng 10%
+        } else if (hour == 22 && jobScheduledTime.getMinute() == 0) {
+            // Nếu vào giờ 22h từ thứ 2 đến thứ 6
+            priceIncrease = 0.1; // Tăng 10%
+        }
+
+
+        if (priceIncrease > 0) {
+            totalPrice += totalPrice * priceIncrease;
+            response.put("message", "The total price includes a " + (priceIncrease * 100) + "% increase due to time or day");
         }
 
         // Lưu Job vào cơ sở dữ liệu
@@ -250,6 +275,49 @@ public class JobService {
         return response;
     }
 
+
+    public Map<String, Object> retryPayment(Long jobId, HttpServletRequest requestIp) {
+        Map<String, Object> response = new HashMap<>();
+
+        // Kiểm tra job tồn tại
+        Optional<Job> jobOpt = jobRepository.findById(jobId);
+        if (!jobOpt.isPresent()) {
+            response.put("message", "Job not found");
+            return response;
+        }
+
+        Job job = jobOpt.get();
+
+        // Kiểm tra trạng thái job, chỉ cho phép thanh toán lại khi job có trạng thái PAID
+        if (!job.getStatus().equals(JobStatus.PAID)) {
+            response.put("message", "Job is not in a valid state for payment retry");
+            return response;
+        }
+
+        // Tạo lại VNPay request hoặc các phương thức thanh toán khác
+        try {
+            double totalPrice = job.getTotalPrice();
+            VnpayRequest vnpayRequest = new VnpayRequest();
+            long amount = (long) (totalPrice);
+            vnpayRequest.setAmount(String.valueOf(amount));
+
+            // Tạo lại URL thanh toán
+            String paymentUrl = vnpayService.createPayment(vnpayRequest, requestIp);
+
+            // Cập nhật txnRef cho job để theo dõi giao dịch
+            String txnRef = extractTxnRefFromUrl(paymentUrl);
+            job.setTxnRef(txnRef);  // Lưu txnRef vào job
+            jobRepository.save(job);  // Lưu cập nhật txnRef vào job
+
+            // Trả về URL thanh toán cho người dùng
+            response.put("paymentUrl", paymentUrl);
+            return response;
+
+        } catch (Exception e) {
+            response.put("message", "Failed to create payment link: " + e.getMessage());
+            return response;
+        }
+    }
 
 
 
@@ -554,7 +622,7 @@ public class JobService {
         transactionHistory.setCleaner(null);
         transactionHistory.setAmount(refundAmount);
         transactionHistory.setTransactionType("Refund");
-        transactionHistory.setStatus("Completed");
+        transactionHistory.setStatus("SUCCESS");
         transactionHistory.setPaymentMethod("Wallet");
 
 
