@@ -1,6 +1,7 @@
 package com.example.homecleanapi.controllers;
 
 import com.example.homecleanapi.dtos.ReportRequestDTO;
+import com.example.homecleanapi.dtos.ReportUpdateDTO;
 import com.example.homecleanapi.services.ReportService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -37,6 +38,24 @@ public class ReportController {
             @RequestParam(defaultValue = "12") int limit
     ) {
         return reportService.getAllReport(offset, limit);
+    }
+
+    @GetMapping(value = "/{customerId}/get-report", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Map<String, Object>> getReportByCustomerId(
+            @PathVariable Long customerId,
+            @RequestParam(defaultValue = "0") int offset,
+            @RequestParam(defaultValue = "12") int limit
+            ) {
+        return reportService.getReportByCustomerId(customerId, offset, limit);
+    }
+
+    @GetMapping(value = "/{cleanerId}/get-report", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Map<String, Object>> getReportByCleanerId(
+            @PathVariable Long cleanerId,
+            @RequestParam(defaultValue = "0") int offset,
+            @RequestParam(defaultValue = "12") int limit
+    ) {
+        return reportService.getReportByCleanerId(cleanerId, offset, limit);
     }
 
 //    @GetMapping(value = "/{customerId}/get-report-by-customerid", produces = MediaType.APPLICATION_JSON_VALUE)

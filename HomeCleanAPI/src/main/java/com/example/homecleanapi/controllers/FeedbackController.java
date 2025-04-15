@@ -66,6 +66,52 @@ public class FeedbackController {
 
         return ResponseEntity.ok(feedbacks); 
     }
+
+
+    // PHÍA CLEANER
+    @PostMapping("/{cleanerId}/job/{jobId}/feedback")
+    public ResponseEntity<Map<String, Object>> createFeedbackcleaner(
+            @PathVariable Long cleanerId,
+            @PathVariable Long jobId,
+            @RequestBody FeedbackRequest feedbackRequest) {
+
+        Map<String, Object> response = feedbackService.createFeedbackCleaner(cleanerId, jobId, feedbackRequest);
+
+        return new ResponseEntity<>(response, (HttpStatus) response.get("status"));
+    }
+
+    @PutMapping("/{cleanerId}/job/{jobId}/cleaner/updatefeedback")
+    public ResponseEntity<Map<String, Object>> updateCleanerFeedback(@PathVariable Long cleanerId,
+                                                                     @PathVariable Long jobId,
+                                                                     @RequestBody FeedbackRequest feedbackRequest) {
+        Map<String, Object> response = feedbackService.updateCleanerFeedback(cleanerId, jobId, feedbackRequest);
+        return new ResponseEntity<>(response, (HttpStatus) response.get("status"));
+    }
+
+
+    @GetMapping("/cleaners/{cleanerId}/job/{jobId}/feedback")
+    public ResponseEntity<Map<String, Object>> getCleanerFeedbackDetails(@PathVariable Long cleanerId, @PathVariable Long jobId) {
+        Map<String, Object> response = feedbackService.getFeedbackDetailsForCleaner(cleanerId, jobId);
+        return new ResponseEntity<>(response, (HttpStatus) response.get("status"));
+    }
+
+
+    @GetMapping("/cleaners/{cleanerId}/customer/{customerId}/feedbacks")
+    public ResponseEntity<List<Map<String, Object>>> getCustomerFeedbacksForCleaner(
+            @PathVariable Long cleanerId,
+            @PathVariable Long customerId) {
+
+        List<Map<String, Object>> feedbacks = feedbackService.getFeedbacksForCustomerByCleaner(cleanerId, customerId);
+
+        if (feedbacks.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(feedbacks);
+    }
+
+
+
+
 }
 
 

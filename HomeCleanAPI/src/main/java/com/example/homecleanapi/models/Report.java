@@ -18,6 +18,10 @@ public class Report {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    @Column(name = "reporter_id")
+    private Integer customerId;
+    @Column(name = "reported_user_id")
+    private Integer cleanerId;
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "job_id", referencedColumnName = "id")

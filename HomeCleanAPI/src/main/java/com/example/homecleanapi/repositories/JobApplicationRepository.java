@@ -32,7 +32,16 @@ public interface JobApplicationRepository extends JpaRepository<JobApplication, 
 	List<JobApplication> findByJob_Customer_Id(Long customerId);
 	
 	Optional<JobApplication> findByJob_IdAndJob_Customer_Id(Long jobId, Long customerId);
-	
-	
+
+	Optional<JobApplication> findByJobId(Long jobId);
+
+	List<JobApplication> findByCleanerAndStatusIn(Employee cleaner, List<String> statuses);
+
+	List<JobApplication> findByCleanerIdAndJobCustomerId(Long cleanerId, Long customerId);
+
+
+
+
+
 
 }

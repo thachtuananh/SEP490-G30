@@ -1,7 +1,9 @@
 package com.example.homecleanapi.vnPay;
 
+import java.util.Map;
 import java.util.Optional;
 
+import com.example.homecleanapi.services.JobService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -21,6 +23,9 @@ public class VnpayController {
     @Autowired
     private JobRepository jobRepository;
     private final VnpayService vnpayService;
+
+    @Autowired
+    private JobService jobService;
 
     public VnpayController(VnpayService vnpayService) {
         this.vnpayService = vnpayService;
@@ -56,6 +61,17 @@ public class VnpayController {
         } else {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Thanh toán thất bại! Mã lỗi: " + responseCode);
         }
+    }
+
+    @PostMapping(value = "/retry-payment/{jobId}")
+    public ResponseEntity<Map<String, Object>> retryPayment(@PathVariable Long jobId, HttpServletRequest requestIp) {
+        Map<String, Object> response = jobService.retryPayment(jobId, requestIp); // Gọi service xử lý thanh toán lại
+
+        if (response.containsKey("message") && response.get("message").equals("Job not found")) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response); // Trả về lỗi nếu job không tồn tại
+        }
+
+        return ResponseEntity.ok(response); // Trả về kết quả thành công
     }
 
 
