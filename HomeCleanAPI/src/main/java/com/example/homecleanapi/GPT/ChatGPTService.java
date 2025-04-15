@@ -27,7 +27,7 @@ public class ChatGPTService {
                     put("content", prompt);
                 }}
         ));
-        requestBody.put("max_tokens", 150);
+        requestBody.put("max_tokens", 500);
 
         HttpHeaders headers = new HttpHeaders();
         headers.set("Authorization", "Bearer " + apiKey);
