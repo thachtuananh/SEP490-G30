@@ -98,10 +98,10 @@ public class CustomerAuthService {
         }
 
 
-//        if (customer.get == true) {
-//            response.put("message", "Tài khoản của bạn bị khóa");
-//            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
-//        }
+        if (customer.isDeleted() == true) {
+            response.put("message", "Tài khoản của bạn bị khóa");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
+        }
 
         // Kiểm tra mật khẩu
         if (!passwordEncoder.matches(request.getPassword(), customer.getPassword_hash())) {
