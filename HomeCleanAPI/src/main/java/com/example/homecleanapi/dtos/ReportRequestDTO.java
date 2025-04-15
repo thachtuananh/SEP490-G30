@@ -9,7 +9,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ReportRequestDTO {
-    private Long job_id;
     private String report_type;
     private String description;
 }

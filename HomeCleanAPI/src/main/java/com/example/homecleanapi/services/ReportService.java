@@ -1,7 +1,8 @@
 package com.example.homecleanapi.services;
 
-import com.example.homecleanapi.controllers.ReportUpdateDTO;
+import com.example.homecleanapi.dtos.ReportUpdateDTO;
 import com.example.homecleanapi.dtos.ReportRequestDTO;
+import com.example.homecleanapi.enums.ReportStatus;
 import com.example.homecleanapi.models.Job;
 import com.example.homecleanapi.models.Report;
 import com.example.homecleanapi.repositories.JobRepository;
@@ -15,11 +16,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.PathVariable;
 
-import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -48,6 +47,9 @@ public class ReportService {
         Job job = optionalJob.get();
         Report report = new Report();
         report.setJob(job);
+        report.setCustomerId(job.getCustomer().getId());
+        report.setCleanerId(job.getCleaner().getId());
+        report.setStatus(ReportStatus.PENDING);
         report.setReportType(reportRequest.getReport_type());
         report.setDescription(reportRequest.getDescription());
 
@@ -86,7 +88,21 @@ public class ReportService {
         Map<String, Object> response = new HashMap<>();
         Pageable pageable = PageRequest.of(offset, limit);
 
-        Page<Report> reports = reportRepository.findByJob_Customer_Id(customerId, pageable);
+        Page<Report> reports = reportRepository.findReportsByCustomerId(customerId, pageable);
+
+        response.put("reports", reports.getContent());
+        response.put("totalItems", reports.getTotalElements());
+        response.put("totalPages", reports.getTotalPages());
+        response.put("currentPage", reports.getNumber());
+
+        return ResponseEntity.ok(response);
+    }
+
+    public ResponseEntity<Map<String, Object>> getReportByCleanerId(Long cleanerId, int offset, int limit) {
+        Map<String, Object> response = new HashMap<>();
+        Pageable pageable = PageRequest.of(offset, limit);
+
+        Page<Report> reports = reportRepository.findReportsByCleanerId(cleanerId, pageable);
 
         response.put("reports", reports.getContent());
         response.put("totalItems", reports.getTotalElements());

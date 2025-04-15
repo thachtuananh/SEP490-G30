@@ -10,5 +10,6 @@ import java.util.List;
 public interface ReportRepository extends JpaRepository<Report, Long> {
     Report findReportById(Long id);
     Page<Report> findByJob_Customer_Id(Long customerId, Pageable pageable);
-
+    Page<Report> findReportsByCleanerId(Long cleanerId, Pageable pageable);
+    Page<Report> findReportsByCustomerId(Long customerId, Pageable pageable);
 }
