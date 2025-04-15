@@ -22,8 +22,6 @@ import java.util.Map;
 @RequestMapping("/api/admin/customers")
 public class AdminCustomerController {
 
-//    @Autowired
-//    private JobHistoryService jobHistoryService;
 
     private final AdminCustomerService customerService;
     private final JwtUtils jwtUtils;
@@ -50,7 +48,7 @@ public class AdminCustomerController {
     @PutMapping(value = "/{customer_id}/update", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Map<String, Object>> updateCustomer(
             @PathVariable("customer_id") Integer customerId,
-            @RequestBody CustomerProfileRequest request,
+            @RequestBody CustomerProfileAdminDTO request,
             HttpServletRequest httpRequest) {
 
         if (isAuthorizedRole(httpRequest)) {
@@ -113,12 +111,6 @@ public class AdminCustomerController {
         }
         return ResponseEntity.ok(response);
     }
-
-
-
-
-
-
 
 
     // Kiểm tra xem người dùng có quyền là Admin hoặc Manager không
