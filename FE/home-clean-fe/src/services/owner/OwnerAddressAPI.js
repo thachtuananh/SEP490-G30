@@ -2,7 +2,7 @@ import { BASE_URL } from "../../utils/config";
 // Fetch customer addresses
 export async function fetchCustomerAddresses(customerId) {
     try {
-        const token = localStorage.getItem("token");
+        const token = sessionStorage.getItem("token");
 
         if (!token) {
             throw new Error("No authentication token found");
@@ -28,7 +28,7 @@ export async function fetchCustomerAddresses(customerId) {
 // Set default address
 export async function setDefaultAddress(customerId, addressId) {
     try {
-        const token = localStorage.getItem("token");
+        const token = sessionStorage.getItem("token");
 
         if (!token) {
             throw new Error("No authentication token found");

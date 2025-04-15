@@ -4,8 +4,8 @@ import { message } from "antd";
 
 const ProtectedAdminRoute = ({ children }) => {
   const location = useLocation();
-  const role = localStorage.getItem("role");
-  const token = localStorage.getItem("token");
+  const role = sessionStorage.getItem("role");
+  const token = sessionStorage.getItem("token");
 
   useEffect(() => {
     if (!role || role !== "Admin") {

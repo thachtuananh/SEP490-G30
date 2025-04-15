@@ -61,8 +61,8 @@ export const Address = () => {
   };
 
   const fetchAddresses = async () => {
-    const token = localStorage.getItem("token");
-    const customerId = localStorage.getItem("customerId");
+    const token = sessionStorage.getItem("token");
+    const customerId = sessionStorage.getItem("customerId");
 
     if (token && customerId) {
       try {
@@ -312,8 +312,8 @@ export const Address = () => {
     const fullAddress = formatFullAddress();
 
     setLoading(true);
-    const token = localStorage.getItem("token");
-    const customerId = localStorage.getItem("customerId");
+    const token = sessionStorage.getItem("token");
+    const customerId = sessionStorage.getItem("customerId");
 
     try {
       const response = await fetch(
@@ -353,7 +353,7 @@ export const Address = () => {
       okText: "Xác nhận",
       cancelText: "Hủy",
       onOk: async () => {
-        const token = localStorage.getItem("token");
+        const token = sessionStorage.getItem("token");
 
         try {
           const response = await fetch(
@@ -394,8 +394,8 @@ export const Address = () => {
     const fullAddress = formatFullAddress();
 
     setLoading(true);
-    const token = localStorage.getItem("token");
-    const customerId = localStorage.getItem("customerId");
+    const token = sessionStorage.getItem("token");
+    const customerId = sessionStorage.getItem("customerId");
 
     fetch(
       `${BASE_URL}/customer/${customerId}/update_address/${currentAddressId}`,
@@ -429,8 +429,8 @@ export const Address = () => {
   };
 
   const handleSetDefaultAddress = async (addressId) => {
-    const token = localStorage.getItem("token");
-    const customerId = localStorage.getItem("customerId");
+    const token = sessionStorage.getItem("token");
+    const customerId = sessionStorage.getItem("customerId");
 
     try {
       const response = await fetch(

@@ -36,6 +36,7 @@ import { FeedbackModal } from "../../components/activity/FeedbackModal";
 import { createConversation } from "../../services/ChatService";
 import { sendNotification } from "../../services/NotificationService";
 import { ReportModal } from "../../components/activity/ReportModal";
+import { sendSms } from "../../services/SMSService";
 
 export const ActivityCard = ({ data, onDelete }) => {
   const [activities, setActivities] = useState([]);
@@ -51,6 +52,9 @@ export const ActivityCard = ({ data, onDelete }) => {
     useState(null);
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const [selectedJobIdForReport, setSelectedJobIdForReport] = useState(null);
+
+  const customerName = sessionStorage.getItem("name");
+  const customerPhone = sessionStorage.getItem("phone");
 
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
@@ -134,6 +138,30 @@ export const ActivityCard = ({ data, onDelete }) => {
         return 1;
     }
   };
+
+  let serviceInfoText = "";
+  if (data.services) {
+    if (Array.isArray(data.services)) {
+      serviceInfoText = data.services
+        .map((service) => `${service.serviceName} (${service.areaRange})`)
+        .join(", ");
+    } else {
+      serviceInfoText = `${data.services.serviceName || "Không xác định"} (${
+        data.services.areaRange || "Không xác định"
+      })`;
+    }
+  } else {
+    serviceInfoText = "Không xác định";
+  }
+
+  // Format date for SMS
+  const formattedDate = new Date(data.scheduledTime).toLocaleString("vi-VN", {
+    hour: "2-digit",
+    minute: "2-digit",
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
 
   // Fetch cleaner applications
   const fetchCleaners = async (jobId) => {
@@ -251,14 +279,20 @@ export const ActivityCard = ({ data, onDelete }) => {
 
       console.log("Thuê cleaner thành công!", { jobId, cleanerId, customerId });
       message.success("Thuê cleaner thành công!");
-      sendNotification(
-        cleanerId,
-        `Chúc mừng, người thuê ${localStorage.getItem(
-          "name"
-        )} đã chấp nhận công việc`,
-        "BOOKED",
-        "Cleaner"
-      );
+      const smsMessageHire = `[HouseClean] Bạn được ${customerName} chấp nhận. SĐT: ${customerPhone}. Dịch vụ: ${serviceInfoText}, ${formattedDate},${
+        data.customerAddress
+      }. Tạm tính: ${data.totalPrice.toLocaleString()} VNĐ (+20% nếu cao điểm).`;
+      Promise.all([
+        sendNotification(
+          cleanerId,
+          `Chúc mừng, người thuê ${sessionStorage.getItem(
+            "name"
+          )} đã chấp nhận công việc`,
+          "BOOKED",
+          "Cleaner"
+        ),
+        sendSms("0384244398", smsMessageHire),
+      ]);
       updateActivityStatus(jobId, "IN_PROGRESS");
       setIsModalOpen(false);
     } catch (error) {
@@ -279,7 +313,7 @@ export const ActivityCard = ({ data, onDelete }) => {
       message.success("Từ chối cleaner thành công!");
       sendNotification(
         cleanerId,
-        `Rất tiếc, người thuê ${localStorage.getItem(
+        `Rất tiếc, người thuê ${sessionStorage.getItem(
           "name"
         )} từ chối công việc`,
         "BOOKED",
@@ -360,12 +394,15 @@ export const ActivityCard = ({ data, onDelete }) => {
           // Send notification if needed (assuming you have the cleaner ID)
           const activity = activities.find((a) => a.jobId === jobId);
           if (activity && activity.cleanerId) {
-            sendNotification(
-              activity.cleanerId,
-              `Người thuê ${localStorage.getItem("name")} đã huỷ công việc`,
-              "CANCELLED",
-              "Cleaner"
-            );
+            Promise.all([
+              sendNotification(
+                activity.cleanerId,
+                `Người thuê ${sessionStorage.getItem("name")} đã huỷ công việc`,
+                "CANCELLED",
+                "Cleaner"
+              ),
+              // sendSms(activity.cleanerId, "Người thuê đã huỷ công việc"),
+            ]);
           }
         } catch (error) {
           console.error("❌ Lỗi khi huỷ công việc:", error);
@@ -419,7 +456,7 @@ export const ActivityCard = ({ data, onDelete }) => {
               fontSize: "14px",
               width: "auto",
               minWidth: "80px",
-              "@media (max-width: 768px)": {
+              "@media (maxWidth: 768px)": {
                 padding: "6px 12px",
                 fontSize: "12px",
                 minWidth: "60px",

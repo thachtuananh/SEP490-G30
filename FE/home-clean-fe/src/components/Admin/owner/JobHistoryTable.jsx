@@ -78,7 +78,7 @@ const JobHistoryTable = ({
   const fetchJobDetails = async (jobId) => {
     try {
       setLoading(true);
-      const token = localStorage.getItem("token");
+      const token = sessionStorage.getItem("token");
 
       const response = await axios.get(
         `${BASE_URL}/admin/customers/jobdetail/${jobId}`,

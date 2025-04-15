@@ -220,7 +220,7 @@ const JobInfomation = ({
         message.success("Đăng việc trực tiếp thành công!");
         sendNotification(
           state.cleanerId,
-          `Người thuê ${localStorage.getItem(
+          `Người thuê ${sessionStorage.getItem(
             "name"
           )} đã đặt dịch vụ trực tiếp với bạn`,
           "BOOKED",

@@ -4,7 +4,7 @@ import { BASE_URL } from '../../utils/config';
 // Fetch online cleaners
 export async function fetchCleaners() {
     try {
-        const token = localStorage.getItem("token");
+        const token = sessionStorage.getItem("token");
         const response = await fetch(`${BASE_URL}/customer/cleaners/online`, {
             headers: {
                 "Authorization": `Bearer ${token}`,
@@ -57,7 +57,7 @@ export async function fetchServiceDetails(serviceId) {
 // Create job
 export async function createJob(customerId, jobData) {
     try {
-        const token = localStorage.getItem("token");
+        const token = sessionStorage.getItem("token");
 
         if (!token) {
             throw new Error("No authentication token found");
@@ -82,7 +82,7 @@ export async function createJob(customerId, jobData) {
 // Create job
 export async function createJobToCleaner(customerId, cleanerId, jobData) {
     try {
-        const token = localStorage.getItem("token");
+        const token = sessionStorage.getItem("token");
 
         if (!token) {
             throw new Error("No authentication token found");
@@ -105,7 +105,7 @@ export async function createJobToCleaner(customerId, cleanerId, jobData) {
 
 export async function fetchCleanerDetails(cleanerId) {
     try {
-        const token = localStorage.getItem("token");
+        const token = sessionStorage.getItem("token");
         const response = await fetch(`${BASE_URL}/customer/viewdetailcleaner/${cleanerId}`, {
             headers: {
                 "Authorization": `Bearer ${token}`,

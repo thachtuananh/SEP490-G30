@@ -9,7 +9,7 @@ function JobCard({ image, title, description, count, id }) {
 
   const handleCardClick = async () => {
     try {
-      const token = localStorage.getItem("token");
+      const token = sessionStorage.getItem("token");
       if (!token) {
         message.warning("Bạn cần đăng nhập để xem chi tiết công việc.");
         return;

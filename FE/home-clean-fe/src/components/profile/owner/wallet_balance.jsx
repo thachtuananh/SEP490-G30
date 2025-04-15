@@ -44,8 +44,8 @@ export const WalletBalance = () => {
   const [transactionHistory, setTransactionHistory] = useState([]);
   const [historyLoading, setHistoryLoading] = useState(false);
 
-  const token = localStorage.getItem("token");
-  const customerId = localStorage.getItem("customerId");
+  const token = sessionStorage.getItem("token");
+  const customerId = sessionStorage.getItem("customerId");
   useEffect(() => {
     fetchWalletBalance();
   }, []);

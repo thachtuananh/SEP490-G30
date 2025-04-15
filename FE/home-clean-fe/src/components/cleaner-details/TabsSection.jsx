@@ -15,8 +15,8 @@ export const TabsSection = () => {
   const { cleanerId } = useParams();
 
   const fetchFeedbacks = async () => {
-    // Retrieve token from localStorage
-    const token = localStorage.getItem("token");
+    // Retrieve token from sessionStorage
+    const token = sessionStorage.getItem("token");
 
     if (!token) {
       setError("Không tìm thấy token đăng nhập");

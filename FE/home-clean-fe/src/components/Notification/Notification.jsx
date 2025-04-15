@@ -17,7 +17,7 @@ const Notification = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [clearLoading, setClearLoading] = useState(false);
-  const role = localStorage.getItem("role");
+  const role = sessionStorage.getItem("role");
   // Fetch notifications when component mounts
   useEffect(() => {
     fetchNotifications();
@@ -43,7 +43,7 @@ const Notification = () => {
     try {
       setClearLoading(true);
       // Get role and userId from token
-      const token = localStorage.getItem("token");
+      const token = sessionStorage.getItem("token");
       const decodedToken = jwt_decode(token);
       const { role, id } = decodedToken;
 

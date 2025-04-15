@@ -95,8 +95,8 @@ export const WalletBalance = () => {
   const fetchWalletBalance = async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem("token");
-      const cleanerId = localStorage.getItem("cleanerId");
+      const token = sessionStorage.getItem("token");
+      const cleanerId = sessionStorage.getItem("cleanerId");
 
       const response = await fetch(`${BASE_URL}/cleaner/${cleanerId}/wallet`, {
         method: "GET",
@@ -122,8 +122,8 @@ export const WalletBalance = () => {
   const fetchTransactionHistory = async () => {
     try {
       setHistoryLoading(true);
-      const token = localStorage.getItem("token");
-      const cleanerId = localStorage.getItem("cleanerId");
+      const token = sessionStorage.getItem("token");
+      const cleanerId = sessionStorage.getItem("cleanerId");
 
       const response = await fetch(
         `${BASE_URL}/cleaner/${cleanerId}/transaction-historycleaner`,
@@ -172,8 +172,8 @@ export const WalletBalance = () => {
       await form.validateFields();
       setDepositLoading(true);
 
-      const token = localStorage.getItem("token");
-      const cleanerId = localStorage.getItem("cleanerId");
+      const token = sessionStorage.getItem("token");
+      const cleanerId = sessionStorage.getItem("cleanerId");
 
       const response = await fetch(`${BASE_URL}/cleaner/${cleanerId}/deposit`, {
         method: "POST",
@@ -220,8 +220,8 @@ export const WalletBalance = () => {
       const values = await withdrawalForm.validateFields();
       setWithdrawalLoading(true);
 
-      const token = localStorage.getItem("token");
-      const cleanerId = localStorage.getItem("cleanerId");
+      const token = sessionStorage.getItem("token");
+      const cleanerId = sessionStorage.getItem("cleanerId");
 
       // Example API call for withdrawal (modify according to your actual API)
       const response = await fetch(

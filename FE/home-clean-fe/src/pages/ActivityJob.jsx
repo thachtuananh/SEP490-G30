@@ -26,8 +26,8 @@ const ActivityJob = () => {
     setLoading(true);
     setError(null);
 
-    const cleanerId = localStorage.getItem("cleanerId");
-    const token = localStorage.getItem("token");
+    const cleanerId = sessionStorage.getItem("cleanerId");
+    const token = sessionStorage.getItem("token");
 
     if (!cleanerId || !token) {
       setError("Missing cleanerId or token. Please log in again.");

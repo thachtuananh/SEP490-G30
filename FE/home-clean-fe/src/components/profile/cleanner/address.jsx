@@ -58,8 +58,8 @@ export const Address = () => {
   };
 
   const fetchAddresses = async () => {
-    const token = localStorage.getItem("token");
-    const cleanerId = localStorage.getItem("cleanerId");
+    const token = sessionStorage.getItem("token");
+    const cleanerId = sessionStorage.getItem("cleanerId");
 
     if (token && cleanerId) {
       try {
@@ -247,8 +247,8 @@ export const Address = () => {
     }
     const fullAddress = formatFullAddress();
     setLoading(true);
-    const token = localStorage.getItem("token");
-    const cleanerId = localStorage.getItem("cleanerId");
+    const token = sessionStorage.getItem("token");
+    const cleanerId = sessionStorage.getItem("cleanerId");
     try {
       const response = await fetch(
         `${BASE_URL}/employee/${cleanerId}/create_address`,
@@ -289,8 +289,8 @@ export const Address = () => {
     }
     const fullAddress = formatFullAddress();
     setLoading(true);
-    const token = localStorage.getItem("token");
-    const cleanerId = localStorage.getItem("cleanerId");
+    const token = sessionStorage.getItem("token");
+    const cleanerId = sessionStorage.getItem("cleanerId");
     try {
       const response = await fetch(
         `${BASE_URL}/employee/${cleanerId}/update-address/${currentAddressId}`,
@@ -327,7 +327,7 @@ export const Address = () => {
       okText: "Xác nhận",
       cancelText: "Hủy",
       onOk: async () => {
-        const token = localStorage.getItem("token");
+        const token = sessionStorage.getItem("token");
         try {
           const response = await fetch(
             `${BASE_URL}/employee/${addressId}/delete_address`,
@@ -353,8 +353,8 @@ export const Address = () => {
   };
 
   const handleSetDefaultAddress = async (addressId) => {
-    const token = localStorage.getItem("token");
-    const cleanerId = localStorage.getItem("cleanerId");
+    const token = sessionStorage.getItem("token");
+    const cleanerId = sessionStorage.getItem("cleanerId");
     try {
       const response = await fetch(
         `${BASE_URL}/cleaner/${cleanerId}/addresses/${addressId}/set-current`,

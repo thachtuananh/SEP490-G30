@@ -4,8 +4,8 @@ import { BASE_URL } from '../utils/config';
 
 export const sendNotification = async (userId, message, type, role) => {
     try {
-        // Get token from localStorage
-        const token = localStorage.getItem('token');
+        // Get token from sessionStorage
+        const token = sessionStorage.getItem('token');
         if (!token) {
             throw new Error('Authentication token not found');
         }
@@ -44,9 +44,9 @@ let notificationsReadLocally = false;
 
 export const getNotifications = async () => {
     try {
-        // Get token from localStorage
-        const token = localStorage.getItem('token');
-        // const role = localStorage.getItem('role');
+        // Get token from sessionStorage
+        const token = sessionStorage.getItem('token');
+        // const role = sessionStorage.getItem('role');
         if (!token) {
             throw new Error('Authentication token not found');
         }
@@ -86,8 +86,8 @@ export const getNotifications = async () => {
 
 export const deleteAllNotifications = async (role, userId) => {
     try {
-        // Get token from localStorage
-        const token = localStorage.getItem('token');
+        // Get token from sessionStorage
+        const token = sessionStorage.getItem('token');
         if (!token) {
             throw new Error('Authentication token not found');
         }
