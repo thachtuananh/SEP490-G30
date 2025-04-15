@@ -21,8 +21,10 @@ import org.springframework.web.bind.annotation.PathVariable;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class ReportService {
@@ -80,16 +82,32 @@ public class ReportService {
 
     public ResponseEntity<Map<String, Object>> getAllReport(int offset, int limit) {
         Map<String, Object> response = new HashMap<>();
-        // Tính page từ offset
-        int page = offset / limit;
 
+        int page = offset / limit;
         Pageable pageable = PageRequest.of(page, limit);
         Page<Report> reports = reportRepository.findAll(pageable);
 
-        response.put("reports", reports.getContent());
+        List<Map<String, Object>> reportList = reports.getContent().stream().map(report -> {
+            Map<String, Object> dto = new HashMap<>();
+            dto.put("id", report.getId());
+            dto.put("customerId", report.getCustomerId());
+            dto.put("cleanerId", report.getCleanerId());
+            dto.put("jobId", report.getJob() != null ? report.getJob().getId() : null);
+            dto.put("reportType", report.getReportType());
+            dto.put("description", report.getDescription());
+            dto.put("status", report.getStatus().name());
+            dto.put("createdAt", report.getCreatedAt());
+            dto.put("updatedAt", report.getUpdatedAt());
+            dto.put("resolvedAt", report.getResolvedAt());
+            dto.put("adminResponse", report.getAdminResponse());
+            return dto;
+        }).collect(Collectors.toList());
+
+        response.put("reports", reportList);
         response.put("totalItems", reports.getTotalElements());
         response.put("totalPages", reports.getTotalPages());
-        response.put("currentPage", reports.getNumber() * limit); // trả về offset hiện tại
+        response.put("currentPage", page * limit); // offset hiện tại
+
         return ResponseEntity.ok(response);
     }
 
@@ -101,11 +119,22 @@ public class ReportService {
 
         Page<Report> reports = reportRepository.findReportsByCustomerId(customerId, pageable);
 
-        response.put("reports", reports.getContent());
+        List<Map<String, Object>> cusomterReportList = reports.getContent().stream().map(report -> {
+            Map<String, Object> dto = new HashMap<>();
+            dto.put("id", report.getId());
+            dto.put("jobId", report.getJob() != null ? report.getJob().getId() : null);
+            dto.put("reportType", report.getReportType());
+            dto.put("description", report.getDescription());
+            dto.put("status", report.getStatus().name());
+            dto.put("resolvedAt", report.getResolvedAt());
+            dto.put("adminResponse", report.getAdminResponse());
+            return dto;
+        }).collect(Collectors.toList());
+
+        response.put("reports", cusomterReportList);
         response.put("totalItems", reports.getTotalElements());
         response.put("totalPages", reports.getTotalPages());
-        response.put("offset", page * limit); // hoặc dùng luôn offset nếu muốn giữ đầu vào
-        response.put("limit", limit);
+        response.put("currentPage", page * limit); // offset hiện tại
 
         return ResponseEntity.ok(response);
     }
