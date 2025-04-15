@@ -5,7 +5,12 @@ import com.twilio.rest.api.v2010.account.Message;
 import com.twilio.type.PhoneNumber;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @Service
 public class SmsService {
@@ -22,7 +27,8 @@ public class SmsService {
         Twilio.init(accountSid, authToken);
     }
 
-    public String sendSms(String toPhone, String messageContent) {
+    public ResponseEntity<Map<String, Object>> sendSms(String toPhone, String messageContent) {
+        Map<String, Object> response = new HashMap<>();
         String formattedPhone = formatPhoneNumber(toPhone);
 
         Message message = Message.creator(
@@ -30,7 +36,9 @@ public class SmsService {
                 new PhoneNumber(FROM_PHONE),
                 messageContent
         ).create();
-        return message.getSid();
+        response.put("Sid: ", message.getSid());
+        response.put("Status: ", "Send sms successfully");
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     private String formatPhoneNumber(String rawPhone) {
