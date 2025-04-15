@@ -58,9 +58,9 @@ public class ReportService {
         report.setStatus(ReportStatus.PENDING);
         report.setReportType(reportRequest.getReport_type());
         report.setDescription(reportRequest.getDescription());
-
         reportRepository.save(report);
-        response.put("Report: ", report);
+
+        response.put("Message: ", "Report created successfully");
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
