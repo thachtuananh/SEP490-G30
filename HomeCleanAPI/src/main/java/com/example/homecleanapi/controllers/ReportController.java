@@ -34,7 +34,7 @@ public class ReportController {
 
     @GetMapping(value = "/get-all-report", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Map<String, Object>> getAllReport(
-            @RequestParam(defaultValue = "1") int offset,
+            @RequestParam(defaultValue = "0") int offset,
             @RequestParam(defaultValue = "12") int limit
     ) {
         return reportService.getAllReport(offset, limit);
@@ -43,7 +43,7 @@ public class ReportController {
     @GetMapping(value = "/{customerId}/get-report-customer", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Map<String, Object>> getReportByCustomerId(
             @PathVariable Long customerId,
-            @RequestParam(defaultValue = "1") int offset,
+            @RequestParam(defaultValue = "0") int offset,
             @RequestParam(defaultValue = "12") int limit
             ) {
         return reportService.getReportByCustomerId(customerId, offset, limit);
@@ -52,7 +52,7 @@ public class ReportController {
     @GetMapping(value = "/{cleanerId}/get-report-cleaner", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Map<String, Object>> getReportByCleanerId(
             @PathVariable Long cleanerId,
-            @RequestParam(defaultValue = "1") int offset,
+            @RequestParam(defaultValue = "0") int offset,
             @RequestParam(defaultValue = "12") int limit
     ) {
         return reportService.getReportByCleanerId(cleanerId, offset, limit);
