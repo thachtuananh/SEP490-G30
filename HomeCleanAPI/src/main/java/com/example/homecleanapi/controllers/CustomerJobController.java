@@ -177,9 +177,10 @@ public class CustomerJobController {
     public ResponseEntity<Map<String, Object>> bookJobForCleaner(
     		@PathVariable Long customerId, 
             @PathVariable Long cleanerId, 
-            @RequestBody BookJobRequest request) {
+            @RequestBody BookJobRequest request,
+			HttpServletRequest requestIp) {
 
-        Map<String, Object> response = cleanerJobService.bookJobForCleaner(customerId, cleanerId, request);
+        Map<String, Object> response = cleanerJobService.bookJobForCleaner(customerId, cleanerId, request, requestIp);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 	
