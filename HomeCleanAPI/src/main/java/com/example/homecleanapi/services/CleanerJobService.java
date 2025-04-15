@@ -395,9 +395,11 @@ public class CleanerJobService {
 			cleanerInfo.put("cleanerId", cleaner.getId());
 			cleanerInfo.put("cleanerName", cleaner.getName());
 			cleanerInfo.put("profileImage", cleaner.getProfile_image());
+			cleanerInfo.put("phoneNumber", cleaner.getPhone());  // Thêm số điện thoại của cleaner
 			return cleanerInfo;
 		}).collect(Collectors.toList());
 	}
+
 
 	// accept hoặc reject cleaner
 	public Map<String, Object> acceptOrRejectApplication(Long jobId, Long cleanerId, Long customerId, String action) {
