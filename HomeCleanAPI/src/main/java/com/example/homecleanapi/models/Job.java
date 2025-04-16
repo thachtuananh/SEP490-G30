@@ -68,8 +68,19 @@ public class Job {
     @Column(name = "order_code")
     private String orderCode;
 
+    @Column(name = "booking_type")
+    private String bookingType;
+
     // Getters and Setters
 
+
+    public String getBookingType() {
+        return bookingType;
+    }
+
+    public void setBookingType(String bookingType) {
+        this.bookingType = bookingType;
+    }
 
     public String getOrderCode() {
         return orderCode;

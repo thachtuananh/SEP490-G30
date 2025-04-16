@@ -24,6 +24,7 @@ function CleanerCard({
   cleanerId,
   cleanerImg,
   cleanerName,
+  cleanerPhone,
   rating,
   reviews,
   isOnline,
@@ -132,7 +133,10 @@ function CleanerCard({
                 ))}
               </Avatar.Group>
             </div> */}
-            <Link to={`/cleaner/${cleanerId}`} state={{ cleanerId }}>
+            <Link
+              to={`/cleaner/${cleanerId}`}
+              state={{ cleanerId, cleanerPhone }}
+            >
               <Button type="primary" ghost block>
                 Thuê ngay
               </Button>

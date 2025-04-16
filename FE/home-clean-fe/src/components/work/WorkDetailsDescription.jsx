@@ -13,17 +13,17 @@ import {
   Divider,
   Spin,
   List,
-  Space
+  Space,
 } from "antd";
 import {
   ClockCircleOutlined,
   EnvironmentOutlined,
   DollarOutlined,
   MessageOutlined,
-  CheckCircleOutlined
+  CheckCircleOutlined,
 } from "@ant-design/icons";
 import { AuthContext } from "../../context/AuthContext";
-import "../../assets/CSS/work/WorkDetailsDescription.module.css"
+import "../../assets/CSS/work/WorkDetailsDescription.module.css";
 import { BASE_URL } from "../../utils/config";
 import { sendNotification } from "../../services/NotificationService"; // Import the sendNotification function
 
@@ -41,8 +41,8 @@ const WorkDetailsDescription = () => {
   // Track window resize for responsive behavior
   useEffect(() => {
     const handleResize = () => setWindowWidth(window.innerWidth);
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
   // Determine layout based on screen width
@@ -53,9 +53,9 @@ const WorkDetailsDescription = () => {
     fetch(`${BASE_URL}/cleaner/job/${jobId}`, {
       method: "GET",
       headers: {
-        "Accept": "application/json",
-        "Authorization": `Bearer ${token}`
-      }
+        Accept: "application/json",
+        Authorization: `Bearer ${token}`,
+      },
     })
       .then((response) => response.json())
       .then((data) => {
@@ -79,9 +79,9 @@ const WorkDetailsDescription = () => {
       const response = await fetch(`${BASE_URL}/cleaner/apply-job/${jobId}`, {
         method: "POST",
         headers: {
-          "Accept": "application/json",
-          "Authorization": `Bearer ${token}`
-        }
+          Accept: "application/json",
+          Authorization: `Bearer ${token}`,
+        },
       });
 
       if (!response.ok) {
@@ -91,11 +91,14 @@ const WorkDetailsDescription = () => {
       const data = await response.json();
 
       message.success("Nhận việc thành công");
-      sendNotification(job.customerId,
-        `Người dọn ${localStorage.getItem('name')} đã nhận dịch vụ: ${job.services[0]?.serviceName || 'Dọn dẹp'}`,
-        'NHẬN VIỆC',
-        'Customer'
-      )
+      sendNotification(
+        job.customerId,
+        `Người dọn ${sessionStorage.getItem("name")} đã nhận dịch vụ: ${
+          job.services[0]?.serviceName || "Dọn dẹp"
+        }`,
+        "NHẬN VIỆC",
+        "Customer"
+      );
       navigate("/homeclean");
       setIsModalOpen(false);
     } catch (error) {
@@ -105,7 +108,9 @@ const WorkDetailsDescription = () => {
 
   if (loading) {
     return (
-      <div style={{ display: 'flex', justifyContent: 'center', padding: '50px' }}>
+      <div
+        style={{ display: "flex", justifyContent: "center", padding: "50px" }}
+      >
         <Spin size="large" tip="Đang tải chi tiết công việc..." />
       </div>
     );
@@ -113,9 +118,11 @@ const WorkDetailsDescription = () => {
 
   if (!job) {
     return (
-      <div style={{ textAlign: 'center', padding: '50px' }}>
+      <div style={{ textAlign: "center", padding: "50px" }}>
         <Title level={4}>Không tìm thấy thông tin công việc</Title>
-        <Button type="primary" onClick={() => navigate(-1)}>Quay lại</Button>
+        <Button type="primary" onClick={() => navigate(-1)}>
+          Quay lại
+        </Button>
       </div>
     );
   }
@@ -127,53 +134,75 @@ const WorkDetailsDescription = () => {
 
   const formatTime = (dateString) => {
     const date = new Date(dateString);
-    return `${date.getHours()}:${date.getMinutes().toString().padStart(2, '0')}`;
+    return `${date.getHours()}:${date
+      .getMinutes()
+      .toString()
+      .padStart(2, "0")}`;
   };
 
   // Xử lý hiển thị tên dịch vụ, lấy từ service đầu tiên nếu có
-  const serviceName = job.services && job.services.length > 0
-    ? job.services[0].serviceName
-    : job.serviceName;
+  const serviceName =
+    job.services && job.services.length > 0
+      ? job.services[0].serviceName
+      : job.serviceName;
 
   // Xử lý hiển thị mô tả dịch vụ, lấy từ service đầu tiên nếu có
-  const serviceDescription = job.services && job.services.length > 0
-    ? job.services[0].serviceDescription
-    : job.serviceDescription || "Không có mô tả";
+  const serviceDescription =
+    job.services && job.services.length > 0
+      ? job.services[0].serviceDescription
+      : job.serviceDescription || "Không có mô tả";
 
   return (
     <Row
       gutter={[16, 16]}
       style={{
         maxWidth: 1200,
-        margin: '0 auto',
-        padding: isMobile ? '0 12px' : 0
+        margin: "0 auto",
+        padding: isMobile ? "0 12px" : 0,
       }}
     >
       <Col xs={24} md={12}>
         <Card bodyStyle={{ padding: isMobile ? 16 : 24 }}>
-          <div style={{
-            display: 'flex',
-            flexDirection: isMobile ? 'column' : 'row',
-            justifyContent: 'space-between',
-            alignItems: isMobile ? 'flex-start' : 'center',
-            marginBottom: 16
-          }}>
-            <div style={{ display: 'flex', flexWrap: 'wrap' }}>
+          <div
+            style={{
+              display: "flex",
+              flexDirection: isMobile ? "column" : "row",
+              justifyContent: "space-between",
+              alignItems: isMobile ? "flex-start" : "center",
+              marginBottom: 16,
+            }}
+          >
+            <div style={{ display: "flex", flexWrap: "wrap" }}>
               {job.services && job.services.length > 0 ? (
                 job.services.map((service, index) => (
                   <React.Fragment key={index}>
-                    <Title level={4} style={{ margin: isMobile ? '0 0 8px 0' : 0 }}>
+                    <Title
+                      level={4}
+                      style={{ margin: isMobile ? "0 0 8px 0" : 0 }}
+                    >
                       {service.serviceName}
                     </Title>
-                    {index < job.services.length - 1 && <Title level={4} style={{ margin: isMobile ? '0 0 8px 0' : '0 5px' }}>& </Title>}
+                    {index < job.services.length - 1 && (
+                      <Title
+                        level={4}
+                        style={{ margin: isMobile ? "0 0 8px 0" : "0 5px" }}
+                      >
+                        &{" "}
+                      </Title>
+                    )}
                   </React.Fragment>
                 ))
               ) : (
-                <Title level={4} style={{ margin: isMobile ? '0 0 8px 0' : 0 }}>{serviceName}</Title>
+                <Title level={4} style={{ margin: isMobile ? "0 0 8px 0" : 0 }}>
+                  {serviceName}
+                </Title>
               )}
             </div>
 
-            <Tag color={job.status === "OPEN" ? "green" : "default"} style={{ marginTop: isMobile ? 8 : 0 }}>
+            <Tag
+              color={job.status === "OPEN" ? "green" : "default"}
+              style={{ marginTop: isMobile ? 8 : 0 }}
+            >
               {job.status === "OPEN" ? "Đang mở" : "Đã đóng"}
             </Tag>
           </div>
@@ -187,10 +216,10 @@ const WorkDetailsDescription = () => {
             <Descriptions.Item
               label={<Text type="secondary">Thù lao</Text>}
               labelStyle={{ fontSize: 14 }}
-              contentStyle={{ fontWeight: 'bold' }}
+              contentStyle={{ fontWeight: "bold" }}
             >
               <div style={{ fontSize: isMobile ? 14 : 16 }}>
-                <DollarOutlined style={{ color: '#52c41a', marginRight: 8 }} />
+                <DollarOutlined style={{ color: "#52c41a", marginRight: 8 }} />
                 {job.totalPrice.toLocaleString()} VNĐ
               </div>
             </Descriptions.Item>
@@ -198,10 +227,12 @@ const WorkDetailsDescription = () => {
             <Descriptions.Item
               label={<Text type="secondary">Địa điểm</Text>}
               labelStyle={{ fontSize: 14 }}
-              contentStyle={{ fontWeight: 'bold' }}
+              contentStyle={{ fontWeight: "bold" }}
             >
               <div style={{ fontSize: isMobile ? 14 : 16 }}>
-                <EnvironmentOutlined style={{ color: '#52c41a', marginRight: 8 }} />
+                <EnvironmentOutlined
+                  style={{ color: "#52c41a", marginRight: 8 }}
+                />
                 {job.customerAddress}
               </div>
             </Descriptions.Item>
@@ -209,26 +240,35 @@ const WorkDetailsDescription = () => {
             <Descriptions.Item
               label={<Text type="secondary">Thời gian</Text>}
               labelStyle={{ fontSize: 14 }}
-              contentStyle={{ fontWeight: 'bold' }}
+              contentStyle={{ fontWeight: "bold" }}
             >
               <div style={{ fontSize: isMobile ? 14 : 16 }}>
-                <ClockCircleOutlined style={{ color: '#52c41a', marginRight: 8 }} />
-                {formatTime(job.scheduledTime)} - {formatDate(job.scheduledTime)}
+                <ClockCircleOutlined
+                  style={{ color: "#52c41a", marginRight: 8 }}
+                />
+                {formatTime(job.scheduledTime)} -{" "}
+                {formatDate(job.scheduledTime)}
               </div>
             </Descriptions.Item>
           </Descriptions>
 
-          <div style={{ marginTop: isMobile ? 16 : 24, display: 'flex', justifyContent: 'center' }}>
+          <div
+            style={{
+              marginTop: isMobile ? 16 : 24,
+              display: "flex",
+              justifyContent: "center",
+            }}
+          >
             <Button
               type="primary"
               size={isMobile ? "middle" : "large"}
               icon={<CheckCircleOutlined />}
               onClick={() => setIsModalOpen(true)}
               style={{
-                width: isMobile ? '100%' : 'auto',
-                minWidth: isMobile ? 'auto' : 200,
-                background: '#52c41a',
-                borderColor: '#52c41a'
+                width: isMobile ? "100%" : "auto",
+                minWidth: isMobile ? "auto" : 200,
+                background: "#52c41a",
+                borderColor: "#52c41a",
               }}
             >
               Nhận việc
@@ -242,10 +282,19 @@ const WorkDetailsDescription = () => {
           <Title level={4}>Thông tin chung</Title>
 
           <Title level={5}>Loại dịch vụ</Title>
-          <ul style={{ listStyleType: 'disclosure-closed', paddingLeft: '20px', margin: '0' }}>
-            {(job.services && job.services.length > 0 ? job.services : job.serviceDetails || []).map((item, index) => (
-              <li key={index} style={{ border: 'none', padding: '8px 0' }}>
-                <Typography.Text style={{ marginRight: '5px' }}>
+          <ul
+            style={{
+              listStyleType: "disclosure-closed",
+              paddingLeft: "20px",
+              margin: "0",
+            }}
+          >
+            {(job.services && job.services.length > 0
+              ? job.services
+              : job.serviceDetails || []
+            ).map((item, index) => (
+              <li key={index} style={{ border: "none", padding: "8px 0" }}>
+                <Typography.Text style={{ marginRight: "5px" }}>
                   {item.serviceDetailName || item.name}
                 </Typography.Text>
                 <Typography.Text>
@@ -256,12 +305,19 @@ const WorkDetailsDescription = () => {
           </ul>
 
           <Title level={5}>Mô tả công việc</Title>
-          <ul style={{ listStyleType: 'disclosure-closed', paddingLeft: '20px', margin: '0' }}>
-            {(job.services && job.services.length > 0 ? job.services : job.serviceDetails || []).map((item, index) => (
-              <li key={index} style={{ border: 'none', padding: '8px 0' }}>
-                <Typography.Text>
-                  {item.serviceDescription}
-                </Typography.Text>
+          <ul
+            style={{
+              listStyleType: "disclosure-closed",
+              paddingLeft: "20px",
+              margin: "0",
+            }}
+          >
+            {(job.services && job.services.length > 0
+              ? job.services
+              : job.serviceDetails || []
+            ).map((item, index) => (
+              <li key={index} style={{ border: "none", padding: "8px 0" }}>
+                <Typography.Text>{item.serviceDescription}</Typography.Text>
               </li>
             ))}
           </ul>
@@ -274,23 +330,31 @@ const WorkDetailsDescription = () => {
           </Paragraph> */}
 
           <Title level={5}>Khách hàng</Title>
-          <Space direction="vertical" size="small" style={{ width: '100%' }}>
-            <div style={{
-              display: 'flex',
-              flexDirection: isMobile ? 'column' : 'row',
-              marginBottom: isMobile ? 8 : 0
-            }}>
-              <div style={{
-                width: isMobile ? '100%' : '120px',
-                flexShrink: 0,
-                marginBottom: isMobile ? 4 : 0,
-                fontSize: '16px'
-              }}>
+          <Space direction="vertical" size="small" style={{ width: "100%" }}>
+            <div
+              style={{
+                display: "flex",
+                flexDirection: isMobile ? "column" : "row",
+                marginBottom: isMobile ? 8 : 0,
+              }}
+            >
+              <div
+                style={{
+                  width: isMobile ? "100%" : "120px",
+                  flexShrink: 0,
+                  marginBottom: isMobile ? 4 : 0,
+                  fontSize: "16px",
+                }}
+              >
                 Tên khách hàng:
               </div>
-              <div style={{
-                fontSize: '16px'
-              }}>{job.customerName}</div>
+              <div
+                style={{
+                  fontSize: "16px",
+                }}
+              >
+                {job.customerName}
+              </div>
             </div>
             {/* <div style={{
               display: 'flex',
@@ -314,7 +378,7 @@ const WorkDetailsDescription = () => {
         open={isModalOpen}
         onCancel={() => setIsModalOpen(false)}
         centered
-        width={isMobile ? '90%' : 520}
+        width={isMobile ? "90%" : 520}
         footer={[
           <Button key="back" onClick={() => setIsModalOpen(false)}>
             Hủy
@@ -323,7 +387,7 @@ const WorkDetailsDescription = () => {
             key="submit"
             type="primary"
             onClick={handleApplyJob}
-            style={{ background: '#52c41a', borderColor: '#52c41a' }}
+            style={{ background: "#52c41a", borderColor: "#52c41a" }}
           >
             Xác nhận
           </Button>,

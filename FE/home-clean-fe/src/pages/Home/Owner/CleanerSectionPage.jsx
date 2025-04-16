@@ -66,6 +66,22 @@ function CleanersPage() {
 
   const client = useContext(WebSocketContext);
 
+  const fetchAllCleanersNearby = async () => {
+    try {
+      const customerId = sessionStorage.getItem("customerId");
+      setLoading(true);
+      setRefreshing(true);
+      const res = await axios.get(`${BASE_URL}/services/${customerId}/nearby`);
+
+      setCleaners(res.data);
+    } catch (error) {
+      console.error("❌ Lỗi khi fetch cleaners:", error);
+    } finally {
+      setLoading(false);
+      setTimeout(() => setRefreshing(false), 500);
+    }
+  };
+
   const fetchAllCleaners = async () => {
     try {
       setLoading(true);
@@ -190,7 +206,8 @@ function CleanersPage() {
   const isOnline = (cleanerId) => onlineCleanerIds.includes(cleanerId);
 
   useEffect(() => {
-    fetchAllCleaners();
+    // fetchAllCleaners();
+    fetchAllCleanersNearby();
   }, []);
 
   // useEffect(() => {
@@ -211,12 +228,12 @@ function CleanersPage() {
       );
     }
 
-    // // Then, apply online/offline filter
-    // if (filterStatus === "online") {
-    //   filtered = filtered.filter((cleaner) => isOnline(cleaner.cleanerId));
-    // } else if (filterStatus === "offline") {
-    //   filtered = filtered.filter((cleaner) => !isOnline(cleaner.cleanerId));
-    // }
+    // Then, apply online/offline filter
+    if (filterStatus === "online") {
+      filtered = filtered.filter((cleaner) => isOnline(cleaner.cleanerId));
+    } else if (filterStatus === "offline") {
+      filtered = filtered.filter((cleaner) => !isOnline(cleaner.cleanerId));
+    }
 
     // Finally, sort the results
     if (sortOption === "nameAsc") {
@@ -401,7 +418,7 @@ function CleanersPage() {
                 </Option>
               </Select>
             </Col> */}
-            <Col xs={12} md={5}>
+            {/* <Col xs={12} md={5}>
               <Select
                 style={{ width: "100%" }}
                 placeholder="Sắp xếp"
@@ -413,12 +430,12 @@ function CleanersPage() {
                 <Option value="nameAsc">Tên (A-Z)</Option>
                 <Option value="nameDesc">Tên (Z-A)</Option>
               </Select>
-            </Col>
-            <Col xs={24} md={6} style={{ textAlign: "right" }}>
+            </Col> */}
+            <Col xs={24} md={16} style={{ textAlign: "right" }}>
               <Button
                 type="primary"
                 icon={refreshing ? <LoadingOutlined /> : <ReloadOutlined />}
-                onClick={fetchAllCleaners}
+                onClick={fetchAllCleanersNearby}
                 loading={loading && !refreshing}
                 size={isMobile ? "middle" : "large"}
                 block={isMobile}
@@ -496,10 +513,11 @@ function CleanersPage() {
               renderItem={(cleaner) => (
                 <List.Item>
                   <CleanerCard
-                    cleanerId={cleaner.cleanerId}
-                    cleanerImg={cleaner.profile_image}
-                    cleanerName={cleaner.name}
-                    isOnline={isOnline(cleaner.cleanerId)}
+                    cleanerId={cleaner.id}
+                    cleanerImg={cleaner.profileImage}
+                    cleanerName={cleaner.fullName}
+                    cleanerPhone={cleaner.phoneNumber}
+                    isOnline={isOnline(cleaner.id)}
                   />
                 </List.Item>
               )}

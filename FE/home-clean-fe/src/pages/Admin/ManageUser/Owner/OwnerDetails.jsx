@@ -74,7 +74,7 @@ const OwnerDetails = () => {
   const fetchOwnerData = useCallback(async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem("token");
+      const token = sessionStorage.getItem("token");
 
       // Fetch owner details
       const response = await axios.get(
@@ -147,7 +147,7 @@ const OwnerDetails = () => {
       cancelText: "Huỷ",
       onOk: async () => {
         try {
-          const token = localStorage.getItem("token");
+          const token = sessionStorage.getItem("token");
           const response = await fetch(
             `${BASE_URL}/admin/customers/${customerId}/delete`,
             {
@@ -243,7 +243,11 @@ const OwnerDetails = () => {
                 <Space size="large" wrap>
                   <Badge
                     status={ownerData?.is_deleted ? "error" : "success"}
-                    text={ownerData?.is_deleted ? "Đã xoá" : "Đang hoạt động"}
+                    text={
+                      ownerData?.is_deleted
+                        ? "Không hoạt động"
+                        : "Đang hoạt động"
+                    }
                   />
                 </Space>
               </div>

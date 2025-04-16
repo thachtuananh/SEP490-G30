@@ -15,6 +15,12 @@
   border-color: #027a44 !important;
 }
 
+.ant-message-notice-content {
+  font-size: 18px;
+  padding: 16px 24px;
+  border-radius: 8px;
+}
+
 /* .hero,
 .service-section,
 .service-section,

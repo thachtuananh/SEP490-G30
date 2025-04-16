@@ -30,11 +30,13 @@ import {
   completeJob,
   deleteJobPosting,
   rejectCleaner,
+  retryPayment,
 } from "../../services/owner/StatusJobAPI";
 import { FeedbackModal } from "../../components/activity/FeedbackModal";
 import { createConversation } from "../../services/ChatService";
 import { sendNotification } from "../../services/NotificationService";
 import { ReportModal } from "../../components/activity/ReportModal";
+import { sendSms } from "../../services/SMSService";
 
 export const ActivityCard = ({ data, onDelete }) => {
   const [activities, setActivities] = useState([]);
@@ -50,6 +52,9 @@ export const ActivityCard = ({ data, onDelete }) => {
     useState(null);
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const [selectedJobIdForReport, setSelectedJobIdForReport] = useState(null);
+
+  const customerName = sessionStorage.getItem("name");
+  const customerPhone = sessionStorage.getItem("phone");
 
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
@@ -234,7 +239,7 @@ export const ActivityCard = ({ data, onDelete }) => {
     );
   };
 
-  // Hire a cleaner
+  // Handle hire cleaner
   const handleHireCleaner = async (jobId, cleanerId, customerId) => {
     if (!jobId) {
       console.error("Không tìm thấy jobId!");
@@ -248,16 +253,60 @@ export const ActivityCard = ({ data, onDelete }) => {
       // Then create a conversation
       await createConversation(customerId, cleanerId);
 
-      console.log("Thuê cleaner thành công!", { jobId, cleanerId, customerId });
-      message.success("Thuê cleaner thành công!");
-      sendNotification(
-        cleanerId,
-        `Chúc mừng, người thuê ${localStorage.getItem(
-          "name"
-        )} đã chấp nhận công việc`,
-        "BOOKED",
-        "Cleaner"
+      // Find the specific activity/job data using jobId
+      const jobData = activities.find((activity) => activity.jobId === jobId);
+
+      // Find the cleaner in the cleanerList to get the phone number
+      const selectedCleanerData = cleanerList.find(
+        (cleaner) => cleaner.cleanerId === cleanerId
       );
+      const cleanerPhone = selectedCleanerData?.phoneNumber; // Fallback to default if not found
+
+      message.success("Thuê cleaner thành công!");
+
+      // Create SMS message using the specific job data
+      let serviceInfoText = "";
+      if (jobData.services) {
+        if (Array.isArray(jobData.services)) {
+          serviceInfoText = jobData.services
+            .map((service) => `${service.serviceName} (${service.areaRange})`)
+            .join(", ");
+        } else {
+          serviceInfoText = `${
+            jobData.services.serviceName || "Không xác định"
+          } (${jobData.services.areaRange || "Không xác định"})`;
+        }
+      } else {
+        serviceInfoText = "Không xác định";
+      }
+
+      // Format date for the specific job
+      const formattedDate = new Date(jobData.scheduledTime).toLocaleString(
+        "vi-VN",
+        {
+          hour: "2-digit",
+          minute: "2-digit",
+          day: "2-digit",
+          month: "2-digit",
+          year: "numeric",
+        }
+      );
+      const smsMessageHire = `[HouseClean] Bạn được ${customerName} chấp nhận. Dịch vụ: ${serviceInfoText}, lúc ${formattedDate}, tại ${
+        jobData.customerAddress
+      }. SĐT chủ nhà: ${customerPhone}. Tạm tính: ${jobData.totalPrice.toLocaleString()} VNĐ.`;
+
+      Promise.all([
+        sendNotification(
+          cleanerId,
+          `Chúc mừng, người thuê ${sessionStorage.getItem(
+            "name"
+          )} đã chấp nhận công việc`,
+          "BOOKED",
+          "Cleaner"
+        ),
+        sendSms(cleanerPhone, smsMessageHire),
+      ]);
+
       updateActivityStatus(jobId, "IN_PROGRESS");
       setIsModalOpen(false);
     } catch (error) {
@@ -275,15 +324,40 @@ export const ActivityCard = ({ data, onDelete }) => {
         cleanerId,
         customerId,
       });
-      message.success("Từ chối cleaner thành công!");
-      sendNotification(
-        cleanerId,
-        `Rất tiếc, người thuê ${localStorage.getItem(
-          "name"
-        )} từ chối công việc`,
-        "BOOKED",
-        "Cleaner"
+      // Find the specific activity/job data using jobId
+      const jobData = activities.find((activity) => activity.jobId === jobId);
+
+      // Find the cleaner in the cleanerList to get the phone number
+      const selectedCleanerData = cleanerList.find(
+        (cleaner) => cleaner.cleanerId === cleanerId
       );
+      const cleanerPhone = selectedCleanerData?.phoneNumber; // Fallback to default if not found
+
+      message.success("Từ chối cleaner thành công!");
+
+      // Format date for the specific job
+      const formattedDate = new Date(jobData.scheduledTime).toLocaleString(
+        "vi-VN",
+        {
+          hour: "2-digit",
+          minute: "2-digit",
+          day: "2-digit",
+          month: "2-digit",
+          year: "numeric",
+        }
+      );
+      const smsMessageReject = `[HouseClean] Lịch dọn tại ${jobData.customerAddress}, lúc ${formattedDate} đã bị huỷ bởi ${customerName}`;
+      Promise.all([
+        sendNotification(
+          cleanerId,
+          `Rất tiếc, người thuê ${sessionStorage.getItem(
+            "name"
+          )} từ chối công việc`,
+          "BOOKED",
+          "Cleaner"
+        ),
+        sendSms(cleanerPhone, smsMessageReject),
+      ]);
       // Refresh cleaner list
       fetchCleaners(jobId);
     } catch (error) {
@@ -301,6 +375,27 @@ export const ActivityCard = ({ data, onDelete }) => {
     } catch (error) {
       console.error("❌ Lỗi khi bắt đầu công việc:", error);
       message.error("❌ Không thể bắt đầu công việc.");
+    }
+  };
+
+  // Thêm hàm handleRetryPayment vào component ActivityCard
+  const handleRetryPayment = async (jobId) => {
+    try {
+      const result = await retryPayment(jobId);
+      // Kiểm tra kết quả từ API và hiển thị thông báo thành công
+      if (result && result.paymentUrl) {
+        message.info(
+          "Bạn sẽ được chuyển đến cổng thanh toán VNPay trong 3 giây. Vui lòng hoàn tất thanh toán!"
+        );
+        setTimeout(() => {
+          window.location.href = result.paymentUrl;
+        }, 3000);
+      } else {
+        message.error("Không thể tạo URL thanh toán");
+      }
+    } catch (error) {
+      console.error("Lỗi khi thử thanh toán lại:", error);
+      message.error("Không thể thử thanh toán lại. Vui lòng thử lại sau.");
     }
   };
 
@@ -338,12 +433,14 @@ export const ActivityCard = ({ data, onDelete }) => {
           // Send notification if needed (assuming you have the cleaner ID)
           const activity = activities.find((a) => a.jobId === jobId);
           if (activity && activity.cleanerId) {
-            sendNotification(
-              activity.cleanerId,
-              `Người thuê ${localStorage.getItem("name")} đã huỷ công việc`,
-              "CANCELLED",
-              "Cleaner"
-            );
+            Promise.all([
+              sendNotification(
+                activity.cleanerId,
+                `Người thuê ${sessionStorage.getItem("name")} đã huỷ công việc`,
+                "CANCELLED",
+                "Cleaner"
+              ),
+            ]);
           }
         } catch (error) {
           console.error("❌ Lỗi khi huỷ công việc:", error);
@@ -397,7 +494,7 @@ export const ActivityCard = ({ data, onDelete }) => {
               fontSize: "14px",
               width: "auto",
               minWidth: "80px",
-              "@media (max-width: 768px)": {
+              "@media (maxWidth: 768px)": {
                 padding: "6px 12px",
                 fontSize: "12px",
                 minWidth: "60px",
@@ -689,6 +786,15 @@ export const ActivityCard = ({ data, onDelete }) => {
                       onClick={() => handleCompleteJob(activity.jobId)}
                     >
                       Đã hoàn thành
+                    </Button>
+                  )}
+                  {activity.status === "PAID" && (
+                    <Button
+                      type="primary"
+                      className={styles.statusButton}
+                      onClick={() => handleRetryPayment(activity.jobId)}
+                    >
+                      Thanh toán lại
                     </Button>
                   )}
                 </div>

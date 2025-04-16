@@ -34,6 +34,13 @@ export const CleanerDetails = () => {
           <ServiceInfo
             cleanerName={cleaner?.cleanerName}
             averageRating={cleaner?.averageRating}
+            phoneNumber={cleaner?.phoneNumber}
+            email={cleaner?.email}
+            experience={cleaner?.experience}
+            age={cleaner?.age}
+            status={cleaner?.status}
+            isVerified={cleaner?.isVerified}
+            identityNumber={cleaner?.identityNumber}
           />
           <PriceSection
             cleanerId={cleanerId} // Pass cleanerId here

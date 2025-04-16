@@ -3,7 +3,7 @@ import { BASE_URL } from "../../utils/config";
 // Fetch cleaner applications for a job
 export async function fetchCleanerApplications(customerId, jobId) {
     try {
-        const token = localStorage.getItem("token");
+        const token = sessionStorage.getItem("token");
 
         if (!token) {
             throw new Error("No authentication token found");
@@ -40,7 +40,7 @@ export async function fetchCleanerApplications(customerId, jobId) {
 // Fetch cleaner details
 export async function fetchCleanerDetail(cleanerId) {
     try {
-        const token = localStorage.getItem("token");
+        const token = sessionStorage.getItem("token");
 
         if (!token) {
             throw new Error("No authentication token found");
@@ -67,7 +67,7 @@ export async function fetchCleanerDetail(cleanerId) {
 // Hire a cleaner
 export async function hireCleaner(jobId, cleanerId, customerId) {
     try {
-        const token = localStorage.getItem("token");
+        const token = sessionStorage.getItem("token");
 
         if (!token) {
             throw new Error("No authentication token found");
@@ -95,7 +95,7 @@ export async function hireCleaner(jobId, cleanerId, customerId) {
 // Start a job
 export async function startJob(jobId, customerId) {
     try {
-        const token = localStorage.getItem("token");
+        const token = sessionStorage.getItem("token");
 
         if (!token) {
             throw new Error("No authentication token found");
@@ -123,7 +123,7 @@ export async function startJob(jobId, customerId) {
 // Complete a job
 export async function completeJob(jobId) {
     try {
-        const token = localStorage.getItem("token");
+        const token = sessionStorage.getItem("token");
 
         if (!token) {
             throw new Error("No authentication token found");
@@ -151,7 +151,7 @@ export async function completeJob(jobId) {
 // Delete a job posting
 export async function deleteJobPosting(jobId,customerId) {
     try {
-        const token = localStorage.getItem("token");
+        const token = sessionStorage.getItem("token");
 
         if (!token) {
             throw new Error("No authentication token found");
@@ -179,7 +179,7 @@ export async function deleteJobPosting(jobId,customerId) {
 // Add this function to OwnerAPI.js
 export async function rejectCleaner(jobId, cleanerId, customerId) {
     try {
-        const token = localStorage.getItem("token");
+        const token = sessionStorage.getItem("token");
 
         if (!token) {
             throw new Error("No authentication token found");
@@ -202,4 +202,33 @@ export async function rejectCleaner(jobId, cleanerId, customerId) {
         console.error('Error rejecting cleaner:', error);
         throw error;
     }
+}
+
+export async function retryPayment(jobId) {
+    try {
+        const token = sessionStorage.getItem("token");
+
+        if (!token) {
+            throw new Error("No authentication token found");
+        }
+
+        const response = await fetch(`${BASE_URL}/vnpayment/retry-payment/${jobId}`, {
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${token}`,
+                "Accept": "application/json",
+            },
+        });
+
+        if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Failed to retry payment');
+    }
+    
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error retrying payment:', error);
+    throw error;
+  }
 }

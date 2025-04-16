@@ -45,6 +45,7 @@ public interface JobRepository extends JpaRepository<Job, Long> {
 
     List<Job> getJobsByStatus(JobStatus status);
 
-    List<Job> findAllByStatus(JobStatus status);
+    public List<Job> findByCleanerIdAndBookingTypeAndStatusIn(Long cleanerId, String bookingType, List<JobStatus> statuses);
+
 }
 
