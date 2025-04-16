@@ -20,14 +20,14 @@ public class ChatGPTService {
     public String askChatGPT(String prompt) {
         // Định dạng prompt mới để tương thích với API chat
         Map<String, Object> requestBody = new HashMap<>();
-        requestBody.put("model", "gpt-3.5-turbo");  // Cập nhật mô hình mới
+        requestBody.put("model", "gpt-3.5-turbo");
         requestBody.put("messages", Arrays.asList(
                 new HashMap<String, String>() {{
                     put("role", "user");
                     put("content", prompt);
                 }}
         ));
-        requestBody.put("max_tokens", 150);
+        requestBody.put("max_tokens", 500);
 
         HttpHeaders headers = new HttpHeaders();
         headers.set("Authorization", "Bearer " + apiKey);

@@ -75,6 +75,8 @@ public class CleanerJobService {
 
 	@Autowired
 	private CustomerRepo customerRepository;
+    @Autowired
+    private WorkHistoryRepository workHistoryRepository;
 
 
 	public Map<String, Object> getCustomerDetails(Long cleanerId, Long customerId) {
@@ -487,7 +489,6 @@ public class CleanerJobService {
 
 		// Lấy phone từ JWT hoặc SecurityContext (sử dụng phone_number từ token)
 		String phoneNumber = SecurityContextHolder.getContext().getAuthentication().getName();
-
 		System.out.println("phone = " + phoneNumber);
 
 		// Tìm cleaner theo phone number
@@ -524,9 +525,19 @@ public class CleanerJobService {
 		job.setStatus(JobStatus.ARRIVED);
 		jobRepository.save(job);
 
-		response.put("message", "Job status updated to ARRIVED");
+		// Lưu thông tin vào bảng work_history khi job bắt đầu
+		WorkHistory workHistory = new WorkHistory();
+		workHistory.setCleaner(cleaner);
+		workHistory.setJob(job);
+		workHistory.setStartTime(LocalDateTime.now());  // Set current time as start time
+		workHistory.setTotalDuration(0);  // Initialize total duration as 0
+		workHistory.setEarnings(0.0);  // Set earnings to 0 initially
+		workHistoryRepository.save(workHistory);
+
+		response.put("message", "Job status updated to ARRIVED, and work history has been recorded");
 		return response;
 	}
+
 
 	// Cập nhật trạng thái công việc sang "COMPLETED"
 	public Map<String, Object> updateJobStatusToCompleted(Long jobId) {

@@ -51,7 +51,7 @@ public class QdrantService {
         point.put("payload", metadata);
 
         Map<String, Object> requestBody = new HashMap<>();
-        requestBody.put("points", Collections.singletonList(point)); // Đưa vào mảng "points"
+        requestBody.put("points", Collections.singletonList(point));
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
@@ -104,7 +104,6 @@ public class QdrantService {
             restTemplate.exchange(url, HttpMethod.GET, null, String.class);
             return "Collection already exists.";
         } catch (HttpClientErrorException.NotFound e) {
-            // Nếu collection không tồn tại, tạo mới
             return createCollection(collectionName);
         } catch (Exception e) {
             return "Error checking collection existence: " + e.getMessage();
