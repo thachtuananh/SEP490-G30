@@ -1473,7 +1473,7 @@ public class CleanerJobService {
 			customerWalletRepository.save(wallet);  // Lưu cập nhật vào ví của customer
 
 			// Cập nhật trạng thái job
-			job.setStatus(JobStatus.PAID);  // Cập nhật trạng thái job thành PAID sau khi thanh toán
+			job.setStatus(JobStatus.BOOKED);  // Cập nhật trạng thái job thành PAID sau khi thanh toán
 			jobRepository.save(job);
 		} else if ("vnpay".equalsIgnoreCase(request.getPaymentMethod())) {
 			// Tạo VNPay Request với số tiền thanh toán
