@@ -1573,7 +1573,7 @@ public class CleanerJobService {
 
 			// Thêm thông tin về job
 			jobInfo.put("jobId", job.getId());
-			jobInfo.put("status", job.getStatus());
+			jobInfo.put("status", job.getBookingType());
 			jobInfo.put("scheduledTime", job.getScheduledTime());
 			jobInfo.put("totalPrice", job.getTotalPrice());
 
