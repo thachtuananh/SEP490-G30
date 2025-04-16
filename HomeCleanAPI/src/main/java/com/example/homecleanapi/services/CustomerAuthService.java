@@ -3,8 +3,10 @@ package com.example.homecleanapi.services;
 import com.example.homecleanapi.dtos.*;
 import com.example.homecleanapi.models.CustomerWallet;
 import com.example.homecleanapi.models.Customers;
+import com.example.homecleanapi.models.OtpVerification;
 import com.example.homecleanapi.repositories.CustomerRepository;
 import com.example.homecleanapi.repositories.CustomerWalletRepository;
+import com.example.homecleanapi.repositories.OtpVerificationRepository;
 import com.example.homecleanapi.utils.JwtUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +19,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -27,13 +30,15 @@ public class CustomerAuthService {
     private final JwtUtils jwtUtils;
     private final EmailService emailService;
     private final CustomerWalletRepository customerWalletRepository;
+    private final OtpVerificationRepository otpVerificationRepository;
 
-    public CustomerAuthService(CustomerRepository customerRepository, PasswordEncoder passwordEncoder, JwtUtils jwtUtils, EmailService emailService, CustomerWalletRepository customerWalletRepository) {
+    public CustomerAuthService(CustomerRepository customerRepository, PasswordEncoder passwordEncoder, JwtUtils jwtUtils, EmailService emailService, CustomerWalletRepository customerWalletRepository, OtpVerificationRepository otpVerificationRepository) {
         this.customerRepository = customerRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtUtils = jwtUtils;
         this.emailService = emailService;
         this.customerWalletRepository = customerWalletRepository;
+        this.otpVerificationRepository = otpVerificationRepository;
     }
 
     public ResponseEntity<Map<String, Object>> customerRegister(CustomerRegisterRequest request) {
@@ -49,6 +54,13 @@ public class CustomerAuthService {
         if (customerRepository.existsByPhone(request.getPhone())) {
             response.put("message", "Số điện thoại đã tồn tại!");
             return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+        }
+
+        // Kiểm tra OTP đã xác minh
+        Optional<OtpVerification> otpOpt = otpVerificationRepository.findTopByPhoneOrderByCreatedAtDesc(request.getPhone());
+        if (otpOpt.isEmpty() || !otpOpt.get().getVerified()) {
+            response.put("message", "Số điện thoại chưa được xác minh bằng OTP!");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
         }
 
         // Tạo đối tượng customer mới
@@ -77,7 +89,6 @@ public class CustomerAuthService {
         response.put("created_at", customer.getCreated_at());
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
-
     // Hàm tạo txnRef (nếu cần)
     private String generateTxnRef() {
         return "TXN" + System.currentTimeMillis(); // Một ví dụ về cách tạo txnRef, có thể điều chỉnh theo nhu cầu
