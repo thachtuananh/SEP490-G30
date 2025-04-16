@@ -120,11 +120,11 @@ export const TabsSection = () => {
 
   // Correctly formatted items for Tabs component in Ant Design v5
   const tabItems = [
-    {
-      key: "info",
-      label: "Thông tin",
-      children: InfoContent,
-    },
+    // {
+    //   key: "info",
+    //   label: "Thông tin",
+    //   children: InfoContent,
+    // },
     {
       key: "reviews",
       label: "Đánh giá",

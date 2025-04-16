@@ -262,7 +262,6 @@ export const ActivityCard = ({ data, onDelete }) => {
       );
       const cleanerPhone = selectedCleanerData?.phoneNumber; // Fallback to default if not found
 
-      console.log("Thuê cleaner thành công!", { jobId, cleanerId, customerId });
       message.success("Thuê cleaner thành công!");
 
       // Create SMS message using the specific job data
@@ -325,15 +324,40 @@ export const ActivityCard = ({ data, onDelete }) => {
         cleanerId,
         customerId,
       });
-      message.success("Từ chối cleaner thành công!");
-      sendNotification(
-        cleanerId,
-        `Rất tiếc, người thuê ${sessionStorage.getItem(
-          "name"
-        )} từ chối công việc`,
-        "BOOKED",
-        "Cleaner"
+      // Find the specific activity/job data using jobId
+      const jobData = activities.find((activity) => activity.jobId === jobId);
+
+      // Find the cleaner in the cleanerList to get the phone number
+      const selectedCleanerData = cleanerList.find(
+        (cleaner) => cleaner.cleanerId === cleanerId
       );
+      const cleanerPhone = selectedCleanerData?.phoneNumber; // Fallback to default if not found
+
+      message.success("Từ chối cleaner thành công!");
+
+      // Format date for the specific job
+      const formattedDate = new Date(jobData.scheduledTime).toLocaleString(
+        "vi-VN",
+        {
+          hour: "2-digit",
+          minute: "2-digit",
+          day: "2-digit",
+          month: "2-digit",
+          year: "numeric",
+        }
+      );
+      const smsMessageReject = `[HouseClean] Lịch dọn tại ${jobData.customerAddress}, lúc ${formattedDate} đã bị huỷ bởi ${customerName}`;
+      Promise.all([
+        sendNotification(
+          cleanerId,
+          `Rất tiếc, người thuê ${sessionStorage.getItem(
+            "name"
+          )} từ chối công việc`,
+          "BOOKED",
+          "Cleaner"
+        ),
+        sendSms(cleanerPhone, smsMessageReject),
+      ]);
       // Refresh cleaner list
       fetchCleaners(jobId);
     } catch (error) {
@@ -416,7 +440,6 @@ export const ActivityCard = ({ data, onDelete }) => {
                 "CANCELLED",
                 "Cleaner"
               ),
-              // sendSms(activity.cleanerId, "Người thuê đã huỷ công việc"),
             ]);
           }
         } catch (error) {

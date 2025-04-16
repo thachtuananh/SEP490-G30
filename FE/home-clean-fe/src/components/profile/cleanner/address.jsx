@@ -293,9 +293,9 @@ export const Address = () => {
     const cleanerId = sessionStorage.getItem("cleanerId");
     try {
       const response = await fetch(
-        `${BASE_URL}/employee/${cleanerId}/update-address/${currentAddressId}`,
+        `${BASE_URL}/employee/${cleanerId}/update_address/${currentAddressId}`,
         {
-          method: "PUT",
+          method: "POST",
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",

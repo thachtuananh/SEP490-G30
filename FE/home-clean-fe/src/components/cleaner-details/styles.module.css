@@ -81,7 +81,12 @@
 }
 
 /* Service Info Styles */
+.details {
+  font-size: 16px;
+  font-weight: 500;
 
+  line-height: 24px;
+}
 
 .header {
   justify-content: space-between;
@@ -246,7 +251,7 @@
 }
 
 .tag.active {
-  background-color: #B0FFDC;
+  background-color: #b0ffdc;
   border: 2px solid #039855;
 }
 
@@ -262,7 +267,6 @@
 }
 
 /* Price Section Styles */
-
 
 .price {
   color: #101828;
@@ -329,7 +333,6 @@
 /* Tabs Section Styles */
 .tabsSection {
   width: 100%;
-
 }
 
 .tabs {
@@ -393,7 +396,6 @@
   align-items: center;
   margin-bottom: 15px;
 }
-
 .ratingLabel {
   font-weight: bold;
   margin-right: 10px;

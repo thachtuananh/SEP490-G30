@@ -120,11 +120,20 @@ export async function fetchCleanerDetails(cleanerId) {
         const data = await response.json();
 
         return {
+            cleanerId: data.cleanerId,
             cleanerName: data.cleanerName,
+            phoneNumber: data.phoneNumber,
+            address: data.address,
             averageRating: data.averageRating,
             profileImage: data.profileImage
                 ? `data:image/png;base64,${data.profileImage}`
                 : null,
+            email: data.email,
+            experience: data.experience,
+            age: data.age,
+            identityNumber: data.identityNumber,
+            isVerified: data.isVerified,
+            status: data.status
         };
     } catch (error) {
         console.error("Error fetching cleaner details:", error);
