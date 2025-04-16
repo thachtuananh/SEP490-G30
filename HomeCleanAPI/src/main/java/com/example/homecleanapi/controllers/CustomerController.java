@@ -60,7 +60,7 @@ public class CustomerController {
         return customerService.addAddress(request, customer_id);
     }
 
-    @PostMapping(value = "/{customerId}/update_address/{addressId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping(value = "/{customerId}/update_address/{addressId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Map<String, Object>> updateEmployeeAddress(@RequestBody CustomerAddressesDTO request, @PathVariable Long customerId, @PathVariable Integer addressId) throws IOException {
         return customerService.updateCustomerAddress(request, customerId, addressId);
     }

@@ -58,7 +58,7 @@ public class EmployeeAuthService {
         employee.setAge(request.getAge());
         employee.setAddress(request.getAddress());
         employee.setExperience(request.getExperience());
-        employee.setIdentity_number(request.getIdentity_number().toString());
+        employee.setIdentity_number(request.getIdentity_number());
         employee.setProfile_image(avatarService.generateIdenticon(request.getName()));
 
         // Thiết lập các giá trị mặc định cho identity_verified và is_deleted
