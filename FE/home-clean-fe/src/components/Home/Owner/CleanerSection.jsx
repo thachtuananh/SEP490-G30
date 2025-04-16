@@ -256,6 +256,7 @@ function CleanerSection() {
                   cleanerId={cleaner.cleanerId}
                   cleanerImg={cleaner.profile_image}
                   cleanerName={cleaner.name}
+                  cleanerPhone={cleaner.phoneNumber}
                   isOnline={isOnline(cleaner.cleanerId)}
                 />
               </List.Item>

@@ -27,37 +27,37 @@ export const WebSocketProvider = ({ children }) => {
             heartbeatIncoming: 4000,
             heartbeatOutgoing: 4000,
 
-             onConnect: () => {
-            console.log("✅ WebSocket connected (global)");
-            setStompClient(client);
+            onConnect: () => {
+                console.log("✅ WebSocket connected (global)");
+                setStompClient(client);
 
-            // Send cleaner online status
-            const cleanerData = JSON.parse(localStorage.getItem("cleaner"));
-            if (cleanerData?.cleanerId) {
-                client.publish({
-                    destination: "/app/cleaner-online",
-                    body: JSON.stringify({
-                        cleanerId: cleanerData.cleanerId,
-                        status: "online" // Add status field
-                    }),
-                });
-            }
-        },
-        
-             beforeDisconnect: () => {
-            // Send offline status before disconnection
-            const cleanerData = JSON.parse(localStorage.getItem("cleaner"));
-            if (cleanerData?.cleanerId && client.connected) {
-                client.publish({
-                    destination: "/app/cleaner-offline",
-                    body: JSON.stringify({
-                        cleanerId: cleanerData.cleanerId,
-                        status: "offline"
-                    }),
-                });
-                console.log("📡 Sent cleaner-offline message");
-            }
-        },
+                // Send cleaner online status
+                const cleanerData = JSON.parse(sessionStorage.getItem("cleaner"));
+                if (cleanerData?.cleanerId) {
+                    client.publish({
+                        destination: "/app/cleaner-online",
+                        body: JSON.stringify({
+                            cleanerId: cleanerData.cleanerId,
+                            status: "online" // Add status field
+                        }),
+                    });
+                }
+            },
+            
+            beforeDisconnect: () => {
+                // Send offline status before disconnection
+                const cleanerData = JSON.parse(sessionStorage.getItem("cleaner"));
+                if (cleanerData?.cleanerId && client.connected) {
+                    client.publish({
+                        destination: "/app/cleaner-offline",
+                        body: JSON.stringify({
+                            cleanerId: cleanerData.cleanerId,
+                            status: "offline"
+                        }),
+                    });
+                    console.log("📡 Sent cleaner-offline message");
+                }
+            },
 
             onStompError: (frame) => {
                 console.error("❌ STOMP error:", frame);
@@ -67,7 +67,25 @@ export const WebSocketProvider = ({ children }) => {
         client.activate();
         clientRef.current = client;
 
+        // Thêm xử lý sự kiện beforeunload ở đây
+        const handleBeforeUnload = () => {
+            const cleanerData = JSON.parse(sessionStorage.getItem("cleaner"));
+            if (cleanerData?.cleanerId && client.connected) {
+                client.publish({
+                    destination: "/app/cleaner-offline",
+                    body: JSON.stringify({
+                        cleanerId: cleanerData.cleanerId,
+                        status: "offline"
+                    }),
+                });
+                console.log("📡 Sent cleaner-offline message from beforeunload");
+            }
+        };
+
+        window.addEventListener('beforeunload', handleBeforeUnload);
+
         return () => {
+            window.removeEventListener('beforeunload', handleBeforeUnload);
             client.deactivate();
             console.log("🛑 WebSocket disconnected (global)");
         };

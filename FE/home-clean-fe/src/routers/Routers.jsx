@@ -33,6 +33,10 @@ import OrderSuccess from "../pages/order_success/OrderSuccess";
 import DepositOwner from "../pages/order_success/DepositOwner";
 import DepositCleaner from "../pages/order_success/DepositCleaner";
 
+import OrderFail from "../pages/order_fail/OrderFail";
+import DepositOwnerFail from "../pages/order_fail/DepositOwnerFail";
+import DepositCleanerFail from "../pages/order_fail/DepositCleanerFail";
+
 import WorkDetail from "../pages/work/WorkDetail";
 import ActivityJob from "../pages/ActivityJob";
 import JobListFilter from "../pages/JobListFilter";
@@ -89,6 +93,13 @@ const Routers = () => {
       <Route path="/ordersuccess" element={<OrderSuccess />} />
       <Route path="/depositOwner" element={<DepositOwner />} />
       <Route path="/homeclean/depositCleaner" element={<DepositCleaner />} />
+
+      <Route path="/orderfail" element={<OrderFail />} />
+      <Route path="/depositOwnerfail" element={<DepositOwnerFail />} />
+      <Route
+        path="/homeclean/depositCleanerfail"
+        element={<DepositCleanerFail />}
+      />
 
       <Route path="/workdetail/:jobId?" element={<WorkDetail />} />
 

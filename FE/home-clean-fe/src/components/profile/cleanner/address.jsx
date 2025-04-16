@@ -18,7 +18,8 @@ import {
 } from "antd";
 import { PlusOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import { BASE_URL } from "../../../utils/config";
-import "../owner/profile.css";
+// import "../owner/profile.css";
+import "../owner/address.css";
 import addressDataJSON from "../../../utils/address-data.json";
 
 const { Option } = Select;
@@ -57,8 +58,8 @@ export const Address = () => {
   };
 
   const fetchAddresses = async () => {
-    const token = localStorage.getItem("token");
-    const cleanerId = localStorage.getItem("cleanerId");
+    const token = sessionStorage.getItem("token");
+    const cleanerId = sessionStorage.getItem("cleanerId");
 
     if (token && cleanerId) {
       try {
@@ -246,8 +247,8 @@ export const Address = () => {
     }
     const fullAddress = formatFullAddress();
     setLoading(true);
-    const token = localStorage.getItem("token");
-    const cleanerId = localStorage.getItem("cleanerId");
+    const token = sessionStorage.getItem("token");
+    const cleanerId = sessionStorage.getItem("cleanerId");
     try {
       const response = await fetch(
         `${BASE_URL}/employee/${cleanerId}/create_address`,
@@ -288,13 +289,13 @@ export const Address = () => {
     }
     const fullAddress = formatFullAddress();
     setLoading(true);
-    const token = localStorage.getItem("token");
-    const cleanerId = localStorage.getItem("cleanerId");
+    const token = sessionStorage.getItem("token");
+    const cleanerId = sessionStorage.getItem("cleanerId");
     try {
       const response = await fetch(
-        `${BASE_URL}/employee/${cleanerId}/update-address/${currentAddressId}`,
+        `${BASE_URL}/employee/${cleanerId}/update_address/${currentAddressId}`,
         {
-          method: "PUT",
+          method: "POST",
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
@@ -326,7 +327,7 @@ export const Address = () => {
       okText: "Xác nhận",
       cancelText: "Hủy",
       onOk: async () => {
-        const token = localStorage.getItem("token");
+        const token = sessionStorage.getItem("token");
         try {
           const response = await fetch(
             `${BASE_URL}/employee/${addressId}/delete_address`,
@@ -352,8 +353,8 @@ export const Address = () => {
   };
 
   const handleSetDefaultAddress = async (addressId) => {
-    const token = localStorage.getItem("token");
-    const cleanerId = localStorage.getItem("cleanerId");
+    const token = sessionStorage.getItem("token");
+    const cleanerId = sessionStorage.getItem("cleanerId");
     try {
       const response = await fetch(
         `${BASE_URL}/cleaner/${cleanerId}/addresses/${addressId}/set-current`,
@@ -452,130 +453,106 @@ export const Address = () => {
   };
 
   return (
-    <div
-      className="address-container"
-      style={{ padding: "24px", background: "#fff", borderRadius: "8px" }}
-    >
+    <div className="address-container">
       {/* Header */}
-      <Row justify="space-between" align="middle" style={{ marginBottom: 16 }}>
-        <Col>
-          <Title level={4} style={{ margin: 0 }}>
+      <div className="address-header">
+        <div className="address-title-container">
+          <Title level={4} className="address-title">
             Địa chỉ của bạn
           </Title>
-          <Text type="secondary">Quản lý thông tin địa chỉ của bạn</Text>
-        </Col>
-        <Col>
+          <Text type="secondary" className="address-subtitle">
+            Quản lý thông tin địa chỉ của bạn
+          </Text>
+        </div>
+        <div className="address-actions-container">
           <Button
             type="primary"
             icon={<PlusOutlined />}
             onClick={showAddModal}
-            style={{ background: "#00a651", borderColor: "#00a651" }}
+            className="add-address-btn"
           >
             Thêm địa chỉ mới
           </Button>
-        </Col>
-      </Row>
+        </div>
+      </div>
 
-      <Divider style={{ margin: "16px 0" }} />
+      <Divider className="address-divider" />
 
       {/* Address List */}
       {addresses && addresses.length > 0 ? (
-        <div>
+        <div className="address-list">
           {currentAddresses.map((address) => (
-            <Card
-              key={address.id}
-              style={{
-                marginBottom: 16,
-                borderRadius: 8,
-                boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
-              }}
-              bodyStyle={{ padding: "16px" }}
-            >
-              <Row gutter={16} align="middle">
-                <Col xs={24} sm={6} md={4}>
-                  <div className="address-name">
-                    <Text strong style={{ fontSize: 16 }}>
-                      {address.name || cleaner?.cleanerName || "Không có tên"}
+            <Card key={address.id} className="address-card">
+              <div className="address-card-content">
+                <div className="address-user-info">
+                  <Text strong className="address-user-name">
+                    {address.name || cleaner?.cleanerPhone || "Không có tên"}
+                  </Text>
+                  <div>
+                    <Text className="address-user-phone">
+                      {address.phone || cleaner?.cleanerPhone || "Không có SĐT"}
                     </Text>
-                    <div>
-                      <Text>
-                        {address.phone ||
-                          cleaner?.cleanerPhone ||
-                          "Không có SĐT"}
-                      </Text>
-                    </div>
                   </div>
-                </Col>
-                <Col xs={24} sm={12} md={14}>
-                  <div className="address-details">
-                    <Text>{address.address || "Chưa có địa chỉ"}</Text>
-                    {address.isDefault && (
-                      <Tag color="green" style={{ marginLeft: 8 }}>
-                        Mặc định
-                      </Tag>
-                    )}
-                  </div>
-                </Col>
-                <Col xs={24} sm={6} md={6} style={{ textAlign: "right" }}>
-                  <Space
-                    direction="vertical"
-                    size="small"
-                    style={{ width: "100%" }}
-                  >
-                    <Space>
-                      <Button
-                        type="primary"
-                        ghost
-                        icon={<EditOutlined />}
-                        onClick={() =>
-                          showUpdateModal(address.id, address.address)
-                        }
-                      >
-                        Cập nhật
-                      </Button>
-                      <Button
-                        danger
-                        icon={<DeleteOutlined />}
-                        onClick={() => handleDeleteAddress(address.id)}
-                      >
-                        Xóa
-                      </Button>
-                    </Space>
+                </div>
+                <div className="address-location-info">
+                  <Text className="address-text-location">
+                    {address.address || "Chưa có địa chỉ"}
+                  </Text>
+                  {address.isDefault && (
+                    <Tag className="default-tag" color="green">
+                      Mặc định
+                    </Tag>
+                  )}
+                </div>
+                <div className="address-control-buttons">
+                  <div className="address-button-group">
                     <Button
                       type="primary"
-                      onClick={() => handleSetDefaultAddress(address.id)}
-                      style={{ width: "100%" }}
+                      ghost
+                      icon={<EditOutlined />}
+                      onClick={() =>
+                        showUpdateModal(address.id, address.address)
+                      }
+                      className="update-address-btn"
                     >
-                      Chọn làm mặc định
+                      Cập nhật
                     </Button>
-                  </Space>
-
-                  {/* <div style={{ marginTop: 8 }}>
-                    <Checkbox
-                      checked={address.isDefault}
-                      onChange={() => handleSetDefaultAddress(address.id)}
+                    <Button
+                      danger
+                      icon={<DeleteOutlined />}
+                      onClick={() => handleDeleteAddress(address.id)}
+                      className="delete-address-btn"
                     >
-                      Chọn làm mặc định
-                    </Checkbox>
-                  </div> */}
-                </Col>
-              </Row>
+                      Xóa
+                    </Button>
+                  </div>
+                  <Button
+                    type="primary"
+                    onClick={() => handleSetDefaultAddress(address.id)}
+                    className="default-address-btn"
+                    disabled={address.isDefault}
+                  >
+                    {address.isDefault ? "Đã đặt mặc định" : "Chọn mặc định"}
+                  </Button>
+                </div>
+              </div>
             </Card>
           ))}
 
           {/* Pagination */}
-          <div style={{ marginTop: 16, justifyItems: "center" }}>
+          <div className="pagination-container">
             <Pagination
               current={currentPage}
               pageSize={pageSize}
               total={addresses.length}
               onChange={handlePageChange}
               showSizeChanger={false}
+              className="address-pagination"
             />
           </div>
         </div>
       ) : (
-        <Card style={{ textAlign: "center", borderRadius: 8 }}>
+        <Card className="empty-address-card">
           <Text>Không có địa chỉ nào.</Text>
         </Card>
       )}
@@ -586,7 +563,7 @@ export const Address = () => {
         open={isAddModalVisible}
         onCancel={handleAddCancel}
         footer={[
-          <Button key="back" onClick={handleAddCancel}>
+          <Button key="back" onClick={handleAddCancel} className="cancel-btn">
             Hủy
           </Button>,
           <Button
@@ -594,11 +571,13 @@ export const Address = () => {
             type="primary"
             loading={loading}
             onClick={handleAddAddress}
+            className="submit-btn"
           >
             Thêm
           </Button>,
         ]}
         width={600}
+        className="address-modal"
       >
         {renderAddressForm()}
       </Modal>
@@ -609,7 +588,11 @@ export const Address = () => {
         open={isUpdateModalVisible}
         onCancel={handleUpdateCancel}
         footer={[
-          <Button key="back" onClick={handleUpdateCancel}>
+          <Button
+            key="back"
+            onClick={handleUpdateCancel}
+            className="cancel-btn"
+          >
             Hủy
           </Button>,
           <Button
@@ -617,11 +600,13 @@ export const Address = () => {
             type="primary"
             loading={loading}
             onClick={handleUpdateAddressSubmit}
+            className="submit-btn"
           >
             Cập nhật
           </Button>,
         ]}
         width={600}
+        className="address-modal"
       >
         {renderAddressForm()}
       </Modal>

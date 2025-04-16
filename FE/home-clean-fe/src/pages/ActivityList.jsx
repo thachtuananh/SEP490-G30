@@ -19,9 +19,21 @@ export const ActivityList = () => {
         "Content-Type": "application/json",
       },
     })
-      .then((response) => response.json())
-      .then((res) => setData(res.sort((a, b) => b.jobId - a.jobId)))
-      .catch((error) => console.error("Lỗi:", error));
+      // .then((response) => response.json())
+      // .then((res) => setData(res.sort((a, b) => b.jobId - a.jobId)))
+      // .catch((error) => console.error("Lỗi:", error));
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Không thể lấy danh sách công việc.");
+        }
+        return response.json();
+      })
+      .then((data) => {
+        setData(data);
+      })
+      .catch((error) => {
+        console.error("Lỗi khi lấy danh sách công việc:", error);
+      });
   }, [customerId, token, reloadTrigger]);
 
   return (

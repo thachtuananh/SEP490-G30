@@ -35,9 +35,9 @@ function Navbar() {
   const [messageCount, setMessageCount] = useState(0);
   const [isMessageLoading, setIsMessageLoading] = useState(false);
 
-  const roleStr = localStorage.getItem("role");
+  const roleStr = sessionStorage.getItem("role");
   const role = roleStr ? roleStr.toLowerCase() : null;
-  const userId = localStorage.getItem("customerId");
+  const userId = sessionStorage.getItem("customerId");
 
   const [stompClient, setStompClient] = useState(null);
   const [messages, setMessages] = useState([]);
@@ -156,12 +156,12 @@ function Navbar() {
     }
   };
 
-  // Lấy tên user từ localStorage nếu chưa có trong context
+  // Lấy tên user từ sessionStorage nếu chưa có trong context
   const getUserName = () => {
     if (user && user.customerName) {
       return user.customerName;
     }
-    const storedName = localStorage.getItem("name");
+    const storedName = sessionStorage.getItem("name");
     return storedName ? storedName : "";
   };
 
@@ -237,23 +237,28 @@ function Navbar() {
     <Popover
       content={
         <>
-          <div
+          {/* <div
             style={{
               cursor: "pointer",
             }}
             onClick={() => {
               navigate("/activitylist");
             }}
-          >
-            <Notification
-              onClose={() => setIsPopupNotification(false)}
-              onViewAll={() => {
-                setIsPopupNotification(false);
-                // Navigate to full notification page if you have one
-                // navigate("/notifications");
-              }}
-            />
-          </div>
+          > */}
+          <Notification
+            onClose={() => setIsPopupNotification(false)}
+            onViewAll={() => {
+              setIsPopupNotification(false);
+              // Navigate to full notification page if you have one
+              // navigate("/notifications");
+            }}
+            onClick={() => {
+              setIsPopupNotification(false);
+              // Navigate to full notification page if you have one
+              navigate("/activitylist");
+            }}
+          />
+          {/* </div> */}
         </>
       }
       trigger="click"

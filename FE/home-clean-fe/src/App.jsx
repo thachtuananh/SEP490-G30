@@ -5,7 +5,7 @@ import { WebSocketProvider } from "./context/WebSocketContext";
 import CleanerWebSocket from "./context/CleanerWebSocket";
 
 function App() {
-  const cleaner = JSON.parse(localStorage.getItem("cleaner"));
+  const cleaner = JSON.parse(sessionStorage.getItem("cleaner"));
 
   return (
     <AuthContextProvider>

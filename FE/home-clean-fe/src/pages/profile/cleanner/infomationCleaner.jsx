@@ -15,8 +15,8 @@ const InfomationCleaner = () => {
 
   useEffect(() => {
     const fetchProfile = async () => {
-      const token = localStorage.getItem("token");
-      const cleanerId = localStorage.getItem("cleanerId");
+      const token = sessionStorage.getItem("token");
+      const cleanerId = sessionStorage.getItem("cleanerId");
 
       if (token && cleanerId) {
         try {
@@ -31,7 +31,7 @@ const InfomationCleaner = () => {
           const { data } = await response.json();
           if (response.ok) {
             dispatch({ type: "FETCH_PROFILE_SUCCESS_CLEANER", payload: data });
-            // localStorage.setItem("cleaner", JSON.stringify(data)); // Lưu lại thông tin cleaner vào localStorage
+            // sessionStorage.setItem("cleaner", JSON.stringify(data)); // Lưu lại thông tin cleaner vào sessionStorage
           } else {
             message.error("Không thể lấy thông tin người dùng.");
           }

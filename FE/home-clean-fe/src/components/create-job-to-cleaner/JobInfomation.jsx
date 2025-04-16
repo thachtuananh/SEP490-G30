@@ -6,6 +6,7 @@ import styles from "../../assets/CSS/createjob/JobInformation.module.css";
 import dayjs from "dayjs";
 import { createJobToCleaner } from "../../services/owner/OwnerAPI"; // Import API function
 import { sendNotification } from "../../services/NotificationService";
+import { sendSms } from "../../services/SMSService";
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -32,7 +33,7 @@ const JobInfomation = ({
   const [adjustedPrice, setAdjustedPrice] = useState(state.price || 0);
 
   // token
-  const { token, customerId } = useContext(AuthContext);
+  const { token, customerId, customerName } = useContext(AuthContext);
 
   // Cập nhật thời gian hiện tại mỗi phút
   useEffect(() => {
@@ -202,7 +203,7 @@ const JobInfomation = ({
 
       // Xử lý nếu là VNPay và có URL thanh toán
       if (normalizedPaymentMethod === "VNPay" && responseData.paymentUrl) {
-        message.success(
+        message.info(
           "Bạn sẽ được chuyển đến cổng thanh toán VNPay trong 3 giây. Vui lòng hoàn tất thanh toán!"
         );
 
@@ -218,14 +219,24 @@ const JobInfomation = ({
       if (responseData.status === "BOOKED") {
         console.log("Job created successfully");
         message.success("Đăng việc trực tiếp thành công!");
-        sendNotification(
-          state.cleanerId,
-          `Người thuê ${localStorage.getItem(
-            "name"
-          )} đã đặt dịch vụ trực tiếp với bạn`,
-          "BOOKED",
-          "Cleaner"
-        );
+        const smsMessageBooked = `[HouseClean] Bạn vừa nhận được 1 lượt book trực tiếp từ ${customerName}. Dịch vụ: ${
+          jobData.services
+        } - Trên 50m², lúc ${jobData.jobTime}, tại ${
+          jobData.customerAddressId
+        }. SĐT chủ nhà: ${sessionStorage.getItem(
+          "phone"
+        )}. Vui lòng xác nhận sớm.`;
+        Promise.all([
+          sendNotification(
+            state.cleanerId,
+            `Người thuê ${sessionStorage.getItem(
+              "name"
+            )} đã đặt dịch vụ trực tiếp với bạn`,
+            "BOOKED",
+            "Cleaner"
+          ),
+          sendSms(state.cleanerPhone, smsMessageBooked),
+        ]);
         navigate("/");
       } else {
         console.error("Lỗi khi tạo job:", responseData);

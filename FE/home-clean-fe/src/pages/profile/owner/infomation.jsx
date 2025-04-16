@@ -14,8 +14,8 @@ const Infomation = () => {
 
   useEffect(() => {
     const fetchProfile = async () => {
-      const token = localStorage.getItem("token");
-      const customerId = localStorage.getItem("customerId");
+      const token = sessionStorage.getItem("token");
+      const customerId = sessionStorage.getItem("customerId");
 
       if (token && customerId) {
         try {

@@ -76,7 +76,7 @@ const CleanerDetails = () => {
   const fetchCleanerData = useCallback(async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem("token");
+      const token = sessionStorage.getItem("token");
 
       const response = await axios.get(
         `${BASE_URL}/admin/cleaners/${cleanerId}`,
@@ -136,7 +136,7 @@ const CleanerDetails = () => {
       cancelText: "Huỷ",
       onOk: async () => {
         try {
-          const token = localStorage.getItem("token");
+          const token = sessionStorage.getItem("token");
           const response = await fetch(
             `${BASE_URL}/admin/cleaners/${cleanerId}/delete`,
             {

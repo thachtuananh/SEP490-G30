@@ -58,11 +58,12 @@ function Login() {
       const result = await response.json();
       console.log(result);
       if (response.ok) {
-        const { name, token, cleanerId, role } = result;
-        localStorage.setItem("name", name);
-        localStorage.setItem("token", token);
-        localStorage.setItem("cleanerId", cleanerId);
-        localStorage.setItem("role", role);
+        const { name, token, cleanerId, role, phone } = result;
+        sessionStorage.setItem("name", name);
+        sessionStorage.setItem("token", token);
+        sessionStorage.setItem("cleanerId", cleanerId);
+        sessionStorage.setItem("role", role);
+        sessionStorage.setItem("phone", phone);
 
         dispatch({
           type: "LOGIN_SUCCESS_CLEANER",
