@@ -24,16 +24,15 @@ public class OtpService {
     public OtpService(OtpVerificationRepository otpVerificationRepository) {
         this.otpVerificationRepository = otpVerificationRepository;
     }
-
     public String generateOtp() {
         return String.valueOf(new Random().nextInt(899999) + 100000); // 6 digits
     }
 
     public void sendOtp(String phone) {
         String otp = generateOtp();
-
+        String formattedPhone = formatPhoneNumber(phone);
         Message.creator(
-                new PhoneNumber(phone),
+                new PhoneNumber(formattedPhone),
                 new PhoneNumber(twilioPhoneNumber),
                 "Mã OTP của bạn là: " + otp + ". Mã có hiệu lực trong 5 phút."
         ).create();
@@ -60,5 +59,27 @@ public class OtpService {
         }
 
         return false;
+    }
+
+    private String formatPhoneNumber(String rawPhone) {
+        // Loại bỏ dấu cách, dấu gạch, dấu chấm, v.v.
+        String cleaned = rawPhone.replaceAll("[^0-9]", "");
+
+        // Nếu bắt đầu bằng "0" và có 10 số, đổi thành "+84"
+        if (cleaned.startsWith("0") && cleaned.length() == 10) {
+            return "+84" + cleaned.substring(1);
+        }
+
+        // Nếu đã ở định dạng quốc tế (bắt đầu bằng 84 và đủ 11 số), thêm dấu +
+        if (cleaned.startsWith("84") && cleaned.length() == 11) {
+            return "+" + cleaned;
+        }
+
+        // Nếu bắt đầu bằng +84 thì giữ nguyên
+        if (rawPhone.startsWith("+84")) {
+            return rawPhone;
+        }
+
+        throw new IllegalArgumentException("Số điện thoại không hợp lệ: " + rawPhone);
     }
 }
