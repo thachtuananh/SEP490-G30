@@ -9,6 +9,7 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -201,6 +202,38 @@ public class WithdrawalRequestService {
 
         response.put("message", "Thành công");
         response.put("status", HttpStatus.OK);
+
+        return response;
+    }
+
+
+    public Map<String, Object> getWithdrawalRequests(String status) {
+        Map<String, Object> response = new HashMap<>();
+
+        // Kiểm tra xem status có hợp lệ không
+        if (status != null && !status.isEmpty() && !List.of("PENDING", "APPROVED", "REJECTED").contains(status.toUpperCase())) {
+            response.put("message", "Invalid status. Must be PENDING, APPROVED, or REJECTED.");
+            response.put("status", HttpStatus.BAD_REQUEST);
+            return response;
+        }
+
+        // Lọc theo status nếu có, nếu không thì lấy tất cả
+        List<WithdrawalRequest> withdrawalRequests;
+        if (status != null && !status.isEmpty()) {
+            // Lọc theo trạng thái cụ thể (PENDING, APPROVED, REJECTED)
+            withdrawalRequests = withdrawalRequestRepository.findByStatus(status.toUpperCase());
+        } else {
+            // Nếu không có status thì lấy tất cả
+            withdrawalRequests = withdrawalRequestRepository.findAll();
+        }
+
+        if (withdrawalRequests.isEmpty()) {
+            response.put("message", "No withdrawal requests found");
+            response.put("status", HttpStatus.NOT_FOUND);
+        } else {
+            response.put("data", withdrawalRequests);
+            response.put("status", HttpStatus.OK);
+        }
 
         return response;
     }

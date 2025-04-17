@@ -40,4 +40,14 @@ public class AdminController {
 
         return new ResponseEntity<>(response, (HttpStatus) response.get("status"));
     }
+
+
+    // lấy ra ds các yêu cầu rutts tiền
+    @GetMapping("/withdrawalRequests")
+    public ResponseEntity<Map<String, Object>> getWithdrawalRequests(
+            @RequestParam(required = false) String status) {
+        Map<String, Object> response = withdrawalRequestService.getWithdrawalRequests(status);
+        return new ResponseEntity<>(response, (HttpStatus) response.get("status"));
+    }
+
 }
