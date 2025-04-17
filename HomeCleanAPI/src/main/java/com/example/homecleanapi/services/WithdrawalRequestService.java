@@ -185,6 +185,54 @@ public class WithdrawalRequestService {
 
         // Kiểm tra hành động của admin (APPROVE hoặc REJECT)
         if ("APPROVE".equalsIgnoreCase(action)) {
+            // Kiểm tra số dư ví của customer hoặc cleaner trước khi approve
+            Double withdrawalAmount = withdrawalRequest.getAmount();
+            if (withdrawalRequest.getCustomer() != null) {
+                // Kiểm tra ví của customer
+                Optional<CustomerWallet> customerWalletOpt = customerWalletRepository.findByCustomerId(Long.valueOf(withdrawalRequest.getCustomer().getId()));
+                if (!customerWalletOpt.isPresent()) {
+                    response.put("message", "Không tìm thấy ví của customer");
+                    response.put("status", HttpStatus.NOT_FOUND);
+                    return response;
+                }
+
+                CustomerWallet customerWallet = customerWalletOpt.get();
+                // Kiểm tra số dư ví của customer
+                if (customerWallet.getBalance() < withdrawalAmount) {
+                    response.put("message", "Số dư ví của customer không đủ để thực hiện yêu cầu rút tiền");
+                    response.put("status", HttpStatus.BAD_REQUEST);
+                    return response;
+                }
+
+                // Trừ số tiền đã rút vào ví của customer
+                customerWallet.setBalance(customerWallet.getBalance() - withdrawalAmount);
+                customerWalletRepository.save(customerWallet);
+            } else if (withdrawalRequest.getCleaner() != null) {
+                // Kiểm tra ví của cleaner
+                Optional<Wallet> cleanerWalletOpt = walletRepository.findByCleanerId(withdrawalRequest.getCleaner().getId());
+                if (!cleanerWalletOpt.isPresent()) {
+                    response.put("message", "Không tìm thấy ví của cleaner");
+                    response.put("status", HttpStatus.NOT_FOUND);
+                    return response;
+                }
+
+                Wallet cleanerWallet = cleanerWalletOpt.get();
+                // Kiểm tra số dư ví của cleaner
+                if (cleanerWallet.getBalance() < withdrawalAmount) {
+                    response.put("message", "Số dư ví của cleaner không đủ để thực hiện yêu cầu rút tiền");
+                    response.put("status", HttpStatus.BAD_REQUEST);
+                    return response;
+                }
+
+                // Trừ số tiền đã rút vào ví của cleaner
+                cleanerWallet.setBalance(cleanerWallet.getBalance() - withdrawalAmount);
+                walletRepository.save(cleanerWallet);
+            } else {
+                response.put("message", "Không tìm thấy thông tin ví người yêu cầu");
+                response.put("status", HttpStatus.BAD_REQUEST);
+                return response;
+            }
+
             // Nếu approve, cập nhật trạng thái là "APPROVED"
             withdrawalRequest.setStatus("APPROVED");
         } else if ("REJECT".equalsIgnoreCase(action)) {
@@ -205,6 +253,7 @@ public class WithdrawalRequestService {
 
         return response;
     }
+
 
 
     public Map<String, Object> getWithdrawalRequests(String status) {
