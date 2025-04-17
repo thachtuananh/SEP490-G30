@@ -11,4 +11,7 @@ public interface WithdrawalRequestRepository extends JpaRepository<WithdrawalReq
     List<WithdrawalRequest> findByStatusIn(List<String> statuses);
     List<WithdrawalRequest> findByStatus(String status);
 
+    List<WithdrawalRequest> findByCustomerId(Long customerId);
+
+    List<WithdrawalRequest> findByCleanerId(Long cleanerId);
 }

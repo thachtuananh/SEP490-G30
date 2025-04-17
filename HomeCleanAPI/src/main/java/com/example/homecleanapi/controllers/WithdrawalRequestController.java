@@ -32,4 +32,19 @@ public class WithdrawalRequestController {
         return new ResponseEntity<>(response, (HttpStatus) response.get("status"));
     }
 
+    @GetMapping("/customers/{customerId}/history")
+    public ResponseEntity<Map<String, Object>> getWithdrawalHistory(@PathVariable Long customerId) {
+        Map<String, Object> response = withdrawalRequestService.getWithdrawalRequestsForCustomer(customerId);
+
+        return new ResponseEntity<>(response, (HttpStatus) response.get("status"));
+    }
+
+    @GetMapping("/cleaners/{cleanerId}/history")
+    public ResponseEntity<Map<String, Object>> getWithdrawalHistoryForCleaner(@PathVariable Long cleanerId) {
+        Map<String, Object> response = withdrawalRequestService.getWithdrawalRequestsForCleaner(cleanerId);
+
+        return new ResponseEntity<>(response, (HttpStatus) response.get("status"));
+    }
+
+
 }

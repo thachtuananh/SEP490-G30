@@ -288,6 +288,55 @@ public class WithdrawalRequestService {
     }
 
 
+    public Map<String, Object> getWithdrawalRequestsForCustomer(Long customerId) {
+        Map<String, Object> response = new HashMap<>();
+
+        // Kiểm tra xem customer có tồn tại không
+        if (!customerRepository.existsById(customerId)) {
+            response.put("message", "Customer not found");
+            response.put("status", HttpStatus.NOT_FOUND);
+            return response;
+        }
+
+        // Lấy tất cả yêu cầu rút tiền của customer
+        List<WithdrawalRequest> withdrawalRequests = withdrawalRequestRepository.findByCustomerId(customerId);
+
+        if (withdrawalRequests.isEmpty()) {
+            response.put("message", "No withdrawal requests found");
+            response.put("status", HttpStatus.NOT_FOUND);
+        } else {
+            response.put("data", withdrawalRequests);
+            response.put("status", HttpStatus.OK);
+        }
+
+        return response;
+    }
+
+    public Map<String, Object> getWithdrawalRequestsForCleaner(Long cleanerId) {
+        Map<String, Object> response = new HashMap<>();
+
+        // Kiểm tra xem cleaner có tồn tại không
+        if (!cleanerRepository.existsById(cleanerId)) {
+            response.put("message", "Cleaner not found");
+            response.put("status", HttpStatus.NOT_FOUND);
+            return response;
+        }
+
+        // Lấy tất cả yêu cầu rút tiền của cleaner
+        List<WithdrawalRequest> withdrawalRequests = withdrawalRequestRepository.findByCleanerId(cleanerId);
+
+        if (withdrawalRequests.isEmpty()) {
+            response.put("message", "No withdrawal requests found");
+            response.put("status", HttpStatus.NOT_FOUND);
+        } else {
+            response.put("data", withdrawalRequests);
+            response.put("status", HttpStatus.OK);
+        }
+
+        return response;
+    }
+
+
 
 
 }
