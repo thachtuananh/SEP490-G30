@@ -194,7 +194,9 @@ public class EmployeeService {
         Employee employee = employeeRepository.findById(employeeId)
                 .orElseThrow(() -> new RuntimeException("Employee not found"));
 
-        // Cập nhật thông tin employee
+        String base64 = request.getProfile_image();
+        byte[] decoded = Base64.getDecoder().decode(base64);
+        employee.setProfile_image(decoded);
         employee.updateProfile(request);
         employeeRepository.save(employee);
 

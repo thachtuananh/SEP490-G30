@@ -64,7 +64,7 @@ public class FindCleanerService {
             dto.setProfileImage((byte[]) row[5]);  // profile_image
             dto.setLatitude((Double) row[6]);  // latitude
             dto.setLongitude((Double) row[7]);  // longitude
-            dto.setDistance((Double) row[8]);  // distance_m
+            dto.setDistance((Double) row[8]/1000);  // distance_m
 
             employees.add(dto);
         }
@@ -154,7 +154,7 @@ public class FindCleanerService {
                 "WHERE j.status = 'OPEN' " +
                 "AND ST_DWithin(" +
                 "        ca.geom, " +
-                "        ST_SetSRID(ST_MakePoint(:longitude, :latitude), 4326), " +
+                "        ST_Transform(ST_SetSRID(ST_MakePoint(:longitude, :latitude), 4326), 3857), " +
                 "        :radius) " +
                 "AND j.id NOT IN (" +
                 "    SELECT job_id FROM job_application WHERE cleaner_id = :cleanerId" +

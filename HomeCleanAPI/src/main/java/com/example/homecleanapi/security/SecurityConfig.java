@@ -119,7 +119,8 @@ public class SecurityConfig {
                 "https://house-clean-platform.firebaseapp.com",
                 "https://costume-lithuania-parameter-bathrooms.trycloudflare.com",
                 "https://pike-armor-ms-hampton.trycloudflare.com",
-                "https://sandbox.vnpayment.vn"));
+                "https://sandbox.vnpayment.vn",
+                "http://localhost:6333"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "PATCH"));
         configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "Accept", "Origin", "X-Requested-With"));
         configuration.setAllowCredentials(true);
