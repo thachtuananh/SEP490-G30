@@ -89,8 +89,8 @@ function JobSection({ title }) {
     const fetchJobCounts = async () => {
       setIsLoading(true);
       try {
-        // Get token from localStorage
-        const token = localStorage.getItem("token");
+        // Get token from sessionStorage
+        const token = sessionStorage.getItem("token");
 
         if (!token) {
           throw new Error("No authentication token found");

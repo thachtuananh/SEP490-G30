@@ -147,8 +147,8 @@ const AddressSelectionModal = ({
     const fullAddress = formatFullAddress();
 
     setIsSubmitting(true);
-    const token = localStorage.getItem("token");
-    const customerId = localStorage.getItem("customerId");
+    const token = sessionStorage.getItem("token");
+    const customerId = sessionStorage.getItem("customerId");
 
     try {
       const response = await fetch(

@@ -4,8 +4,8 @@ import { message } from 'antd';
 
 export const getUnreadMessageCount = async () => {
     try {
-        const userId = localStorage.getItem('customerId') || localStorage.getItem('cleanerId');
-        const role = localStorage.getItem('role');
+        const userId = sessionStorage.getItem('customerId') || sessionStorage.getItem('cleanerId');
+        const role = sessionStorage.getItem('role');
 
         if (!userId || !role) {
             console.error('User ID or role not found');
@@ -25,7 +25,7 @@ export const getUnreadMessageCount = async () => {
 
 export const createConversation = async (customerId, cleanerId) => {
     try {
-        const token = localStorage.getItem("token");
+        const token = sessionStorage.getItem("token");
         const response = await fetch(`${BASE_URL}/conversations?customerId=${customerId}&cleanerId=${cleanerId}`, {
             method: "POST",
             headers: {

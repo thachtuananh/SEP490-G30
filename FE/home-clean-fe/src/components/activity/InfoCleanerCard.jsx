@@ -13,12 +13,12 @@ export const InfoCleanerCard = ({ cleaner }) => {
             style={{ borderRadius: "10px" }}
           />
           <strong>Tên : {cleaner.cleanerName}</strong>
-          <p>Chuyên môn :</p>
           <div className={styles.divider}></div>
-          <p>Năm sinh: </p>
-          <p>Giới tính: </p>
-          <p>Số điện thoại :</p>
-          <p>Email :</p>
+          <p>Tuổi : {cleaner.age}</p>
+          <p>CCCD: {cleaner.identityNumber}</p>
+          <p>Email : {cleaner.email}</p>
+          <p>Số điện thoại : {cleaner.phoneNumber}</p>
+          <p>Kinh nghiệm : {cleaner.experience}</p>
         </div>
 
         {/* Mô tả thông tin */}

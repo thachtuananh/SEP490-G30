@@ -36,9 +36,9 @@ function Navbar() {
   const [isMessageLoading, setIsMessageLoading] = useState(false);
 
   //Them phan khai báo Chat
-  const roleStr = localStorage.getItem("role");
+  const roleStr = sessionStorage.getItem("role");
   const role = roleStr ? roleStr.toLowerCase() : null;
-  const userId = localStorage.getItem("cleanerId");
+  const userId = sessionStorage.getItem("cleanerId");
 
   const [stompClient, setStompClient] = useState(null);
   const [messages, setMessages] = useState([]);
@@ -127,7 +127,7 @@ function Navbar() {
 
   const handleLogout = () => {
     if (stompClient && stompClient.connected) {
-      const cleanerData = JSON.parse(localStorage.getItem("cleaner"));
+      const cleanerData = JSON.parse(sessionStorage.getItem("cleaner"));
       if (cleanerData?.cleanerId) {
         stompClient.publish({
           destination: "/app/cleaner-offline",
@@ -173,13 +173,13 @@ function Navbar() {
     }
   };
 
-  // Lấy tên user từ localStorage nếu chưa có trong context
+  // Lấy tên user từ sessionStorage nếu chưa có trong context
   const getCleanerName = () => {
     if (cleaner && cleaner.cleanerName) {
       return cleaner.cleanerName;
     }
-    // Fallback to localStorage for compatibility
-    const storedName = localStorage.getItem("name");
+    // Fallback to sessionStorage for compatibility
+    const storedName = sessionStorage.getItem("name");
     return storedName ? storedName : "";
   };
 
@@ -257,23 +257,23 @@ function Navbar() {
     <Popover
       content={
         <>
-          <div
+          {/* <div
             style={{
               cursor: "pointer",
             }}
             onClick={() => {
               navigate("/homeclean/activityjob");
             }}
-          >
-            <Notification
-              onClose={() => setIsPopupNotification(false)}
-              onViewAll={() => {
-                setIsPopupNotification(false);
-                // Navigate to full notification page if you have one
-                // navigate("/notifications");
-              }}
-            />
-          </div>
+          > */}
+          <Notification
+            onClose={() => setIsPopupNotification(false)}
+            onViewAll={() => {
+              setIsPopupNotification(false);
+              // Navigate to full notification page if you have one
+              // navigate("/notifications");
+            }}
+          />
+          {/* </div> */}
         </>
       }
       trigger="click"

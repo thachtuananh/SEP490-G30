@@ -2,7 +2,7 @@ import { BASE_URL } from "../../utils/config";
 // Get all reports
 export async function getAllReports() {
     try {
-        const token = localStorage.getItem("token");
+        const token = sessionStorage.getItem("token");
         const response = await fetch(`${BASE_URL}/reports/get-all-report`, {
             headers: {
                 "Authorization": `Bearer ${token}`,
@@ -24,7 +24,7 @@ export async function getAllReports() {
 // Create a new report
 export async function createReport(jobId, reportData) {
     try {
-        const token = localStorage.getItem("token");
+        const token = sessionStorage.getItem("token");
         const { report_type, description, status } = reportData;
         
         const url = new URL(`${BASE_URL}/reports/${jobId}/create-report`);
@@ -54,7 +54,7 @@ export async function createReport(jobId, reportData) {
 // Update a report
 export async function updateReport(reportId, updateData) {
     try {
-        const token = localStorage.getItem("token");
+        const token = sessionStorage.getItem("token");
         const { status, resolvedAt, adminResponse } = updateData;
         
         const url = new URL(`${BASE_URL}/reports/${reportId}/update_report`);

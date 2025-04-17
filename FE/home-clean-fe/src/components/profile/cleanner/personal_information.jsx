@@ -57,8 +57,8 @@ export const PersonaInformation = () => {
       return;
     }
     try {
-      const token = localStorage.getItem("token");
-      const cleanerId = localStorage.getItem("cleanerId");
+      const token = sessionStorage.getItem("token");
+      const cleanerId = sessionStorage.getItem("cleanerId");
       if (!cleanerId || !token) {
         message.error("Không tìm thấy thông tin người dùng!");
         return;
@@ -112,8 +112,8 @@ export const PersonaInformation = () => {
 
   // Hàm xóa tài khoản
   const deleteAccountAPI = async () => {
-    const token = localStorage.getItem("token");
-    const cleanerId = localStorage.getItem("cleanerId");
+    const token = sessionStorage.getItem("token");
+    const cleanerId = sessionStorage.getItem("cleanerId");
     if (!cleanerId || !token) {
       message.error("Không tìm thấy thông tin người dùng!");
       return;
@@ -234,8 +234,8 @@ export const PersonaInformation = () => {
 
     setIsPasswordLoading(true);
 
-    const token = localStorage.getItem("token");
-    const cleanerId = localStorage.getItem("cleanerId");
+    const token = sessionStorage.getItem("token");
+    const cleanerId = sessionStorage.getItem("cleanerId");
 
     if (!cleanerId || !token) {
       message.error("Không tìm thấy thông tin người dùng!");

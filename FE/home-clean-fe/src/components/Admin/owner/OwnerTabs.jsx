@@ -62,7 +62,7 @@ const OwnerTabs = ({
       const values = await form.validateFields();
       setLoading(true);
 
-      const token = localStorage.getItem("token");
+      const token = sessionStorage.getItem("token");
       const customerId = ownerData.id || ownerData.customerId;
 
       const response = await fetch(

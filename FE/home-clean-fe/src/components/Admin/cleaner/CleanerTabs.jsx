@@ -90,7 +90,7 @@ const CleanerTabs = ({
       const values = await profileForm.validateFields();
       setLoading(true);
 
-      const token = localStorage.getItem("token");
+      const token = sessionStorage.getItem("token");
       const cleanerId = cleanerData.id || cleanerData.cleanerId;
 
       const response = await fetch(
@@ -135,7 +135,7 @@ const CleanerTabs = ({
       const values = await verificationForm.validateFields();
       setLoading(true);
 
-      const token = localStorage.getItem("token");
+      const token = sessionStorage.getItem("token");
       const cleanerId = cleanerData.id || cleanerData.cleanerId;
 
       // Lấy giá trị hiện tại từ state, không phụ thuộc vào validateFields()
@@ -151,7 +151,7 @@ const CleanerTabs = ({
 
       // Using the updated API endpoint from the requirements
       const response = await fetch(
-        `${BASE_URL}/admin/cleaners/${cleanerId}/identity-verified?identityVerified=${identityVerified}&isDeleted=${isDeleted}`,
+        `${BASE_URL}/admin/cleaners/${cleanerId}/identity-verified?status=${identityVerified}&isDeleted=${isDeleted}`,
         {
           method: "PATCH",
           headers: {

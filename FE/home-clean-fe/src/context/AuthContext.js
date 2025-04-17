@@ -1,18 +1,18 @@
 import { createContext, useEffect, useReducer } from "react";
 
 // Hàm kiểm tra và parse JSON an toàn
-const getUserFromLocalStorage = () => {
+const getUserFromsessionStorage = () => {
     try {
-        const user = localStorage.getItem("user");
+        const user = sessionStorage.getItem("user");
         return user ? JSON.parse(user) : null;
     } catch (error) {
         console.error("Lỗi khi parse JSON:", error);
         return null;
     }
 };
-const getCleanerFromLocalStorage = () => {
+const getCleanerFromsessionStorage = () => {
     try {
-        const cleaner = localStorage.getItem("cleaner");
+        const cleaner = sessionStorage.getItem("cleaner");
         return cleaner ? JSON.parse(cleaner) : null;
     } catch (error) {
         console.error("Lỗi khi parse JSON:", error);
@@ -20,11 +20,11 @@ const getCleanerFromLocalStorage = () => {
     }
 };
 const initial_state = {
-    user: getUserFromLocalStorage(),
-    cleaner: getCleanerFromLocalStorage(),
-    token: localStorage.getItem("token") || null,
-    customerId: localStorage.getItem("customerId") || null,
-    cleanerId: localStorage.getItem("cleanerId") || null,
+    user: getUserFromsessionStorage(),
+    cleaner: getCleanerFromsessionStorage(),
+    token: sessionStorage.getItem("token") || null,
+    customerId: sessionStorage.getItem("customerId") || null,
+    cleanerId: sessionStorage.getItem("cleanerId") || null,
     loading: false,
     error: null,
 };
@@ -45,7 +45,7 @@ const AuthReducer = (state, action) => {
                 customerEmail: action.payload.email,
                 // role: action.payload.role
             };
-            localStorage.setItem("user", JSON.stringify(customerLogin));
+            sessionStorage.setItem("user", JSON.stringify(customerLogin));
             return {
                 ...state,
                 user: customerLogin,
@@ -63,13 +63,14 @@ const AuthReducer = (state, action) => {
                 cleanerId: action.payload.cleanerId,
             };
 
-            localStorage.setItem("cleaner", JSON.stringify(cleanerLogin));
+            sessionStorage.setItem("cleaner", JSON.stringify(cleanerLogin));
 
             return {
                 ...state,
                 cleaner: cleanerLogin,
                 token: action.payload.token,
                 cleanerId: action.payload.cleanerId,
+                cleanerPhone: action.payload.phone,
                 loading: false,
                 error: null
             };
@@ -82,7 +83,7 @@ const AuthReducer = (state, action) => {
                 adminId: action.payload.adminId,
                 // role: action.payload.role
             };
-            localStorage.setItem("admin", JSON.stringify(adminLogin));
+            sessionStorage.setItem("admin", JSON.stringify(adminLogin));
             return {
                 ...state,
                 admin: adminLogin,
@@ -95,13 +96,13 @@ const AuthReducer = (state, action) => {
         case "FETCH_PROFILE_SUCCESS_CUSTOMER":
             const { name: customerName, phone: customerPhone,email:customerEmail } = action.payload;
             const customerProfile = { customerName, customerPhone,customerEmail };
-            localStorage.setItem("user", JSON.stringify(customerProfile));
+            sessionStorage.setItem("user", JSON.stringify(customerProfile));
             return { ...state, user: customerProfile };
 
         case "FETCH_PROFILE_SUCCESS_CLEANER":
             const { name: cleanerName, phone: cleanerPhone, email: cleanerEmail, age: cleanerAge, address: cleanerAddress, identity_number: cleanerIDnum, experience: cleanerExp, profile_image } = action.payload;
             const cleanerProfile = { cleanerName, cleanerPhone, cleanerEmail, cleanerAge, cleanerAddress, cleanerIDnum, cleanerExp, profile_image };
-            localStorage.setItem("cleaner", JSON.stringify(cleanerProfile));
+            sessionStorage.setItem("cleaner", JSON.stringify(cleanerProfile));
             return { ...state, cleaner: cleanerProfile };
 
         case "LOGIN_FAILURE":
@@ -109,24 +110,24 @@ const AuthReducer = (state, action) => {
 
         case "UPDATE_USER":
             const updatedUser = { ...state.user, ...action.payload };
-            localStorage.setItem("user", JSON.stringify(updatedUser));
+            sessionStorage.setItem("user", JSON.stringify(updatedUser));
             return { ...state, user: updatedUser };
 
         case "UPDATE_CLEANER":
             const updatedCleaner = { ...state.cleaner, ...action.payload };
-            localStorage.setItem("cleaner", JSON.stringify(updatedCleaner));
+            sessionStorage.setItem("cleaner", JSON.stringify(updatedCleaner));
             return { ...state, cleaner: updatedCleaner };
 
         case "LOGOUT":
-            localStorage.removeItem("user");
-            localStorage.removeItem("cleaner");
-            localStorage.removeItem("admin");
-            localStorage.removeItem("name");
-            localStorage.removeItem("token");
-            localStorage.removeItem("role");
-            localStorage.removeItem("customerId");
-            localStorage.removeItem("cleanerId");
-            localStorage.removeItem("adminId");
+            sessionStorage.removeItem("user");
+            sessionStorage.removeItem("cleaner");
+            sessionStorage.removeItem("admin");
+            sessionStorage.removeItem("name");
+            sessionStorage.removeItem("token");
+            sessionStorage.removeItem("role");
+            sessionStorage.removeItem("customerId");
+            sessionStorage.removeItem("cleanerId");
+            sessionStorage.removeItem("adminId");
             return {
                 ...state,
                 user: null,
@@ -154,24 +155,24 @@ export const AuthContextProvider = ({ children }) => {
 
     useEffect(() => {
         if (state.user) {
-            localStorage.setItem("user", JSON.stringify(state.user));
+            sessionStorage.setItem("user", JSON.stringify(state.user));
         } else {
-            localStorage.removeItem("user");
+            sessionStorage.removeItem("user");
         }
     }, [state.user]);
 
     useEffect(() => {
         if (state.cleaner) {
-            localStorage.setItem("cleaner", JSON.stringify(state.cleaner));
+            sessionStorage.setItem("cleaner", JSON.stringify(state.cleaner));
         } else {
-            localStorage.removeItem("cleaner");
+            sessionStorage.removeItem("cleaner");
         }
     }, [state.cleaner]);
     useEffect(() => {
         if (state.admin) {
-            localStorage.setItem("admin", JSON.stringify(state.admin));
+            sessionStorage.setItem("admin", JSON.stringify(state.admin));
         } else {
-            localStorage.removeItem("admin");
+            sessionStorage.removeItem("admin");
         }
     }, [state.admin]);
     return (

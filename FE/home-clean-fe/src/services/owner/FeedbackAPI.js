@@ -3,7 +3,7 @@ import { BASE_URL } from '../../utils/config';
 // Fetch feedback for a job
 export async function fetchFeedback(customerId, jobId) {
     try {
-        const token = localStorage.getItem("token");
+        const token = sessionStorage.getItem("token");
         const response = await fetch(`${BASE_URL}/customer/${customerId}/job/${jobId}/feedback`, {
             headers: {
                 "Authorization": `Bearer ${token}`,
@@ -25,7 +25,7 @@ export async function fetchFeedback(customerId, jobId) {
 // Create feedback for a job
 export async function createFeedback(customerId, jobId, feedbackData) {
     try {
-        const token = localStorage.getItem("token");
+        const token = sessionStorage.getItem("token");
         const response = await fetch(`${BASE_URL}/customer/${customerId}/job/${jobId}/createfeedback`, {
             method: "POST",
             headers: {
@@ -49,7 +49,7 @@ export async function createFeedback(customerId, jobId, feedbackData) {
 // Update feedback for a job
 export async function updateFeedback(customerId, jobId, feedbackData) {
     try {
-        const token = localStorage.getItem("token");
+        const token = sessionStorage.getItem("token");
         const response = await fetch(`${BASE_URL}/customer/${customerId}/job/${jobId}/updatefeedback`, {
             method: "PUT",
             headers: {

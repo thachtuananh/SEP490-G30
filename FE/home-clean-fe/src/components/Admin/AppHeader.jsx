@@ -34,14 +34,14 @@ const AppHeader = ({ collapsed, onToggle }) => {
 
   const isMobile = windowWidth < 768;
 
-  // Check for token in localStorage on component mount
+  // Check for token in sessionStorage on component mount
   useEffect(() => {
-    const token = localStorage.getItem("token");
+    const token = sessionStorage.getItem("token");
     setIsLoggedIn(!!token); // Convert to boolean
   }, []);
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
+    sessionStorage.removeItem("token");
     dispatch({ type: "LOGOUT" });
     message.success("Đăng xuất thành công!");
     setIsLoggedIn(false);
@@ -75,8 +75,8 @@ const AppHeader = ({ collapsed, onToggle }) => {
     if (admin && admin.adminName) {
       return admin.adminName;
     }
-    // Fallback to localStorage for compatibility
-    const storedName = localStorage.getItem("name");
+    // Fallback to sessionStorage for compatibility
+    const storedName = sessionStorage.getItem("name");
     return storedName && isLoggedIn ? storedName : "";
   };
 

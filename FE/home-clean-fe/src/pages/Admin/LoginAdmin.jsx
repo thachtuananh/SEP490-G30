@@ -50,10 +50,10 @@ function LoginAdmin() {
       if (response.ok) {
         const { token, adminId, name, role } = result;
 
-        localStorage.setItem("name", name);
-        localStorage.setItem("token", token);
-        localStorage.setItem("adminId", adminId);
-        localStorage.setItem("role", role);
+        sessionStorage.setItem("name", name);
+        sessionStorage.setItem("token", token);
+        sessionStorage.setItem("adminId", adminId);
+        sessionStorage.setItem("role", role);
 
         dispatch({
           type: "LOGIN_SUCCESS_ADMIN",

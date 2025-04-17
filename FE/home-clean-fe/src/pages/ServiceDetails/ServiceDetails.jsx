@@ -21,7 +21,7 @@ const ServiceDetails = () => {
           `${BASE_URL}/customer/${customerId}/addresses`,
           {
             headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
+              Authorization: `Bearer ${sessionStorage.getItem("token")}`,
             },
           }
         );
