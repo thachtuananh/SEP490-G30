@@ -154,7 +154,7 @@ public class FindCleanerService {
                 "WHERE j.status = 'OPEN' " +
                 "AND ST_DWithin(" +
                 "        ca.geom, " +
-                "        ST_SetSRID(ST_MakePoint(:longitude, :latitude), 4326), " +
+                "        ST_Transform(ST_SetSRID(ST_MakePoint(:longitude, :latitude), 4326), 3857), " +
                 "        :radius) " +
                 "AND j.id NOT IN (" +
                 "    SELECT job_id FROM job_application WHERE cleaner_id = :cleanerId" +

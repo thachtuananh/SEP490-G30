@@ -12,5 +12,5 @@ public class CleanerUpdateProfile {
     private Integer age;
     private String identity_number;
     private String experience;
-    private byte[] profile_image;
+    private String profile_image;
 }
