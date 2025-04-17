@@ -16,7 +16,9 @@
   margin-bottom: 8px;
   flex-wrap: wrap;
 }
-
+.infoRow span:first-child {
+  max-width: 100% !important;
+}
 .infoRow span:last-child {
   text-align: right;
   max-width: 60%;

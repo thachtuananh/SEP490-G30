@@ -37,7 +37,7 @@ export const Address = () => {
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(6);
+  const [pageSize, setPageSize] = useState(4);
 
   // Address selection state
   const [addressData, setAddressData] = useState([]);
@@ -603,6 +603,7 @@ export const Address = () => {
                       type="primary"
                       ghost
                       icon={<EditOutlined />}
+                      style={{ width: "100%" }}
                       onClick={() =>
                         showUpdateModal(address.id, address.address)
                       }
@@ -610,14 +611,14 @@ export const Address = () => {
                     >
                       Cập nhật
                     </Button>
-                    <Button
+                    {/* <Button
                       danger
                       icon={<DeleteOutlined />}
                       onClick={() => handleDeleteAddress(address.id)}
                       className="delete-address-btn"
                     >
                       Xóa
-                    </Button>
+                    </Button> */}
                   </div>
                   <Button
                     type="primary"

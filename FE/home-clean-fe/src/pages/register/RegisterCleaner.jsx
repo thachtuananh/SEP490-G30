@@ -7,6 +7,7 @@ import {
   InputNumber,
   DatePicker,
   Radio,
+  Modal,
 } from "antd";
 import Footer from "../../components/Home/Owner/Footer";
 import logo from "../../assets/HouseClean_logo.png";
@@ -37,6 +38,10 @@ function RegisterCleaner() {
   });
 
   const [ageInputType, setAgeInputType] = useState("number"); // "number" hoặc "date"
+  const [registrationData, setRegistrationData] = useState(null);
+  const [otpModalVisible, setOtpModalVisible] = useState(false);
+  const [otpCode, setOtpCode] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const navigate = useNavigate();
 
@@ -97,8 +102,10 @@ function RegisterCleaner() {
     return "";
   };
 
+  // Step 1: Submit registration info and send OTP
   const handleSubmit = async (e) => {
-    e.preventDefault();
+    if (e) e.preventDefault();
+
     const {
       phone,
       name,
@@ -167,35 +174,129 @@ function RegisterCleaner() {
 
     console.log("🔍 Không có lỗi, tiếp tục gửi dữ liệu");
 
+    // Store the registration data for later submission
+    setRegistrationData({
+      phone,
+      password,
+      name,
+      email,
+      age,
+      address: "",
+      identity_number,
+      experience,
+    });
+
+    // Send OTP to the phone number
     try {
-      // Chuẩn bị dữ liệu để gửi
-      const submitData = {
-        phone,
-        password,
-        name,
-        email,
-        age,
-        address: "",
-        identity_number,
-        experience,
-      };
+      setIsLoading(true);
+      const response = await fetch(`${BASE_URL}/otp/cleaner/send`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone }),
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        message.success("Mã OTP đã được gửi đến số điện thoại của bạn!");
+        setOtpModalVisible(true);
+      } else {
+        message.error(
+          result.message || "Không thể gửi mã OTP. Vui lòng thử lại!"
+        );
+      }
+    } catch (error) {
+      message.error("Lỗi kết nối đến server khi gửi OTP!");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Step 2: Verify OTP
+  const handleVerifyOtp = async () => {
+    if (!otpCode || otpCode.trim() === "") {
+      message.error("Vui lòng nhập mã OTP!");
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      const response = await fetch(`${BASE_URL}/otp/cleaner/verify`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          phone: registrationData.phone,
+          otpCode: otpCode,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        message.success("Xác thực OTP thành công!");
+        await registerCleaner();
+      } else {
+        message.error(
+          result.message || "Mã OTP không chính xác. Vui lòng thử lại!"
+        );
+      }
+    } catch (error) {
+      message.error("Lỗi kết nối đến server khi xác thực OTP!");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Step 3: Submit registration after OTP verification
+  const registerCleaner = async () => {
+    try {
+      setIsLoading(true);
 
       const response = await fetch(`${BASE_URL}/employee/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(submitData),
+        body: JSON.stringify(registrationData),
       });
 
       const result = await response.json();
 
       if (response.ok) {
         message.success(result.message || "Đăng ký thành công!");
+        setOtpModalVisible(false);
         navigate("/homeclean/login/cleaner");
       } else {
         message.error(result.message || "Đăng ký thất bại!");
       }
     } catch (error) {
       message.error("Lỗi kết nối đến server!");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Resend OTP if needed
+  const handleResendOtp = async () => {
+    try {
+      setIsLoading(true);
+      const response = await fetch(`${BASE_URL}/otp/cleaner/send`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone: registrationData.phone }),
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        message.success("Mã OTP mới đã được gửi đến số điện thoại của bạn!");
+      } else {
+        message.error(
+          result.message || "Không thể gửi lại mã OTP. Vui lòng thử lại!"
+        );
+      }
+    } catch (error) {
+      message.error("Lỗi kết nối đến server khi gửi lại OTP!");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -469,6 +570,7 @@ function RegisterCleaner() {
                 htmlType="submit"
                 className="login-button"
                 onClick={handleSubmit}
+                loading={isLoading}
                 style={{
                   width: "100%",
                   height: "40px",
@@ -487,6 +589,38 @@ function RegisterCleaner() {
           </div>
         </div>
       </main>
+
+      {/* OTP Verification Modal */}
+      <Modal
+        title="Xác thực OTP"
+        visible={otpModalVisible}
+        onCancel={() => setOtpModalVisible(false)}
+        footer={[
+          <Button key="back" onClick={() => setOtpModalVisible(false)}>
+            Hủy
+          </Button>,
+          <Button key="resend" onClick={handleResendOtp} loading={isLoading}>
+            Gửi lại OTP
+          </Button>,
+          <Button
+            key="submit"
+            type="primary"
+            loading={isLoading}
+            onClick={handleVerifyOtp}
+          >
+            Xác nhận
+          </Button>,
+        ]}
+      >
+        <p>Mã OTP đã được gửi đến số điện thoại {registrationData?.phone}.</p>
+        <p>Vui lòng nhập mã OTP:</p>
+        <Input
+          placeholder="Nhập mã OTP"
+          value={otpCode}
+          onChange={(e) => setOtpCode(e.target.value)}
+          style={{ marginTop: "10px" }}
+        />
+      </Modal>
     </div>
   );
 }

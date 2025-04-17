@@ -297,7 +297,6 @@ public class CleanerJobService {
 			jobApplicationRepository.save(jobApplication);  // Lưu thay đổi vào database
 
 			// Cập nhật trạng thái Job thành CANCELLED
-			job.setStatus(JobStatus.CANCELLED);  // Cập nhật trạng thái Job thành CANCELLED
 			jobRepository.save(job);  // Lưu thay đổi vào Job
 
 			response.put("message", "Hủy ứng tuyển thành công");
@@ -1367,7 +1366,7 @@ public class CleanerJobService {
 		// Kiểm tra trùng lịch của cleaner
 		List<Job> existingJobs = jobRepository.findByCleanerIdAndScheduledTimeBetween(cleanerId, jobTime.minusHours(2), jobTime.plusHours(2));
 		if (!existingJobs.isEmpty()) {
-			response.put("message", "Cleaner has overlapping schedule or the time gap between jobs is less than 2 hours");
+			response.put("message", "Người dọn này đã có lịch trùng với thời gian bạn chọn");
 			return response;
 		}
 
@@ -1457,24 +1456,26 @@ public class CleanerJobService {
 			Optional<CustomerWallet> walletOpt = customerWalletRepository.findByCustomerId(customerId);
 			if (!walletOpt.isPresent()) {
 				response.put("message", "Customer wallet not found");
-				return response;
+				response.put("status", HttpStatus.BAD_REQUEST);
+				return response;  // Trả về lỗi và không tiếp tục tạo job
 			}
 
 			CustomerWallet wallet = walletOpt.get();
 
 			// Kiểm tra nếu số dư trong ví không đủ
 			if (wallet.getBalance() < totalPrice) {
-				response.put("message", "Not enough balance in wallet, please top-up");
-				return response;
+				response.put("message", "Số dư ví không đủ");
+				response.put("status", HttpStatus.BAD_REQUEST);
+				return response;  // Trả về lỗi và không tiếp tục tạo job
 			}
 
 			// Cộng tiền vào ví của customer
 			wallet.setBalance(wallet.getBalance() - totalPrice);  // Giảm số dư ví
 			customerWalletRepository.save(wallet);  // Lưu cập nhật vào ví của customer
 
-			// Cập nhật trạng thái job
-			job.setStatus(JobStatus.BOOKED);  // Cập nhật trạng thái job thành PAID sau khi thanh toán
-			jobRepository.save(job);
+			// Cập nhật trạng thái job sau khi thanh toán thành công
+			job.setStatus(JobStatus.BOOKED);  // Cập nhật trạng thái job thành BOOKED sau khi thanh toán
+			jobRepository.save(job);  // Lưu job vào database
 		} else if ("vnpay".equalsIgnoreCase(request.getPaymentMethod())) {
 			// Tạo VNPay Request với số tiền thanh toán
 			VnpayRequest vnpayRequest = new VnpayRequest();
@@ -1502,6 +1503,7 @@ public class CleanerJobService {
 			return response;
 		}
 
+
 		// Tạo JobApplication cho cleaner
 		JobApplication jobApplication = new JobApplication();
 		jobApplication.setJob(job);
@@ -1521,11 +1523,6 @@ public class CleanerJobService {
 
 		return response;
 	}
-
-
-
-
-
 
 
 

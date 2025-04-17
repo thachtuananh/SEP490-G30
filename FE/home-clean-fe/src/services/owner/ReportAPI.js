@@ -3,7 +3,8 @@ import { BASE_URL } from "../../utils/config";
 export async function getAllReports() {
     try {
         const token = sessionStorage.getItem("token");
-        const response = await fetch(`${BASE_URL}/reports/get-all-report`, {
+        const customerId = sessionStorage.getItem("customerId");
+        const response = await fetch(`${BASE_URL}/reports/${customerId}/get-report-customer`, {
             headers: {
                 "Authorization": `Bearer ${token}`,
                 "Content-Type": "application/json",
@@ -25,12 +26,11 @@ export async function getAllReports() {
 export async function createReport(jobId, reportData) {
     try {
         const token = sessionStorage.getItem("token");
-        const { report_type, description, status } = reportData;
+        const { report_type, description } = reportData;
         
         const url = new URL(`${BASE_URL}/reports/${jobId}/create-report`);
         url.searchParams.append('report_type', report_type);
         url.searchParams.append('description', description);
-        url.searchParams.append('status', status);
         
         const response = await fetch(url.toString(), {
             method: 'POST',
