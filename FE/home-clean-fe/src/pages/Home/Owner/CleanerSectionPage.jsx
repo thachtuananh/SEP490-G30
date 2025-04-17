@@ -74,6 +74,9 @@ function CleanersPage() {
       const res = await axios.get(`${BASE_URL}/services/${customerId}/nearby`);
 
       setCleaners(res.data);
+
+      // After setting cleaners from nearby, update online status
+      fetchOnlineStatus();
     } catch (error) {
       console.error("❌ Lỗi khi fetch cleaners:", error);
     } finally {
@@ -82,22 +85,20 @@ function CleanersPage() {
     }
   };
 
-  const fetchAllCleaners = async () => {
+  const fetchOnlineStatus = async () => {
     try {
-      setLoading(true);
-      setRefreshing(true);
       const res = await axios.get(`${BASE_URL}/customer/cleaners/online`);
-
-      setCleaners(res.data);
       const ids = res.data.map((cleaner) => cleaner.cleanerId);
       setOnlineCleanerIds(ids);
     } catch (error) {
-      console.error("❌ Lỗi khi fetch cleaners:", error);
-    } finally {
-      setLoading(false);
-      setTimeout(() => setRefreshing(false), 500);
+      console.error("❌ Lỗi khi fetch trạng thái online:", error);
     }
   };
+
+  // Fetch initial data
+  useEffect(() => {
+    fetchAllCleanersNearby();
+  }, []);
 
   // Fix for CleanerSection.jsx
   useEffect(() => {
@@ -205,14 +206,9 @@ function CleanersPage() {
 
   const isOnline = (cleanerId) => onlineCleanerIds.includes(cleanerId);
 
-  useEffect(() => {
-    // fetchAllCleaners();
+  const refreshData = () => {
     fetchAllCleanersNearby();
-  }, []);
-
-  // useEffect(() => {
-  //   console.log("🚀 ~ CleanersPage ~ cleaners:", cleaners);
-  // }, [cleaners]);
+  };
 
   const onlineCount = cleaners.filter((cleaner) =>
     isOnline(cleaner.cleanerId)
@@ -223,23 +219,29 @@ function CleanersPage() {
     // First, apply search filter
     let filtered = data;
     if (searchText) {
-      filtered = filtered.filter((cleaner) =>
-        cleaner.name.toLowerCase().includes(searchText.toLowerCase())
+      filtered = filtered.filter(
+        (cleaner) =>
+          cleaner.name?.toLowerCase().includes(searchText.toLowerCase()) ||
+          cleaner.fullName?.toLowerCase().includes(searchText.toLowerCase())
       );
     }
 
     // Then, apply online/offline filter
     if (filterStatus === "online") {
-      filtered = filtered.filter((cleaner) => isOnline(cleaner.cleanerId));
+      filtered = filtered.filter((cleaner) => isOnline(cleaner.id));
     } else if (filterStatus === "offline") {
-      filtered = filtered.filter((cleaner) => !isOnline(cleaner.cleanerId));
+      filtered = filtered.filter((cleaner) => !isOnline(cleaner.id));
     }
 
     // Finally, sort the results
     if (sortOption === "nameAsc") {
-      filtered = [...filtered].sort((a, b) => a.name.localeCompare(b.name));
+      filtered = [...filtered].sort((a, b) =>
+        (a.name || a.fullName || "").localeCompare(b.name || b.fullName || "")
+      );
     } else if (sortOption === "nameDesc") {
-      filtered = [...filtered].sort((a, b) => b.name.localeCompare(a.name));
+      filtered = [...filtered].sort((a, b) =>
+        (b.name || b.fullName || "").localeCompare(a.name || a.fullName || "")
+      );
     }
     // Add more sorting options if needed
 
@@ -435,7 +437,7 @@ function CleanersPage() {
               <Button
                 type="primary"
                 icon={refreshing ? <LoadingOutlined /> : <ReloadOutlined />}
-                onClick={fetchAllCleanersNearby}
+                onClick={refreshData}
                 loading={loading && !refreshing}
                 size={isMobile ? "middle" : "large"}
                 block={isMobile}
@@ -607,7 +609,7 @@ function CleanersPage() {
             title="Không tìm thấy cleaner nào"
             subTitle="Vui lòng thử lại sau hoặc kiểm tra kết nối mạng của bạn."
             extra={
-              <Button type="primary" size="large" onClick={fetchAllCleaners}>
+              <Button type="primary" size="large" onClick={refreshData}>
                 Thử lại
               </Button>
             }

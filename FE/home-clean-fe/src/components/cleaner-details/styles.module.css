@@ -24,11 +24,17 @@
   flex-direction: column;
   gap: 16px;
   display: flex;
-  width: 50%;
+  width: 30%;
+}
+.rightSection {
+  width: 70%;
 }
 
 @media (width<=991px) {
   .imageSection {
+    width: 100%;
+  }
+  .rightSection {
     width: 100%;
   }
 }
@@ -402,7 +408,7 @@
   font-size: 16px;
 }
 
-@media (width<=991px) {
+@media (width<=800px) {
   .mainContainer {
     flex-direction: column;
   }
