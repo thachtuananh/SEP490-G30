@@ -7,8 +7,6 @@
     <list default="true" id="6dd32c25-99a1-4da0-a769-374f6713cd9c" name="Changes" comment="update application">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/controllers/AdminController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/controllers/AdminController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/controllers/WithdrawalRequestController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/controllers/WithdrawalRequestController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/dtos/WithdrawalRequest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/dtos/WithdrawalDTO.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/services/WithdrawalRequestService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/services/WithdrawalRequestService.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -80,6 +78,9 @@
     "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
+  <component name="ReactorSettings">
+    <option name="notificationShown" value="true" />
+  </component>
   <component name="RunManager">
     <configuration name="HomeCleanApiApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
       <option name="FRAME_DEACTIVATION_UPDATE_POLICY" value="UpdateClassesAndResources" />

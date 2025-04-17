@@ -4,6 +4,8 @@ import com.example.homecleanapi.dtos.WithdrawalDTO;
 import com.example.homecleanapi.models.*;
 import com.example.homecleanapi.repositories.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -158,18 +160,27 @@ public class WithdrawalRequestService {
     }
 
 
+
+
     public Map<String, Object> approveOrRejectWithdrawalRequest(Long withdrawalRequestId, String action) {
         Map<String, Object> response = new HashMap<>();
 
         // Kiểm tra xem yêu cầu rút tiền có tồn tại không
         Optional<WithdrawalRequest> withdrawalRequestOpt = withdrawalRequestRepository.findById(withdrawalRequestId);
         if (!withdrawalRequestOpt.isPresent()) {
-            response.put("message", "Withdrawal request not found");
+            response.put("message", "Không tìm thấy yêu cầu");
             response.put("status", HttpStatus.NOT_FOUND);
             return response;
         }
 
         WithdrawalRequest withdrawalRequest = withdrawalRequestOpt.get();
+
+        // Kiểm tra trạng thái hiện tại của yêu cầu rút tiền
+        if (!"PENDING".equalsIgnoreCase(withdrawalRequest.getStatus())) {
+            response.put("message", "Bạn đã chấp nhận hoặc từ chối yêu cầu này");
+            response.put("status", HttpStatus.BAD_REQUEST);
+            return response;
+        }
 
         // Kiểm tra hành động của admin (APPROVE hoặc REJECT)
         if ("APPROVE".equalsIgnoreCase(action)) {
@@ -188,11 +199,13 @@ public class WithdrawalRequestService {
         // Cập nhật lại yêu cầu rút tiền trong cơ sở dữ liệu
         withdrawalRequestRepository.save(withdrawalRequest);
 
-        response.put("message", "Withdrawal request " + action + " successfully");
+        response.put("message", "Thành công");
         response.put("status", HttpStatus.OK);
 
         return response;
     }
+
+
 
 
 }

@@ -3,6 +3,7 @@ package com.example.homecleanapi.controllers;
 import com.example.homecleanapi.dtos.LoginRequest;
 import com.example.homecleanapi.services.AdminAuthService;
 import com.example.homecleanapi.services.WithdrawalRequestService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -13,6 +14,7 @@ import java.util.Map;
 
 @Tag(name = "Admin API")
 @RestController
+@SecurityRequirement(name = "BearerAuth")
 @RequestMapping("/api/admin")
 public class AdminController {
 
