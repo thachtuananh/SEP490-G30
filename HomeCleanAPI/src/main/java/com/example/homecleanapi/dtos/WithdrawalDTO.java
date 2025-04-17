@@ -1,6 +1,6 @@
 package com.example.homecleanapi.dtos;
 
-public class WithdrawalRequest {
+public class WithdrawalDTO {
 
     private Double amount;
     private String cardNumber;

@@ -1,6 +1,6 @@
 package com.example.homecleanapi.services;
 
-import com.example.homecleanapi.dtos.WithdrawalRequest;
+import com.example.homecleanapi.dtos.WithdrawalDTO;
 import com.example.homecleanapi.models.*;
 import com.example.homecleanapi.repositories.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,7 +28,7 @@ public class WithdrawalRequestService {
     @Autowired
     private WalletRepository walletRepository;
 
-    public Map<String, Object> createWithdrawalRequest(Long customerId, WithdrawalRequest request) {
+    public Map<String, Object> createWithdrawalRequest(Long customerId, WithdrawalDTO request) {
         Map<String, Object> response = new HashMap<>();
 
         // Kiểm tra xem customer có tồn tại không
@@ -41,7 +41,7 @@ public class WithdrawalRequestService {
         // Kiểm tra ví của customer
         Optional<CustomerWallet> walletOpt = customerWalletRepository.findByCustomerId(customerId);
         if (!walletOpt.isPresent()) {
-            response.put("message", "Customer wallet not found");
+            response.put("message", "Ví không tồn tại");
             response.put("status", HttpStatus.NOT_FOUND);
             return response;
         }
@@ -57,19 +57,19 @@ public class WithdrawalRequestService {
 
         // Kiểm tra các trường thông tin rút tiền không được để trống
         if (request.getCardNumber() == null || request.getCardNumber().isEmpty()) {
-            response.put("message", "Card number cannot be empty");
+            response.put("message", "Số thẻ không được để trống");
             response.put("status", HttpStatus.BAD_REQUEST);
             return response;
         }
 
         if (request.getBankName() == null || request.getBankName().isEmpty()) {
-            response.put("message", "Bank name cannot be empty");
+            response.put("message", "Tên ngân hàng không được để trống");
             response.put("status", HttpStatus.BAD_REQUEST);
             return response;
         }
 
         if (request.getAccountHolderName() == null || request.getAccountHolderName().isEmpty()) {
-            response.put("message", "Account holder name cannot be empty");
+            response.put("message", "Tên chủ tài khoản không được để trống");
             response.put("status", HttpStatus.BAD_REQUEST);
             return response;
         }
@@ -86,14 +86,14 @@ public class WithdrawalRequestService {
         // Lưu yêu cầu rút tiền vào cơ sở dữ liệu
         withdrawalRequestRepository.save(withdrawalRequest);
 
-        response.put("message", "Withdrawal request created successfully, waiting for admin approval");
+        response.put("message", "Yêu cầu rút tiền đã được tạo thành công, đang chờ quản trị viên chấp thuận");
         response.put("status", HttpStatus.CREATED);
 
         return response;
     }
 
 
-    public Map<String, Object> createWithdrawalRequestForCleaner(Long cleanerId, WithdrawalRequest request) {
+    public Map<String, Object> createWithdrawalRequestForCleaner(Long cleanerId, WithdrawalDTO request) {
         Map<String, Object> response = new HashMap<>();
 
         // Kiểm tra xem cleaner có tồn tại không
@@ -106,7 +106,7 @@ public class WithdrawalRequestService {
         // Kiểm tra ví của cleaner
         Optional<Wallet> walletOpt = walletRepository.findByCleanerId(cleanerId);
         if (!walletOpt.isPresent()) {
-            response.put("message", "Cleaner wallet not found");
+            response.put("message", "Ví không tồn tại");
             response.put("status", HttpStatus.NOT_FOUND);
             return response;
         }
@@ -122,19 +122,19 @@ public class WithdrawalRequestService {
 
         // Kiểm tra các trường thông tin rút tiền không được để trống
         if (request.getCardNumber() == null || request.getCardNumber().isEmpty()) {
-            response.put("message", "Card number cannot be empty");
+            response.put("message", "Số thẻ không được để trống");
             response.put("status", HttpStatus.BAD_REQUEST);
             return response;
         }
 
         if (request.getBankName() == null || request.getBankName().isEmpty()) {
-            response.put("message", "Bank name cannot be empty");
+            response.put("message", "Tên ngân hàng không được để trống");
             response.put("status", HttpStatus.BAD_REQUEST);
             return response;
         }
 
         if (request.getAccountHolderName() == null || request.getAccountHolderName().isEmpty()) {
-            response.put("message", "Account holder name cannot be empty");
+            response.put("message", "Tên chủ tài khoản không được để trống");
             response.put("status", HttpStatus.BAD_REQUEST);
             return response;
         }
@@ -151,8 +151,45 @@ public class WithdrawalRequestService {
         // Lưu yêu cầu rút tiền vào cơ sở dữ liệu
         withdrawalRequestRepository.save(withdrawalRequest);
 
-        response.put("message", "Withdrawal request created successfully, waiting for admin approval");
+        response.put("message", "Yêu cầu rút tiền đã được tạo thành công, đang chờ quản trị viên chấp thuận");
         response.put("status", HttpStatus.CREATED);
+
+        return response;
+    }
+
+
+    public Map<String, Object> approveOrRejectWithdrawalRequest(Long withdrawalRequestId, String action) {
+        Map<String, Object> response = new HashMap<>();
+
+        // Kiểm tra xem yêu cầu rút tiền có tồn tại không
+        Optional<WithdrawalRequest> withdrawalRequestOpt = withdrawalRequestRepository.findById(withdrawalRequestId);
+        if (!withdrawalRequestOpt.isPresent()) {
+            response.put("message", "Withdrawal request not found");
+            response.put("status", HttpStatus.NOT_FOUND);
+            return response;
+        }
+
+        WithdrawalRequest withdrawalRequest = withdrawalRequestOpt.get();
+
+        // Kiểm tra hành động của admin (APPROVE hoặc REJECT)
+        if ("APPROVE".equalsIgnoreCase(action)) {
+            // Nếu approve, cập nhật trạng thái là "APPROVED"
+            withdrawalRequest.setStatus("APPROVED");
+        } else if ("REJECT".equalsIgnoreCase(action)) {
+            // Nếu reject, cập nhật trạng thái là "REJECTED"
+            withdrawalRequest.setStatus("REJECTED");
+        } else {
+            // Trường hợp hành động không hợp lệ
+            response.put("message", "Invalid action, must be APPROVE or REJECT");
+            response.put("status", HttpStatus.BAD_REQUEST);
+            return response;
+        }
+
+        // Cập nhật lại yêu cầu rút tiền trong cơ sở dữ liệu
+        withdrawalRequestRepository.save(withdrawalRequest);
+
+        response.put("message", "Withdrawal request " + action + " successfully");
+        response.put("status", HttpStatus.OK);
 
         return response;
     }

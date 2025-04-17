@@ -1,6 +1,6 @@
 package com.example.homecleanapi.controllers;
 
-import com.example.homecleanapi.dtos.WithdrawalRequest;
+import com.example.homecleanapi.dtos.WithdrawalDTO;
 import com.example.homecleanapi.services.WithdrawalRequestService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -18,7 +18,7 @@ public class WithdrawalRequestController {
 
     @PostMapping("/{customerId}/requestWithdrawal")
     public ResponseEntity<Map<String, Object>> createWithdrawalRequest(@PathVariable Long customerId,
-                                                                       @RequestBody WithdrawalRequest request) {
+                                                                       @RequestBody WithdrawalDTO request) {
         Map<String, Object> response = withdrawalRequestService.createWithdrawalRequest(customerId, request);
 
         return new ResponseEntity<>(response, (HttpStatus) response.get("status"));
@@ -26,7 +26,7 @@ public class WithdrawalRequestController {
 
     @PostMapping("/cleaners/{cleanerId}/requestWithdrawal")
     public ResponseEntity<Map<String, Object>> createWithdrawalRequestForCleaner(@PathVariable Long cleanerId,
-                                                                                 @RequestBody WithdrawalRequest request) {
+                                                                                 @RequestBody WithdrawalDTO request) {
         Map<String, Object> response = withdrawalRequestService.createWithdrawalRequestForCleaner(cleanerId, request);
 
         return new ResponseEntity<>(response, (HttpStatus) response.get("status"));
