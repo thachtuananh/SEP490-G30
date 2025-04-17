@@ -64,6 +64,8 @@ public class JobService {
     private CustomerWalletRepository customerWalletRepository;
     @Autowired
     private TransactionHistoryRepository transactionHistoryRepository;
+    @Autowired
+    private WorkHistoryRepository workHistoryRepository;
 
 
     public Map<String, Object> bookJob(@PathVariable Long customerId, @RequestBody BookJobRequest request, HttpServletRequest requestIp) {
@@ -448,6 +450,14 @@ public class JobService {
         job.setStatus(JobStatus.DONE);
         jobRepository.save(job);
 
+        // Cập nhật end_time trong work_history
+        Optional<WorkHistory> workHistoryOpt = workHistoryRepository.findByJobAndCleaner(job, cleaner);
+        if (workHistoryOpt.isPresent()) {
+            WorkHistory workHistory = workHistoryOpt.get();
+            workHistory.setEndTime(LocalDateTime.now());  // Set current time as end time
+            workHistoryRepository.save(workHistory);
+        }
+
         // Tính toán số tiền sẽ trả cho cleaner (85% tổng giá trị đơn hàng)
         double totalPrice = job.getTotalPrice();
         double cleanerPayment = totalPrice * 0.85;
@@ -473,6 +483,7 @@ public class JobService {
 
 
 
+
     // list tất cả job đã book
     public List<Map<String, Object>> getBookedJobsForCustomer(Long customerId) {
         List<Map<String, Object>> bookedJobs = new ArrayList<Map<String,Object>>();
@@ -485,6 +496,7 @@ public class JobService {
 
             // Thêm các thông tin chi tiết của job vào jobInfo
             jobInfo.put("jobId", job.getId());
+            jobInfo.put("orderCode", job.getOrderCode());  // Thêm order_code
             jobInfo.put("scheduledTime", job.getScheduledTime());  // Thời gian
             jobInfo.put("customerAddress", job.getCustomerAddress().getAddress());  // Địa chỉ
             jobInfo.put("status", job.getStatus());  // Trạng thái
@@ -548,7 +560,6 @@ public class JobService {
                 Employee cleaner = jobApplication.getCleaner();
                 if (cleaner != null) {
                     jobInfo.put("cleanerId", cleaner.getId());
-
                 }
             }
 
@@ -557,6 +568,7 @@ public class JobService {
 
         return bookedJobs;
     }
+
 
 
 

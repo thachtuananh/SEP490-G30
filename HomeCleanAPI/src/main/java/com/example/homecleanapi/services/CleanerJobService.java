@@ -75,6 +75,8 @@ public class CleanerJobService {
 
 	@Autowired
 	private CustomerRepo customerRepository;
+    @Autowired
+    private WorkHistoryRepository workHistoryRepository;
 
 
 	public Map<String, Object> getCustomerDetails(Long cleanerId, Long customerId) {
@@ -116,6 +118,8 @@ public class CleanerJobService {
 
 		return !jobApplications.isEmpty();  // Nếu có công việc nào thì trả về true, không thì false
 	}
+
+
 
 
 	// Lấy chi tiết công việc
@@ -485,7 +489,6 @@ public class CleanerJobService {
 
 		// Lấy phone từ JWT hoặc SecurityContext (sử dụng phone_number từ token)
 		String phoneNumber = SecurityContextHolder.getContext().getAuthentication().getName();
-
 		System.out.println("phone = " + phoneNumber);
 
 		// Tìm cleaner theo phone number
@@ -522,9 +525,19 @@ public class CleanerJobService {
 		job.setStatus(JobStatus.ARRIVED);
 		jobRepository.save(job);
 
-		response.put("message", "Job status updated to ARRIVED");
+		// Lưu thông tin vào bảng work_history khi job bắt đầu
+		WorkHistory workHistory = new WorkHistory();
+		workHistory.setCleaner(cleaner);
+		workHistory.setJob(job);
+		workHistory.setStartTime(LocalDateTime.now());  // Set current time as start time
+		workHistory.setTotalDuration(0);  // Initialize total duration as 0
+		workHistory.setEarnings(0.0);  // Set earnings to 0 initially
+		workHistoryRepository.save(workHistory);
+
+		response.put("message", "Job status updated to ARRIVED, and work history has been recorded");
 		return response;
 	}
+
 
 	// Cập nhật trạng thái công việc sang "COMPLETED"
 	public Map<String, Object> updateJobStatusToCompleted(Long jobId) {
@@ -1339,6 +1352,9 @@ public class CleanerJobService {
 		job.setPaymentMethod(request.getPaymentMethod()); // Lưu phương thức thanh toán vào job ngay khi tạo job
 		job.setReminder(request.getReminder());
 
+		// Cập nhật booking_type thành "BOOKED"
+		job.setBookingType("BOOKED");  // Cập nhật loại booking
+
 		// Kiểm tra thông tin cleaner
 		Optional<Employee> cleanerOpt = cleanerRepository.findById(cleanerId);
 		if (!cleanerOpt.isPresent()) {
@@ -1382,7 +1398,7 @@ public class CleanerJobService {
 			// Tính giá dịch vụ
 			double serviceDetailPrice = serviceDetail.getPrice();
 
-			double finalPrice = serviceDetailPrice ;
+			double finalPrice = serviceDetailPrice;
 
 			// Kiểm tra giờ cao điểm và phụ phí
 			double peakTimeFee = 0;
@@ -1410,9 +1426,6 @@ public class CleanerJobService {
 			}
 
 			finalPrice += peakTimeFee; // Cộng phụ phí vào giá cuối
-
-
-			finalPrice += peakTimeFee;
 
 			// Cộng tổng giá cho tất cả các dịch vụ
 			totalPrice += finalPrice;
@@ -1460,7 +1473,7 @@ public class CleanerJobService {
 			customerWalletRepository.save(wallet);  // Lưu cập nhật vào ví của customer
 
 			// Cập nhật trạng thái job
-			job.setStatus(JobStatus.PAID);  // Cập nhật trạng thái job thành PAID sau khi thanh toán
+			job.setStatus(JobStatus.BOOKED);  // Cập nhật trạng thái job thành PAID sau khi thanh toán
 			jobRepository.save(job);
 		} else if ("vnpay".equalsIgnoreCase(request.getPaymentMethod())) {
 			// Tạo VNPay Request với số tiền thanh toán
@@ -1518,6 +1531,7 @@ public class CleanerJobService {
 
 
 
+
 	private String extractTxnRefFromUrl(String paymentUrl) {
 		try {
 			// Trích xuất txnRef từ URL
@@ -1539,89 +1553,88 @@ public class CleanerJobService {
 
 
 	public List<Map<String, Object>> getJobsBookedForCleaner(@PathVariable Long cleanerId) {
-	    List<Map<String, Object>> responseList = new ArrayList<>();
+		List<Map<String, Object>> responseList = new ArrayList<>();
 
-	    // Tìm cleaner theo cleanerId
-	    Optional<Employee> cleanerOpt = cleanerRepository.findById(cleanerId);
-	    if (!cleanerOpt.isPresent()) {
-	        responseList.add(Map.of("message", "Cleaner not found with cleanerId: " + cleanerId));
-	        return responseList;
-	    }
+		// Tìm cleaner theo cleanerId
+		Optional<Employee> cleanerOpt = cleanerRepository.findById(cleanerId);
+		if (!cleanerOpt.isPresent()) {
+			responseList.add(Map.of("message", "Cleaner not found with cleanerId: " + cleanerId));
+			return responseList;
+		}
 
-	    Employee cleaner = cleanerOpt.get();
+		Employee cleaner = cleanerOpt.get();
 
-	    // Tìm tất cả các job mà cleaner đã được gán với trạng thái "BOOKED"
-	    List<Job> jobs = jobRepository.findByCleanerIdAndStatus(cleanerId, JobStatus.BOOKED);
-	
+		// Tìm tất cả các job mà cleaner đã được gán với booking_type là "BOOKED" và trạng thái "BOOKED" hoặc "OPEN"
+		List<Job> jobs = jobRepository.findByCleanerIdAndBookingTypeAndStatusIn(cleanerId, "BOOKED", Arrays.asList(JobStatus.BOOKED, JobStatus.OPEN));
 
-	    // Lấy thông tin các job mà cleaner được book
-	    for (Job job : jobs) {
-	        Map<String, Object> jobInfo = new HashMap<>();
+		// Lấy thông tin các job mà cleaner được book
+		for (Job job : jobs) {
+			Map<String, Object> jobInfo = new HashMap<>();
 
-	        // Thêm thông tin về job
-	        jobInfo.put("jobId", job.getId());
-	        jobInfo.put("status", job.getStatus());
-	        jobInfo.put("scheduledTime", job.getScheduledTime());
-	        jobInfo.put("totalPrice", job.getTotalPrice());
+			// Thêm thông tin về job
+			jobInfo.put("jobId", job.getId());
+			jobInfo.put("status", job.getBookingType());
+			jobInfo.put("scheduledTime", job.getScheduledTime());
+			jobInfo.put("totalPrice", job.getTotalPrice());
 
+			// Thêm thông tin về customer
+			Customers customer = job.getCustomer();
+			if (customer != null) {
+				jobInfo.put("customerId", customer.getId());
+				jobInfo.put("customerName", customer.getFull_name());
+				jobInfo.put("customerPhone", customer.getPhone());
+			}
 
-	        // Thêm thông tin về customer
-	        Customers customer = job.getCustomer();
-	        if (customer != null) {
-	            jobInfo.put("customerId", customer.getId());
-	            jobInfo.put("customerName", customer.getFull_name());
-	            jobInfo.put("customerPhone", customer.getPhone());
-	        }
+			// Lấy thông tin về địa chỉ của customer
+			CustomerAddresses customerAddress = job.getCustomerAddress();
+			if (customerAddress != null) {
+				jobInfo.put("customerAddressId", customerAddress.getId());
+				jobInfo.put("customerAddress", customerAddress.getAddress());
+				jobInfo.put("latitude", customerAddress.getLatitude());
+				jobInfo.put("longitude", customerAddress.getLongitude());
+			}
 
-	        // Lấy thông tin về địa chỉ của customer
-	        CustomerAddresses customerAddress = job.getCustomerAddress();
-	        if (customerAddress != null) {
-	            jobInfo.put("customerAddressId", customerAddress.getId());
-	            jobInfo.put("customerAddress", customerAddress.getAddress());
-	            jobInfo.put("latitude", customerAddress.getLatitude());
-	            jobInfo.put("longitude", customerAddress.getLongitude());
-	        }
+			// Lấy tất cả các JobServiceDetail cho job này
+			List<JobServiceDetail> jobServiceDetails = jobServiceDetailRepository.findByJobId(job.getId());
+			if (jobServiceDetails != null && !jobServiceDetails.isEmpty()) {
+				List<Map<String, Object>> serviceList = new ArrayList<>();
 
-	        // Lấy tất cả các JobServiceDetail cho job này
-	        List<JobServiceDetail> jobServiceDetails = jobServiceDetailRepository.findByJobId(job.getId());
-	        if (jobServiceDetails != null && !jobServiceDetails.isEmpty()) {
-	            List<Map<String, Object>> serviceList = new ArrayList<>();
+				// Duyệt qua tất cả các dịch vụ trong bảng job_service_detail
+				for (JobServiceDetail jobServiceDetail : jobServiceDetails) {
+					Services service = jobServiceDetail.getService();
+					if (service != null) {
+						Map<String, Object> serviceInfo = new HashMap<>();
+						serviceInfo.put("serviceName", service.getName());
+						serviceInfo.put("serviceDescription", service.getDescription());
 
-	            // Duyệt qua tất cả các dịch vụ trong bảng job_service_detail
-	            for (JobServiceDetail jobServiceDetail : jobServiceDetails) {
-	                Services service = jobServiceDetail.getService();
-	                if (service != null) {
-	                    Map<String, Object> serviceInfo = new HashMap<>();
-	                    serviceInfo.put("serviceName", service.getName());
-	                    serviceInfo.put("serviceDescription", service.getDescription());
+						// Lấy thông tin chi tiết dịch vụ
+						ServiceDetail serviceDetail = jobServiceDetail.getServiceDetail();
+						if (serviceDetail != null) {
+							serviceInfo.put("serviceDetailName", serviceDetail.getName());
+							serviceInfo.put("price", serviceDetail.getPrice());
+							serviceInfo.put("additionalPrice", serviceDetail.getAdditionalPrice());
+							serviceInfo.put("areaRange", serviceDetail.getAreaRange());
+							serviceInfo.put("description", serviceDetail.getDescription());
+							serviceInfo.put("discounts", serviceDetail.getDiscounts());
+						}
 
-	                    // Lấy thông tin chi tiết dịch vụ
-	                    ServiceDetail serviceDetail = jobServiceDetail.getServiceDetail();
-	                    if (serviceDetail != null) {
-	                        serviceInfo.put("serviceDetailName", serviceDetail.getName());
-	                        serviceInfo.put("price", serviceDetail.getPrice());
-	                        serviceInfo.put("additionalPrice", serviceDetail.getAdditionalPrice());
-	                        serviceInfo.put("areaRange", serviceDetail.getAreaRange());
-	                        serviceInfo.put("description", serviceDetail.getDescription());
-	                        serviceInfo.put("discounts", serviceDetail.getDiscounts());
-	                    }
+						serviceList.add(serviceInfo);
+					}
+				}
 
-	                    serviceList.add(serviceInfo);
-	                }
-	            }
+				// Thêm thông tin dịch vụ vào jobInfo
+				jobInfo.put("services", serviceList);
+			} else {
+				// Nếu không có dịch vụ nào, thông báo không có dịch vụ
+				jobInfo.put("services", "No services found for this job");
+			}
 
-	            // Thêm thông tin dịch vụ vào jobInfo
-	            jobInfo.put("services", serviceList);
-	        } else {
-	            // Nếu không có dịch vụ nào, thông báo không có dịch vụ
-	            jobInfo.put("services", "No services found for this job");
-	        }
+			responseList.add(jobInfo);
+		}
 
-	        responseList.add(jobInfo);
-	    }
-
-	    return responseList;
+		return responseList;
 	}
+
 
 
 
