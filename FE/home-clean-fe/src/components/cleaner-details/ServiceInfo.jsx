@@ -1,4 +1,4 @@
-import { Card, Typography, Row, Col, Space, Button } from "antd";
+import { Card, Typography, Row, Col, Space } from "antd";
 import { CheckCircleFilled, CloseCircleFilled } from "@ant-design/icons";
 import { StarRating } from "./StarRating";
 
@@ -11,7 +11,6 @@ export const ServiceInfo = ({
   experience,
   age,
   isVerified,
-  identityNumber,
 }) => {
   return (
     <Card
@@ -33,7 +32,7 @@ export const ServiceInfo = ({
                 color: "#1a1a1a",
               }}
             >
-              {cleanerName || "Tên cleaner"}
+              {cleanerName || "Nguyễn Son"}
             </Title>
             {isVerified ? (
               <CheckCircleFilled
@@ -48,7 +47,9 @@ export const ServiceInfo = ({
             )}
           </Space>
 
-          {averageRating && <StarRating rating={averageRating} />}
+          <div style={{ marginTop: "8px", marginBottom: "8px" }}>
+            {averageRating && <StarRating rating={averageRating} />}
+          </div>
         </div>
 
         <Row
@@ -78,7 +79,7 @@ export const ServiceInfo = ({
                   wordBreak: "break-all",
                 }}
               >
-                {email || "nghiau2k3@gmail.com"}
+                {email || "ngxson2411@gmail.com"}
               </Text>
             </div>
           </Col>
@@ -96,7 +97,7 @@ export const ServiceInfo = ({
                 Kinh nghiệm:
               </Text>
               <Text style={{ fontSize: 15, color: "#1a1a1a" }}>
-                {experience || "5 năm làm dịch vụ dọn nhà tại nhasach.vn"}
+                {experience || "5y"}
               </Text>
             </div>
           </Col>
@@ -114,25 +115,7 @@ export const ServiceInfo = ({
                 Tuổi:
               </Text>
               <Text style={{ fontSize: 15, color: "#1a1a1a" }}>
-                {age || "22"}
-              </Text>
-            </div>
-          </Col>
-          <Col xs={24} sm={12} md={12}>
-            <div style={{ display: "flex" }}>
-              <Text
-                style={{
-                  fontSize: 15,
-                  color: "#1a1a1a",
-                  fontWeight: "bold",
-                  width: "120px",
-                  flexShrink: 0,
-                }}
-              >
-                CCCD:
-              </Text>
-              <Text style={{ fontSize: 15, color: "#1a1a1a" }}>
-                {identityNumber || "1203041192"}
+                {age || "23"}
               </Text>
             </div>
           </Col>
