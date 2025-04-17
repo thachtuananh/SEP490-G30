@@ -297,7 +297,6 @@ public class CleanerJobService {
 			jobApplicationRepository.save(jobApplication);  // Lưu thay đổi vào database
 
 			// Cập nhật trạng thái Job thành CANCELLED
-			job.setStatus(JobStatus.CANCELLED);  // Cập nhật trạng thái Job thành CANCELLED
 			jobRepository.save(job);  // Lưu thay đổi vào Job
 
 			response.put("message", "Hủy ứng tuyển thành công");
