@@ -762,6 +762,8 @@ public class CleanerJobService {
 		// Lấy danh sách các JobApplication của cleaner có trạng thái 'ACCEPTED'
 		List<JobApplication> jobApplications = jobApplicationRepository.findByCleanerIdAndStatus(cleanerId, "Accepted");
 
+		System.out.println("Found job applications: " + jobApplications.size());
+
 		// Kiểm tra nếu không có công việc nào đã được chấp nhận
 		if (jobApplications.isEmpty()) {
 			return inProgressJobs; // Trả về danh sách trống nếu không có công việc
@@ -774,7 +776,7 @@ public class CleanerJobService {
 
 			// Kiểm tra nếu job có trạng thái là một trong các trạng thái cần thiết
 			if (job.getStatus() == JobStatus.IN_PROGRESS || job.getStatus() == JobStatus.ARRIVED
-					|| job.getStatus() == JobStatus.STARTED || job.getStatus() == JobStatus.COMPLETED
+					|| job.getStatus() == JobStatus.COMPLETED
 					|| job.getStatus() == JobStatus.BOOKED) {
 				Map<String, Object> jobInfo = new HashMap<>();
 				jobInfo.put("jobId", job.getId());
@@ -786,6 +788,7 @@ public class CleanerJobService {
 				if (job.getOrderCode() != null) {
 					jobInfo.put("orderCode", job.getOrderCode());
 				}
+
 
 				// Thêm thông tin về customer đã book job
 				Customers customer = job.getCustomer();
@@ -1491,6 +1494,14 @@ public class CleanerJobService {
 				job.setTxnRef(txnRef);  // Lưu txnRef vào Job
 				jobRepository.save(job);  // Lưu cập nhật txnRef vào database
 
+				JobApplication jobApplication = new JobApplication();
+				jobApplication.setJob(job);
+				jobApplication.setCleaner(cleaner);
+				jobApplication.setStatus("Pending");  // Đặt trạng thái là "Pending"
+				jobApplication.setAppliedAt(LocalDateTime.now());
+
+				// Lưu JobApplication vào cơ sở dữ liệu
+				jobApplicationRepository.save(jobApplication);
 				// Trả về URL thanh toán cho người dùng
 				response.put("paymentUrl", paymentUrl);
 				return response;

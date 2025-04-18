@@ -1,5 +1,6 @@
 package com.example.homecleanapi.GPT;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -10,6 +11,7 @@ import java.io.File;
 import java.io.IOException;
 
 @RestController
+@Tag(name = "GPT")
 @RequestMapping("/consultation")
 public class ConsultationController {
 
@@ -22,11 +24,35 @@ public class ConsultationController {
     @Autowired
     private PdfExtractorService pdfExtractorService;
 
-    @PostMapping("/uploadDocument")
-    public String uploadDocument(@RequestParam("file") MultipartFile file) throws IOException {
+//    @PostMapping("/uploadDocument")
+//    public String uploadDocument(@RequestParam("file") MultipartFile file) throws IOException {
+//        // Kiểm tra MIME type của file
+//        String contentType = file.getContentType();
+//        if (!contentType.equals("application/pdf")) {
+//            return "Lỗi: Vui lòng tải lên file PDF.";
+//        }
+//
+//        // Kiểm tra phần mở rộng của file (optional)
+//        String fileName = file.getOriginalFilename();
+//        if (fileName == null || !fileName.toLowerCase().endsWith(".pdf")) {
+//            return "Lỗi: File tải lên không phải là file PDF.";
+//        }
+//
+//        File tempFile = File.createTempFile("upload-", ".pdf");
+//        file.transferTo(tempFile);
+//
+//        String content = pdfExtractorService.extractTextFromPdf(tempFile);
+//
+//        storeDocument("documents", UUID.randomUUID().toString(), content);
+//
+//        return "Tải lên file PDF thành công!";
+//    }
+
+    @PostMapping(value = "/uploadDocument", consumes = "multipart/form-data")
+    public String uploadDocument(@RequestPart("file") MultipartFile file) throws IOException {
         // Kiểm tra MIME type của file
         String contentType = file.getContentType();
-        if (!contentType.equals("application/pdf")) {
+        if (contentType == null || !contentType.equals("application/pdf")) {
             return "Lỗi: Vui lòng tải lên file PDF.";
         }
 
@@ -36,11 +62,14 @@ public class ConsultationController {
             return "Lỗi: File tải lên không phải là file PDF.";
         }
 
+        // Lưu file tạm thời vào máy chủ
         File tempFile = File.createTempFile("upload-", ".pdf");
         file.transferTo(tempFile);
 
+        // Tiến hành xử lý tệp PDF
         String content = pdfExtractorService.extractTextFromPdf(tempFile);
 
+        // Giả sử bạn có phương thức lưu trữ tài liệu sau khi trích xuất nội dung
         storeDocument("documents", UUID.randomUUID().toString(), content);
 
         return "Tải lên file PDF thành công!";

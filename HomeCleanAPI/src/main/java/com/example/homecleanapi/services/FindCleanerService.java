@@ -162,6 +162,7 @@ public class FindCleanerService {
                 "ORDER BY distance_km ASC " +
                 "LIMIT :limit";
 
+
         // Cập nhật cách gọi tham số
         Query nativeQuery = entityManager.createNativeQuery(query)
                 .setParameter("latitude", latitude)
