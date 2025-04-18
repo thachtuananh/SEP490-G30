@@ -68,7 +68,6 @@ export const ReportModal = ({ visible, jobId, customerId, onClose }) => {
       await createReport(jobId, {
         report_type: values.report_type,
         description: values.description,
-        status: "PENDING", // Default status for new reports
       });
 
       message.success("Báo cáo đã được gửi thành công!");
@@ -187,9 +186,9 @@ export const ReportModal = ({ visible, jobId, customerId, onClose }) => {
                     }}
                   >
                     <span>Báo cáo #{report.reportId || index + 1}</span>
-                    <Tag color={getStatusColor(report.status)}>
+                    {/* <Tag color={getStatusColor(report.status)}>
                       {getStatusText(report.status)}
-                    </Tag>
+                    </Tag> */}
                   </div>
                 }
               >
