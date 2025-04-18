@@ -234,7 +234,7 @@ public class WithdrawalRequestService {
             }
 
             // Nếu approve, cập nhật trạng thái là "APPROVED"
-            withdrawalRequest.setStatus("APPROVED");
+            withdrawalRequest.setStatus("WITHDREW");
         } else if ("REJECT".equalsIgnoreCase(action)) {
             // Nếu reject, cập nhật trạng thái là "REJECTED"
             withdrawalRequest.setStatus("REJECTED");
