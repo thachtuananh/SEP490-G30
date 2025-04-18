@@ -35,7 +35,7 @@ public class EmployeeService {
         this.convertAddressToLatLong = convertAddressToLatLong;
     }
 
-    public ResponseEntity<Map<String, Object>> employeeCreateAddress(EmployeeLocationsDTO request, @PathVariable int employeeId) throws IOException {
+    public ResponseEntity<Map<String, Object>> employeeCreateAddress(EmployeeLocationsDTO request, Integer employeeId) throws IOException {
         Map<String, Object> response = new HashMap<>();
 
         Employee employee = employeeRepository.findById(employeeId).orElseThrow(() -> new RuntimeException("Employee not found"));
@@ -74,8 +74,8 @@ public class EmployeeService {
 
     public ResponseEntity<Map<String, Object>> updateEmployeeAddress(
             EmployeeLocationsDTO request,
-            @PathVariable int employeeId,
-            @PathVariable int addressId) throws IOException {
+            Integer employeeId,
+            Integer addressId) throws IOException {
 
         Map<String, Object> response = new HashMap<>();
 
@@ -113,7 +113,7 @@ public class EmployeeService {
         }
 
         // Đánh dấu địa chỉ này là hiện tại
-        existingLocation.setIs_current(false);
+//        existingLocation.setIs_current(false);
 
         // Lưu địa chỉ đã được cập nhật
         employeeAddressRepository.save(existingLocation);
@@ -125,7 +125,7 @@ public class EmployeeService {
 
 
     // Xóa địa chỉ của employee theo locationId
-    public ResponseEntity<Map<String, Object>> deleteEmployeeAddress(int locationId) {
+    public ResponseEntity<Map<String, Object>> deleteEmployeeAddress(Integer locationId) {
         Map<String, Object> response = new HashMap<>();
 
         // Kiểm tra xem địa chỉ có tồn tại không
@@ -148,7 +148,7 @@ public class EmployeeService {
     }
 
     // Lấy tất cả địa chỉ của employee theo employeeId
-    public ResponseEntity<Map<String, Object>> getAllEmployeeAddresses(@PathVariable int employeeId) {
+    public ResponseEntity<Map<String, Object>> getAllEmployeeAddresses(Integer employeeId) {
         Map<String, Object> response = new HashMap<>();
 
         // Kiểm tra xem employee có tồn tại không
@@ -162,6 +162,7 @@ public class EmployeeService {
                 .stream()
                 .map(location -> {
                     Map<String, Object> addressMap = new HashMap<>();
+                    addressMap.put("id", location.getId());
                     addressMap.put("address", location.getAddress());
                     addressMap.put("is_current", location.isIs_current());
                     return addressMap;
@@ -173,7 +174,7 @@ public class EmployeeService {
     }
 
     // Lấy profile của employee employeeID
-    public ResponseEntity<Map<String, Object>> getEmployeeInformation(@PathVariable int employeeId) {
+    public ResponseEntity<Map<String, Object>> getEmployeeInformation(Integer employeeId) {
         Map<String, Object> response = new HashMap<>();
 
         // Tìm employee theo ID
@@ -193,7 +194,9 @@ public class EmployeeService {
         Employee employee = employeeRepository.findById(employeeId)
                 .orElseThrow(() -> new RuntimeException("Employee not found"));
 
-        // Cập nhật thông tin employee
+        String base64 = request.getProfile_image();
+        byte[] decoded = Base64.getDecoder().decode(base64);
+        employee.setProfile_image(decoded);
         employee.updateProfile(request);
         employeeRepository.save(employee);
 
@@ -201,7 +204,7 @@ public class EmployeeService {
     }
 
     // Delete Employee
-    public ResponseEntity<Map<String, Object>> deleteEmployeeAccount(@PathVariable int employeeId) {
+    public ResponseEntity<Map<String, Object>> deleteEmployeeAccount(Integer employeeId) {
         Employee employee = employeeRepository.findById(employeeId)
                 .orElseThrow(() -> new RuntimeException("Employee not found"));
 

@@ -70,7 +70,7 @@ public class AdminCustomerService {
 
 
     // Cập nhật thông tin khách hàng
-    public ResponseEntity<Map<String, Object>> updateCustomer(Integer customerId, CustomerProfileRequest request) {
+    public ResponseEntity<Map<String, Object>> updateCustomer(Integer customerId, CustomerProfileAdminDTO request) {
         Optional<Customers> existingCustomerOpt = customerRepo.findById(customerId);
 
         if (existingCustomerOpt.isEmpty()) {
