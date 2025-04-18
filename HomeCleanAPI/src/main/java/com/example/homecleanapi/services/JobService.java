@@ -103,6 +103,7 @@ public class JobService {
         job.setCustomerAddress(customerAddress);
         job.setScheduledTime(jobTime);
         job.setReminder(request.getReminder());
+        job.setBookingType("CREATE");
 
         // Kiểm tra phương thức thanh toán
         if ("cash".equalsIgnoreCase(request.getPaymentMethod())) {
