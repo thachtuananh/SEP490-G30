@@ -3,6 +3,7 @@ package com.example.homecleanapi.GPT;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.http.*;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import java.util.*;
 
@@ -35,10 +36,20 @@ public class ChatGPTService {
 
         HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
 
-        ResponseEntity<String> response = restTemplate.exchange(API_URL, HttpMethod.POST, entity, String.class);
+        try {
+            ResponseEntity<String> response = restTemplate.exchange(API_URL, HttpMethod.POST, entity, String.class);
 
-        return response.getBody();
+            // Kiểm tra mã phản hồi HTTP
+            if (response.getStatusCode() != HttpStatus.OK) {
+                throw new RuntimeException("API request failed with status: " + response.getStatusCode());
+            }
+
+            return response.getBody();
+        } catch (HttpClientErrorException e) {
+            throw new RuntimeException("Error during API call: " + e.getMessage());
+        }
     }
+
 
     public List<Float> getEmbedding(String text) {
         String url = "https://api.openai.com/v1/embeddings";
@@ -63,4 +74,3 @@ public class ChatGPTService {
     }
 
 }
-
