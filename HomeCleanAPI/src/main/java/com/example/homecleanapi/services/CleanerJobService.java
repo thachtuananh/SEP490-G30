@@ -1494,6 +1494,14 @@ public class CleanerJobService {
 				job.setTxnRef(txnRef);  // Lưu txnRef vào Job
 				jobRepository.save(job);  // Lưu cập nhật txnRef vào database
 
+				JobApplication jobApplication = new JobApplication();
+				jobApplication.setJob(job);
+				jobApplication.setCleaner(cleaner);
+				jobApplication.setStatus("Pending");  // Đặt trạng thái là "Pending"
+				jobApplication.setAppliedAt(LocalDateTime.now());
+
+				// Lưu JobApplication vào cơ sở dữ liệu
+				jobApplicationRepository.save(jobApplication);
 				// Trả về URL thanh toán cho người dùng
 				response.put("paymentUrl", paymentUrl);
 				return response;
