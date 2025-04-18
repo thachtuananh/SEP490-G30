@@ -146,9 +146,9 @@ public class FindCleanerService {
                 "           JOIN services s ON jsd.service_id = s.id WHERE jsd.job_id = j.id) AS service_name, " +
                 "       j.total_price, j.scheduled_time, " +
                 "       ST_Distance(" +
-                "               ST_Transform(ca.geom, 3857), " +
-                "               ST_Transform(ST_SetSRID(ST_MakePoint(:longitude, :latitude), 4326), 3857)" +
-                "       ) / 1000 AS distance_km " +
+                "               ST_Transform(ca.geom, 4326), " +
+        "               ST_Transform(ST_SetSRID(ST_MakePoint(:longitude, :latitude), 4326), 4326)" +
+        "       ) / 1000 AS distance_km " +
                 "FROM jobs j " +
                 "JOIN customer_addresses ca ON j.customer_address_id = ca.id " +
                 "WHERE j.status = 'OPEN' " +
@@ -156,11 +156,12 @@ public class FindCleanerService {
                 "        ca.geom, " +
                 "        ST_SetSRID(ST_MakePoint(:longitude, :latitude), 4326), " +
                 "        :radius) " +
-                "AND j.id NOT IN (" +
+        "AND j.id NOT IN (" +
                 "    SELECT job_id FROM job_application WHERE cleaner_id = :cleanerId" +
                 ") " +
                 "ORDER BY distance_km ASC " +
                 "LIMIT :limit";
+
 
         // Cập nhật cách gọi tham số
         Query nativeQuery = entityManager.createNativeQuery(query)
