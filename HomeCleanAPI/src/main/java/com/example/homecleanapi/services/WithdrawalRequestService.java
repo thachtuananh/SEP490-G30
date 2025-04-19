@@ -33,6 +33,9 @@ public class WithdrawalRequestService {
     private WalletRepository walletRepository;
     @Autowired
     private TransactionHistoryRepository transactionHistoryRepository;
+    @Autowired
+    private AdminTransactionHistoryRepository adminTransactionHistoryRepository;
+
 
     public Map<String, Object> createWithdrawalRequest(Long customerId, WithdrawalDTO request) {
         Map<String, Object> response = new HashMap<>();
@@ -230,6 +233,24 @@ public class WithdrawalRequestService {
 
             // Cập nhật lại yêu cầu rút tiền trong cơ sở dữ liệu
             withdrawalRequestRepository.save(withdrawalRequest);
+
+            AdminTransactionHistory transactionHistory = new AdminTransactionHistory();
+            transactionHistory.setCustomer(withdrawalRequest.getCustomer());
+            transactionHistory.setCleaner(withdrawalRequest.getCleaner());
+            transactionHistory.setTransactionType("WITHDREW");
+            transactionHistory.setAmount(withdrawalRequest.getAmount());
+            transactionHistory.setTransactionDate(LocalDateTime.now());
+            transactionHistory.setPaymentMethod("Bank Transfer");
+            transactionHistory.setStatus("SUCCESS");
+            transactionHistory.setDescription("Quản lý chấp nhận yêu cầu rút tiền");
+
+            System.out.println("Saving AdminTransactionHistory: " + transactionHistory);
+
+            // Lưu vào bảng AdminTransactionHistory
+            adminTransactionHistoryRepository.save(transactionHistory);
+            System.out.println("Transaction saved successfully!");
+
+
 
             response.put("message", "Yêu cầu rút tiền đã được chấp nhận và chuyển trạng thái thành WITHDREW");
             response.put("status", HttpStatus.OK);
