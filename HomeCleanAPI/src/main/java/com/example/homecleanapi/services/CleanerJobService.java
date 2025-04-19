@@ -1045,8 +1045,22 @@ public class CleanerJobService {
 		// Lấy danh sách các JobServiceDetail liên quan đến serviceId
 		List<JobServiceDetail> jobServiceDetails = jobServiceDetailRepository.findByServiceId(serviceId);
 
-		// Duyệt qua các JobServiceDetail để lấy chi tiết job
+		// Lấy danh sách tất cả các job_id và đếm số lần xuất hiện của mỗi job_id trong job_service_detail
+		Map<Long, Long> jobCountMap = new HashMap<>();
 		for (JobServiceDetail jobServiceDetail : jobServiceDetails) {
+			Long jobId = jobServiceDetail.getJob().getId();
+			jobCountMap.put(jobId, jobCountMap.getOrDefault(jobId, 0L) + 1);
+		}
+
+		// Duyệt qua các JobServiceDetail để lấy chi tiết job, nhưng chỉ lấy các job không phải combo (job_id xuất hiện 1 lần)
+		for (JobServiceDetail jobServiceDetail : jobServiceDetails) {
+			Long jobId = jobServiceDetail.getJob().getId();
+
+			// Nếu job_id xuất hiện nhiều hơn 1 lần (combo), thì bỏ qua job này
+			if (jobCountMap.get(jobId) > 1) {
+				continue; // Bỏ qua job này vì là combo
+			}
+
 			Job job = jobServiceDetail.getJob();
 			if (job != null && job.getStatus() == JobStatus.OPEN) {
 				Map<String, Object> jobInfo = new HashMap<>();
@@ -1055,7 +1069,6 @@ public class CleanerJobService {
 				jobInfo.put("status", job.getStatus());
 				jobInfo.put("scheduledTime", job.getScheduledTime());
 				jobInfo.put("totalPrice", job.getTotalPrice());
-
 
 				// Thêm thông tin về customer đã book job
 				Customers customer = job.getCustomer();
@@ -1092,6 +1105,7 @@ public class CleanerJobService {
 
 		return jobDetailsList;
 	}
+
 
 	// lấy cac job đang là combo
 	public List<Map<String, Object>> getComboJobs() {
