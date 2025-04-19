@@ -4,6 +4,7 @@ import com.example.homecleanapi.dtos.AdminTransactionHistoryDTO;
 import com.example.homecleanapi.dtos.LoginRequest;
 import com.example.homecleanapi.models.AdminTransactionHistory;
 import com.example.homecleanapi.services.AdminAuthService;
+import com.example.homecleanapi.services.DashboardService;
 import com.example.homecleanapi.services.AdminTransactionHistoryService;
 import com.example.homecleanapi.services.WithdrawalRequestService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -25,11 +26,13 @@ public class AdminController {
 
     private final AdminAuthService adminAuthService;
     private final WithdrawalRequestService withdrawalRequestService;
+    private final DashboardService dashboardService;
     private final AdminTransactionHistoryService adminTransactionHistoryService;
 
-    public AdminController(AdminAuthService adminAuthService, WithdrawalRequestService withdrawalRequestService, AdminTransactionHistoryService adminTransactionHistoryService) {
+    public AdminController(AdminAuthService adminAuthService, WithdrawalRequestService withdrawalRequestService, DashboardService dashboardService, AdminTransactionHistoryService adminTransactionHistoryService) {
         this.adminAuthService = adminAuthService;
         this.withdrawalRequestService = withdrawalRequestService;
+        this.dashboardService = dashboardService;
         this.adminTransactionHistoryService = adminTransactionHistoryService;
     }
 
@@ -56,6 +59,12 @@ public class AdminController {
         Map<String, Object> response = withdrawalRequestService.getWithdrawalRequests(status);
         return new ResponseEntity<>(response, (HttpStatus) response.get("status"));
     }
+
+    @GetMapping("/get-total-job")
+    public ResponseEntity<?> getTotalJob() {
+        return dashboardService.countJobByStatus();
+    }
+
 
     @GetMapping("/totalBalance")
     public ResponseEntity<Map<String, Object>> getTotalBalance() {
