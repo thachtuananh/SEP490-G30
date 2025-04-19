@@ -1,11 +1,14 @@
 package com.example.homecleanapi.controllers;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import com.example.homecleanapi.models.AdminTransactionHistory;
 import com.example.homecleanapi.models.TransactionHistory;
+import com.example.homecleanapi.repositories.AdminTransactionHistoryRepository;
 import com.example.homecleanapi.repositories.TransactionHistoryRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,10 +41,11 @@ public class WalletController {
 
     @Autowired
     private TransactionHistoryRepository transactionHistoryRepository;
+    @Autowired
+    private AdminTransactionHistoryRepository adminTransactionHistoryRepository;
 
 
-
-	@GetMapping("/{cleanerId}/wallet")
+    @GetMapping("/{cleanerId}/wallet")
     public ResponseEntity<Map<String, Object>> getWalletBalance(@PathVariable Long cleanerId) {
         // Gọi service để lấy số dư ví của cleaner
         Map<String, Object> response = walletService.getWalletBalance(cleanerId);
@@ -130,17 +134,30 @@ public class WalletController {
             transaction.setStatus("SUCCESS");
             transactionHistoryRepository.save(transaction); // Lưu trạng thái
 
+            AdminTransactionHistory adminTransactionHistory = new AdminTransactionHistory();
+            adminTransactionHistory.setCustomer(transaction.getCustomer()); // Gán customer
+            adminTransactionHistory.setCleaner(transaction.getCleaner()); // Gán cleaner (nếu có)
+            adminTransactionHistory.setTransactionType("DEPOSIT");
+            adminTransactionHistory.setAmount(depositAmount); // Số tiền đã nạp
+            adminTransactionHistory.setTransactionDate(LocalDateTime.now());
+            adminTransactionHistory.setPaymentMethod("VNPay");
+            adminTransactionHistory.setStatus("SUCCESS");
+            adminTransactionHistory.setDescription("Nạp tiền thành công");
+
+            // Lưu vào bảng AdminTransactionHistory
+            adminTransactionHistoryRepository.save(adminTransactionHistory);
+
             return ResponseEntity.ok("Thanh toán thành công! Số dư ví của bạn đã được cập nhật.");
         } else {
             // Cập nhật trạng thái giao dịch thành "FAILED"
-            Optional<TransactionHistory> transactionOpt = transactionHistoryRepository.findByTxnRef(txnRef);
-            if (transactionOpt.isPresent()) {
-                TransactionHistory transaction = transactionOpt.get();
-                transaction.setStatus("FAILED");
-                transactionHistoryRepository.save(transaction); // Lưu thay đổi
-            } else {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Transaction not found");
-            }
+//            Optional<TransactionHistory> transactionOpt = transactionHistoryRepository.findByTxnRef(txnRef);
+//            if (transactionOpt.isPresent()) {
+//                TransactionHistory transaction = transactionOpt.get();
+//                transaction.setStatus("FAILED");
+//                transactionHistoryRepository.save(transaction); // Lưu thay đổi
+//            } else {
+//                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Transaction not found");
+//            }
 
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Thanh toán thất bại! Mã lỗi: " + responseCode);
         }

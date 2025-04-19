@@ -127,7 +127,7 @@ public class CleanerJobController {
     // ds job mà cleaner đã apply
     @GetMapping("/{cleanerId}/jobs/applied")
     public ResponseEntity<List<Map<String, Object>>> getAppliedJobs2(@PathVariable Long cleanerId) {
-        List<Map<String, Object>> appliedJobs = cleanerJobService.getAppliedJobsForCleaner2(cleanerId);
+        List<Map<String, Object>> appliedJobs = cleanerJobService.getAppliedJobsForCleaner(cleanerId);
         if (appliedJobs.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(List.of(Map.of("message", "No applied jobs")));
         }

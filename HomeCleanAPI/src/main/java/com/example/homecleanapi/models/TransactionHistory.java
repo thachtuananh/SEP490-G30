@@ -2,6 +2,8 @@ package com.example.homecleanapi.models;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
+import org.hibernate.annotations.UpdateTimestamp;
+
 import java.time.LocalDateTime;
 
 @Entity
@@ -27,6 +29,9 @@ public class TransactionHistory {
     private String transactionType;
 
 
+    @Column(name = "transaction_date")
+    @UpdateTimestamp
+    private LocalDateTime transactionDate;
 
     @Column(name = "payment_method")
     private String paymentMethod;
@@ -37,6 +42,15 @@ public class TransactionHistory {
     private String txnRef;
 
     // Getters and Setters
+
+
+    public LocalDateTime getTransactionDate() {
+        return transactionDate;
+    }
+
+    public void setTransactionDate(LocalDateTime transactionDate) {
+        this.transactionDate = transactionDate;
+    }
 
     public Long getTransactionId() {
         return transactionId;

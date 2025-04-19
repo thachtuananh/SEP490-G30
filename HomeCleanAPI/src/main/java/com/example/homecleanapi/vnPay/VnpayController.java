@@ -1,8 +1,11 @@
 package com.example.homecleanapi.vnPay;
 
+import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Optional;
 
+import com.example.homecleanapi.models.AdminTransactionHistory;
+import com.example.homecleanapi.repositories.AdminTransactionHistoryRepository;
 import com.example.homecleanapi.services.JobService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +30,8 @@ public class VnpayController {
 
     @Autowired
     private JobService jobService;
+    @Autowired
+    private AdminTransactionHistoryRepository adminTransactionHistoryRepository;
 
     public VnpayController(VnpayService vnpayService) {
         this.vnpayService = vnpayService;
@@ -48,12 +53,26 @@ public class VnpayController {
     public ResponseEntity<String> returnPayment(@RequestParam("vnp_ResponseCode") String responseCode,
                                                 @RequestParam("vnp_TxnRef") String txnRef) {
         if ("00".equals(responseCode)) {
-            Optional<Job> jobOpt = jobRepository.findByTxnRef(txnRef);  
+            Optional<Job> jobOpt = jobRepository.findByTxnRef(txnRef);
 
             if (jobOpt.isPresent()) {
                 Job job = jobOpt.get();
-                job.setStatus(JobStatus.OPEN);  
+                job.setStatus(JobStatus.OPEN);
                 jobRepository.save(job);
+
+                // Lưu thông tin vào AdminTransactionHistory sau khi thanh toán thành công
+                AdminTransactionHistory transactionHistory = new AdminTransactionHistory();
+                transactionHistory.setCustomer(job.getCustomer());
+                transactionHistory.setCleaner(job.getCleaner());
+                transactionHistory.setTransactionType("BOOKED");
+                transactionHistory.setAmount(job.getTotalPrice());
+                transactionHistory.setTransactionDate(LocalDateTime.now());
+                transactionHistory.setPaymentMethod("VNPay");
+                transactionHistory.setStatus("SUCCESS");
+                transactionHistory.setDescription("Thanh toán thành công qua vnpay");
+
+                // Lưu vào bảng AdminTransactionHistory
+                adminTransactionHistoryRepository.save(transactionHistory);
 
                 // Thành công thì redirect về URL frontend
                 String redirectUrl = "https://house-clean-platform.web.app/activitylist?status=success";
@@ -67,6 +86,7 @@ public class VnpayController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Thanh toán thất bại! Mã lỗi: " + responseCode);
         }
     }
+
 
     @PostMapping(value = "/retry-payment/{jobId}")
     public ResponseEntity<Map<String, Object>> retryPayment(@PathVariable Long jobId, HttpServletRequest requestIp) {
