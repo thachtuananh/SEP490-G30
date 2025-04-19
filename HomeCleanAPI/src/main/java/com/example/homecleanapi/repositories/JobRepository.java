@@ -48,5 +48,25 @@ public interface JobRepository extends JpaRepository<Job, Long> {
 
     public List<Job> findByCleanerIdAndBookingTypeAndStatusIn(Long cleanerId, String bookingType, List<JobStatus> statuses);
 
+    @Query("""
+    SELECT 
+        CASE 
+            WHEN j.status = 'DONE' THEN 'DONE'
+            WHEN j.status IN ('OPEN', 'BOOKED') THEN 'OPEN'
+            WHEN j.status IN ('CANCELLED', 'AUTO_CANCELLED') THEN 'CANCELLED'
+            WHEN j.status = 'IN_PROGRESS' THEN 'IN_PROGRESS'
+        END AS groupStatus,
+        COUNT(j) AS count
+    FROM Job j
+    WHERE j.status IN ('DONE', 'OPEN', 'BOOKED', 'CANCELLED', 'AUTO_CANCELLED', 'IN_PROGRESS')
+    GROUP BY 
+        CASE 
+            WHEN j.status = 'DONE' THEN 'DONE'
+            WHEN j.status IN ('OPEN', 'BOOKED') THEN 'OPEN'
+            WHEN j.status IN ('CANCELLED', 'AUTO_CANCELLED') THEN 'CANCELLED'
+            WHEN j.status = 'IN_PROGRESS' THEN 'IN_PROGRESS'
+        END
+    """)
+    List<JobGroupedStatusCount> countJobByStatus();
 }
 

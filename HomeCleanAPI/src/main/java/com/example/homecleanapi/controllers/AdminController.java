@@ -2,6 +2,7 @@ package com.example.homecleanapi.controllers;
 
 import com.example.homecleanapi.dtos.LoginRequest;
 import com.example.homecleanapi.services.AdminAuthService;
+import com.example.homecleanapi.services.DashboardService;
 import com.example.homecleanapi.services.WithdrawalRequestService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -20,10 +21,12 @@ public class AdminController {
 
     private final AdminAuthService adminAuthService;
     private final WithdrawalRequestService withdrawalRequestService;
+    private final DashboardService dashboardService;
 
-    public AdminController(AdminAuthService adminAuthService, WithdrawalRequestService withdrawalRequestService) {
+    public AdminController(AdminAuthService adminAuthService, WithdrawalRequestService withdrawalRequestService, DashboardService dashboardService) {
         this.adminAuthService = adminAuthService;
         this.withdrawalRequestService = withdrawalRequestService;
+        this.dashboardService = dashboardService;
     }
 
     @PostMapping(value = "/login", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -50,4 +53,8 @@ public class AdminController {
         return new ResponseEntity<>(response, (HttpStatus) response.get("status"));
     }
 
+    @GetMapping("/get-total-job")
+    public ResponseEntity<?> getTotalJob() {
+        return dashboardService.countJobByStatus();
+    }
 }
