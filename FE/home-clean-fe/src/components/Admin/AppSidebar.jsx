@@ -8,6 +8,7 @@ import {
   MenuUnfoldOutlined,
   MenuFoldOutlined,
   ClearOutlined,
+  DollarOutlined,
 } from "@ant-design/icons";
 import { Link, useLocation } from "react-router-dom";
 import logo from "../../assets/HouseClean_logo.png";
@@ -71,6 +72,11 @@ const AppSidebar = () => {
           label: <Link to="/admin/cleaners-ban">Chưa xác minh</Link>,
         },
       ],
+    },
+    {
+      key: "/admin-withdrawal",
+      icon: <DollarOutlined />,
+      label: <Link to="/admin/admin-withdrawal">Yêu cầu rút tiền</Link>,
     },
   ];
 

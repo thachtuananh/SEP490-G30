@@ -269,12 +269,15 @@ export const ActivityCard = ({ data, onDelete }) => {
       if (jobData.services) {
         if (Array.isArray(jobData.services)) {
           serviceInfoText = jobData.services
-            .map((service) => `${service.serviceName} (${service.areaRange})`)
+            .map(
+              (service) =>
+                `${service.serviceName} (${service.serviceDetailAreaRange})`
+            )
             .join(", ");
         } else {
           serviceInfoText = `${
             jobData.services.serviceName || "Không xác định"
-          } (${jobData.services.areaRange || "Không xác định"})`;
+          } (${jobData.services.serviceDetailAreaRange || "Không xác định"})`;
         }
       } else {
         serviceInfoText = "Không xác định";

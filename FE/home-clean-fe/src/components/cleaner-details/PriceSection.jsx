@@ -34,7 +34,7 @@ function truncateDescription(description) {
     : description;
 }
 
-const PriceSection = ({ cleanerId, cleanerName }) => {
+const PriceSection = ({ cleanerId, cleanerName, phoneNumber }) => {
   const [isServiceModalVisible, setIsServiceModalVisible] = useState(false);
   const [selectedServices, setSelectedServices] = useState([]);
   const [allServices, setAllServices] = useState([]);
@@ -90,6 +90,7 @@ const PriceSection = ({ cleanerId, cleanerName }) => {
         selectedServices,
         cleanerId,
         cleanerName,
+        phoneNumber,
         allServices,
       },
     });

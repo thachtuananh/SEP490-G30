@@ -28,6 +28,7 @@ import CleanerDetails from "../pages/CleanerDetails/CleanerDetails";
 import CreateJob from "../pages/ServiceDetails/CreateJob";
 import CreateJobToCleaner from "../pages/ServiceDetails/CreateJobToCleaner";
 import CleanerSection from "../pages/Home/Owner/CleanerSectionPage";
+import HouseCleanPricing from "../pages/HouseCleanPricingPage";
 
 import OrderSuccess from "../pages/order_success/OrderSuccess";
 import DepositOwner from "../pages/order_success/DepositOwner";
@@ -51,6 +52,7 @@ import AdminCleanerDetails from "../pages/Admin/ManageUser/Cleaner/CleanerDetail
 import LoginAdmin from "../pages/Admin/LoginAdmin";
 import ProtectedAdminRoute from "./ProtectedAdminRoute";
 import CleanerListBan from "../pages/Admin/ManageUser/Cleaner/CleanerListBan";
+import AdminWithdrawl from "../pages/Admin/ManageWithdrawl/WithdrawlRequests";
 
 const Routers = () => {
   return (
@@ -108,6 +110,7 @@ const Routers = () => {
         path="/service-details-cleaner"
         element={<ServiceDetailsCleaner />}
       />
+      <Route path="/cleaner-pricing" element={<HouseCleanPricing />} />
 
       <Route path="/homeclean/job-list" element={<JobListFilter />} />
 
@@ -160,6 +163,14 @@ const Routers = () => {
         element={
           <ProtectedAdminRoute>
             <AdminCleanerDetails />
+          </ProtectedAdminRoute>
+        }
+      />
+      <Route
+        path="/admin/admin-withdrawal"
+        element={
+          <ProtectedAdminRoute>
+            <AdminWithdrawl />
           </ProtectedAdminRoute>
         }
       />

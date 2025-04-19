@@ -33,7 +33,7 @@ const JobInfomation = ({
   const [adjustedPrice, setAdjustedPrice] = useState(state.price || 0);
 
   // token
-  const { token, customerId, customerName } = useContext(AuthContext);
+  const { token, customerId } = useContext(AuthContext);
 
   // Cập nhật thời gian hiện tại mỗi phút
   useEffect(() => {
@@ -215,14 +215,37 @@ const JobInfomation = ({
 
         return;
       }
+      const formattedDate = selectedDate
+        ? `${selectedDate.getDate().toString().padStart(2, "0")}/${(
+            selectedDate.getMonth() + 1
+          )
+            .toString()
+            .padStart(2, "0")}/${selectedDate.getFullYear()}`
+        : "N/A";
+
+      const formattedTime = selectedDate
+        ? `${hour.toString().padStart(2, "0")}:${minute
+            .toString()
+            .padStart(2, "0")}`
+        : "N/A";
+
+      // Create a service description string
+      const serviceDescription = state.serviceDetails
+        ? state.serviceDetails
+            .map(
+              (service) =>
+                `${service.serviceName} (${service.selectedSize}m² - ${service.maxSize}m²)`
+            )
+            .join(", ")
+        : state.serviceName || "dịch vụ dọn dẹp";
 
       if (responseData.status === "BOOKED") {
         console.log("Job created successfully");
         message.success("Đăng việc trực tiếp thành công!");
-        const smsMessageBooked = `[HouseClean] Bạn vừa nhận được 1 lượt book trực tiếp từ ${customerName}. Dịch vụ: ${
-          jobData.services
-        } - Trên 50m², lúc ${jobData.jobTime}, tại ${
-          jobData.customerAddressId
+        const smsMessageBooked = `[HouseClean] Bạn vừa nhận được 1 lượt book trực tiếp từ ${sessionStorage.getItem(
+          "name"
+        )}. Dịch vụ: ${serviceDescription}, lúc ${formattedTime} ${formattedDate}, tại ${
+          state.address
         }. SĐT chủ nhà: ${sessionStorage.getItem(
           "phone"
         )}. Vui lòng xác nhận sớm.`;
@@ -235,7 +258,7 @@ const JobInfomation = ({
             "BOOKED",
             "Cleaner"
           ),
-          sendSms(state.cleanerPhone, smsMessageBooked),
+          sendSms(state.phoneNumber, smsMessageBooked),
         ]);
         navigate("/");
       } else {

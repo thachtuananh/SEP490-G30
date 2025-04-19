@@ -23,6 +23,7 @@ const Layout = () => {
       "/",
       "/admin-login",
       "/admin",
+      "/cleaner-pricing",
     ].includes(location.pathname) ||
     location.pathname.startsWith("/workdetail/") ||
     location.pathname.startsWith("/admin/") ||

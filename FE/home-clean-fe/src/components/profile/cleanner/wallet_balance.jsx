@@ -222,10 +222,9 @@ export const WalletBalance = () => {
 
       const token = sessionStorage.getItem("token");
       const cleanerId = sessionStorage.getItem("cleanerId");
-
       // Example API call for withdrawal (modify according to your actual API)
       const response = await fetch(
-        `${BASE_URL}/cleaner/${cleanerId}/withdraw`,
+        `${BASE_URL}/withdraw/cleaners/${cleanerId}/requestWithdrawal`,
         {
           method: "POST",
           headers: {
@@ -234,8 +233,8 @@ export const WalletBalance = () => {
             Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({
-            accountNumber: values.accountNumber,
-            accountName: values.accountName,
+            cardNumber: values.accountNumber,
+            accountHolderName: values.accountName,
             bankName: values.bankName,
             amount: values.amount,
           }),
@@ -256,6 +255,18 @@ export const WalletBalance = () => {
     } finally {
       setWithdrawalLoading(false);
     }
+  };
+  // Helper function to translate transaction type to Vietnamese
+  const translateTransactionType = (type) => {
+    const translations = {
+      DEPOSIT: "Nạp tiền",
+      WITHDRAW: "Rút tiền",
+      PAYMENT: "Thanh toán",
+      REFUND: "Hoàn tiền",
+      Refund: "Hoàn tiền",
+    };
+
+    return translations[type] || type;
   };
 
   // Transaction history columns for the table
@@ -279,6 +290,26 @@ export const WalletBalance = () => {
           {amount.toLocaleString()} VNĐ
         </Text>
       ),
+    },
+    {
+      title: "Loại giao dịch",
+      dataIndex: "transactionType",
+      key: "transactionType",
+      render: (type) => {
+        let color = "blue";
+
+        if (type === "DEPOSIT" || type === "DEPOSIT") {
+          color = "green";
+        } else if (type === "WITHDRAW" || type === "WITHDRAW") {
+          color = "orange";
+        } else if (type === "PAYMENT" || type === "PAYMENT") {
+          color = "purple";
+        } else if (type === "REFUND" || type === "Refund") {
+          color = "cyan";
+        }
+
+        return <Tag color={color}>{translateTransactionType(type)}</Tag>;
+      },
     },
     {
       title: "Phương thức",
@@ -383,7 +414,7 @@ export const WalletBalance = () => {
               }}
               onClick={handleDepositClick}
             >
-              Nạp tiền
+              Nạp tiền vào ví
             </Button>
           </Col>
           <Col span={8}>
