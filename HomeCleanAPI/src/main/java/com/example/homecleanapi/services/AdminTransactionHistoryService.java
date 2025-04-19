@@ -6,7 +6,6 @@ import com.example.homecleanapi.models.AdminTransactionHistory;
 import com.example.homecleanapi.models.Job;
 import com.example.homecleanapi.repositories.AdminTransactionHistoryRepository;
 import com.example.homecleanapi.repositories.JobRepository;
-import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -78,7 +77,6 @@ public class AdminTransactionHistoryService {
         return result;
     }
 
-    @Transactional
     public Double calculateRealRevenue() {
         // Lấy tất cả các job có trạng thái "DONE"
         List<Job> completedJobs = jobRepository.findByStatus(JobStatus.DONE);
