@@ -1122,6 +1122,7 @@ public class CleanerJobService {
 
 
 
+
 	// lấy cac job đang là combo
 	public List<Map<String, Object>> getComboJobs() {
 		List<Map<String, Object>> comboJobs = new ArrayList<>();
@@ -1385,7 +1386,7 @@ public class CleanerJobService {
 		job.setCustomer(customer);
 		job.setCustomerAddress(customerAddress);
 		job.setScheduledTime(jobTime);
-		job.setStatus(JobStatus.BOOKED); // Đặt trạng thái job là BOOKED
+		job.setStatus(JobStatus.PAID); // Đặt trạng thái job là BOOKED
 		job.setPaymentMethod(request.getPaymentMethod()); // Lưu phương thức thanh toán vào job ngay khi tạo job
 		job.setReminder(request.getReminder());
 
