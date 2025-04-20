@@ -30,6 +30,8 @@ import { sendNotification } from "../../services/NotificationService";
 import { sendSms } from "../../services/SMSService";
 import { FeedbackModal } from "./FeedbackModal";
 import { AuthContext } from "../../context/AuthContext";
+import { ReportModal } from "../../components/activityJob/ReportModal";
+
 const getStatusColor = (status) => {
   const normalizedStatus = status.toUpperCase();
   switch (normalizedStatus) {
@@ -87,6 +89,9 @@ const JobCard = ({ job, refreshJobs }) => {
   const [feedbacks, setFeedbacks] = useState([]);
   const [averageRating, setAverageRating] = useState(0);
   const [loadingFeedbacks, setLoadingFeedbacks] = useState(false);
+
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+  const [selectedJobIdForReport, setSelectedJobIdForReport] = useState(null);
 
   // Pagination states for feedbacks
   const [currentPage, setCurrentPage] = useState(1);
@@ -441,6 +446,16 @@ const JobCard = ({ job, refreshJobs }) => {
     setIsFeedbackModalOpen(true);
   };
 
+  const closeReportModal = () => {
+    setIsReportModalOpen(false);
+    setSelectedJobIdForReport(null);
+  };
+
+  const openReportModal = (jobId) => {
+    setSelectedJobIdForReport(jobId);
+    setIsReportModalOpen(true);
+  };
+
   // Calculate the current page's data to display
   const paginatedFeedbacks = feedbacks.slice(
     (currentPage - 1) * pageSize,
@@ -560,13 +575,22 @@ const JobCard = ({ job, refreshJobs }) => {
           </Button>
         )}
         {currentStatus === "DONE" && (
-          <Button
-            className={styles.completeBtn}
-            onClick={() => openFeedbackModal(job.jobId)}
-            loading={loading}
-          >
-            Xem đánh giá
-          </Button>
+          <>
+            <Button
+              className={styles.completeBtn}
+              onClick={() => openFeedbackModal(job.jobId)}
+              loading={loading}
+            >
+              Xem đánh giá
+            </Button>
+            <Button
+              className={styles.completeBtn}
+              onClick={() => openReportModal(job.jobId)}
+              loading={loading}
+            >
+              Xem báo cáo
+            </Button>
+          </>
         )}
         {currentStatus === "BOOKED" && (
           <>
@@ -763,6 +787,11 @@ const JobCard = ({ job, refreshJobs }) => {
         jobId={selectedJobIdForFeedback}
         cleanerId={cleanerId}
         onClose={closeFeedbackModal}
+      />
+      <ReportModal
+        visible={isReportModalOpen}
+        jobId={selectedJobIdForReport}
+        onClose={closeReportModal}
       />
     </article>
   );

@@ -1,10 +1,12 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useContext } from "react";
+import { AuthContext } from "../../context/AuthContext"; // Adjust the path as needed
 import ChatWindow from "../ChatBot/ChatWindow";
 import Lottie from "lottie-react";
 import chatbotAnimation from "../../assets/chatbotAnimation.json";
 import "./ChatBot.css";
 
 export default function ChatWidget() {
+  const { user, cleaner } = useContext(AuthContext);
   const [isOpen, setIsOpen] = useState(false);
   const [text, setText] = useState("");
   const [index, setIndex] = useState(0);
@@ -13,6 +15,9 @@ export default function ChatWidget() {
   const [messageContent, setMessageContent] = useState("");
   const [showTooltip, setShowTooltip] = useState(true);
   const chatContainerRef = useRef(null);
+
+  // Check if user is a customer or cleaner
+  const isCustomerOrCleaner = !!user || !!cleaner;
 
   // Cải thiện danh sách tin nhắn chào mừng
   const messages = [
@@ -84,16 +89,29 @@ export default function ChatWidget() {
 
   // Thêm tin nhắn chào mừng khi lần đầu mở chatbot
   useEffect(() => {
-    if (isOpen && listMessage.length === 0) {
+    if (isOpen && listMessage.length === 0 && isCustomerOrCleaner) {
+      // Personalized greeting based on user type
+      const greeting = user
+        ? `Xin chào ${
+            user.customerName || ""
+          }! Tôi là trợ lý ảo của HouseClean. Tôi có thể giúp gì cho bạn hôm nay?`
+        : `Xin chào ${
+            cleaner.cleanerName || ""
+          }! Tôi là trợ lý ảo của HouseClean. Tôi có thể giúp gì cho bạn hôm nay?`;
+
       setListMessage([
         {
           isUser: false,
-          chatContent:
-            "Xin chào! Tôi là trợ lý ảo của HouseClean. Tôi có thể giúp gì cho bạn hôm nay?",
+          chatContent: greeting,
         },
       ]);
     }
-  }, [isOpen, listMessage.length]);
+  }, [isOpen, listMessage.length, user, cleaner, isCustomerOrCleaner]);
+
+  // If user is neither a customer nor a cleaner, don't render the widget content
+  if (!isCustomerOrCleaner) {
+    return null;
+  }
 
   return (
     <div className="chat-widget-container" ref={chatContainerRef}>

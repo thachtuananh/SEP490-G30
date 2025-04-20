@@ -1,9 +1,9 @@
 import React from "react";
-import { Card, Typography } from "antd";
+import { Card, Typography, Spin } from "antd";
 
 const { Title, Text } = Typography;
 
-const StatCard = ({ title, value, icon, iconBgColor, iconColor }) => {
+const StatCard = ({ title, value, icon, iconBgColor, iconColor, loading }) => {
   return (
     <Card
       style={{
@@ -27,7 +27,7 @@ const StatCard = ({ title, value, icon, iconBgColor, iconColor }) => {
             {title}
           </Text>
           <Title level={3} style={{ margin: 0, marginBottom: 16 }}>
-            {value}
+            {loading ? <Spin size="small" /> : value}
           </Title>
         </div>
         <div

@@ -1,10 +1,10 @@
 import { BASE_URL } from "../../utils/config";
 
 // Get all reports
-export async function getAllReports(customerId) {
+export async function getAllReports(cleanerId) {
     try {
         const token = sessionStorage.getItem("token");
-        const response = await fetch(`${BASE_URL}/reports/${customerId}/get-report-customer`, {
+        const response = await fetch(`${BASE_URL}/reports/${cleanerId}/get-report-cleaner`, {
             headers: {
                 "Authorization": `Bearer ${token}`,
                 "Content-Type": "application/json",
@@ -23,12 +23,12 @@ export async function getAllReports(customerId) {
 }
 
 // Get report by job ID - UPDATED to use the direct API endpoint
-export async function getReportByJobId(jobId,customerId) {
+export async function getReportByJobId(jobId,cleanerId) {
     try {
         const token = sessionStorage.getItem("token");
         
         // Using the direct API endpoint as requested
-        const response = await fetch(`${BASE_URL}/reports/${customerId}/get-report-customer/${jobId}`, {
+        const response = await fetch(`${BASE_URL}/reports/${cleanerId}/get-report-cleaner/${jobId}`, {
             headers: {
                 "Authorization": `Bearer ${token}`,
                 "Content-Type": "application/json",
@@ -52,7 +52,7 @@ export async function createReport(jobId, reportData) {
         const token = sessionStorage.getItem("token");
         const { report_type, description } = reportData;
 
-        const url = new URL(`${BASE_URL}/reports/${jobId}/create-report-customer`);
+        const url = new URL(`${BASE_URL}/reports/${jobId}/create-report-cleaner`);
         url.searchParams.append('report_type', report_type);
         url.searchParams.append('description', description);
         
@@ -80,8 +80,8 @@ export async function updateReport(reportId, updateData) {
     try {
         const token = sessionStorage.getItem("token");
         const { status, resolvedAt, adminResponse } = updateData;
-        
-        const url = new URL(`${BASE_URL}/reports/${reportId}/update_report`);
+
+        const url = new URL(`${BASE_URL}/reports/${reportId}/update_report-cleaner`);
         url.searchParams.append('status', status);
         url.searchParams.append('resolvedAt', resolvedAt);
         url.searchParams.append('adminResponse', adminResponse);

@@ -3,12 +3,14 @@ import { Button, Input } from "antd";
 import {
   SendOutlined,
   PaperClipOutlined,
-  SmileOutlined,
+  EnvironmentOutlined,
 } from "@ant-design/icons";
 import styles from "./Chat.module.css";
 
 const ChatWindow = ({ messages, onSendMessage, conversation, userId }) => {
   const [messageContent, setMessageContent] = useState("");
+  const [locationLink, setLocationLink] = useState("");
+  const [error, setError] = useState("");
   const messagesEndRef = useRef(null);
 
   // Auto scroll to bottom when new messages arrive
@@ -24,7 +26,34 @@ const ChatWindow = ({ messages, onSendMessage, conversation, userId }) => {
     if (messageContent.trim()) {
       onSendMessage(messageContent);
       setMessageContent("");
+    } else if (locationLink) {
+      onSendMessage(locationLink);
+      setLocationLink("");
     }
+  };
+
+  const handleGetLocation = () => {
+    if (!navigator.geolocation) {
+      setError("Trình duyệt không hỗ trợ định vị!");
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        const url = `https://www.openstreetmap.org/?mlat=${latitude}&mlon=${longitude}#map=17/${latitude}/${longitude}`;
+        setLocationLink(url);
+        onSendMessage(url); // Gửi link vị trí trực tiếp
+        setError("");
+        console.log(url);
+      },
+      (err) => {
+        setError(
+          "Không thể lấy vị trí. Vui lòng cho phép quyền truy cập vị trí."
+        );
+        console.error(err);
+      }
+    );
   };
 
   // Format timestamp
@@ -41,38 +70,71 @@ const ChatWindow = ({ messages, onSendMessage, conversation, userId }) => {
     return String(value).charAt(0);
   };
 
+  // Hàm để chuyển URL thành thẻ anchor có thể click
+  const renderMessageWithLinks = (content, isSentByMe) => {
+    // Kiểm tra xem nội dung có phải là URL không
+    const urlRegex = /(https?:\/\/[^\s]+)/g;
+
+    // Style cho link dựa vào người gửi (để phù hợp với background của bubble)
+    const linkStyle = {
+      color: isSentByMe ? "#fff" : "#1890ff", // Màu trắng nếu là tin nhắn của mình, màu xanh nếu là tin nhắn nhận
+      textDecoration: "underline",
+      fontWeight: "500",
+      cursor: "pointer",
+      display: "inline-block",
+      maxWidth: "100%",
+      wordBreak: "break-word",
+    };
+
+    if (urlRegex.test(content)) {
+      // Nếu toàn bộ nội dung là URL
+      if (content.match(urlRegex)[0] === content) {
+        return (
+          <a
+            href={content}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={styles.messageLink}
+            style={linkStyle}
+          >
+            {content.includes("openstreetmap") ? "📍 Xem vị trí" : content}
+          </a>
+        );
+      } else {
+        // Nếu nội dung chứa URL và các text khác
+        const parts = content.split(urlRegex);
+        const matches = content.match(urlRegex);
+
+        return parts.reduce((acc, part, i) => {
+          acc.push(part);
+          if (matches && i < matches.length) {
+            acc.push(
+              <a
+                key={i}
+                href={matches[i]}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={styles.messageLink}
+                style={linkStyle}
+              >
+                {matches[i].includes("openstreetmap")
+                  ? "📍 Xem vị trí"
+                  : matches[i]}
+              </a>
+            );
+          }
+          return acc;
+        }, []);
+      }
+    }
+
+    return content;
+  };
+
   return (
     <div className={styles.chatWindow}>
       {conversation ? (
         <>
-          {/* <div className={styles.chatHeader}>
-            <div className={styles.chatHeaderInfo}>
-              {conversation.avatar ? (
-                <img
-                  src={conversation.avatar}
-                  alt="avatar"
-                  className={styles.chatAvatar}
-                />
-              ) : (
-                <div className={styles.chatAvatarPlaceholder}>
-                  {parseInt(conversation.customerId) === parseInt(userId)
-                    ? `E${getFirstChar(conversation.employeeId)}`
-                    : `C${getFirstChar(conversation.customerId)}`}
-                </div>
-              )}
-              <div>
-                <h3 className={styles.chatName}>
-                  {parseInt(conversation.customerId) === parseInt(userId)
-                    ? `Employee ${conversation.employeeId}`
-                    : `Customer ${conversation.customerId}`}
-                </h3>
-                <p className={styles.chatStatus}>
-                  {conversation.online ? "Online" : "Offline"}
-                </p>
-              </div>
-            </div>
-          </div> */}
-
           <div className={styles.chatBody}>
             <div className={styles.messagesContainer}>
               {messages.length === 0 ? (
@@ -83,21 +145,9 @@ const ChatWindow = ({ messages, onSendMessage, conversation, userId }) => {
                 messages.map((msg, index) => {
                   const isSentByMe =
                     parseInt(msg.senderId) === parseInt(userId);
-                  // const showTimestamp =
-                  //   index === 0 ||
-                  //   new Date(msg.sent_at).getTime() -
-                  //     new Date(messages[index - 1]?.sent_at).getTime() >
-                  //     300000;
 
                   return (
                     <React.Fragment key={index}>
-                      {/* {showTimestamp && (
-                        <div className={styles.timestampDivider}>
-                          <span>
-                            {new Date(msg.sent_at).toLocaleDateString()}
-                          </span>
-                        </div>
-                      )} */}
                       <div
                         className={`${styles.messageContainer} ${
                           isSentByMe
@@ -112,10 +162,9 @@ const ChatWindow = ({ messages, onSendMessage, conversation, userId }) => {
                               : styles.messageReceived
                           }`}
                         >
-                          <p className={styles.messageContent}>{msg.content}</p>
-                          {/* <span className={styles.timestamp}>
-                            {formatTime(msg.sent_at)}
-                          </span> */}
+                          <div className={styles.messageContent}>
+                            {renderMessageWithLinks(msg.content, isSentByMe)}
+                          </div>
                         </div>
                       </div>
                     </React.Fragment>
@@ -130,8 +179,10 @@ const ChatWindow = ({ messages, onSendMessage, conversation, userId }) => {
             <div className={styles.chatInputWrapper}>
               <Button
                 type="text"
-                icon={<PaperClipOutlined />}
+                icon={<EnvironmentOutlined />}
+                onClick={handleGetLocation}
                 className={styles.attachButton}
+                title="Gửi vị trí hiện tại"
               />
               <Input
                 value={messageContent}
@@ -141,11 +192,7 @@ const ChatWindow = ({ messages, onSendMessage, conversation, userId }) => {
                 className={styles.inputField}
                 bordered={false}
               />
-              {/* <Button
-                type="text"
-                icon={<SmileOutlined />}
-                className={styles.emojiButton}
-              /> */}
+
               <Button
                 type="primary"
                 icon={<SendOutlined />}
@@ -153,6 +200,7 @@ const ChatWindow = ({ messages, onSendMessage, conversation, userId }) => {
                 className={styles.sendButton}
               />
             </div>
+            {error && <p className={styles.errorMessage}>{error}</p>}
           </div>
         </>
       ) : (

@@ -11,17 +11,18 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void registerStompEndpoints(StompEndpointRegistry stompEndpointRegistry) {
-        // Chat service
+        String[] allowedOrigins = {
+                "http://localhost:3000",
+                "https://house-clean-platform.firebaseapp.com",
+                "https://house-clean-platform.web.app"
+        };
+
         stompEndpointRegistry.addEndpoint("/websocket-chat")
-                .setAllowedOrigins("http://localhost:3000/")
-                .setAllowedOrigins("https://house-clean-platform.firebaseapp.com")
-                .setAllowedOrigins("https://house-clean-platform.web.app")
+                .setAllowedOrigins(allowedOrigins)
                 .withSockJS();
-        // Notification service
+
         stompEndpointRegistry.addEndpoint("/websocket-notifications")
-                .setAllowedOrigins("http://localhost:3000")
-                .setAllowedOrigins("https://house-clean-platform.firebaseapp.com")
-                .setAllowedOrigins("https://house-clean-platform.web.app")
+                .setAllowedOrigins(allowedOrigins)
                 .withSockJS();
     }
     

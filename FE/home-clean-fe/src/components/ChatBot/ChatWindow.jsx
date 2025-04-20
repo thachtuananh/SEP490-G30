@@ -61,7 +61,7 @@ function ChatWindow({
 
       try {
         setIsLoading(true);
-        const response = await AskGpt({ question: question });
+        const response = await AskGpt({ question });
         if (response) {
           // Giả lập hiệu ứng typing từ bot
           setIsTyping(true);

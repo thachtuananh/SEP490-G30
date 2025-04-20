@@ -510,6 +510,7 @@ export const Address = () => {
                       type="primary"
                       ghost
                       icon={<EditOutlined />}
+                      style={{ width: "100%" }}
                       onClick={() =>
                         showUpdateModal(address.id, address.address)
                       }
@@ -517,14 +518,14 @@ export const Address = () => {
                     >
                       Cập nhật
                     </Button>
-                    <Button
+                    {/* <Button
                       danger
                       icon={<DeleteOutlined />}
                       onClick={() => handleDeleteAddress(address.id)}
                       className="delete-address-btn"
                     >
                       Xóa
-                    </Button>
+                    </Button> */}
                   </div>
                   <Button
                     type="primary"
