@@ -1,8 +1,11 @@
 package com.example.homecleanapi.vnPay;
 
+import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Optional;
 
+import com.example.homecleanapi.models.AdminTransactionHistory;
+import com.example.homecleanapi.repositories.AdminTransactionHistoryRepository;
 import com.example.homecleanapi.services.JobService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +30,8 @@ public class VnpayController {
 
     @Autowired
     private JobService jobService;
+    @Autowired
+    private AdminTransactionHistoryRepository adminTransactionHistoryRepository;
 
     public VnpayController(VnpayService vnpayService) {
         this.vnpayService = vnpayService;
@@ -47,28 +52,58 @@ public class VnpayController {
     @GetMapping("/return")
     public ResponseEntity<String> returnPayment(@RequestParam("vnp_ResponseCode") String responseCode,
                                                 @RequestParam("vnp_TxnRef") String txnRef) {
-        if ("00".equals(responseCode)) {
-            Optional<Job> jobOpt = jobRepository.findByTxnRef(txnRef);  
+        try {
+            if ("00".equals(responseCode)) {
+                Optional<Job> jobOpt = jobRepository.findByTxnRef(txnRef);
 
-            if (jobOpt.isPresent()) {
-                Job job = jobOpt.get();
-                job.setStatus(JobStatus.OPEN);  
-                jobRepository.save(job);
+                if (jobOpt.isPresent()) {
+                    Job job = jobOpt.get();
+                    job.setStatus(JobStatus.OPEN);
+                    jobRepository.save(job);
 
-                // Thành công thì redirect về URL frontend
-                String redirectUrl = "https://house-clean-platform.web.app/ordersuccess?status=success";
-                return ResponseEntity.status(HttpStatus.FOUND) // HTTP 302 Redirect
+                    // Lưu thông tin vào AdminTransactionHistory sau khi thanh toán thành công
+                    AdminTransactionHistory transactionHistory = new AdminTransactionHistory();
+                    transactionHistory.setCustomer(job.getCustomer());
+                    transactionHistory.setCleaner(job.getCleaner());
+                    transactionHistory.setTransactionType("BOOKED");
+                    transactionHistory.setAmount(job.getTotalPrice());
+                    transactionHistory.setTransactionDate(LocalDateTime.now());
+                    transactionHistory.setPaymentMethod("VNPay");
+                    transactionHistory.setStatus("SUCCESS");
+                    transactionHistory.setDescription("Thanh toán thành công qua vnpay");
+
+                    // Lưu vào bảng AdminTransactionHistory
+                    adminTransactionHistoryRepository.save(transactionHistory);
+
+                    // Thành công thì redirect về URL frontend
+                    String redirectUrl = "https://house-clean-platform.web.app/ordersuccess?status=success";
+                    return ResponseEntity.status(HttpStatus.FOUND) // HTTP 302 Redirect
+                            .header(HttpHeaders.LOCATION, redirectUrl)
+                            .build();
+                } else {
+                    // Nếu không tìm thấy Job, trả về URL thất bại
+                    String redirectUrl = "https://house-clean-platform.web.app/orderfail?status=fail";
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                            .header(HttpHeaders.LOCATION, redirectUrl)
+                            .build();
+                }
+            } else {
+                // Thanh toán thất bại (responseCode khác "00")
+                String redirectUrl = "https://house-clean-platform.web.app/orderfail?status=fail";
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                         .header(HttpHeaders.LOCATION, redirectUrl)
                         .build();
-            } else {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Job không tồn tại.");
             }
-        } else {
-            // Thành công thì redirect về URL frontend
+        } catch (Exception e) {
+            e.printStackTrace();
             String redirectUrl = "https://house-clean-platform.web.app/orderfail?status=fail";
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).header(HttpHeaders.LOCATION, redirectUrl).build();
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .header(HttpHeaders.LOCATION, redirectUrl)
+                    .build();
         }
     }
+
+
 
     @PostMapping(value = "/retry-payment/{jobId}")
     public ResponseEntity<Map<String, Object>> retryPayment(@PathVariable Long jobId, HttpServletRequest requestIp) {

@@ -2,6 +2,7 @@ package com.example.homecleanapi.services;
 
 
 
+import com.example.homecleanapi.dtos.JobDTO;
 import com.example.homecleanapi.vnPay.VnpayRequest;
 import com.example.homecleanapi.vnPay.VnpayService;
 import com.example.homecleanapi.dtos.BookJobRequest;
@@ -67,6 +68,43 @@ public class JobService {
     @Autowired
     private WorkHistoryRepository workHistoryRepository;
 
+    public List<JobDTO> getAllJobs() {
+        List<Job> jobs = jobRepository.findAll();  // Lấy tất cả các job
+
+        List<JobDTO> jobDTOList = new ArrayList<>();
+        for (Job job : jobs) {
+            JobDTO jobDTO = new JobDTO();
+            jobDTO.setId(job.getId());
+            jobDTO.setStatus(job.getStatus().toString());
+            jobDTO.setTotalPrice(job.getTotalPrice());
+            jobDTO.setPaymentMethod(job.getPaymentMethod());
+            jobDTO.setScheduledTime(job.getScheduledTime().toString());
+            jobDTO.setOrderCode(job.getOrderCode());
+            jobDTO.setBookingType(job.getBookingType());
+
+            // Lấy thông tin dịch vụ của job từ JobServiceDetail
+            List<String> serviceNames = new ArrayList<>();
+
+
+            for (JobServiceDetail jobServiceDetail : job.getJobServiceDetails()) {
+                Services service = jobServiceDetail.getService();
+                if (service != null) {
+                    serviceNames.add(service.getName());  // Lấy tên dịch vụ
+
+                }
+            }
+
+            // Set các dịch vụ vào JobDTO
+            jobDTO.setServiceNames(serviceNames);
+
+            // Chỉ lấy các trường liên quan mà không bị lặp lại
+            jobDTOList.add(jobDTO);
+        }
+        return jobDTOList;
+    }
+
+
+
 
     public Map<String, Object> bookJob(@PathVariable Long customerId, @RequestBody BookJobRequest request, HttpServletRequest requestIp) {
         Map<String, Object> response = new HashMap<>();
@@ -103,6 +141,7 @@ public class JobService {
         job.setCustomerAddress(customerAddress);
         job.setScheduledTime(jobTime);
         job.setReminder(request.getReminder());
+        job.setBookingType("CREATE");
 
         // Kiểm tra phương thức thanh toán
         if ("cash".equalsIgnoreCase(request.getPaymentMethod())) {
@@ -604,17 +643,10 @@ public class JobService {
             return response;
         }
 
-        // Khai báo biến refundPercentage (phần trăm hoàn tiền)
-        double refundPercentage = 1.0; // Mặc định hoàn 100%
-
-        // Nếu job có trạng thái IN_PROGRESS, chỉ hoàn 90%
-        if (job.getStatus().equals(JobStatus.IN_PROGRESS)) {
-            refundPercentage = 0.9; // Hoàn 90% khi job đang trong trạng thái IN_PROGRESS
-        }
 
         // Tính toán số tiền hoàn lại
         double totalPrice = job.getTotalPrice();
-        double refundAmount = totalPrice * refundPercentage;
+        double refundAmount = totalPrice;
 
         // Lấy ví của customer
         Optional<CustomerWallet> walletOpt = customerWalletRepository.findByCustomerId(customerId);
@@ -642,7 +674,7 @@ public class JobService {
         transactionHistoryRepository.save(transactionHistory);
 
         // Thêm thông báo hoàn tiền
-        response.put("message", "Job has been cancelled successfully and " + (refundPercentage * 100) + "% refund has been credited to the wallet");
+        response.put("message", "đã hủy job thành công");
 
         // Cập nhật trạng thái công việc thành "CANCELLED"
         job.setStatus(JobStatus.CANCELLED);

@@ -24,7 +24,7 @@ public class WithdrawalRequest {
 
 
     @Column(name = "status", nullable = false)
-    private String status;  // Trạng thái yêu cầu
+    private String status;
 
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();  // Thời gian tạo yêu cầu
@@ -41,8 +41,19 @@ public class WithdrawalRequest {
     @Column(name = "account_holder_name")
     private String accountHolderName;
 
+    @Column(name = "reason")
+    private String rejectionReason;
+
     // Getters and Setters
 
+
+    public String getRejectionReason() {
+        return rejectionReason;
+    }
+
+    public void setRejectionReason(String rejectionReason) {
+        this.rejectionReason = rejectionReason;
+    }
 
     public String getCardNumber() {
         return cardNumber;

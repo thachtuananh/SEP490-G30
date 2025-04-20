@@ -5,12 +5,6 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="6dd32c25-99a1-4da0-a769-374f6713cd9c" name="Changes" comment="Hot fix JWT author">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/GPT/ChatGPTService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/GPT/ChatGPTService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/GPT/ConsultationController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/GPT/ConsultationController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/services/CleanerJobService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/services/CleanerJobService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/services/FindCleanerService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/services/FindCleanerService.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/application.properties" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -73,7 +67,7 @@
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.git.unshallow": "true",
     "Spring Boot.HomeCleanApiApplication.executor": "Run",
-    "git-widget-placeholder": "Merging release/HOME__CLEAN__DEMO__20250317",
+    "git-widget-placeholder": "#101 on manhtt3-ChatGPT",
     "kotlin-language-version-configured": "true",
     "last_opened_file_path": "D:/PROJECT-GITHUB",
     "node.js.detected.package.eslint": "true",
@@ -131,6 +125,7 @@
       <workItem from="1744427915768" duration="37502000" />
       <workItem from="1744602078513" duration="1592000" />
       <workItem from="1744777263482" duration="14194000" />
+      <workItem from="1745115392592" duration="5808000" />
     </task>
     <task id="LOCAL-00001" summary="update application">
       <option name="closed" value="true" />
@@ -178,9 +173,9 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="update application" />
     <MESSAGE value="Hot fix JWT author" />
-    <option name="LAST_COMMIT_MESSAGE" value="Hot fix JWT author" />
+    <MESSAGE value="update application" />
+    <option name="LAST_COMMIT_MESSAGE" value="update application" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />
