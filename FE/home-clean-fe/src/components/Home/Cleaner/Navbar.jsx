@@ -105,7 +105,7 @@ function Navbar() {
     fetchMessageCount();
 
     // Set up polling to refresh message count every minute
-    const intervalId = setInterval(fetchMessageCount, 60000);
+    const intervalId = setInterval(fetchMessageCount, 120000);
 
     return () => clearInterval(intervalId);
   }, [cleaner]);
@@ -256,25 +256,14 @@ function Navbar() {
   ) : cleaner ? (
     <Popover
       content={
-        <>
-          {/* <div
-            style={{
-              cursor: "pointer",
-            }}
-            onClick={() => {
-              navigate("/homeclean/activityjob");
-            }}
-          > */}
-          <Notification
-            onClose={() => setIsPopupNotification(false)}
-            onViewAll={() => {
-              setIsPopupNotification(false);
-              // Navigate to full notification page if you have one
-              // navigate("/notifications");
-            }}
-          />
-          {/* </div> */}
-        </>
+        <Notification
+          onClose={() => setIsPopupNotification(false)}
+          onViewAll={() => {
+            setIsPopupNotification(false);
+            // Navigate to full notification page if you have one
+            // navigate("/notifications");
+          }}
+        />
       }
       trigger="click"
       open={isPopupNotification}
@@ -565,13 +554,18 @@ function Navbar() {
                 Công việc
               </Link>
             </li>
-            <li>
+            {/* <li>
               <Link to="/homeclean" className="nav-link">
                 Tin tức
               </Link>
+            </li> */}
+            <li>
+              <Link to="/homeclean/contact" className="nav-link">
+                Liên hệ
+              </Link>
             </li>
             <li>
-              <Link to="/homeclean" className="nav-link">
+              <Link to="/homeclean/cleaner-pricing" className="nav-link">
                 Bảng tiền công
               </Link>
             </li>

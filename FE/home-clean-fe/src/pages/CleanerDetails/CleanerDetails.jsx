@@ -45,6 +45,7 @@ export const CleanerDetails = () => {
           <PriceSection
             cleanerId={cleanerId} // Pass cleanerId here
             cleanerName={cleaner?.cleanerName} // Pass cleanerName here
+            phoneNumber={cleaner?.phoneNumber}
           />
         </div>
       </div>

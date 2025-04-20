@@ -3,8 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../../../context/AuthContext";
 import "../owner/profile.css";
 import profileImg from "../../../assets/imgProfile/imgProfile.svg";
-import { message, Modal, Input } from "antd"; // Thêm Input từ antd
-import { EyeInvisibleOutlined, EyeTwoTone } from "@ant-design/icons"; // Import icons
+import { message, Modal, Input } from "antd";
+import { EyeInvisibleOutlined, EyeTwoTone } from "@ant-design/icons";
 import { BASE_URL } from "../../../utils/config";
 import {
   validatePhone,
@@ -35,6 +35,7 @@ export const PersonaInformation = () => {
   );
   const [cleanerExp, setExperience] = useState(cleaner?.cleanerExp || "");
   const [cleanerImg, setImg] = useState(cleaner?.cleanerImg || "");
+  const [profileImageBase64, setProfileImageBase64] = useState(""); // New state for base64 image
 
   const [nameError, setNameError] = useState("");
   const [phoneError, setPhoneError] = useState("");
@@ -50,7 +51,23 @@ export const PersonaInformation = () => {
   const [newPasswordError, setNewPasswordError] = useState("");
   const [confirmPasswordError, setConfirmPasswordError] = useState("");
 
-  // Updated API call function - removed identity_number from the request body
+  // Convert image file to base64
+  const convertToBase64 = (file) => {
+    return new Promise((resolve, reject) => {
+      const fileReader = new FileReader();
+      fileReader.readAsDataURL(file);
+      fileReader.onload = () => {
+        // Remove the "data:image/jpeg;base64," part to get only the base64 string
+        const base64String = fileReader.result.split(",")[1];
+        resolve(base64String);
+      };
+      fileReader.onerror = (error) => {
+        reject(error);
+      };
+    });
+  };
+
+  // Updated API call function with profile_image
   const updateProfileAPI = async () => {
     if (!validateFormFields()) {
       message.error("Vui lòng kiểm tra lại thông tin!");
@@ -66,6 +83,21 @@ export const PersonaInformation = () => {
 
       setIsLoading(true);
 
+      // Prepare request body
+      const requestBody = {
+        name: cleanerName,
+        phone: cleanerPhone,
+        email: cleanerEmail,
+        age: parseInt(cleanerAge),
+        experience: cleanerExp,
+        identity_number: cleanerIDnum,
+      };
+
+      // Add profile_image if available
+      if (profileImageBase64) {
+        requestBody.profile_image = profileImageBase64;
+      }
+
       const response = await fetch(
         `${BASE_URL}/employee/${cleanerId}/update_profile`,
         {
@@ -75,14 +107,7 @@ export const PersonaInformation = () => {
             accept: "application/json",
             Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify({
-            name: cleanerName,
-            phone: cleanerPhone,
-            email: cleanerEmail,
-            age: parseInt(cleanerAge),
-            experience: cleanerExp,
-            identity_number: cleanerIDnum,
-          }),
+          body: JSON.stringify(requestBody),
         }
       );
 
@@ -99,6 +124,7 @@ export const PersonaInformation = () => {
         cleanerAge: cleanerAge,
         cleanerExp: cleanerExp,
         cleanerIDnum: cleanerIDnum,
+        profile_image: profileImageBase64 || cleaner?.profile_image,
       };
 
       dispatch({ type: "UPDATE_CLEANER", payload: updatedData });
@@ -160,16 +186,29 @@ export const PersonaInformation = () => {
     setIsDeleteModalVisible(true);
   };
 
-  // Hàm xử lý upload ảnh (cần bổ sung API upload ảnh)
-  const handleImageUpload = (event) => {
+  // Hàm xử lý upload ảnh
+  const handleImageUpload = async (event) => {
     const file = event.target.files[0];
     if (file) {
-      // Here you would implement image upload API
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImg(reader.result);
-      };
-      reader.readAsDataURL(file);
+      try {
+        // Display preview of the image
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setImg(reader.result);
+        };
+        reader.readAsDataURL(file);
+
+        // Convert image to base64 for API
+        const base64 = await convertToBase64(file);
+        setProfileImageBase64(base64);
+
+        message.success(
+          "Tải ảnh lên thành công. Hãy nhấn nút Lưu để cập nhật!"
+        );
+      } catch (error) {
+        message.error("Lỗi khi xử lý ảnh!");
+        console.error("Error processing image:", error);
+      }
     }
   };
 

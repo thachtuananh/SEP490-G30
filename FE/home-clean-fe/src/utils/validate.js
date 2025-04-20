@@ -62,8 +62,11 @@ export const validateEmail = (email) => {
 export const validateAge = (age) => {
     if (!age) return "Vui lòng nhập tuổi!";
     
-    const trimmedAge = age.trim();
-    if (trimmedAge !== age) return "Tuổi không được có khoảng trắng ở đầu hoặc cuối!";
+    // Convert to string if it's a number
+    const ageStr = String(age);
+    const trimmedAge = ageStr.trim();
+    
+    if (trimmedAge !== ageStr) return "Tuổi không được có khoảng trắng ở đầu hoặc cuối!";
     
     const ageNum = parseInt(trimmedAge);
     if (isNaN(ageNum) || ageNum < 18 || ageNum > 65) return "Tuổi phải từ 18 đến 65!";

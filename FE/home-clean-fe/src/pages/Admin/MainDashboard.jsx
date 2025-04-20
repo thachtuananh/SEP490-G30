@@ -2,29 +2,21 @@ import React, { useState, useEffect } from "react";
 import {
   Layout,
   Typography,
-  Table,
-  Button,
-  Input,
-  Tag,
-  message,
   Card,
   Breadcrumb,
-  Space,
   Row,
   Col,
+  Spin,
+  message,
 } from "antd";
-import {
-  SearchOutlined,
-  EyeOutlined,
-  ReloadOutlined,
-  HomeOutlined,
-  UserOutlined,
-} from "@ant-design/icons";
+import { HomeOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import AppSidebar from "../../components/Admin/AppSidebar";
 import AppHeader from "../../components/Admin/AppHeader";
 import StatCards from "../../components/Admin/StatCards";
 import SalesChart from "../../components/Admin/SalesChart";
+import JobStats from "../../components/Admin/JobStats";
+import { BASE_URL } from "../../utils/config";
 
 const { Content } = Layout;
 const { Title } = Typography;
@@ -33,10 +25,17 @@ const MainDashboard = () => {
   const navigate = useNavigate();
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
   const [collapsed, setCollapsed] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  // State for API data
+  const [balanceData, setBalanceData] = useState(null);
+  const [revenueData, setRevenueData] = useState(null);
+  const [jobData, setJobData] = useState(null);
 
   // Determine responsive settings based on window width
   const isMobile = windowWidth < 768;
   const isTablet = windowWidth >= 768 && windowWidth < 992;
+
   // Track window resize
   useEffect(() => {
     const handleResize = () => {
@@ -60,6 +59,51 @@ const MainDashboard = () => {
     };
   }, []);
 
+  // API calls
+  useEffect(() => {
+    const token = sessionStorage.getItem("token");
+    const headers = {
+      accept: "application/json",
+      Authorization: `Bearer ${token}`,
+    };
+
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+
+        // Fetch total balance
+        const balanceResponse = await fetch(`${BASE_URL}/admin/totalBalance`, {
+          headers,
+        });
+        const balanceResult = await balanceResponse.json();
+        setBalanceData(balanceResult);
+
+        // Fetch revenue
+        const revenueResponse = await fetch(`${BASE_URL}/admin/real-revenue`, {
+          headers,
+        });
+        const revenueResult = await revenueResponse.json();
+        setRevenueData(revenueResult);
+
+        // Fetch job statistics
+        const jobResponse = await fetch(`${BASE_URL}/admin/get-total-job`, {
+          headers,
+        });
+        const jobResult = await jobResponse.json();
+        setJobData(jobResult);
+      } catch (error) {
+        console.error("Error fetching dashboard data:", error);
+        message.error(
+          "Không thể tải dữ liệu bảng điều khiển. Vui lòng thử lại sau."
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
   const toggleSidebar = () => {
     setCollapsed(!collapsed);
   };
@@ -70,11 +114,11 @@ const MainDashboard = () => {
       title: <HomeOutlined />,
     },
     {
-      title: "Dashboard",
+      title: "Bảng điều khiển",
     },
   ];
 
-  // Cập nhật lại margin cho layout
+  // Update margin for layout
   const sidebarWidth = collapsed ? 80 : windowWidth < 1200 ? 180 : 220;
 
   const contentStyle = {
@@ -104,16 +148,24 @@ const MainDashboard = () => {
               />
 
               <Card>
-                <Title level={3}>Dashboard</Title>
+                <Title level={3}>Tổng quan bảng điều khiển</Title>
+
+                {/* Stat Cards */}
                 <div style={{ marginBottom: 24 }}>
-                  <StatCards />
+                  <StatCards
+                    loading={loading}
+                    revenueData={revenueData}
+                    jobData={jobData}
+                  />
                 </div>
 
+                {/* Charts Row */}
                 <Row gutter={[24, 24]}>
-                  <Col span={24}>
-                    <Card title="Thống kê doanh thu">
-                      <SalesChart />
-                    </Card>
+                  {/* <Col xs={24} lg={24}>
+                    <SalesChart revenueData={revenueData} loading={loading} />
+                  </Col> */}
+                  <Col xs={24} lg={24}>
+                    <JobStats jobData={jobData} loading={loading} />
                   </Col>
                 </Row>
               </Card>

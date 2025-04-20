@@ -289,18 +289,18 @@
     gap: 10px;
   }
 
-  .progressIcon {
+  /* .progressIcon {
     width: 24px;
     height: 24px;
-  }
+  } */
 
-  .progressConnector {
+  /* .progressConnector {
     top: -12px;
   }
 
   .progressLabel {
     font-size: 8px;
-  }
+  } */
 
   .buttonGroup {
     flex-direction: column;
@@ -320,6 +320,30 @@
   }
   .serviceDetails {
     flex-direction: column;
+  }
+
+  .progressBar {
+    /* Giữ layout theo chiều ngang nhưng điều chỉnh khoảng cách */
+    display: flex;
+    justify-content: space-between;
+    /* Giảm khoảng cách giữa các bước */
+    gap: 5px;
+  }
+  .progressLabel {
+    font-size: 9px;
+    /* Thu nhỏ font chữ */
+    /* width: 100%; */
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .progressConnector {
+    /* Cần điều chỉnh vị trí top để phù hợp với icon nhỏ hơn */
+    top: -14px;
+    flex-grow: 1;
+    height: 2px;
   }
 }
 

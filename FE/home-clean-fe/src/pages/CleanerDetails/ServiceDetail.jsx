@@ -192,6 +192,7 @@ const ServiceDetailsCombo = () => {
         state: {
           cleanerId: cleanerId,
           cleanerName: cleanerName,
+          phoneNumber: location.state?.phoneNumber,
           selectedServices,
           serviceDetails: selectedServices.map((serviceId) => {
             const serviceData = servicesDetails.find(

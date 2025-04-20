@@ -77,7 +77,7 @@ function Navbar() {
     fetchNotificationCount();
 
     // Set up polling to refresh notification count every minute
-    const intervalId = setInterval(fetchNotificationCount, 60000);
+    const intervalId = setInterval(fetchNotificationCount, 120000);
 
     return () => clearInterval(intervalId);
   }, [user]);
@@ -236,30 +236,14 @@ function Navbar() {
   ) : user ? (
     <Popover
       content={
-        <>
-          {/* <div
-            style={{
-              cursor: "pointer",
-            }}
-            onClick={() => {
-              navigate("/activitylist");
-            }}
-          > */}
-          <Notification
-            onClose={() => setIsPopupNotification(false)}
-            onViewAll={() => {
-              setIsPopupNotification(false);
-              // Navigate to full notification page if you have one
-              // navigate("/notifications");
-            }}
-            onClick={() => {
-              setIsPopupNotification(false);
-              // Navigate to full notification page if you have one
-              navigate("/activitylist");
-            }}
-          />
-          {/* </div> */}
-        </>
+        <Notification
+          onClose={() => setIsPopupNotification(false)}
+          onViewAll={() => {
+            setIsPopupNotification(false);
+            // Navigate to full notification page if you have one
+            // navigate("/notifications");
+          }}
+        />
       }
       trigger="click"
       open={isPopupNotification}
@@ -557,11 +541,11 @@ function Navbar() {
                 Danh sách cleaner
               </Link>
             </li>
-            <li>
+            {/* <li>
               <Link to="/" className="nav-link">
                 Tin tức
               </Link>
-            </li>
+            </li> */}
             <li>
               <Link to="/contact" className="nav-link">
                 Liên hệ

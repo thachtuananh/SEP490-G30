@@ -46,35 +46,73 @@ const formatTime = (dateString) => {
   return `${startHour} : ${startMinute.toString().padStart(2, "0")}`;
 };
 
+// Hàm format khoảng cách
+const formatDistance = (distance) => {
+  return `Khoảng cách: ${Math.round(distance)} m`;
+};
+
 // Component JobCard
 const JobCard = ({ job }) => {
   return (
-    <div className="job-card">
-      <div className="job-header">
-        <div className="job-title-status">
-          <span className="job-title">{job.serviceName}</span>
-        </div>
-        <button className="detail-button">
-          <Link className="link-view-details" to={`/workdetail/${job.jobId}`}>
+    <Card
+      hoverable
+      style={{
+        borderRadius: "8px",
+        border: "1px solid #e8e8e8",
+        overflow: "hidden",
+        boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
+      }}
+      styles={{
+        body: {
+          padding: "16px",
+        },
+      }}
+    >
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: "12px",
+        }}
+      >
+        <Text strong style={{ fontSize: "16px", color: "#039855" }}>
+          {job.serviceName}
+        </Text>
+        <Button
+          type="primary"
+          style={{
+            backgroundColor: "#039855",
+            borderColor: "#039855",
+            borderRadius: "4px",
+          }}
+        >
+          <Link to={`/workdetail/${job.jobId}`} style={{ color: "#fff" }}>
             Xem chi tiết
           </Link>
-        </button>
+        </Button>
       </div>
 
-      <div className="job-info">
-        <div className="info-row">
-          <FaCalendarAlt className="icon" />
-          <span>{formatDate(job.scheduledTime)}</span>
+      <Space direction="vertical" size={8} style={{ width: "100%" }}>
+        <div style={{ display: "flex", alignItems: "center" }}>
+          <FaCalendarAlt style={{ marginRight: "8px", color: "#039855" }} />
+          <Text>{formatDate(job.scheduledTime)}</Text>
         </div>
-        <div className="info-row">
-          <FaClock className="icon" />
-          <span>{formatTime(job.scheduledTime)}</span>
+        <div style={{ display: "flex", alignItems: "center" }}>
+          <FaClock style={{ marginRight: "8px", color: "#039855" }} />
+          <Text>{formatTime(job.scheduledTime)}</Text>
         </div>
-        <div className="location-price">
-          <span className="price">{job.price} VND</span>
+        <div style={{ display: "flex", alignItems: "center" }}>
+          <SearchOutlined style={{ marginRight: "8px", color: "#039855" }} />
+          <Text>{formatDistance(job.distance)}</Text>
         </div>
-      </div>
-    </div>
+        <div style={{ display: "flex", justifyContent: "flex-end" }}>
+          <Text strong style={{ fontSize: "16px", color: "#039855" }}>
+            {job.price} VND
+          </Text>
+        </div>
+      </Space>
+    </Card>
   );
 };
 function JobList() {

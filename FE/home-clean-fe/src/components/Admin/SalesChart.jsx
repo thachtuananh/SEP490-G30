@@ -1,8 +1,8 @@
 import React from "react";
-import { Card, Button, Dropdown } from "antd";
+import { Card, Button, Dropdown, Spin } from "antd";
 import { AreaChartOutlined, CaretDownOutlined } from "@ant-design/icons";
 
-const SalesChart = () => {
+const SalesChart = ({ revenueData, loading }) => {
   const data = [
     { day: "0", value: 20 },
     { day: "5", value: 30 },
@@ -19,32 +19,61 @@ const SalesChart = () => {
     { day: "60", value: 55 },
   ];
 
-  const monthMenuItems = [{ key: "1", label: "October" }];
+  const monthMenuItems = [{ key: "1", label: "Tháng 10" }];
+
+  // Format number with commas
+  const formatNumber = (num) => {
+    return num ? num.toLocaleString() : "0";
+  };
 
   return (
     <Card
-      title="Sales Details"
+      title="Chi tiết doanh thu"
       extra={
         <Dropdown menu={{ items: monthMenuItems }}>
           <Button>
-            October <CaretDownOutlined />
+            Tháng 10 <CaretDownOutlined />
           </Button>
         </Dropdown>
       }
       style={{ marginBottom: 24 }}
     >
       <div style={{ height: 200 }}>
-        <AreaChartOutlined
-          style={{
-            fontSize: 100,
-            color: "#e6f7ff",
-            display: "block",
-            margin: "0 auto",
-          }}
-        />
+        {loading ? (
+          <Spin
+            size="large"
+            style={{ display: "block", margin: "0 auto", paddingTop: 60 }}
+          />
+        ) : revenueData ? (
+          <div>
+            <div
+              style={{ fontSize: 36, textAlign: "center", marginBottom: 16 }}
+            >
+              {formatNumber(revenueData.totalRevenue)}đ
+            </div>
+            <AreaChartOutlined
+              style={{
+                fontSize: 80,
+                color: "#e6f7ff",
+                display: "block",
+                margin: "0 auto",
+              }}
+            />
+          </div>
+        ) : (
+          <AreaChartOutlined
+            style={{
+              fontSize: 100,
+              color: "#e6f7ff",
+              display: "block",
+              margin: "0 auto",
+            }}
+          />
+        )}
         <div style={{ textAlign: "center", marginTop: 16 }}>
-          Chart will be rendered using Ant Design Charts in a real
-          implementation
+          {revenueData
+            ? "Báo cáo tổng doanh thu"
+            : "Biểu đồ sẽ được hiển thị bằng Ant Design Charts trong triển khai thực tế"}
         </div>
       </div>
     </Card>
