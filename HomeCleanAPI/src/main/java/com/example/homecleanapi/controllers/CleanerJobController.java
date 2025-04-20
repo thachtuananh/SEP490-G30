@@ -63,6 +63,12 @@ public class CleanerJobController {
     @PostMapping(value = "/apply-job/{jobId}")
     public ResponseEntity<Map<String, Object>> applyForJob(@PathVariable("jobId") Long jobId) {
         Map<String, Object> response = cleanerJobService.applyForJob(jobId);
+
+
+        if (response.get("message").equals("Bạn đang ứng tuyển hoặc đã có lịch làm việc trong một công việc cách công việc này nhỏ hơn 2 giờ")) {
+            return ResponseEntity.badRequest().body(response);  // Trả về mã lỗi 400
+        }
+
         return ResponseEntity.ok(response);
     }
 
