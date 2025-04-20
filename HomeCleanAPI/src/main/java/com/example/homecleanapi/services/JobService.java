@@ -2,6 +2,7 @@ package com.example.homecleanapi.services;
 
 
 
+import com.example.homecleanapi.dtos.JobDTO;
 import com.example.homecleanapi.vnPay.VnpayRequest;
 import com.example.homecleanapi.vnPay.VnpayService;
 import com.example.homecleanapi.dtos.BookJobRequest;
@@ -66,6 +67,26 @@ public class JobService {
     private TransactionHistoryRepository transactionHistoryRepository;
     @Autowired
     private WorkHistoryRepository workHistoryRepository;
+
+    public List<JobDTO> getAllJobs() {
+        List<Job> jobs = jobRepository.findAll();  // Lấy tất cả các job
+
+        List<JobDTO> jobDTOList = new ArrayList<>();
+        for (Job job : jobs) {
+            JobDTO jobDTO = new JobDTO();
+            jobDTO.setId(job.getId());
+            jobDTO.setStatus(job.getStatus().toString());
+            jobDTO.setTotalPrice(job.getTotalPrice());
+            jobDTO.setPaymentMethod(job.getPaymentMethod());
+            jobDTO.setScheduledTime(job.getScheduledTime().toString());
+            jobDTO.setOrderCode(job.getOrderCode());
+            jobDTO.setBookingType(job.getBookingType());
+
+            // Chỉ lấy các trường liên quan mà không bị lặp lại
+            jobDTOList.add(jobDTO);
+        }
+        return jobDTOList;
+    }
 
 
     public Map<String, Object> bookJob(@PathVariable Long customerId, @RequestBody BookJobRequest request, HttpServletRequest requestIp) {

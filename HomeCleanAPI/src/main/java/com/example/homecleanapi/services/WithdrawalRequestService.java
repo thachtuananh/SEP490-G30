@@ -204,7 +204,7 @@ public class WithdrawalRequestService {
 
 
 
-    public Map<String, Object> approveOrRejectWithdrawalRequest(Long withdrawalRequestId, String action) {
+    public Map<String, Object> approveOrRejectWithdrawalRequest(Long withdrawalRequestId, String action, String rejectionReason) {
         Map<String, Object> response = new HashMap<>();
 
         // Kiểm tra xem yêu cầu rút tiền có tồn tại không
@@ -226,8 +226,6 @@ public class WithdrawalRequestService {
 
         // Kiểm tra hành động của admin (APPROVE hoặc REJECT)
         if ("APPROVE".equalsIgnoreCase(action)) {
-
-
             // Nếu APPROVE, cập nhật trạng thái là "WITHDREW"
             withdrawalRequest.setStatus("WITHDREW");
 
@@ -244,19 +242,16 @@ public class WithdrawalRequestService {
             transactionHistory.setStatus("SUCCESS");
             transactionHistory.setDescription("Quản lý chấp nhận yêu cầu rút tiền");
 
-            System.out.println("Saving AdminTransactionHistory: " + transactionHistory);
-
             // Lưu vào bảng AdminTransactionHistory
             adminTransactionHistoryRepository.save(transactionHistory);
-            System.out.println("Transaction saved successfully!");
-
-
 
             response.put("message", "Yêu cầu rút tiền đã được chấp nhận và chuyển trạng thái thành WITHDREW");
             response.put("status", HttpStatus.OK);
 
         } else if ("REJECT".equalsIgnoreCase(action)) {
             // Nếu REJECT, cập nhật trạng thái là "REJECTED" và hoàn tiền lại cho người yêu cầu
+            withdrawalRequest.setStatus("REJECTED");
+            withdrawalRequest.setRejectionReason(rejectionReason);  // Cập nhật lý do từ chối
 
             Double withdrawalAmount = withdrawalRequest.getAmount();
 
@@ -295,9 +290,6 @@ public class WithdrawalRequestService {
             transactionHistoryRepository.save(transactionHistory);
 
             // Cập nhật trạng thái yêu cầu là "REJECTED"
-            withdrawalRequest.setStatus("REJECTED");
-
-            // Cập nhật lại yêu cầu rút tiền trong cơ sở dữ liệu
             withdrawalRequestRepository.save(withdrawalRequest);
 
             response.put("message", "Yêu cầu rút tiền đã bị từ chối và tiền đã được hoàn lại");
@@ -309,6 +301,7 @@ public class WithdrawalRequestService {
 
         return response;
     }
+
 
 
 

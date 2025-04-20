@@ -1,12 +1,11 @@
 package com.example.homecleanapi.controllers;
 
 import com.example.homecleanapi.dtos.AdminTransactionHistoryDTO;
+import com.example.homecleanapi.dtos.JobDTO;
 import com.example.homecleanapi.dtos.LoginRequest;
 import com.example.homecleanapi.models.AdminTransactionHistory;
-import com.example.homecleanapi.services.AdminAuthService;
-import com.example.homecleanapi.services.DashboardService;
-import com.example.homecleanapi.services.AdminTransactionHistoryService;
-import com.example.homecleanapi.services.WithdrawalRequestService;
+import com.example.homecleanapi.models.Job;
+import com.example.homecleanapi.services.*;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
@@ -28,12 +27,14 @@ public class AdminController {
     private final WithdrawalRequestService withdrawalRequestService;
     private final DashboardService dashboardService;
     private final AdminTransactionHistoryService adminTransactionHistoryService;
+    private final JobService jobService;
 
-    public AdminController(AdminAuthService adminAuthService, WithdrawalRequestService withdrawalRequestService, DashboardService dashboardService, AdminTransactionHistoryService adminTransactionHistoryService) {
+    public AdminController(AdminAuthService adminAuthService, WithdrawalRequestService withdrawalRequestService, DashboardService dashboardService, AdminTransactionHistoryService adminTransactionHistoryService, JobService jobService) {
         this.adminAuthService = adminAuthService;
         this.withdrawalRequestService = withdrawalRequestService;
         this.dashboardService = dashboardService;
         this.adminTransactionHistoryService = adminTransactionHistoryService;
+        this.jobService = jobService;
     }
 
     @PostMapping(value = "/login", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -44,12 +45,19 @@ public class AdminController {
     @PutMapping("/{withdrawalRequestId}")
     public ResponseEntity<Map<String, Object>> approveOrRejectWithdrawal(
             @PathVariable Long withdrawalRequestId,
-            @RequestParam String action) {
+            @RequestParam String action,
+            @RequestBody(required = false) Map<String, Object> body) {  // Thêm @RequestBody cho lý do từ chối
 
-        Map<String, Object> response = withdrawalRequestService.approveOrRejectWithdrawalRequest(withdrawalRequestId, action);
+        // Lấy lý do từ chối từ body nếu có
+        String rejectionReason = body != null && body.containsKey("rejectionReason") ? (String) body.get("rejectionReason") : null;
+
+        Map<String, Object> response = withdrawalRequestService.approveOrRejectWithdrawalRequest(
+                withdrawalRequestId, action, rejectionReason);
 
         return new ResponseEntity<>(response, (HttpStatus) response.get("status"));
     }
+
+
 
 
     // lấy ra ds các yêu cầu rutts tiền
@@ -118,6 +126,14 @@ public class AdminController {
         }
     }
 
+    @GetMapping("/jobs")
+    public ResponseEntity<List<JobDTO>> getAllJobs() {
+        List<JobDTO> jobs = jobService.getAllJobs();
+        if (jobs.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        }
+        return new ResponseEntity<>(jobs, HttpStatus.OK);
+    }
 
 
 }
