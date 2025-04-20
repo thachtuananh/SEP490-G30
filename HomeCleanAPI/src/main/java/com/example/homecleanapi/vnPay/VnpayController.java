@@ -56,7 +56,7 @@ public class VnpayController {
                 jobRepository.save(job);
 
                 // Thành công thì redirect về URL frontend
-                String redirectUrl = "https://house-clean-platform.web.app/activitylist?status=success";
+                String redirectUrl = "https://house-clean-platform.web.app/ordersuccess?status=success";
                 return ResponseEntity.status(HttpStatus.FOUND) // HTTP 302 Redirect
                         .header(HttpHeaders.LOCATION, redirectUrl)
                         .build();
@@ -64,7 +64,9 @@ public class VnpayController {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Job không tồn tại.");
             }
         } else {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Thanh toán thất bại! Mã lỗi: " + responseCode);
+            // Thành công thì redirect về URL frontend
+            String redirectUrl = "https://house-clean-platform.web.app/orderfail?status=fail";
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).header(HttpHeaders.LOCATION, redirectUrl).build();
         }
     }
 

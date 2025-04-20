@@ -9,6 +9,7 @@ import com.example.homecleanapi.models.TransactionHistory;
 import com.example.homecleanapi.repositories.TransactionHistoryRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 
 import org.springframework.http.ResponseEntity;
@@ -209,19 +210,19 @@ public class WalletController {
 
             if ("vnpay".equalsIgnoreCase(paymentMethod)) {
                 // Xử lý thanh toán qua VNPay
-                Map<String, Object> response = walletService.depositMoney(customerId, amount, request);
-                return ResponseEntity.ok(response);
+                walletService.depositMoney(customerId, amount, request);
+                String redirectUrl = "https://house-clean-platform.web.app/depositOwner?status=success";
+                return ResponseEntity.status(HttpStatus.FOUND)
+                        .header(HttpHeaders.LOCATION, redirectUrl)
+                        .build();
             }else {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                         .body(Map.of("message", "Invalid payment method"));
             }
         } catch (Exception e) {
             // Xử lý khi có lỗi trong quá trình tạo thanh toán
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("message", "Error creating payment: " + e.getMessage()));
+            String redirectUrl = "https://house-clean-platform.web.app/depositOwnerfail?status=fail";
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).header(HttpHeaders.LOCATION, redirectUrl).build();
         }
     }
-
-
-
 }
