@@ -2,10 +2,8 @@ package com.example.homecleanapi.services;
 
 import com.example.homecleanapi.dtos.NotificationDTO;
 import com.example.homecleanapi.enums.JobStatus;
-import com.example.homecleanapi.models.Job;
-import com.example.homecleanapi.models.JobApplication;
-import com.example.homecleanapi.repositories.JobApplicationRepository;
-import com.example.homecleanapi.repositories.JobRepository;
+import com.example.homecleanapi.models.*;
+import com.example.homecleanapi.repositories.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -16,6 +14,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class ScheduleService {
@@ -24,11 +23,19 @@ public class ScheduleService {
     private final JobRepository jobRepository;
     private final NotificationService notificationService;
     private final JobApplicationRepository jobApplicationRepository;
+    private final CustomerWalletRepository customerWalletRepository;
+    private final TransactionHistoryRepository transactionHistoryRepository;
+    private final WalletRepository walletRepository;
+    private final WorkHistoryRepository workHistoryRepository;
 
-    public ScheduleService(JobRepository jobRepository, NotificationService notificationService, JobApplicationRepository jobApplicationRepository) {
+    public ScheduleService(JobRepository jobRepository, NotificationService notificationService, JobApplicationRepository jobApplicationRepository, CustomerWalletRepository customerWalletRepository, TransactionHistoryRepository transactionHistoryRepository, WalletRepository walletRepository, WorkHistoryRepository workHistoryRepository) {
         this.jobRepository = jobRepository;
         this.notificationService = notificationService;
         this.jobApplicationRepository = jobApplicationRepository;
+        this.customerWalletRepository = customerWalletRepository;
+        this.transactionHistoryRepository = transactionHistoryRepository;
+        this.walletRepository = walletRepository;
+        this.workHistoryRepository = workHistoryRepository;
     }
 
     @Scheduled(cron = "0 * * * * *")
@@ -53,6 +60,30 @@ public class ScheduleService {
                     // Đổi trạng thái Job
                     job.setStatus(JobStatus.AUTO_CANCELLED);
                     updatedJobs.add(job);
+                    jobRepository.save(job);
+
+                    // Hoàn tiền cho customer vào ví
+                    Optional<CustomerWallet> walletOpt = customerWalletRepository.findByCustomerId(Long.valueOf(job.getCustomer().getId()));
+                    if (walletOpt.isPresent()) {
+                        CustomerWallet wallet = walletOpt.get();
+                        // Cộng lại số tiền vào ví
+                        wallet.setBalance(wallet.getBalance() + job.getTotalPrice());
+                        customerWalletRepository.save(wallet);  // Lưu ví cập nhật
+                        System.out.println("Đã hoàn tiền cho customer " + job.getCustomer().getId());
+
+                        TransactionHistory transactionHistory = new TransactionHistory();
+                        transactionHistory.setCustomer(wallet.getCustomer());  // Gán thông tin customer
+                        transactionHistory.setAmount(job.getTotalPrice());  // Số tiền hoàn lại
+                        transactionHistory.setTransactionType("Refund");  // Loại giao dịch là hoàn tiền
+                        transactionHistory.setTransactionDate(LocalDateTime.now(zoneId));  // Ngày giờ giao dịch
+                        transactionHistory.setPaymentMethod(job.getPaymentMethod());  // Phương thức thanh toán là ví
+                        transactionHistory.setStatus("SUCCESS");  // Trạng thái giao dịch là hoàn tất
+
+                        // Lưu thông tin vào bảng transaction_history
+                        transactionHistoryRepository.save(transactionHistory);
+
+                        System.out.println("Đã hoàn tiền cho customer " + job.getCustomer().getId());
+                    }
 
                     // Gửi thông báo đến Customer
                     NotificationDTO notification = new NotificationDTO(
@@ -100,6 +131,111 @@ public class ScheduleService {
             System.out.println("Đã cập nhật trạng thái cho " + applicationsToUpdate.size() + " ứng tuyển.");
         }
     }
+
+
+    @Scheduled(cron = "0 * * * * *")
+    public void autoCompleteJobs() {
+        System.out.println("Check Completed Jobs and Auto Update");
+
+        ZoneId zoneId = ZoneId.of("Asia/Ho_Chi_Minh");
+        LocalDateTime now = LocalDateTime.now(zoneId);  // Lấy thời gian hiện tại
+        System.out.println("Check Completed Jobs at: " + now);
+
+        // Lấy tất cả các job có trạng thái COMPLETED
+        List<Job> jobs = jobRepository.findAllByStatus(JobStatus.COMPLETED);
+        System.out.println("Tổng số job COMPLETED: " + jobs.size());
+
+        List<Job> updatedJobs = new ArrayList<>();
+        List<TransactionHistory> transactionHistories = new ArrayList<>();
+
+        for (Job job : jobs) {
+            // Kiểm tra nếu job có trạng thái COMPLETED và đã quá 5 phút kể từ thời gian updated_at
+            if (job.getUpdatedAt() != null && job.getUpdatedAt().isBefore(now.minusMinutes(5))) {
+
+                // Đổi trạng thái job thành DONE
+                job.setStatus(JobStatus.DONE);
+                updatedJobs.add(job);
+                jobRepository.saveAll(updatedJobs);
+
+                Employee cleaner = null;
+
+                // Xử lý khi booking_type là BOOKED (cleaner_id có trong bảng jobs)
+                if ("BOOKED".equals(job.getBookingType())) {
+                    cleaner = job.getCleaner();  // Lấy cleaner từ job trực tiếp
+                }
+
+                // Xử lý khi booking_type là CREATE (cleaner_id có trong bảng job_application và status = "Accepted")
+                else if ("CREATE".equals(job.getBookingType())) {
+                    List<JobApplication> jobApplications = jobApplicationRepository.findJobApplicationByJobIdAndStatus(job.getId(), "Accepted");
+                    if (!jobApplications.isEmpty()) {
+                        cleaner = jobApplications.get(0).getCleaner();  // Lấy cleaner từ bảng job_application
+                    }
+                }
+
+                // Nếu có cleaner hợp lệ, tiến hành thanh toán và tạo giao dịch
+                if (cleaner != null) {
+                    Long cleanerId = Long.valueOf(cleaner.getId());
+                    // Lấy ID của cleaner
+                    double totalPrice = job.getTotalPrice();
+                    double cleanerAmount = totalPrice * 0.85;  // Chỉ cộng 85% giá trị đơn hàng vào ví
+
+                    // Lấy thông tin ví của cleaner
+                    Optional<Wallet> walletOpt = walletRepository.findByCleanerId(cleanerId);
+                    if (walletOpt.isPresent()) {
+                        Wallet wallet = walletOpt.get();
+                        wallet.setBalance(wallet.getBalance() + cleanerAmount);  // Cộng tiền vào ví của cleaner
+                        walletRepository.save(wallet);
+
+
+                        // Cập nhật thông tin vào bảng transaction_history
+                        TransactionHistory transactionHistory = new TransactionHistory();
+                        transactionHistory.setAmount(cleanerAmount);
+                        transactionHistory.setCleaner(cleaner);  // Lưu cleanerId vào transactionHistory
+                        transactionHistory.setTransactionType("Refund");
+                        transactionHistory.setTransactionDate(LocalDateTime.now(zoneId));
+                        transactionHistory.setPaymentMethod(job.getPaymentMethod());
+                        transactionHistory.setStatus("SUCCESS");
+
+                        transactionHistories.add(transactionHistory);
+                        transactionHistoryRepository.saveAll(transactionHistories);
+                        System.out.println("Cộng " + cleanerAmount + " vào ví cleaner " + cleanerId);
+                    }
+
+                    Integer cleanerIdInt = Math.toIntExact(cleanerId);  // Chuyển Long sang Integer
+
+
+                    // Gửi thông báo cho cleaner
+                    NotificationDTO notification = new NotificationDTO(
+                            cleanerIdInt,
+                            "Công việc của bạn đã được hoàn thành ",
+                            "AUTO_MESSAGE",
+                            LocalDate.now(zoneId)
+                    );
+                    notificationService.processNotification(notification, "CLEANER", cleanerIdInt);
+
+                    System.out.println("Đã tự động cập nhật trạng thái Job " + job.getId() + " thành DONE và thanh toán cho cleaner.");
+                } else {
+                    System.out.println("Không tìm thấy cleaner cho job " + job.getId());
+                }
+            }
+        }
+
+        // Lưu các thay đổi nếu có
+        if (!updatedJobs.isEmpty()) {
+            jobRepository.saveAll(updatedJobs);
+            System.out.println("Đã cập nhật trạng thái cho " + updatedJobs.size() + " công việc.");
+        }
+
+        // Lưu lịch sử giao dịch vào bảng transaction_history
+        if (!transactionHistories.isEmpty()) {
+            transactionHistoryRepository.saveAll(transactionHistories);
+            System.out.println("Đã cập nhật " + transactionHistories.size() + " giao dịch.");
+        }
+    }
+
+
+
+
 }
 
 
