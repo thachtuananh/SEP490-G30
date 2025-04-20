@@ -1052,12 +1052,16 @@ public class CleanerJobService {
 			jobCountMap.put(jobId, jobCountMap.getOrDefault(jobId, 0L) + 1);
 		}
 
+		// Debugging: In ra số lần xuất hiện của mỗi job_id
+		System.out.println("Job count map: " + jobCountMap);
+
 		// Duyệt qua các JobServiceDetail để lấy chi tiết job, nhưng chỉ lấy các job không phải combo (job_id xuất hiện 1 lần)
 		for (JobServiceDetail jobServiceDetail : jobServiceDetails) {
 			Long jobId = jobServiceDetail.getJob().getId();
 
 			// Nếu job_id xuất hiện nhiều hơn 1 lần (combo), thì bỏ qua job này
 			if (jobCountMap.get(jobId) > 1) {
+				System.out.println("Skipping jobId " + jobId + " because it is a combo.");
 				continue; // Bỏ qua job này vì là combo
 			}
 
@@ -1100,11 +1104,22 @@ public class CleanerJobService {
 
 				jobInfo.put("services", services);
 				jobDetailsList.add(jobInfo);
+
+				// Debugging: In ra thông tin của job đã được thêm vào danh sách
+				System.out.println("Job added: " + jobInfo);
 			}
 		}
 
+		// Debugging: In ra danh sách kết quả
+		System.out.println("Final jobDetailsList: " + jobDetailsList);
+
 		return jobDetailsList;
 	}
+
+
+
+
+
 
 
 	// lấy cac job đang là combo
