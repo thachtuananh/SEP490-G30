@@ -199,11 +199,11 @@ public class ReportService {
         return ResponseEntity.ok(response);
     }
 
-    public ResponseEntity<Map<String, Object>> getReportByCleanerId(Long cleanerId, int offset, int limit) {
+    public ResponseEntity<Map<String, Object>> getReportByCleanerId(Integer cleanerId, int offset, int limit) {
         Map<String, Object> response = new HashMap<>();
         Pageable pageable = PageRequest.of(offset, limit);
 
-        Page<Report> reports = reportRepository.findReportsByCleanerId(cleanerId, pageable);
+        Page<CleanerReport> reports = cleanerReportRepository.findReportsByCleanerId(cleanerId, pageable);
 
         List<Map<String, Object>> cleanerReportList = reports.getContent().stream().map(report -> {
             Map<String, Object> dto = new HashMap<>();

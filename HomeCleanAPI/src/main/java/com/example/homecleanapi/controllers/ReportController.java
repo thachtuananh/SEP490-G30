@@ -62,7 +62,7 @@ public class ReportController {
 
     @GetMapping(value = "/{cleanerId}/get-report-cleaner", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Map<String, Object>> getReportByCleanerId(
-            @PathVariable Long cleanerId,
+            @PathVariable Integer cleanerId,
             @RequestParam(defaultValue = "0") int offset,
             @RequestParam(defaultValue = "12") int limit
     ) {
