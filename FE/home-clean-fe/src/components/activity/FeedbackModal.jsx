@@ -69,7 +69,9 @@ export const FeedbackModal = ({ visible, jobId, customerId, onClose }) => {
       setEditing(false);
     } catch (error) {
       console.error("Lỗi khi lưu đánh giá:", error);
-      message.error("Không thể lưu đánh giá");
+      message.error(
+        "Bạn chỉ có thể cập nhật đánh giá trong 24h từ khi đánh giá lần đầu"
+      );
     } finally {
       setLoading(false);
     }

@@ -9,6 +9,8 @@ import {
   MenuFoldOutlined,
   ClearOutlined,
   DollarOutlined,
+  RobotOutlined,
+  FlagOutlined,
 } from "@ant-design/icons";
 import { Link, useLocation } from "react-router-dom";
 import logo from "../../assets/HouseClean_logo.png";
@@ -47,9 +49,36 @@ const AppSidebar = () => {
   // Define menu items using the recommended items prop structure
   const menuItems = [
     {
-      key: "/admin",
+      key: "admin",
       icon: <DashboardOutlined />,
       label: <Link to="/admin">Dashboard</Link>,
+    },
+    {
+      key: "admin-ai-assistant",
+      icon: <RobotOutlined />,
+      label: <Link to="/admin/ai-assistant">Quản lý AI</Link>,
+    },
+    {
+      key: "admin-withdrawal",
+      icon: <DollarOutlined />,
+      label: <Link to="/admin/admin-withdrawal">Yêu cầu rút tiền</Link>,
+    },
+    {
+      key: "admin-report",
+      label: "Quản lý báo cáo",
+      icon: <FlagOutlined />,
+      children: [
+        {
+          key: "/admin/report-owners",
+          icon: <UserOutlined />,
+          label: <Link to="/admin/report-owners">Chủ nhà</Link>,
+        },
+        {
+          key: "/admin/report-cleaners",
+          icon: <ClearOutlined />,
+          label: <Link to="/admin/report-cleaners">Người dọn dẹp</Link>,
+        },
+      ],
     },
     {
       key: "users",
@@ -73,12 +102,27 @@ const AppSidebar = () => {
         },
       ],
     },
-    {
-      key: "/admin-withdrawal",
-      icon: <DollarOutlined />,
-      label: <Link to="/admin/admin-withdrawal">Yêu cầu rút tiền</Link>,
-    },
   ];
+
+  // Determine which keys should be open based on current path
+  const getDefaultOpenKeys = () => {
+    if (collapsed) {
+      return []; // No submenus are expanded when collapsed
+    }
+
+    // Check if current path is inside a submenu
+    if (currentPath.includes("/admin/report")) {
+      return ["admin-report"];
+    } else if (
+      currentPath.includes("/admin/owners") ||
+      currentPath.includes("/admin/cleaners") ||
+      currentPath.includes("/admin/cleaners-ban")
+    ) {
+      return ["users"];
+    }
+
+    return [];
+  };
 
   // Determine sidebar width based on screen size
   const getSiderWidth = () => {
@@ -92,7 +136,6 @@ const AppSidebar = () => {
   };
 
   return (
-    // In AppSidebar.jsx, modify the Sider component props:
     <Sider
       width={getSiderWidth()}
       theme="light"
@@ -141,7 +184,7 @@ const AppSidebar = () => {
       <Menu
         mode="inline"
         selectedKeys={[currentPath]}
-        defaultOpenKeys={collapsed ? [] : ["users"]}
+        defaultOpenKeys={getDefaultOpenKeys()}
         style={{ borderRight: 0, paddingTop: "12px" }}
         items={menuItems}
       />

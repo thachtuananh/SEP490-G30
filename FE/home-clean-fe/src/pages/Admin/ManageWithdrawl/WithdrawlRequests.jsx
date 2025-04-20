@@ -117,9 +117,39 @@ const WithdrawalRequests = () => {
       setLoading(false);
     } catch (error) {
       console.error("Error fetching withdrawal requests:", error);
-      setError("Không thể tải dữ liệu. Vui lòng thử lại sau.");
-      message.error("Không thể tải dữ liệu. Vui lòng thử lại sau.");
-      setWithdrawalRequests([]);
+
+      // More specific error handling for "NOT_FOUND" case
+      if (error.response) {
+        if (
+          error.response.status === 404 ||
+          error.response.data?.status === "NOT_FOUND"
+        ) {
+          // This is an expected case when no records exist for the filter
+          setWithdrawalRequests([]);
+          setError(null); // Not a true error state, just empty data
+        } else {
+          // Other API errors
+          setError(
+            `Lỗi từ máy chủ: ${
+              error.response.data?.message || "Không xác định"
+            }`
+          );
+          message.error("Không thể tải dữ liệu. Vui lòng thử lại sau.");
+        }
+      } else if (error.request) {
+        // Network errors
+        setError(
+          "Không thể kết nối đến máy chủ. Vui lòng kiểm tra kết nối internet của bạn."
+        );
+        message.error(
+          "Lỗi kết nối. Vui lòng kiểm tra kết nối internet của bạn."
+        );
+      } else {
+        // Other unexpected errors
+        setError("Đã xảy ra lỗi không mong muốn. Vui lòng thử lại sau.");
+        message.error("Đã xảy ra lỗi không mong muốn.");
+      }
+
       setLoading(false);
     }
   };
@@ -227,7 +257,21 @@ const WithdrawalRequests = () => {
       fetchWithdrawalRequests();
     } catch (error) {
       console.error("Error approving withdrawal:", error);
-      message.error("Không thể duyệt yêu cầu. Vui lòng thử lại sau.");
+
+      // Improved error handling for approval action
+      if (error.response) {
+        message.error(
+          `Không thể duyệt yêu cầu: ${
+            error.response.data?.message || "Lỗi từ máy chủ"
+          }`
+        );
+      } else if (error.request) {
+        message.error(
+          "Lỗi kết nối. Vui lòng kiểm tra kết nối internet của bạn."
+        );
+      } else {
+        message.error("Không thể duyệt yêu cầu. Vui lòng thử lại sau.");
+      }
     } finally {
       setActionLoading(false);
     }
@@ -253,7 +297,21 @@ const WithdrawalRequests = () => {
       fetchWithdrawalRequests();
     } catch (error) {
       console.error("Error rejecting withdrawal:", error);
-      message.error("Không thể từ chối yêu cầu. Vui lòng thử lại sau.");
+
+      // Improved error handling for rejection action
+      if (error.response) {
+        message.error(
+          `Không thể từ chối yêu cầu: ${
+            error.response.data?.message || "Lỗi từ máy chủ"
+          }`
+        );
+      } else if (error.request) {
+        message.error(
+          "Lỗi kết nối. Vui lòng kiểm tra kết nối internet của bạn."
+        );
+      } else {
+        message.error("Không thể từ chối yêu cầu. Vui lòng thử lại sau.");
+      }
     } finally {
       setActionLoading(false);
     }
@@ -417,16 +475,21 @@ const WithdrawalRequests = () => {
     {
       title: <HomeOutlined />,
     },
+    // {
+    //   title: (
+    //     <>
+    //       <DollarOutlined />
+    //       <span>Tài chính</span>
+    //     </>
+    //   ),
+    // },
     {
       title: (
         <>
           <DollarOutlined />
-          <span>Tài chính</span>
+          <span>Yêu cầu rút tiền</span>
         </>
       ),
-    },
-    {
-      title: "Yêu cầu rút tiền",
     },
   ];
 
@@ -446,46 +509,66 @@ const WithdrawalRequests = () => {
     transition: "all 0.2s",
   };
 
-  // Custom render for empty state
-  const customEmpty = () => (
-    <Empty
-      style={{
-        minHeight: "200px",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        flexDirection: "column",
-      }}
-      image={Empty.PRESENTED_IMAGE_SIMPLE}
-      description={
-        <span>
-          {error ? (
-            <>
-              {/* <ExclamationCircleOutlined
+  // Custom render for empty state with more descriptive messages
+  const customEmpty = () => {
+    // Handle different empty states
+    let description = "Không có yêu cầu rút tiền nào";
+    let showRetryButton = false;
+
+    if (error) {
+      description = error;
+      showRetryButton = true;
+    } else if (
+      filteredWithdrawalRequests.length === 0 &&
+      withdrawalRequests.length > 0
+    ) {
+      description = "Không tìm thấy yêu cầu rút tiền nào phù hợp với bộ lọc";
+    } else if (withdrawalRequests.length === 0) {
+      // This is the state when there are no requests for the current status filter
+      description = `Không có yêu cầu rút tiền nào ở trạng thái "${
+        statusFilter === "PENDING"
+          ? "Đang chờ"
+          : statusFilter === "APPROVED"
+          ? "Đã duyệt"
+          : "Đã từ chối"
+      }"`;
+    }
+
+    return (
+      <Empty
+        style={{
+          minHeight: "200px",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          flexDirection: "column",
+        }}
+        image={
+          error ? Empty.PRESENTED_IMAGE_SIMPLE : Empty.PRESENTED_IMAGE_DEFAULT
+        }
+        description={
+          <span>
+            {error && (
+              <ExclamationCircleOutlined
                 style={{ color: "#ff4d4f", marginRight: 8 }}
-              /> */}
-              Không thể tải dữ liệu
-            </>
-          ) : filteredWithdrawalRequests.length === 0 &&
-            withdrawalRequests.length > 0 ? (
-            "Không tìm thấy yêu cầu rút tiền nào phù hợp với bộ lọc"
-          ) : (
-            "Không có yêu cầu rút tiền nào"
-          )}
-        </span>
-      }
-    >
-      {error && (
-        <Button
-          type="primary"
-          onClick={fetchWithdrawalRequests}
-          icon={<ReloadOutlined />}
-        >
-          Thử lại
-        </Button>
-      )}
-    </Empty>
-  );
+              />
+            )}
+            {description}
+          </span>
+        }
+      >
+        {showRetryButton && (
+          <Button
+            type="primary"
+            onClick={fetchWithdrawalRequests}
+            icon={<ReloadOutlined />}
+          >
+            Thử lại
+          </Button>
+        )}
+      </Empty>
+    );
+  };
 
   return (
     <Layout style={{ minHeight: "100vh" }}>
@@ -566,14 +649,15 @@ const WithdrawalRequests = () => {
                     >
                       <Option value="all">Tất cả người dùng</Option>
                       <Option value="customer">Chủ nhà</Option>
-                      <Option value="cleaner">Người làm sạch</Option>
+                      <Option value="cleaner">Người dọn nhà</Option>
                     </Select>
                   </Space>
                 </div>
 
-                {/* {error && (
+                {/* Show Alert only for critical errors, not for "no data" cases */}
+                {/* {error && error.includes("kết nối") && (
                   <Alert
-                    message="Lỗi tải dữ liệu"
+                    message="Lỗi kết nối"
                     description={error}
                     type="error"
                     showIcon
@@ -597,12 +681,12 @@ const WithdrawalRequests = () => {
                   bordered
                   loading={loading}
                   scroll={{ x: "max-content" }}
-                  //   pagination={{
-                  //       pageSize: 10,
-                  //       showSizeChanger: true,
-                  //       showTotal: (total) => `Tổng ${total} yêu cầu`,
-                  //     style: { justifyContent: "center" },
-                  //   }}
+                  // pagination={{
+                  //   pageSize: 10,
+                  //   showSizeChanger: true,
+                  //   showTotal: (total) => `Tổng ${total} yêu cầu`,
+                  //   style: { justifyContent: "center" },
+                  // }}
                   locale={{
                     emptyText: customEmpty,
                   }}

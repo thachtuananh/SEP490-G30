@@ -102,11 +102,11 @@ const AppHeader = ({ collapsed, onToggle }) => {
         )}
       </div> */}
       <div style={{ display: "flex", alignItems: "center" }}>
-        {isLoggedIn && (
+        {/* {isLoggedIn && (
           <Badge count={2} style={{ marginRight: 24 }}>
             <BellOutlined style={{ fontSize: 20 }} />
           </Badge>
-        )}
+        )} */}
         <Dropdown menu={{ items: menuItems }} placement="bottomRight">
           <Space style={{ marginLeft: 16, cursor: "pointer" }}>
             <Avatar icon={<UserOutlined />} />

@@ -560,7 +560,12 @@ function Navbar() {
               </Link>
             </li> */}
             <li>
-              <Link to="/cleaner-pricing" className="nav-link">
+              <Link to="/homeclean/contact" className="nav-link">
+                Liên hệ
+              </Link>
+            </li>
+            <li>
+              <Link to="/homeclean/cleaner-pricing" className="nav-link">
                 Bảng tiền công
               </Link>
             </li>

@@ -402,7 +402,7 @@ export const WalletBalance = () => {
         )}
 
         <Row gutter={8}>
-          <Col span={8}>
+          {/* <Col span={8}>
             <Button
               type="primary"
               icon={<PlusOutlined />}
@@ -416,7 +416,7 @@ export const WalletBalance = () => {
             >
               Nạp tiền vào ví
             </Button>
-          </Col>
+          </Col> */}
           <Col span={8}>
             <Button
               type="primary"
@@ -445,6 +445,18 @@ export const WalletBalance = () => {
               onClick={handleHistoryClick}
             >
               Lịch sử
+            </Button>
+          </Col>
+          <Col span={8}>
+            <Button
+              icon={<HistoryOutlined />}
+              style={{
+                width: "100%",
+                height: 40,
+              }}
+              onClick={handleHistoryClick}
+            >
+              Yêu cầu rút tiền
             </Button>
           </Col>
         </Row>

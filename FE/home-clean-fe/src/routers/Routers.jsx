@@ -19,7 +19,7 @@ import Infomation from "../pages/profile/owner/infomation";
 import InfomationCleaner from "../pages/profile/cleanner/infomationCleaner";
 
 import About from "../pages/About";
-
+import ContactCleaner from "../pages/ContactCleaner";
 import { ActivityList } from "../pages/ActivityList";
 
 import Contact from "../pages/Contact";
@@ -53,6 +53,9 @@ import LoginAdmin from "../pages/Admin/LoginAdmin";
 import ProtectedAdminRoute from "./ProtectedAdminRoute";
 import CleanerListBan from "../pages/Admin/ManageUser/Cleaner/CleanerListBan";
 import AdminWithdrawl from "../pages/Admin/ManageWithdrawl/WithdrawlRequests";
+import AdminManageAI from "../pages/Admin/ManageAI";
+import CleanerReport from "../pages/Admin/ManageReport/CleanerReport";
+import OwnerReport from "../pages/Admin/ManageReport/OwnerReport";
 
 const Routers = () => {
   return (
@@ -77,6 +80,7 @@ const Routers = () => {
       <Route path="/activitylist" element={<ActivityList />} />
 
       <Route path="/contact" element={<Contact />} />
+      <Route path="/homeclean/contact" element={<ContactCleaner />} />
 
       <Route path="/infomation" element={<Infomation />} />
       <Route
@@ -94,14 +98,14 @@ const Routers = () => {
 
       <Route path="/ordersuccess" element={<OrderSuccess />} />
       <Route path="/depositOwner" element={<DepositOwner />} />
-      <Route path="/homeclean/depositCleaner" element={<DepositCleaner />} />
+      {/* <Route path="/homeclean/depositCleaner" element={<DepositCleaner />} /> */}
 
       <Route path="/orderfail" element={<OrderFail />} />
       <Route path="/depositOwnerfail" element={<DepositOwnerFail />} />
-      <Route
+      {/* <Route
         path="/homeclean/depositCleanerfail"
         element={<DepositCleanerFail />}
-      />
+      /> */}
 
       <Route path="/workdetail/:jobId?" element={<WorkDetail />} />
 
@@ -110,7 +114,10 @@ const Routers = () => {
         path="/service-details-cleaner"
         element={<ServiceDetailsCleaner />}
       />
-      <Route path="/cleaner-pricing" element={<HouseCleanPricing />} />
+      <Route
+        path="/homeclean/cleaner-pricing"
+        element={<HouseCleanPricing />}
+      />
 
       <Route path="/homeclean/job-list" element={<JobListFilter />} />
 
@@ -171,6 +178,30 @@ const Routers = () => {
         element={
           <ProtectedAdminRoute>
             <AdminWithdrawl />
+          </ProtectedAdminRoute>
+        }
+      />
+      <Route
+        path="/admin/ai-assistant"
+        element={
+          <ProtectedAdminRoute>
+            <AdminManageAI />
+          </ProtectedAdminRoute>
+        }
+      />
+      <Route
+        path="/admin/report-cleaners"
+        element={
+          <ProtectedAdminRoute>
+            <CleanerReport />
+          </ProtectedAdminRoute>
+        }
+      />
+      <Route
+        path="/admin/report-owners"
+        element={
+          <ProtectedAdminRoute>
+            <OwnerReport />
           </ProtectedAdminRoute>
         }
       />

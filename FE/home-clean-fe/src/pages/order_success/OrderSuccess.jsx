@@ -39,7 +39,7 @@ const OrderSuccess = () => {
           <h1>Thành công</h1>
           <p>Bạn đã thanh toán thành công. Cảm ơn bạn đã sử dụng dịch vụ</p>
           <Link
-            to="/activitylist"
+            to="/"
             style={{
               textDecoration: "none",
               color: "white",

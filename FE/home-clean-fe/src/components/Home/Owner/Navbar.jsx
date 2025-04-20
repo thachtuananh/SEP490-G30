@@ -541,11 +541,11 @@ function Navbar() {
                 Danh sách cleaner
               </Link>
             </li>
-            <li>
+            {/* <li>
               <Link to="/" className="nav-link">
                 Tin tức
               </Link>
-            </li>
+            </li> */}
             <li>
               <Link to="/contact" className="nav-link">
                 Liên hệ
