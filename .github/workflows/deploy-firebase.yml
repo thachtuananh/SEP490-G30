@@ -33,7 +33,7 @@ jobs:
           cd FE/home-clean-fe
           export CI=false
           npm run build
-      
+
       - name: Install Firebase CLI
         run: |
           npm install -g firebase-tools

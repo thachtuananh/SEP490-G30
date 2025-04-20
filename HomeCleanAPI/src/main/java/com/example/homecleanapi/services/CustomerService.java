@@ -79,7 +79,8 @@ public class CustomerService {
 
         
         customer.setFull_name(request.getFullName());
-
+        customer.setEmail(request.getEmail());
+        customer.setPhone(request.getPhone());
         customerRepository.save(customer);  
 
         response.put("message", "Cập nhật thông tin profile thành công!");
@@ -142,6 +143,7 @@ public class CustomerService {
 
        // Cập nhật các trường thông tin theo input từ request (JSON)
         existingLocation.setAddress(request.getAddress());
+
         String data = convertAddressToLatLong.convertAddressToLatLong(request.getAddress());
         JSONObject jsonObject = new JSONObject(data);
 

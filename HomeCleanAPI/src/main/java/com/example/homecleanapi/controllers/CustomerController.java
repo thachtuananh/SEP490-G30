@@ -51,24 +51,23 @@ public class CustomerController {
     }
 
     @GetMapping(value = "/{customer_id}/profile", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Map<String, Object>> getProfile(@PathVariable long customer_id) {
+    public ResponseEntity<Map<String, Object>> getProfile(@PathVariable Long customer_id) {
         return customerService.getProfile(customer_id);
     }
 
-    @PostMapping(value = "/{customer_id}/create-address",  produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/{customer_id}/create_address",  produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Map<String, Object>> createAddress(@RequestBody CustomerAddressesDTO request, @PathVariable Long customer_id) throws IOException {
         return customerService.addAddress(request, customer_id);
     }
 
-    @PutMapping(value = "/{customerId}/update-address/{addressId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping(value = "/{customerId}/update_address/{addressId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Map<String, Object>> updateEmployeeAddress(@RequestBody CustomerAddressesDTO request, @PathVariable Long customerId, @PathVariable Integer addressId) throws IOException {
-        // Gọi service để xử lý update địa chỉ
         return customerService.updateCustomerAddress(request, customerId, addressId);
     }
 
     // API xóa địa chỉ theo locationId
     @DeleteMapping(value = "/{locationId}/delete_address", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Map<String, Object>> deleteEmployeeAddress(@PathVariable int locationId) {
+    public ResponseEntity<Map<String, Object>> deleteEmployeeAddress(@PathVariable Integer locationId) {
         return customerService.deleteCustomerAddress(locationId);
     }
 

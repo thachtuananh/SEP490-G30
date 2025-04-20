@@ -11,6 +11,5 @@ import java.time.LocalDate;
 @NoArgsConstructor
 public class ReportUpdateDTO {
     private String status;
-    private LocalDate resolvedAt;
     private String adminResponse;
 }

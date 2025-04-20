@@ -1,11 +1,15 @@
 package com.example.homecleanapi.vnPay;
 
+import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Optional;
 
+import com.example.homecleanapi.models.AdminTransactionHistory;
+import com.example.homecleanapi.repositories.AdminTransactionHistoryRepository;
 import com.example.homecleanapi.services.JobService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -26,6 +30,8 @@ public class VnpayController {
 
     @Autowired
     private JobService jobService;
+    @Autowired
+    private AdminTransactionHistoryRepository adminTransactionHistoryRepository;
 
     public VnpayController(VnpayService vnpayService) {
         this.vnpayService = vnpayService;
@@ -46,22 +52,58 @@ public class VnpayController {
     @GetMapping("/return")
     public ResponseEntity<String> returnPayment(@RequestParam("vnp_ResponseCode") String responseCode,
                                                 @RequestParam("vnp_TxnRef") String txnRef) {
-        if ("00".equals(responseCode)) {
-            Optional<Job> jobOpt = jobRepository.findByTxnRef(txnRef);  
+        try {
+            if ("00".equals(responseCode)) {
+                Optional<Job> jobOpt = jobRepository.findByTxnRef(txnRef);
 
-            if (jobOpt.isPresent()) {
-                Job job = jobOpt.get();
-                job.setStatus(JobStatus.OPEN);  
-                jobRepository.save(job);  
+                if (jobOpt.isPresent()) {
+                    Job job = jobOpt.get();
+                    job.setStatus(JobStatus.OPEN);
+                    jobRepository.save(job);
 
-                return ResponseEntity.ok("Thanh toán thành công! Job đã được xác nhận.");
+                    // Lưu thông tin vào AdminTransactionHistory sau khi thanh toán thành công
+                    AdminTransactionHistory transactionHistory = new AdminTransactionHistory();
+                    transactionHistory.setCustomer(job.getCustomer());
+                    transactionHistory.setCleaner(job.getCleaner());
+                    transactionHistory.setTransactionType("BOOKED");
+                    transactionHistory.setAmount(job.getTotalPrice());
+                    transactionHistory.setTransactionDate(LocalDateTime.now());
+                    transactionHistory.setPaymentMethod("VNPay");
+                    transactionHistory.setStatus("SUCCESS");
+                    transactionHistory.setDescription("Thanh toán thành công qua vnpay");
+
+                    // Lưu vào bảng AdminTransactionHistory
+                    adminTransactionHistoryRepository.save(transactionHistory);
+
+                    // Thành công thì redirect về URL frontend
+                    String redirectUrl = "https://house-clean-platform.web.app/ordersuccess?status=success";
+                    return ResponseEntity.status(HttpStatus.FOUND) // HTTP 302 Redirect
+                            .header(HttpHeaders.LOCATION, redirectUrl)
+                            .build();
+                } else {
+                    // Nếu không tìm thấy Job, trả về URL thất bại
+                    String redirectUrl = "https://house-clean-platform.web.app/orderfail?status=fail";
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                            .header(HttpHeaders.LOCATION, redirectUrl)
+                            .build();
+                }
             } else {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Job không tồn tại.");
+                // Thanh toán thất bại (responseCode khác "00")
+                String redirectUrl = "https://house-clean-platform.web.app/orderfail?status=fail";
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .header(HttpHeaders.LOCATION, redirectUrl)
+                        .build();
             }
-        } else {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Thanh toán thất bại! Mã lỗi: " + responseCode);
+        } catch (Exception e) {
+            e.printStackTrace();
+            String redirectUrl = "https://house-clean-platform.web.app/orderfail?status=fail";
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .header(HttpHeaders.LOCATION, redirectUrl)
+                    .build();
         }
     }
+
+
 
     @PostMapping(value = "/retry-payment/{jobId}")
     public ResponseEntity<Map<String, Object>> retryPayment(@PathVariable Long jobId, HttpServletRequest requestIp) {
