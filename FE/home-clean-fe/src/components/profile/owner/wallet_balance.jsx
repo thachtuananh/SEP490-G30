@@ -18,6 +18,8 @@ import {
   Form,
   Table,
   Badge,
+  Input,
+  Select,
 } from "antd";
 import {
   WalletOutlined,
@@ -26,10 +28,12 @@ import {
   PlusOutlined,
   HistoryOutlined,
   ExclamationCircleOutlined,
+  ArrowDownOutlined,
 } from "@ant-design/icons";
 import { BASE_URL } from "../../../utils/config";
 
 const { Title, Text } = Typography;
+const { Option } = Select;
 
 export const WalletBalance = () => {
   const [walletData, setWalletData] = useState(null);
@@ -46,6 +50,45 @@ export const WalletBalance = () => {
 
   const token = sessionStorage.getItem("token");
   const customerId = sessionStorage.getItem("customerId");
+
+  // Withdrawal states
+  const [withdrawalModalVisible, setWithdrawalModalVisible] = useState(false);
+  const [withdrawalForm] = Form.useForm();
+  const [withdrawalLoading, setWithdrawalLoading] = useState(false);
+
+  const vietnamBanks = [
+    {
+      code: "VIETCOMBANK",
+      name: "Ngân hàng TMCP Ngoại thương Việt Nam (Vietcombank)",
+    },
+    {
+      code: "VIETINBANK",
+      name: "Ngân hàng TMCP Công thương Việt Nam (VietinBank)",
+    },
+    {
+      code: "BIDV",
+      name: "Ngân hàng TMCP Đầu tư và Phát triển Việt Nam (BIDV)",
+    },
+    {
+      code: "AGRIBANK",
+      name: "Ngân hàng Nông nghiệp và Phát triển Nông thôn (Agribank)",
+    },
+    {
+      code: "TECHCOMBANK",
+      name: "Ngân hàng TMCP Kỹ thương Việt Nam (Techcombank)",
+    },
+    { code: "MBBANK", name: "Ngân hàng TMCP Quân đội (MB Bank)" },
+    { code: "ACB", name: "Ngân hàng TMCP Á Châu (ACB)" },
+    { code: "VPBank", name: "Ngân hàng TMCP Việt Nam Thịnh Vượng (VPBank)" },
+    {
+      code: "SACOMBANK",
+      name: "Ngân hàng TMCP Sài Gòn Thương Tín (Sacombank)",
+    },
+    { code: "TPBank", name: "Ngân hàng TMCP Tiên Phong (TPBank)" },
+    { code: "HDBANK", name: "Ngân hàng TMCP Phát triển TP.HCM (HDBank)" },
+    { code: "OCB", name: "Ngân hàng TMCP Phương Đông (OCB)" },
+  ];
+
   useEffect(() => {
     fetchWalletBalance();
   }, []);
@@ -161,6 +204,72 @@ export const WalletBalance = () => {
     }
   };
 
+  // Withdrawal handlers
+  const handleWithdrawalClick = () => {
+    setWithdrawalModalVisible(true);
+  };
+
+  const handleWithdrawalCancel = () => {
+    setWithdrawalModalVisible(false);
+    withdrawalForm.resetFields();
+  };
+
+  const handleWithdrawalSubmit = async () => {
+    try {
+      const values = await withdrawalForm.validateFields();
+      setWithdrawalLoading(true);
+
+      const token = sessionStorage.getItem("token");
+      const customerId = sessionStorage.getItem("customerId");
+
+      // Example API call for withdrawal (modify according to your actual API)
+      const response = await fetch(
+        `${BASE_URL}/withdraw/${customerId}/requestWithdrawal`,
+        {
+          method: "POST",
+          headers: {
+            accept: "application/json",
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            cardNumber: values.accountNumber,
+            accountHolderName: values.accountName,
+            bankName: values.bankName,
+            amount: values.amount,
+          }),
+        }
+      );
+
+      const data = await response.json();
+      if (response.ok) {
+        setWithdrawalModalVisible(false);
+        withdrawalForm.resetFields();
+        message.success("Yêu cầu rút tiền đã được gửi đi thành công");
+        fetchWalletBalance(); // Refresh wallet balance
+      } else {
+        throw new Error(data.message || "Không thể thực hiện rút tiền");
+      }
+    } catch (error) {
+      message.error(`Lỗi khi rút tiền: ${error.message}`);
+    } finally {
+      setWithdrawalLoading(false);
+    }
+  };
+
+  // Helper function to translate transaction type to Vietnamese
+  const translateTransactionType = (type) => {
+    const translations = {
+      DEPOSIT: "Nạp tiền",
+      WITHDRAW: "Rút tiền",
+      PAYMENT: "Thanh toán",
+      REFUND: "Hoàn tiền",
+      Refund: "Hoàn tiền",
+    };
+
+    return translations[type] || type;
+  };
+
   // Transaction history columns for the table
   const historyColumns = [
     {
@@ -182,6 +291,26 @@ export const WalletBalance = () => {
           {amount.toLocaleString()} VNĐ
         </Text>
       ),
+    },
+    {
+      title: "Loại giao dịch",
+      dataIndex: "transactionType",
+      key: "transactionType",
+      render: (type) => {
+        let color = "blue";
+
+        if (type === "DEPOSIT" || type === "DEPOSIT") {
+          color = "green";
+        } else if (type === "WITHDRAW" || type === "WITHDRAW") {
+          color = "orange";
+        } else if (type === "PAYMENT" || type === "PAYMENT") {
+          color = "purple";
+        } else if (type === "REFUND" || type === "Refund") {
+          color = "cyan";
+        }
+
+        return <Tag color={color}>{translateTransactionType(type)}</Tag>;
+      },
     },
     {
       title: "Phương thức",
@@ -263,7 +392,6 @@ export const WalletBalance = () => {
             <Statistic
               value={walletData?.walletBalance}
               precision={0}
-              // prefix="VNĐ"
               valueStyle={{
                 color: "#3f8600",
                 fontWeight: "bold",
@@ -275,7 +403,7 @@ export const WalletBalance = () => {
         )}
 
         <Row gutter={8}>
-          <Col span={12}>
+          <Col span={8}>
             <Button
               type="primary"
               icon={<PlusOutlined />}
@@ -290,7 +418,25 @@ export const WalletBalance = () => {
               Nạp tiền vào ví
             </Button>
           </Col>
-          <Col span={12}>
+          <Col span={8}>
+            <Button
+              type="primary"
+              icon={<ArrowDownOutlined />}
+              style={{
+                width: "100%",
+                backgroundColor: "#f5222d",
+                borderColor: "#f5222d",
+                height: 40,
+              }}
+              onClick={handleWithdrawalClick}
+              disabled={
+                !walletData?.walletBalance || walletData?.walletBalance <= 50000
+              }
+            >
+              Rút tiền
+            </Button>
+          </Col>
+          <Col span={8}>
             <Button
               icon={<HistoryOutlined />}
               style={{
@@ -363,6 +509,105 @@ export const WalletBalance = () => {
             <Text type="secondary">
               Bạn sẽ được chuyển đến trang thanh toán VNPAY để hoàn tất việc nạp
               tiền.
+            </Text>
+          </div>
+        </Form>
+      </Modal>
+
+      {/* Withdrawal Modal */}
+      <Modal
+        title="Rút tiền từ ví"
+        open={withdrawalModalVisible}
+        onCancel={handleWithdrawalCancel}
+        footer={[
+          <Button key="cancel" onClick={handleWithdrawalCancel}>
+            Hủy
+          </Button>,
+          <Button
+            key="submit"
+            type="primary"
+            loading={withdrawalLoading}
+            onClick={handleWithdrawalSubmit}
+            style={{ backgroundColor: "#f5222d", borderColor: "#f5222d" }}
+          >
+            Xác nhận rút tiền
+          </Button>,
+        ]}
+      >
+        <Form
+          form={withdrawalForm}
+          layout="vertical"
+          initialValues={{ amount: 50000 }}
+        >
+          <Form.Item
+            label="Số tài khoản"
+            name="accountNumber"
+            rules={[
+              { required: true, message: "Vui lòng nhập số tài khoản" },
+              {
+                pattern: /^[0-9]{6,19}$/,
+                message: "Số tài khoản không hợp lệ (phải có 6-19 chữ số)",
+              },
+            ]}
+          >
+            <Input placeholder="Nhập số tài khoản ngân hàng" maxLength={19} />
+          </Form.Item>
+
+          <Form.Item
+            label="Tên chủ tài khoản"
+            name="accountName"
+            rules={[
+              { required: true, message: "Vui lòng nhập tên chủ tài khoản" },
+            ]}
+          >
+            <Input placeholder="Nhập tên chủ tài khoản" />
+          </Form.Item>
+
+          <Form.Item
+            label="Ngân hàng"
+            name="bankName"
+            rules={[{ required: true, message: "Vui lòng chọn ngân hàng" }]}
+          >
+            <Select placeholder="Chọn ngân hàng">
+              {vietnamBanks.map((bank) => (
+                <Option key={bank.code} value={bank.code}>
+                  {bank.name}
+                </Option>
+              ))}
+            </Select>
+          </Form.Item>
+
+          <Form.Item
+            label="Số tiền rút (VNĐ)"
+            name="amount"
+            rules={[
+              { required: true, message: "Vui lòng nhập số tiền" },
+              {
+                type: "number",
+                min: 50000,
+                message: "Số tiền rút tối thiểu là 50,000 VNĐ",
+              },
+              {
+                type: "number",
+                max: walletData?.walletBalance || 0,
+                message: "Số tiền rút không được vượt quá số dư hiện tại",
+              },
+            ]}
+          >
+            <InputNumber
+              style={{ width: "100%" }}
+              formatter={(value) =>
+                `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+              }
+              parser={(value) => value.replace(/\$\s?|(,*)/g, "")}
+              addonBefore="VNĐ"
+            />
+          </Form.Item>
+
+          <div style={{ marginTop: 16 }}>
+            <Text type="secondary">
+              Lưu ý: Yêu cầu rút tiền sẽ được xử lý trong vòng 24 giờ làm việc.
+              Phí rút tiền: 0 VNĐ.
             </Text>
           </div>
         </Form>

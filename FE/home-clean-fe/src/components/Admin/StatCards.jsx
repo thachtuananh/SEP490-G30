@@ -7,25 +7,38 @@ import {
   DollarOutlined,
 } from "@ant-design/icons";
 
-const StatCards = () => {
+const StatCards = ({ loading, revenueData, jobData }) => {
+  // Format number with commas
+  const formatNumber = (num) => {
+    return num ? num.toLocaleString() : "0";
+  };
+
+  // Calculate total jobs
+  const getTotalJobs = () => {
+    if (!jobData) return 0;
+    return (
+      jobData.IN_PROGRESS + jobData.CANCELLED + jobData.DONE + jobData.OPEN
+    );
+  };
+
   const cardData = [
     {
-      title: "Total Users",
-      value: "40,689",
+      title: "Tổng số công việc",
+      value: jobData ? formatNumber(getTotalJobs()) : "0",
       icon: <UserOutlined />,
       iconBgColor: "#f0f5ff",
       iconColor: "#1890ff",
     },
     {
-      title: "Total Orders",
-      value: "10,293",
+      title: "Công việc hoàn thành",
+      value: jobData ? formatNumber(jobData.DONE) : "0",
       icon: <ShoppingCartOutlined />,
       iconBgColor: "#fffbe6",
       iconColor: "#faad14",
     },
     {
-      title: "Total Sales",
-      value: "89,000đ",
+      title: "Tổng doanh thu",
+      value: revenueData ? `${formatNumber(revenueData.totalRevenue)}đ` : "0đ",
       icon: <DollarOutlined />,
       iconBgColor: "#f6ffed",
       iconColor: "#52c41a",
@@ -42,6 +55,7 @@ const StatCards = () => {
             icon={card.icon}
             iconBgColor={card.iconBgColor}
             iconColor={card.iconColor}
+            loading={loading}
           />
         </Col>
       ))}

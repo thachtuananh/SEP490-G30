@@ -279,9 +279,9 @@ export const PersonaInformation = () => {
       <div className="avatar-section">
         <b>Ảnh đại diện</b>
         <img className="avatar-image" src={profileImg} alt="icon" />
-        <b>
+        {/* <b>
           <u className="avatar-select">Chọn ảnh</u>
-        </b>
+        </b> */}
       </div>
 
       <div className="form-group">

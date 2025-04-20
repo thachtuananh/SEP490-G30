@@ -20,7 +20,10 @@ import {
   FileTextOutlined,
   ExclamationCircleOutlined,
 } from "@ant-design/icons";
-import { createReport, getReportByJobId } from "../../services/owner/ReportAPI";
+import {
+  createReport,
+  getReportByJobId,
+} from "../../services/cleaner/ReportAPI";
 
 const { TextArea } = Input;
 const { Option } = Select;
@@ -33,7 +36,7 @@ export const ReportModal = ({ visible, jobId, onClose }) => {
   const [reports, setReports] = useState([]);
   const [activeTab, setActiveTab] = useState("view"); // "view" or "create"
   const [hasSubmittedReport, setHasSubmittedReport] = useState(false);
-  const customerId = sessionStorage.getItem("customerId");
+  const cleanerId = sessionStorage.getItem("cleanerId");
 
   // Fetch existing reports when the modal is opened
   useEffect(() => {
@@ -54,17 +57,13 @@ export const ReportModal = ({ visible, jobId, onClose }) => {
   const fetchReports = async () => {
     setLoading(true);
     try {
-      const response = await getReportByJobId(jobId, customerId);
+      const response = await getReportByJobId(jobId, cleanerId);
 
       // Handle the new response format which has a nested 'report' object
       if (response && response.report) {
         // Convert the single report object to an array for consistency
         setReports([response.report]);
-        // If there's already a report submitted by this customer, set hasSubmittedReport to true
-        setHasSubmittedReport(true);
-      } else if (Array.isArray(response) && response.length > 0) {
-        // Handle the case where response might still be an array
-        setReports(response);
+        // If there's already a report submitted by this cleaner, set hasSubmittedReport to true
         setHasSubmittedReport(true);
       } else {
         setReports([]);
@@ -140,14 +139,16 @@ export const ReportModal = ({ visible, jobId, onClose }) => {
   // Get report type text in Vietnamese
   const getReportTypeText = (type) => {
     switch (type?.toUpperCase()) {
-      case "CLEANER_ISSUE":
-        return "Vấn đề về người dọn dẹp";
-      case "SERVICE_QUALITY":
-        return "Chất lượng dịch vụ";
-      case "PAYMENT_ISSUE":
-        return "Vấn đề thanh toán";
-      case "SCHEDULING_ISSUE":
-        return "Vấn đề lịch trình";
+      case "CUSTOMER_ISSUE":
+        return "Vấn đề về khách hàng";
+      case "PROPERTY_ACCESS":
+        return "Khó khăn trong việc tiếp cận địa điểm";
+      case "EQUIPMENT_ISSUE":
+        return "Vấn đề về thiết bị";
+      case "SAFETY_CONCERN":
+        return "Vấn đề về an toàn";
+      case "WORK_SCOPE":
+        return "Phạm vi công việc";
       case "OTHER":
         return "Khác";
       default:
@@ -208,9 +209,7 @@ export const ReportModal = ({ visible, jobId, onClose }) => {
                       alignItems: "center",
                     }}
                   >
-                    <span>
-                      Báo cáo #{report.id || report.reportId || index + 1}
-                    </span>
+                    <span>Báo cáo #{report.id}</span>
                     <Tag color={getStatusColor(report.status)}>
                       {getStatusText(report.status)}
                     </Tag>
@@ -219,9 +218,7 @@ export const ReportModal = ({ visible, jobId, onClose }) => {
               >
                 <div>
                   <Text strong>Loại báo cáo:</Text>{" "}
-                  <Text>
-                    {getReportTypeText(report.reportType || report.report_type)}
-                  </Text>
+                  <Text>{getReportTypeText(report.reportType)}</Text>
                 </div>
 
                 <div style={{ margin: "12px 0" }}>
@@ -237,13 +234,6 @@ export const ReportModal = ({ visible, jobId, onClose }) => {
                     {report.description || "Không có mô tả"}
                   </Paragraph>
                 </div>
-
-                {report.createdAt && (
-                  <div>
-                    <Text strong>Ngày tạo:</Text>{" "}
-                    <Text>{formatDate(report.createdAt)}</Text>
-                  </div>
-                )}
 
                 {report.status === "RESOLVED" && (
                   <>
@@ -296,7 +286,7 @@ export const ReportModal = ({ visible, jobId, onClose }) => {
         layout="vertical"
         onFinish={handleSubmit}
         initialValues={{
-          report_type: "CLEANER_ISSUE",
+          report_type: "CUSTOMER_ISSUE",
         }}
       >
         <Form.Item
@@ -305,10 +295,13 @@ export const ReportModal = ({ visible, jobId, onClose }) => {
           rules={[{ required: true, message: "Vui lòng chọn loại báo cáo" }]}
         >
           <Select placeholder="Chọn loại báo cáo">
-            <Option value="CLEANER_ISSUE">Vấn đề về người dọn dẹp</Option>
-            <Option value="SERVICE_QUALITY">Chất lượng dịch vụ</Option>
-            <Option value="PAYMENT_ISSUE">Vấn đề thanh toán</Option>
-            <Option value="SCHEDULING_ISSUE">Vấn đề lịch trình</Option>
+            <Option value="CUSTOMER_ISSUE">Vấn đề về khách hàng</Option>
+            <Option value="PROPERTY_ACCESS">
+              Khó khăn trong việc tiếp cận địa điểm
+            </Option>
+            <Option value="EQUIPMENT_ISSUE">Vấn đề về thiết bị</Option>
+            <Option value="SAFETY_CONCERN">Vấn đề về an toàn</Option>
+            <Option value="WORK_SCOPE">Phạm vi công việc</Option>
             <Option value="OTHER">Khác</Option>
           </Select>
         </Form.Item>
