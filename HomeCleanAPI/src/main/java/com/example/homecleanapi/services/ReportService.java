@@ -3,9 +3,11 @@ package com.example.homecleanapi.services;
 import com.example.homecleanapi.dtos.ReportUpdateDTO;
 import com.example.homecleanapi.dtos.ReportRequestDTO;
 import com.example.homecleanapi.enums.ReportStatus;
+import com.example.homecleanapi.models.CleanerReport;
 import com.example.homecleanapi.models.Job;
 import com.example.homecleanapi.models.JobApplication;
 import com.example.homecleanapi.models.Report;
+import com.example.homecleanapi.repositories.CleanerReportRepository;
 import com.example.homecleanapi.repositories.JobApplicationRepository;
 import com.example.homecleanapi.repositories.JobRepository;
 import com.example.homecleanapi.repositories.ReportRepository;
@@ -31,28 +33,41 @@ public class ReportService {
 
     @Autowired
     private final ReportRepository reportRepository;
+    @Autowired
     private final JobRepository jobRepository;
     @Autowired
     private JobApplicationRepository jobApplicationRepository;
+    @Autowired
+    private final CleanerReportRepository cleanerReportRepository;
 
-    public ReportService(ReportRepository reportRepository, JobRepository jobRepository) {
-
+    public ReportService(ReportRepository reportRepository, JobRepository jobRepository, JobApplicationRepository jobApplicationRepository, CleanerReportRepository cleanerReportRepository) {
         this.reportRepository = reportRepository;
         this.jobRepository = jobRepository;
+        this.jobApplicationRepository = jobApplicationRepository;
+        this.cleanerReportRepository = cleanerReportRepository;
     }
 
-    public ResponseEntity<Map<String, Object>> createReport(ReportRequestDTO reportRequest, @PathVariable Long job_id) {
+    // Customer create report
+    public ResponseEntity<Map<String, Object>> customerCreateReport(ReportRequestDTO reportRequest, @PathVariable Long job_id) {
         Map<String, Object> response = new HashMap<>();
         // Lấy job từ database bằng id (vì bạn chỉ truyền job_id)
         Optional<Job> optionalJob = jobRepository.findById(job_id);
+
+        // Kiểm tra xem job đã có report chưa
+        Report existingReport = reportRepository.findReportsByJob_Id(job_id);
+        if (existingReport != null) {
+            response.put("message", "Mỗi job chỉ được tạo một report.");
+            return ResponseEntity.status(HttpStatus.ALREADY_REPORTED).body(response);
+        }
         Optional<JobApplication> jobApplicationOptional = jobApplicationRepository.findJobApplicationByJob_IdAndStatus(job_id, "Accepted");
         if (optionalJob.isEmpty()) {
-            response.put("error", "Job not found with id: " + job_id);
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+            response.put("error", "Không tìm thấy Jobs: " + job_id);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
 
         Job job = optionalJob.get();
         JobApplication job_application = jobApplicationOptional.get();
+
         Report report = new Report();
         report.setJob(job);
         report.setCustomerId(job.getCustomer().getId());
@@ -66,16 +81,61 @@ public class ReportService {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
+    //Cleaner create report
+    public ResponseEntity<Map<String, Object>> cleanerCreateReport(ReportRequestDTO reportRequest, @PathVariable Long job_id) {
+        Map<String, Object> response = new HashMap<>();
+        // Lấy job từ database bằng id (vì bạn chỉ truyền job_id)
+        Optional<Job> optionalJob = jobRepository.findById(job_id);
 
-    public ResponseEntity<Map<String, Object>> updateReport(ReportUpdateDTO reportUpdate, @PathVariable Long report_id) {
+        // Kiểm tra xem job đã có report chưa
+        CleanerReport existingReport = cleanerReportRepository.findCleanerReportByJob_Id(job_id);
+        if (existingReport != null) {
+            response.put("message", "Mỗi job chỉ được tạo một report.");
+            return ResponseEntity.status(HttpStatus.ALREADY_REPORTED).body(response);
+        }
+        Optional<JobApplication> jobApplicationOptional = jobApplicationRepository.findJobApplicationByJob_IdAndStatus(job_id, "Accepted");
+        if (optionalJob.isEmpty()) {
+            response.put("error", "Không tìm thấy Jobs: " + job_id);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
+
+        Job job = optionalJob.get();
+        JobApplication job_application = jobApplicationOptional.get();
+
+        CleanerReport report = new CleanerReport();
+        report.setJob(job);
+        report.setCustomerId(job.getCustomer().getId());
+        report.setCleanerId(job_application.getCleaner().getId());
+        report.setStatus(ReportStatus.PENDING);
+        report.setReportType(reportRequest.getReport_type());
+        report.setDescription(reportRequest.getDescription());
+        cleanerReportRepository.save(report);
+
+        response.put("Message: ", "Report created successfully");
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+    public ResponseEntity<Map<String, Object>> updateCustomerReport(ReportUpdateDTO reportUpdate, @PathVariable Long id) {
         Map<String, Object> response = new HashMap<>();
 
-        Report report = reportRepository.findReportById(report_id);
+        Report report = reportRepository.findReportById(id);
 
         report.setReportType(reportUpdate.getStatus());
         report.setResolvedAt(ZonedDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh")).toLocalDate());
         report.setAdminResponse(reportUpdate.getAdminResponse());
         reportRepository.save(report);
+
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    public ResponseEntity<Map<String, Object>> updateCleanerReport(ReportUpdateDTO reportUpdate, @PathVariable Long id) {
+        Map<String, Object> response = new HashMap<>();
+
+        CleanerReport report = cleanerReportRepository.findCleanerReportById(id);
+
+        report.setReportType(reportUpdate.getStatus());
+        report.setResolvedAt(ZonedDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh")).toLocalDate());
+        report.setAdminResponse(reportUpdate.getAdminResponse());
+        cleanerReportRepository.save(report);
 
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
@@ -162,6 +222,52 @@ public class ReportService {
         response.put("totalPages", reports.getTotalPages());
         response.put("currentPage", reports.getNumber());
 
+        return ResponseEntity.ok(response);
+    }
+
+    public ResponseEntity<Map<String, Object>> getReportByCustomerIdAndJobId(Long customerId, Long jobId) {
+        Map<String, Object> response = new HashMap<>();
+
+        Report report = reportRepository.findReportsByCustomerIdAndJob_Id(customerId, jobId);
+
+        if (report == null) {
+            response.put("message", "Report not found");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        }
+
+        Map<String, Object> dto = new HashMap<>();
+        dto.put("id", report.getId());
+        dto.put("jobId", report.getJob() != null ? report.getJob().getId() : null);
+        dto.put("reportType", report.getReportType());
+        dto.put("description", report.getDescription());
+        dto.put("status", report.getStatus().name());
+        dto.put("resolvedAt", report.getResolvedAt());
+        dto.put("adminResponse", report.getAdminResponse());
+
+        response.put("report", dto);
+        return ResponseEntity.ok(response);
+    }
+
+    public ResponseEntity<Map<String, Object>> getReportByCleanerIdAndJobId(Integer cleanerId, Long jobId) {
+        Map<String, Object> response = new HashMap<>();
+
+        CleanerReport report = cleanerReportRepository.findCleanerReportByCleanerIdAndJob_Id(cleanerId, jobId);
+
+        if (report == null) {
+            response.put("message", "Report not found");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        }
+
+        Map<String, Object> dto = new HashMap<>();
+        dto.put("id", report.getId());
+        dto.put("jobId", report.getJob() != null ? report.getJob().getId() : null);
+        dto.put("reportType", report.getReportType());
+        dto.put("description", report.getDescription());
+        dto.put("status", report.getStatus().name());
+        dto.put("resolvedAt", report.getResolvedAt());
+        dto.put("adminResponse", report.getAdminResponse());
+
+        response.put("report", dto);
         return ResponseEntity.ok(response);
     }
 

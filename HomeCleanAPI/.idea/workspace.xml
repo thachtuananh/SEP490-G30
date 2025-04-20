@@ -5,12 +5,16 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="6dd32c25-99a1-4da0-a769-374f6713cd9c" name="Changes" comment="Hot fix JWT author">
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/models/CleanerReport.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/repositories/CleanerReportRepository.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/controllers/AdminController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/controllers/AdminController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/models/WithdrawalRequest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/models/WithdrawalRequest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/services/JobService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/services/JobService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/services/WithdrawalRequestService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/services/WithdrawalRequestService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/application.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/controllers/ReportController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/controllers/ReportController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/controllers/WalletController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/controllers/WalletController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/repositories/ReportRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/repositories/ReportRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/services/ReportService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/services/ReportService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/services/WalletService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/services/WalletService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/vnPay/VnpayConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/vnPay/VnpayConfig.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/vnPay/VnpayController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/vnPay/VnpayController.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -63,27 +67,27 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;RequestMappingsPanelOrder0&quot;: &quot;0&quot;,
-    &quot;RequestMappingsPanelOrder1&quot;: &quot;1&quot;,
-    &quot;RequestMappingsPanelWidth0&quot;: &quot;75&quot;,
-    &quot;RequestMappingsPanelWidth1&quot;: &quot;75&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;Spring Boot.HomeCleanApiApplication.executor&quot;: &quot;Run&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;#101 on manhtt3-ChatGPT&quot;,
-    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;D:/PROJECT-GITHUB&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;advanced.settings&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "RequestMappingsPanelOrder0": "0",
+    "RequestMappingsPanelOrder1": "1",
+    "RequestMappingsPanelWidth0": "75",
+    "RequestMappingsPanelWidth1": "75",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "Spring Boot.HomeCleanApiApplication.executor": "Run",
+    "git-widget-placeholder": "#101 on Merging manhtt3-ChatGPT",
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "D:/PROJECT-GITHUB",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "advanced.settings",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="ReactorSettings">
     <option name="notificationShown" value="true" />
   </component>
