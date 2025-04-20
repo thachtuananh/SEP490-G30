@@ -212,34 +212,52 @@ public class JobService {
         }
 
         // Kiểm tra ngày và giờ để tính phí tăng thêm
+        // Kiểm tra ngày và giờ để tính phí tăng thêm
         LocalDateTime jobScheduledTime = job.getScheduledTime();
         DayOfWeek dayOfWeek = jobScheduledTime.getDayOfWeek();
         int hour = jobScheduledTime.getHour();
         double priceIncrease = 0;
 
+        System.out.println("Scheduled Time: " + jobScheduledTime); // Debug: Kiểm tra thời gian đã lên lịch
+        System.out.println("Day of Week: " + dayOfWeek); // Debug: Kiểm tra ngày trong tuần
+        System.out.println("Hour: " + hour); // Debug: Kiểm tra giờ
+
+
         if (dayOfWeek == DayOfWeek.SATURDAY || dayOfWeek == DayOfWeek.SUNDAY) {
-            // Nếu là thứ 7 hoặc chủ nhật
-            if (hour > 18 || (hour == 18 && jobScheduledTime.getMinute() >= 0)) {
-                if (hour < 22 || (hour == 22 && jobScheduledTime.getMinute() == 0)) {
-                    // Nếu giờ từ 18h đến 21h59 vào thứ 7 hoặc chủ nhật
-                    priceIncrease = 0.2; // Tăng 20%
-                } else {
-                    priceIncrease = 0.1; // Tăng 10% vào thứ 7, chủ nhật ngoài giờ cao điểm
-                }
+            // Tăng 20% cho giờ từ 18h đến 21h59
+            if (hour >= 18 && hour < 22) {
+                priceIncrease = 0.2; // Tăng 20%
+                System.out.println("Applying 20% price increase for weekend between 18:00 and 21:59.");
+            }
+            // Tăng 10% cho giờ từ 22h trở đi
+            else if (hour >= 22) {
+                priceIncrease = 0.1; // Tăng 10% cho sau 22h
+                System.out.println("Applying 10% price increase for weekend after 22:00.");
+            }
+            // Tăng 10% cho giờ từ 0h đến 18h
+            else {
+                priceIncrease = 0.1; // Tăng 10% cho trước 18h vào cuối tuần
+                System.out.println("Applying 10% price increase for weekend before 18:00.");
             }
         } else if (hour >= 18 && hour < 22) {
-            // Nếu vào giờ từ 18h đến 21h59 từ thứ 2 đến thứ 6
+            // Tăng 10% từ thứ 2 đến thứ 6 (giờ từ 18h đến 21h59)
             priceIncrease = 0.1; // Tăng 10%
+            System.out.println("Applying 10% price increase for weekdays between 18:00 and 21:59.");
         } else if (hour == 22 && jobScheduledTime.getMinute() == 0) {
-            // Nếu vào giờ 22h từ thứ 2 đến thứ 6
+            // Tăng 10% vào giờ 22h từ thứ 2 đến thứ 6
             priceIncrease = 0.1; // Tăng 10%
+            System.out.println("Applying 10% price increase for weekdays at 22:00.");
         }
-
 
         if (priceIncrease > 0) {
             totalPrice += totalPrice * priceIncrease;
             response.put("message", "The total price includes a " + (priceIncrease * 100) + "% increase due to time or day");
+            System.out.println("Total Price after increase: " + totalPrice); // Debug: Kiểm tra giá cuối cùng sau khi cộng phí tăng
+        } else {
+            System.out.println("No price increase applied.");
         }
+
+
 
         // Lưu Job vào cơ sở dữ liệu
         job.setTotalPrice(totalPrice);
@@ -611,7 +629,7 @@ public class JobService {
 
 
 
-    // huy job ddax book
+    // huy job da book  ( phan nay nhieu bug nay)
     public Map<String, Object> cancelJobForCustomer(Long customerId, Long jobId) {
         Map<String, Object> response = new HashMap<>();
 
