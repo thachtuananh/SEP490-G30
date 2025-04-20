@@ -611,7 +611,7 @@ public class JobService {
 
 
 
-    // huy job ddax book
+    // huy job da book  ( phan nay nhieu bug nay)
     public Map<String, Object> cancelJobForCustomer(Long customerId, Long jobId) {
         Map<String, Object> response = new HashMap<>();
 
