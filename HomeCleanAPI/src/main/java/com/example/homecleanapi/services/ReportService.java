@@ -140,12 +140,43 @@ public class ReportService {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
-    public ResponseEntity<Map<String, Object>> getAllReport(int offset, int limit) {
+    public ResponseEntity<Map<String, Object>> getAllReportCustomer(int offset, int limit) {
         Map<String, Object> response = new HashMap<>();
 
         int page = offset / limit;
         Pageable pageable = PageRequest.of(page, limit);
         Page<Report> reports = reportRepository.findAll(pageable);
+
+        List<Map<String, Object>> reportList = reports.getContent().stream().map(report -> {
+            Map<String, Object> dto = new HashMap<>();
+            dto.put("id", report.getId());
+            dto.put("customerId", report.getCustomerId());
+            dto.put("cleanerId", report.getCleanerId());
+            dto.put("jobId", report.getJob() != null ? report.getJob().getId() : null);
+            dto.put("reportType", report.getReportType());
+            dto.put("description", report.getDescription());
+            dto.put("status", report.getStatus().name());
+            dto.put("createdAt", report.getCreatedAt());
+            dto.put("updatedAt", report.getUpdatedAt());
+            dto.put("resolvedAt", report.getResolvedAt());
+            dto.put("adminResponse", report.getAdminResponse());
+            return dto;
+        }).collect(Collectors.toList());
+
+        response.put("reports", reportList);
+        response.put("totalItems", reports.getTotalElements());
+        response.put("totalPages", reports.getTotalPages());
+        response.put("currentPage", page * limit); // offset hiện tại
+
+        return ResponseEntity.ok(response);
+    }
+
+    public ResponseEntity<Map<String, Object>> getAllReportCleaner(int offset, int limit) {
+        Map<String, Object> response = new HashMap<>();
+
+        int page = offset / limit;
+        Pageable pageable = PageRequest.of(page, limit);
+        Page<CleanerReport> reports = cleanerReportRepository.findAll(pageable);
 
         List<Map<String, Object>> reportList = reports.getContent().stream().map(report -> {
             Map<String, Object> dto = new HashMap<>();
