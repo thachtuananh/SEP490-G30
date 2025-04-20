@@ -1,5 +1,7 @@
 package com.example.homecleanapi.dtos;
 
+import java.util.List;
+
 public class JobDTO {
 
     private Long id;
@@ -10,8 +12,26 @@ public class JobDTO {
     private String orderCode;
     private String bookingType;
 
+    private List<String> serviceNames;
+    private List<String> serviceDescriptions;
     // Getter, Setter
 
+
+    public List<String> getServiceNames() {
+        return serviceNames;
+    }
+
+    public void setServiceNames(List<String> serviceNames) {
+        this.serviceNames = serviceNames;
+    }
+
+    public List<String> getServiceDescriptions() {
+        return serviceDescriptions;
+    }
+
+    public void setServiceDescriptions(List<String> serviceDescriptions) {
+        this.serviceDescriptions = serviceDescriptions;
+    }
 
     public Long getId() {
         return id;

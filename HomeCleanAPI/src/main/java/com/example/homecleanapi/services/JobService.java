@@ -82,11 +82,28 @@ public class JobService {
             jobDTO.setOrderCode(job.getOrderCode());
             jobDTO.setBookingType(job.getBookingType());
 
+            // Lấy thông tin dịch vụ của job từ JobServiceDetail
+            List<String> serviceNames = new ArrayList<>();
+
+
+            for (JobServiceDetail jobServiceDetail : job.getJobServiceDetails()) {
+                Services service = jobServiceDetail.getService();
+                if (service != null) {
+                    serviceNames.add(service.getName());  // Lấy tên dịch vụ
+
+                }
+            }
+
+            // Set các dịch vụ vào JobDTO
+            jobDTO.setServiceNames(serviceNames);
+
             // Chỉ lấy các trường liên quan mà không bị lặp lại
             jobDTOList.add(jobDTO);
         }
         return jobDTOList;
     }
+
+
 
 
     public Map<String, Object> bookJob(@PathVariable Long customerId, @RequestBody BookJobRequest request, HttpServletRequest requestIp) {
