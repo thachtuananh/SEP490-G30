@@ -51,7 +51,7 @@ public class ReportController {
         return reportService.getAllReportCustomer(offset, limit);
     }
 
-    @GetMapping(value = "/get-all-report-customer", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/get-all-report-cleaner", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Map<String, Object>> getAllReportCleaner(
             @RequestParam(defaultValue = "0") int offset,
             @RequestParam(defaultValue = "12") int limit
