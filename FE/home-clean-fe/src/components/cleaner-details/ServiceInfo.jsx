@@ -32,7 +32,7 @@ export const ServiceInfo = ({
                 color: "#1a1a1a",
               }}
             >
-              {cleanerName || "Nguyễn Son"}
+              {cleanerName}
             </Title>
             {isVerified ? (
               <CheckCircleFilled
@@ -79,7 +79,7 @@ export const ServiceInfo = ({
                   wordBreak: "break-all",
                 }}
               >
-                {email || "ngxson2411@gmail.com"}
+                {email}
               </Text>
             </div>
           </Col>
@@ -97,7 +97,7 @@ export const ServiceInfo = ({
                 Kinh nghiệm:
               </Text>
               <Text style={{ fontSize: 15, color: "#1a1a1a" }}>
-                {experience || "5y"}
+                {experience}
               </Text>
             </div>
           </Col>
@@ -114,9 +114,7 @@ export const ServiceInfo = ({
               >
                 Tuổi:
               </Text>
-              <Text style={{ fontSize: 15, color: "#1a1a1a" }}>
-                {age || "23"}
-              </Text>
+              <Text style={{ fontSize: 15, color: "#1a1a1a" }}>{age}</Text>
             </div>
           </Col>
         </Row>

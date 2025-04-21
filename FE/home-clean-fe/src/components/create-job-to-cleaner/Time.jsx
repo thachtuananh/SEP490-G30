@@ -196,6 +196,7 @@ const Time = ({ onTimeChange }) => {
           size="large"
           value={dayjs(selectedDate)}
           showNow={false}
+          style={{ width: "200px" }}
         />
       </div>
 
@@ -230,6 +231,7 @@ const Time = ({ onTimeChange }) => {
             showTime={{ hideDisabledOptions: true }}
             open={open} // Thêm state để kiểm soát việc hiển thị popup
             onOpenChange={(open) => setOpen(open)} // Xử lý đóng popup sau khi chọn
+            style={{ width: "200px" }}
           />
         </div>
 
@@ -250,7 +252,11 @@ const Time = ({ onTimeChange }) => {
         </div>
         <div className={styles.phoneContainer}>
           <Col flex="auto">
-            <Input value={user?.customerPhone} disabled />
+            <Input
+              style={{ width: "200px" }}
+              value={user?.customerPhone}
+              disabled
+            />
           </Col>
         </div>
       </div>

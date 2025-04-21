@@ -46,8 +46,13 @@ export const WalletBalance = () => {
 
   // Transaction history states
   const [historyModalVisible, setHistoryModalVisible] = useState(false);
+  const [historyWithdrawlModalVisible, setHistoryWithdrawlModalVisible] =
+    useState(false);
   const [transactionHistory, setTransactionHistory] = useState([]);
+  const [withdrawalHistory, setWithdrawalHistory] = useState([]);
   const [historyLoading, setHistoryLoading] = useState(false);
+  const [withdrawalHistoryLoading, setWithdrawalHistoryLoading] =
+    useState(false);
 
   // Withdrawal states
   const [withdrawalModalVisible, setWithdrawalModalVisible] = useState(false);
@@ -149,6 +154,37 @@ export const WalletBalance = () => {
     }
   };
 
+  const fetchWithdrawalHistory = async () => {
+    try {
+      setWithdrawalHistoryLoading(true);
+      const token = sessionStorage.getItem("token");
+      const cleanerId = sessionStorage.getItem("cleanerId");
+
+      // Updated API endpoint based on the curl command
+      const response = await fetch(
+        `${BASE_URL}/withdraw/cleaners/${cleanerId}/history`,
+        {
+          method: "GET",
+          headers: {
+            accept: "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const result = await response.json();
+      if (response.ok && result.status === "OK") {
+        setWithdrawalHistory(result.data || []);
+      } else {
+        throw new Error(result.message || "Không thể lấy lịch sử rút tiền");
+      }
+    } catch (error) {
+      message.error("Lỗi khi tải lịch sử rút tiền");
+    } finally {
+      setWithdrawalHistoryLoading(false);
+    }
+  };
+
   const handleDepositClick = () => {
     setDepositModalVisible(true);
   };
@@ -163,8 +199,17 @@ export const WalletBalance = () => {
     fetchTransactionHistory();
   };
 
+  const handleHistoryWithdrawlClick = () => {
+    setHistoryWithdrawlModalVisible(true);
+    fetchWithdrawalHistory();
+  };
+
   const handleHistoryCancel = () => {
     setHistoryModalVisible(false);
+  };
+
+  const handleHistoryWithdrawlCancel = () => {
+    setHistoryWithdrawlModalVisible(false);
   };
 
   const handleDepositSubmit = async () => {
@@ -256,6 +301,7 @@ export const WalletBalance = () => {
       setWithdrawalLoading(false);
     }
   };
+
   // Helper function to translate transaction type to Vietnamese
   const translateTransactionType = (type) => {
     const translations = {
@@ -267,6 +313,34 @@ export const WalletBalance = () => {
     };
 
     return translations[type] || type;
+  };
+
+  // Helper function to translate withdrawal status to Vietnamese
+  const translateWithdrawalStatus = (status) => {
+    const translations = {
+      PENDING: "Đang xử lý",
+      APPROVED: "Đã duyệt",
+      REJECTED: "Từ chối",
+      COMPLETED: "Hoàn thành",
+    };
+
+    return translations[status] || status;
+  };
+
+  // Get status color for withdrawal history
+  const getWithdrawalStatusColor = (status) => {
+    switch (status) {
+      case "APPROVED":
+        return "success";
+      case "PENDING":
+        return "warning";
+      case "REJECTED":
+        return "error";
+      case "COMPLETED":
+        return "processing";
+      default:
+        return "default";
+    }
   };
 
   // Transaction history columns for the table
@@ -338,19 +412,82 @@ export const WalletBalance = () => {
         return <Badge status={color} text={text} />;
       },
     },
+  ];
+
+  // Withdrawal history columns for the table
+  const withdrawalHistoryColumns = [
     // {
-    //   title: "Thời gian",
-    //   dataIndex: "createdAt",
-    //   key: "createdAt",
-    //   render: (createdAt) => {
-    //     // If createdAt exists and is a valid date string
-    //     if (createdAt) {
-    //       const date = new Date(createdAt);
-    //       return date.toLocaleString("vi-VN");
-    //     }
-    //     return "N/A";
-    //   },
+    //   title: "ID",
+    //   dataIndex: "id",
+    //   key: "id",
     // },
+    {
+      title: "Số tiền",
+      dataIndex: "amount",
+      key: "amount",
+      render: (amount) => (
+        <Text style={{ fontWeight: "bold" }}>
+          {amount.toLocaleString()} VNĐ
+        </Text>
+      ),
+    },
+    {
+      title: "Tài khoản",
+      dataIndex: "cardNumber",
+      key: "cardNumber",
+    },
+    {
+      title: "Ngân hàng",
+      dataIndex: "bankName",
+      key: "bankName",
+    },
+    {
+      title: "Chủ tài khoản",
+      dataIndex: "accountHolderName",
+      key: "accountHolderName",
+    },
+    {
+      title: "Trạng thái",
+      dataIndex: "status",
+      key: "status",
+      render: (status) => (
+        <Badge
+          status={getWithdrawalStatusColor(status)}
+          text={translateWithdrawalStatus(status)}
+        />
+      ),
+    },
+    {
+      title: "Thời gian tạo",
+      dataIndex: "createdAt",
+      key: "createdAt",
+      render: (date) => {
+        if (date) {
+          const formattedDate = new Date(date).toLocaleString("vi-VN", {
+            hour: "2-digit",
+            minute: "2-digit",
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric",
+          });
+
+          return formattedDate;
+        }
+        return " ";
+      },
+    },
+    {
+      title: "Lý do từ chối",
+      dataIndex: "rejectionReason",
+      key: "rejectionReason",
+      render: (reason) => reason || " ",
+    },
+    {
+      title: "Mã giao dịch",
+      dataIndex: "transactionCode",
+      key: "transactionCode",
+      render: (code) => code || " ",
+    },
   ];
 
   return (
@@ -401,7 +538,7 @@ export const WalletBalance = () => {
           </Space>
         )}
 
-        <Row gutter={8}>
+        <Row gutter={[16, 16]} justify="center">
           {/* <Col span={8}>
             <Button
               type="primary"
@@ -417,7 +554,7 @@ export const WalletBalance = () => {
               Nạp tiền vào ví
             </Button>
           </Col> */}
-          <Col span={8}>
+          <Col xs={24} sm={12} md={8}>
             <Button
               type="primary"
               icon={<ArrowDownOutlined />}
@@ -435,7 +572,7 @@ export const WalletBalance = () => {
               Rút tiền
             </Button>
           </Col>
-          <Col span={8}>
+          <Col xs={24} sm={12} md={8}>
             <Button
               icon={<HistoryOutlined />}
               style={{
@@ -444,19 +581,19 @@ export const WalletBalance = () => {
               }}
               onClick={handleHistoryClick}
             >
-              Lịch sử
+              Lịch sử giao dịch
             </Button>
           </Col>
-          <Col span={8}>
+          <Col xs={24} sm={12} md={8}>
             <Button
               icon={<HistoryOutlined />}
               style={{
                 width: "100%",
                 height: 40,
               }}
-              onClick={handleHistoryClick}
+              onClick={handleHistoryWithdrawlClick}
             >
-              Yêu cầu rút tiền
+              Lịch sử rút tiền
             </Button>
           </Col>
         </Row>
@@ -641,6 +778,28 @@ export const WalletBalance = () => {
           dataSource={transactionHistory}
           rowKey="transactionId"
           loading={historyLoading}
+          pagination={{ pageSize: 5 }}
+          scroll={{ x: "max-content" }}
+        />
+      </Modal>
+
+      {/* Withdrawal History Modal */}
+      <Modal
+        title="Lịch sử rút tiền"
+        open={historyWithdrawlModalVisible}
+        onCancel={handleHistoryWithdrawlCancel}
+        footer={[
+          <Button key="close" onClick={handleHistoryWithdrawlCancel}>
+            Đóng
+          </Button>,
+        ]}
+        width={800}
+      >
+        <Table
+          columns={withdrawalHistoryColumns}
+          dataSource={withdrawalHistory}
+          rowKey="id"
+          loading={withdrawalHistoryLoading}
           pagination={{ pageSize: 5 }}
           scroll={{ x: "max-content" }}
         />

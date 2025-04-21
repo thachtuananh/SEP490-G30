@@ -689,10 +689,10 @@ const CleanerReport = () => {
               labelStyle={{ fontWeight: "500", width: "120px" }}
               contentStyle={{ padding: "8px 12px" }}
             >
-              <Descriptions.Item label="ID báo cáo" span={1}>
+              <Descriptions.Item label="ID báo cáo" span={2}>
                 {detailsModal.report.id}
               </Descriptions.Item>
-              <Descriptions.Item label="Công việc ID" span={1}>
+              <Descriptions.Item label="Công việc ID" span={2}>
                 {detailsModal.report.jobId}
               </Descriptions.Item>
               <Descriptions.Item label="Loại báo cáo" span={4}>
@@ -704,7 +704,7 @@ const CleanerReport = () => {
                     detailsModal.report.reportType}
                 </Tag>
               </Descriptions.Item>
-              <Descriptions.Item label="Trạng thái">
+              <Descriptions.Item label="Trạng thái" span={2}>
                 <Tag
                   color={statusColors[detailsModal.report.status]}
                   style={{ fontSize: "14px", padding: "2px 8px" }}
@@ -718,15 +718,15 @@ const CleanerReport = () => {
               </Descriptions.Item>
               <Descriptions.Item
                 label="Báo cáo bởi"
-                span={detailsModal.report.resolvedAt ? 1 : 2}
+                span={detailsModal.report.resolvedAt ? 2 : 2}
               >
                 {`Người dọn nhà ID: ${detailsModal.report.cleanerId}`}
               </Descriptions.Item>
-              <Descriptions.Item label="Ngày báo cáo">
+              <Descriptions.Item label="Ngày báo cáo" span={2}>
                 {formatDate(detailsModal.report.createdAt)}
               </Descriptions.Item>
               {detailsModal.report.resolvedAt && (
-                <Descriptions.Item label="Ngày giải quyết" span={3}>
+                <Descriptions.Item label="Ngày giải quyết" span={2}>
                   {formatDate(detailsModal.report.resolvedAt)}
                 </Descriptions.Item>
               )}
