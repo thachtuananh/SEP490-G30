@@ -55,7 +55,7 @@ const JobStats = ({ jobData, loading }) => {
       case "PAID":
         return "#5dade2";
       case "PENDING_APPROVAL":
-        return "#f1c40f";
+        return "#f1ab0f";
       case "IN_PROGRESS":
         return "#e67e22";
       case "ARRIVED":

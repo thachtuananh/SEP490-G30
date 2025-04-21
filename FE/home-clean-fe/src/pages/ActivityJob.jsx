@@ -181,24 +181,6 @@ const ActivityJob = () => {
             </div>
           )}
 
-          {/* {!loading && error && (
-            <div className={styles.emptyState}>
-              <div className={styles.errorIcon}>
-                <i className="ti ti-alert-circle"></i>
-              </div>
-              <p className={styles.errorMessage}>{error}</p>
-            </div>
-          )} */}
-
-          {/* {!loading && !error && jobs.length === 0 && (
-            <div className={styles.emptyState}>
-              <div className={styles.emptyIcon}>
-                <i className="ti ti-clipboard-list"></i>
-              </div>
-              <p className={styles.emptyMessage}>{getEmptyStateMessage()}</p>
-            </div>
-          )} */}
-
           {!loading && error && (
             <div className={styles.emptyState}>
               <div className={styles.emptyIcon}>
@@ -215,6 +197,7 @@ const ActivityJob = () => {
                     key={job.jobId}
                     job={job}
                     refreshJobs={refreshJobs}
+                    isAppliedTab={activeTab === "applied"}
                   />
                 ))}
               </div>
