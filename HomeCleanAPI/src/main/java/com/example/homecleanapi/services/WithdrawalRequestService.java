@@ -234,7 +234,7 @@ public class WithdrawalRequestService {
             }
 
             // Nếu APPROVE, cập nhật trạng thái là "WITHDREW" và lưu mã giao dịch
-            withdrawalRequest.setStatus("WITHDREW");
+            withdrawalRequest.setStatus("APPROVED");
             withdrawalRequest.setTransactionCode(transactionCode); // Lưu mã giao dịch
 
             // Cập nhật lại yêu cầu rút tiền trong cơ sở dữ liệu
