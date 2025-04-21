@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -206,9 +207,17 @@ public class EmployeeService {
             employee.setEmail(newEmail);
         }
 
+        // Kiểm tra và xử lý ảnh đại diện nếu có
         String base64 = request.getProfile_image();
-        byte[] decoded = Base64.getDecoder().decode(base64);
-        employee.setProfile_image(decoded);
+        if (base64 != null && !base64.isEmpty()) {
+            try {
+                byte[] decoded = Base64.getDecoder().decode(base64.getBytes(StandardCharsets.UTF_8));
+                employee.setProfile_image(decoded);
+            } catch (IllegalArgumentException e) {
+                response.put("message", "Ảnh không hợp lệ (base64 decode thất bại)!");
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+            }
+        }
         employee.updateProfile(request);
         employeeRepository.save(employee);
 
