@@ -28,7 +28,7 @@ public class ReportController {
         return reportService.customerCreateReport(reportRequest, job_id);
     }
 
-    @PutMapping(value = "/{report_id}/update_report-customer", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PatchMapping(value = "/{report_id}/update_report-customer", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Map<String, Object>> updateReportCustomer(ReportUpdateDTO reportUpdate, @PathVariable Long report_id) {
         return reportService.updateCustomerReport(reportUpdate, report_id);
     }
@@ -38,7 +38,7 @@ public class ReportController {
         return reportService.cleanerCreateReport(reportRequest, job_id);
     }
 
-    @PutMapping(value = "/{report_id}/update_report-cleaner", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PatchMapping(value = "/{report_id}/update_report-cleaner", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Map<String, Object>> updateReportCleaner(ReportUpdateDTO reportUpdate, @PathVariable Long report_id) {
         return reportService.updateCleanerReport(reportUpdate, report_id);
     }
