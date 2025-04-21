@@ -147,8 +147,8 @@ public class WalletController {
 
             // Lưu vào bảng AdminTransactionHistory
             adminTransactionHistoryRepository.save(adminTransactionHistory);
-
-            return ResponseEntity.ok("Thanh toán thành công! Số dư ví của bạn đã được cập nhật.");
+            String redirectUrl = "https://house-clean-platform.web.app/DepositOwner?status=success";
+            return ResponseEntity.status(HttpStatus.OK).header(HttpHeaders.LOCATION, redirectUrl).body(redirectUrl);
         } else {
             // Cập nhật trạng thái giao dịch thành "FAILED"
 //            Optional<TransactionHistory> transactionOpt = transactionHistoryRepository.findByTxnRef(txnRef);
@@ -159,8 +159,9 @@ public class WalletController {
 //            } else {
 //                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Transaction not found");
 //            }
-
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Thanh toán thất bại! Mã lỗi: " + responseCode);
+            String redirectUrl = "https://house-clean-platform.web.app/depositOwnerfail?status=fail";
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).header(HttpHeaders.LOCATION, redirectUrl).build();
+//            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Thanh toán thất bại! Mã lỗi: " + responseCode);
         }
     }
 
@@ -228,7 +229,6 @@ public class WalletController {
             if ("vnpay".equalsIgnoreCase(paymentMethod)) {
                 // Xử lý thanh toán qua VNPay
                 Map<String, Object> response = walletService.depositMoney(customerId, amount, request);
-                String redirectUrl = "https://house-clean-platform.web.app/DepositOwner?status=success";
                 return ResponseEntity.ok(response);
 //                return ResponseEntity.ok(response);
             }else {
@@ -237,8 +237,7 @@ public class WalletController {
             }
         } catch (Exception e) {
             // Xử lý khi có lỗi trong quá trình tạo thanh toán
-            String redirectUrl = "https://house-clean-platform.web.app/depositOwnerfail?status=fail";
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).header(HttpHeaders.LOCATION, redirectUrl).build();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("message", e.getMessage()));
         }
     }
 }
