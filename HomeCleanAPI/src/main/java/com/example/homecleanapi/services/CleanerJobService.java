@@ -1729,27 +1729,8 @@ public class CleanerJobService {
 	        return response;
 	    }
 
-	    // Kiểm tra số dư trong ví của cleaner nếu action là accept
 	    if ("accept".equalsIgnoreCase(action)) {
-	        // Kiểm tra ví của cleaner
-	        Optional<Wallet> walletOpt = walletRepository.findByCleanerId(cleaner.getId());
-	        if (!walletOpt.isPresent()) {
-	            response.put("message", "Cleaner wallet not found");
-	            return response;
-	        }
-	        Wallet wallet = walletOpt.get();
 
-	        // Tính hoa hồng (20% của tổng giá trị đơn hàng)
-	        double commission = 0.2 * job.getTotalPrice();
-
-	        // Kiểm tra số dư ví của cleaner có đủ để trừ hoa hồng không
-	        if (wallet.getBalance() < commission) {
-	            response.put("message", "Insufficient balance in cleaner's wallet");
-	            return response;
-	        }
-
-	        // Nếu số dư đủ, cho phép accept
-	        // Từ chối tất cả các ứng viên khác
 	        List<JobApplication> otherApplications = jobApplicationRepository.findByJob(job);
 	        for (JobApplication app : otherApplications) {
 	            if (!app.getCleaner().getId().equals(cleaner.getId())) {
