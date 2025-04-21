@@ -1694,7 +1694,7 @@ public class CleanerJobService {
 
 
 
-
+// dong y hoac tu choi job cus book minhf
 	public Map<String, Object> acceptOrRejectJob(Long jobId, String action) {
 	    Map<String, Object> response = new HashMap<>();
 
