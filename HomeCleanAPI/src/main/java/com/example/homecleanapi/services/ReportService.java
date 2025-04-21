@@ -72,7 +72,7 @@ public class ReportService {
         report.setJob(job);
         report.setCustomerId(job.getCustomer().getId());
         report.setCleanerId(job_application.getCleaner().getId());
-        report.setStatus(ReportStatus.PENDING);
+        report.setStatus("PENDING");
         report.setReportType(reportRequest.getReport_type());
         report.setDescription(reportRequest.getDescription());
         reportRepository.save(report);
@@ -106,7 +106,7 @@ public class ReportService {
         report.setJob(job);
         report.setCustomerId(job.getCustomer().getId());
         report.setCleanerId(job_application.getCleaner().getId());
-        report.setStatus(ReportStatus.PENDING);
+        report.setStatus("PENDING");
         report.setReportType(reportRequest.getReport_type());
         report.setDescription(reportRequest.getDescription());
         cleanerReportRepository.save(report);
@@ -119,7 +119,7 @@ public class ReportService {
 
         Report report = reportRepository.findReportById(id);
 
-        report.setReportType(reportUpdate.getStatus());
+        report.setStatus(reportUpdate.getStatus());
         report.setResolvedAt(ZonedDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh")).toLocalDate());
         report.setAdminResponse(reportUpdate.getAdminResponse());
         reportRepository.save(report);
@@ -132,7 +132,7 @@ public class ReportService {
 
         CleanerReport report = cleanerReportRepository.findCleanerReportById(id);
 
-        report.setReportType(reportUpdate.getStatus());
+        report.setStatus(reportUpdate.getStatus());
         report.setResolvedAt(ZonedDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh")).toLocalDate());
         report.setAdminResponse(reportUpdate.getAdminResponse());
         cleanerReportRepository.save(report);
@@ -155,7 +155,7 @@ public class ReportService {
             dto.put("jobId", report.getJob() != null ? report.getJob().getId() : null);
             dto.put("reportType", report.getReportType());
             dto.put("description", report.getDescription());
-            dto.put("status", report.getStatus().name());
+            dto.put("status", report.getStatus());
             dto.put("createdAt", report.getCreatedAt());
             dto.put("updatedAt", report.getUpdatedAt());
             dto.put("resolvedAt", report.getResolvedAt());
@@ -186,7 +186,7 @@ public class ReportService {
             dto.put("jobId", report.getJob() != null ? report.getJob().getId() : null);
             dto.put("reportType", report.getReportType());
             dto.put("description", report.getDescription());
-            dto.put("status", report.getStatus().name());
+            dto.put("status", report.getStatus());
             dto.put("createdAt", report.getCreatedAt());
             dto.put("updatedAt", report.getUpdatedAt());
             dto.put("resolvedAt", report.getResolvedAt());
@@ -216,7 +216,7 @@ public class ReportService {
             dto.put("jobId", report.getJob() != null ? report.getJob().getId() : null);
             dto.put("reportType", report.getReportType());
             dto.put("description", report.getDescription());
-            dto.put("status", report.getStatus().name());
+            dto.put("status", report.getStatus());
             dto.put("resolvedAt", report.getResolvedAt());
             dto.put("adminResponse", report.getAdminResponse());
             return dto;
@@ -242,7 +242,7 @@ public class ReportService {
             dto.put("jobId", report.getJob() != null ? report.getJob().getId() : null);
             dto.put("reportType", report.getReportType());
             dto.put("description", report.getDescription());
-            dto.put("status", report.getStatus().name());
+            dto.put("status", report.getStatus());
             dto.put("resolvedAt", report.getResolvedAt());
             dto.put("adminResponse", report.getAdminResponse());
             return dto;
@@ -271,7 +271,7 @@ public class ReportService {
         dto.put("jobId", report.getJob() != null ? report.getJob().getId() : null);
         dto.put("reportType", report.getReportType());
         dto.put("description", report.getDescription());
-        dto.put("status", report.getStatus().name());
+        dto.put("status", report.getStatus());
         dto.put("resolvedAt", report.getResolvedAt());
         dto.put("adminResponse", report.getAdminResponse());
 
@@ -294,7 +294,7 @@ public class ReportService {
         dto.put("jobId", report.getJob() != null ? report.getJob().getId() : null);
         dto.put("reportType", report.getReportType());
         dto.put("description", report.getDescription());
-        dto.put("status", report.getStatus().name());
+        dto.put("status", report.getStatus());
         dto.put("resolvedAt", report.getResolvedAt());
         dto.put("adminResponse", report.getAdminResponse());
 
