@@ -40,7 +40,8 @@ const getStatusColor = (status) => {
     case "PAID":
       return "#5dade2";
     case "PENDING_APPROVAL":
-      return "#f1c40f";
+    case "PENDING":
+      return "#f1ab0f";
     case "IN_PROGRESS":
       return "#e67e22";
     case "ARRIVED":
@@ -48,10 +49,12 @@ const getStatusColor = (status) => {
     case "COMPLETED":
       return "#2ecc71";
     case "CANCELLED":
+    case "REJECTED":
       return "#e74c3c";
     case "DONE":
       return "#27ae60";
     case "BOOKED":
+    case "ACCEPTED":
       return "#8e44ad";
     default:
       return "#bdc3c7";
@@ -63,19 +66,28 @@ const getStatusLabel = (status) => {
     OPEN: "Đang tuyển",
     PAID: "Đang chờ thanh toán",
     PENDING_APPROVAL: "Chờ phê duyệt",
+    PENDING: "Đang chờ phê duyệt",
     IN_PROGRESS: "Đang đến",
     ARRIVED: "Đã đến",
     COMPLETED: "Đã hoàn thành công việc",
     CANCELLED: "Đã hủy",
+    REJECTED: "Đã từ chối",
     DONE: "Hoàn tất công việc",
     BOOKED: "Đã đặt lịch",
+    ACCEPTED: "Đã được chấp nhận",
   };
   return statusMap[status.toUpperCase()] || "Không xác định";
 };
 
-const JobCard = ({ job, refreshJobs }) => {
+const JobCard = ({ job, refreshJobs, isAppliedTab }) => {
   const { cleanerId } = useContext(AuthContext);
-  const [currentStatus, setCurrentStatus] = useState(job.status.toUpperCase());
+  const [currentStatus, setCurrentStatus] = useState(
+    isAppliedTab && job.jobApplicationStatus
+      ? job.jobApplicationStatus.toUpperCase()
+      : job.status
+      ? job.status.toUpperCase()
+      : "Không xác định"
+  );
   const [loading, setLoading] = useState(false);
   const [customerDetailsVisible, setCustomerDetailsVisible] = useState(false);
   const [customerDetails, setCustomerDetails] = useState(null);
@@ -96,6 +108,12 @@ const JobCard = ({ job, refreshJobs }) => {
   // Pagination states for feedbacks
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(3);
+
+  // Check which status to use based on tab
+  const displayStatus =
+    isAppliedTab && job.jobApplicationStatus
+      ? job.jobApplicationStatus
+      : job.status || "Không xác định ";
 
   let serviceInfoText = "";
   if (job.services) {
@@ -491,10 +509,10 @@ const JobCard = ({ job, refreshJobs }) => {
           className={styles.status}
           style={{
             color: "#ffffff",
-            backgroundColor: getStatusColor(currentStatus),
+            backgroundColor: getStatusColor(displayStatus),
           }}
         >
-          {getStatusLabel(currentStatus)}
+          {getStatusLabel(displayStatus)}
         </span>
       </header>
 
@@ -547,74 +565,108 @@ const JobCard = ({ job, refreshJobs }) => {
       </section>
 
       <footer className={styles.actionButtons}>
-        {currentStatus === "OPEN" && (
-          <Button
-            className={styles.cancelBtn}
-            onClick={handleCancelJob}
-            loading={loading}
-          >
-            Hủy ứng tuyển
-          </Button>
-        )}
-        {currentStatus === "IN_PROGRESS" && (
-          <Button
-            className={styles.completeBtn}
-            onClick={() => handleStatusUpdate("arrived")}
-            loading={loading}
-          >
-            Đã đến nơi
-          </Button>
-        )}
-        {currentStatus === "ARRIVED" && (
-          <Button
-            className={styles.completeBtn}
-            onClick={() => handleStatusUpdate("completed")}
-            loading={loading}
-          >
-            Đã hoàn thành
-          </Button>
-        )}
-        {currentStatus === "DONE" && (
+        {/* For Applied tab, show specific actions based on jobApplicationStatus */}
+        {isAppliedTab && (
           <>
-            <Button
-              className={styles.completeBtn}
-              onClick={() => openFeedbackModal(job.jobId)}
-              loading={loading}
-            >
-              Xem đánh giá
-            </Button>
-            <Button
-              className={styles.completeBtn}
-              onClick={() => openReportModal(job.jobId)}
-              loading={loading}
-            >
-              Xem báo cáo
-            </Button>
+            {displayStatus.toUpperCase() === "PENDING" && (
+              <Button
+                className={styles.cancelBtn}
+                onClick={handleCancelJob}
+                loading={loading}
+              >
+                Hủy ứng tuyển
+              </Button>
+            )}
+            {displayStatus.toUpperCase() === "ACCEPTED" && (
+              <Button
+                className={styles.completeBtn}
+                onClick={fetchCustomerDetails}
+                loading={loadingCustomerDetails}
+              >
+                Xem thông tin chi tiết Owner
+              </Button>
+            )}
+            {displayStatus.toUpperCase() === "REJECTED" && (
+              <span className={styles.statusNote}>
+                Ứng tuyển của bạn đã bị từ chối
+              </span>
+            )}
           </>
         )}
-        {currentStatus === "BOOKED" && (
+
+        {/* For other tabs, use original logic */}
+        {!isAppliedTab && (
           <>
-            <Button
-              className={styles.completeBtn}
-              onClick={fetchCustomerDetails}
-              loading={loadingCustomerDetails}
-            >
-              Xem thông tin chi tiết Owner
-            </Button>
-            <Button
-              className={styles.cancelBtn}
-              onClick={() => handleJobAction("reject")}
-              loading={loading}
-            >
-              Từ chối
-            </Button>
-            <Button
-              className={styles.completeBtn}
-              onClick={() => handleJobAction("accept")}
-              loading={loading}
-            >
-              Chấp nhận
-            </Button>
+            {currentStatus === "OPEN" && (
+              <Button
+                className={styles.cancelBtn}
+                onClick={handleCancelJob}
+                loading={loading}
+              >
+                Hủy ứng tuyển
+              </Button>
+            )}
+            {currentStatus === "IN_PROGRESS" && (
+              <Button
+                className={styles.completeBtn}
+                onClick={() => handleStatusUpdate("arrived")}
+                loading={loading}
+              >
+                Đã đến nơi
+              </Button>
+            )}
+            {currentStatus === "ARRIVED" && (
+              <Button
+                className={styles.completeBtn}
+                onClick={() => handleStatusUpdate("completed")}
+                loading={loading}
+              >
+                Đã hoàn thành
+              </Button>
+            )}
+            {currentStatus === "DONE" && (
+              <>
+                <Button
+                  className={styles.completeBtn}
+                  onClick={() => openFeedbackModal(job.jobId)}
+                  loading={loading}
+                >
+                  Xem đánh giá
+                </Button>
+                <Button
+                  className={styles.completeBtn}
+                  onClick={() => openReportModal(job.jobId)}
+                  loading={loading}
+                >
+                  Xem báo cáo
+                </Button>
+              </>
+            )}
+            {currentStatus === "BOOKED" && (
+              <>
+                <Button
+                  className={styles.completeBtn}
+                  onClick={fetchCustomerDetails}
+                  loading={loadingCustomerDetails}
+                >
+                  Xem thông tin chi tiết Owner
+                </Button>
+                <Button
+                  className={styles.cancelBtn}
+                  onClick={() => handleJobAction("reject")}
+                  loading={loading}
+                >
+                  Từ chối
+                </Button>
+                <Button
+                  className={styles.completeBtn}
+                  onClick={() => handleJobAction("accept")}
+                  loading={loading}
+                >
+                  Chấp nhận
+                </Button>
+              </>
+            )}
           </>
         )}
       </footer>
@@ -767,7 +819,6 @@ const JobCard = ({ job, refreshJobs }) => {
                           total={feedbacks.length}
                           pageSize={pageSize}
                           showSizeChanger={false}
-                          // showTotal={(total) => `Tổng ${total} đánh giá`}
                         />
                       </div>
                     )}
