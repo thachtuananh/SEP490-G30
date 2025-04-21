@@ -1042,30 +1042,38 @@ public class CleanerJobService {
 	public List<Map<String, Object>> getJobsDetailsByService(Long serviceId) {
 		List<Map<String, Object>> jobDetailsList = new ArrayList<>();
 
-		// Lấy danh sách các JobServiceDetail liên quan đến serviceId
+		// Lấy tất cả các JobServiceDetail liên quan đến serviceId
 		List<JobServiceDetail> jobServiceDetails = jobServiceDetailRepository.findByServiceId(serviceId);
 
-		// Lấy danh sách tất cả các job_id và đếm số lần xuất hiện của mỗi job_id trong job_service_detail
-		Map<Long, Long> jobCountMap = new HashMap<>();
+		// Debugging: Kiểm tra xem có dữ liệu nào được lấy từ jobServiceDetailRepository không
+		System.out.println("Number of JobServiceDetails found: " + jobServiceDetails.size());
+
+		// Tính số lần xuất hiện của mỗi job_id
+		Map<Long, Integer> jobCountMap = new HashMap<>();
 		for (JobServiceDetail jobServiceDetail : jobServiceDetails) {
 			Long jobId = jobServiceDetail.getJob().getId();
-			jobCountMap.put(jobId, jobCountMap.getOrDefault(jobId, 0L) + 1);
+			jobCountMap.put(jobId, jobCountMap.getOrDefault(jobId, 0) + 1);  // Đếm số lần mỗi job_id xuất hiện
 		}
 
 		// Debugging: In ra số lần xuất hiện của mỗi job_id
 		System.out.println("Job count map: " + jobCountMap);
 
-		// Duyệt qua các JobServiceDetail để lấy chi tiết job, nhưng chỉ lấy các job không phải combo (job_id xuất hiện 1 lần)
+		// Duyệt qua tất cả các JobServiceDetail để lấy chi tiết job
 		for (JobServiceDetail jobServiceDetail : jobServiceDetails) {
-			Long jobId = jobServiceDetail.getJob().getId();
+			Job job = jobServiceDetail.getJob();
+			Long jobId = job.getId();
 
-			// Nếu job_id xuất hiện nhiều hơn 1 lần (combo), thì bỏ qua job này
+			// Debugging: Kiểm tra service_id và job_id trước khi tiếp tục
+			System.out.println("Checking Job ID: " + jobId + " with Service ID: " + serviceId);
+
+			// Nếu job có nhiều dịch vụ (tức là combo), thì không thêm vào danh sách
 			if (jobCountMap.get(jobId) > 1) {
+				// Debugging: In ra lý do job bị bỏ qua
 				System.out.println("Skipping jobId " + jobId + " because it is a combo.");
-				continue; // Bỏ qua job này vì là combo
+				continue;  // Nếu có nhiều hơn 1 dịch vụ cho job, bỏ qua
 			}
 
-			Job job = jobServiceDetail.getJob();
+			// Kiểm tra trạng thái job (chỉ lấy các job đang mở)
 			if (job != null && job.getStatus() == JobStatus.OPEN) {
 				Map<String, Object> jobInfo = new HashMap<>();
 				jobInfo.put("jobId", job.getId());
@@ -1107,6 +1115,9 @@ public class CleanerJobService {
 
 				// Debugging: In ra thông tin của job đã được thêm vào danh sách
 				System.out.println("Job added: " + jobInfo);
+			} else {
+				// Nếu job không phải là OPEN, thông báo bỏ qua
+				System.out.println("Skipping jobId " + jobId + " because it is not OPEN.");
 			}
 		}
 
@@ -1115,6 +1126,8 @@ public class CleanerJobService {
 
 		return jobDetailsList;
 	}
+
+
 
 
 
