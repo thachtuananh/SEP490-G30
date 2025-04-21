@@ -148,7 +148,7 @@ public class WalletController {
             // Lưu vào bảng AdminTransactionHistory
             adminTransactionHistoryRepository.save(adminTransactionHistory);
             String redirectUrl = "https://house-clean-platform.web.app/DepositOwner?status=success";
-            return ResponseEntity.status(HttpStatus.OK).header(HttpHeaders.LOCATION, redirectUrl).body(redirectUrl);
+            return ResponseEntity.status(HttpStatus.FOUND).header(HttpHeaders.LOCATION, redirectUrl).body(redirectUrl);
         } else {
             // Cập nhật trạng thái giao dịch thành "FAILED"
 //            Optional<TransactionHistory> transactionOpt = transactionHistoryRepository.findByTxnRef(txnRef);
