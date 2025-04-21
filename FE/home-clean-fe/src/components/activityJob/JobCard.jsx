@@ -502,7 +502,10 @@ const JobCard = ({ job, refreshJobs, isAppliedTab }) => {
           </h2>
           <div style={{ marginTop: "8px", color: "#6b7280", fontSize: "14px" }}>
             <div>Khách hàng: {job.customerName}</div>
-            <div>SĐT: {job.customerPhone}</div>
+            {displayStatus.toUpperCase() !== "PENDING" ||
+              (displayStatus.toUpperCase() !== "CANCELLED" && (
+                <div>SĐT: {job.customerPhone}</div>
+              ))}
           </div>
         </div>
         <span
@@ -715,7 +718,7 @@ const JobCard = ({ job, refreshJobs, isAppliedTab }) => {
                   </div>
                 </div>
 
-                <div className={styles.detailItem}>
+                {/* <div className={styles.detailItem}>
                   <PhoneOutlined
                     style={{ fontSize: "20px", color: "#039855" }}
                   />
@@ -725,7 +728,7 @@ const JobCard = ({ job, refreshJobs, isAppliedTab }) => {
                       {customerDetails.phoneNumber}
                     </strong>
                   </div>
-                </div>
+                </div> */}
 
                 <div className={styles.detailItem}>
                   <MailOutlined

@@ -77,6 +77,7 @@ const CleanerReport = () => {
     SERVICE_QUALITY: "Chất lượng dịch vụ",
     PAYMENT_ISSUE: "Vấn đề thanh toán",
     SCHEDULING_ISSUE: "Vấn đề lịch trình",
+    RESOLVED: "Đã giải quyết",
     OTHER: "Khác",
   };
 
@@ -197,14 +198,16 @@ const CleanerReport = () => {
       const token = sessionStorage.getItem("token");
       const { reportId, action } = responseModal;
 
-      const updateUrl = `${BASE_URL}/reports/${reportId}/update_report-cleaner`;
+      const updateUrl = `${BASE_URL}/reports/${reportId}/update_report-cleaner?status=${action}&adminResponse=${encodeURIComponent(
+        responseText.trim() || ""
+      )}`;
 
       await axios.put(
         updateUrl,
         {
-          status: action,
-          adminResponse: responseText.trim() || null,
-          resolvedAt: action === "RESOLVED" ? new Date().toISOString() : null,
+          // status: action,
+          // adminResponse: responseText.trim() || null,
+          // resolvedAt: action === "RESOLVED" ? new Date().toISOString() : null,
         },
         {
           headers: {
@@ -748,10 +751,7 @@ const CleanerReport = () => {
 
             {detailsModal.report.adminResponse && (
               <>
-                <Divider
-                  orientation="left"
-                  style={{ margin: "24px 0 16px", fontWeight: "500" }}
-                >
+                <Divider style={{ margin: "24px 0 16px", fontWeight: "500" }}>
                   Phản hồi từ quản trị viên
                 </Divider>
                 <Paragraph
