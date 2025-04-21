@@ -7,7 +7,7 @@ import {
   DollarOutlined,
 } from "@ant-design/icons";
 
-const StatCards = ({ loading, revenueData, jobData }) => {
+const StatCards = ({ loading, revenueData, jobData, balanceResult }) => {
   // Format number with commas
   const formatNumber = (num) => {
     return num ? num.toLocaleString() : "0";
@@ -21,6 +21,16 @@ const StatCards = ({ loading, revenueData, jobData }) => {
     );
   };
 
+  // Format balance data
+  const getFormattedBalance = () => {
+    if (!balanceResult || balanceResult.totalBalance === undefined) return "0đ";
+    const balance = balanceResult.totalBalance;
+    const formattedValue = formatNumber(Math.abs(balance)); // Use absolute value for formatting
+
+    // Format based on whether value is positive or negative
+    return balance >= 0 ? `${formattedValue}đ` : `-${formattedValue}đ`;
+  };
+
   const cardData = [
     {
       title: "Tổng số công việc",
@@ -30,9 +40,9 @@ const StatCards = ({ loading, revenueData, jobData }) => {
       iconColor: "#1890ff",
     },
     {
-      title: "Công việc hoàn thành",
-      value: jobData ? formatNumber(jobData.DONE) : "0",
-      icon: <ShoppingCartOutlined />,
+      title: "Tổng số tiền nắm giữ",
+      value: getFormattedBalance(),
+      icon: <DollarOutlined />,
       iconBgColor: "#fffbe6",
       iconColor: "#faad14",
     },

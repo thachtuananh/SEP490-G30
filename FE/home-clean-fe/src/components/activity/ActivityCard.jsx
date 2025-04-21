@@ -741,7 +741,18 @@ export const ActivityCard = ({ data, onDelete }) => {
                       Huỷ việc
                     </Button>
                   )}
-
+                  {activity.status === "CANCELLED" && (
+                    <div className={styles.buttonGroup}>
+                      <Button
+                        className={styles.reportButton}
+                        onClick={() => openReportModal(activity.jobId)}
+                        danger
+                        icon={<FaFlag />}
+                      >
+                        Báo cáo
+                      </Button>
+                    </div>
+                  )}
                   {activity.status === "DONE" && (
                     <div className={styles.buttonGroup}>
                       <Button

@@ -41,7 +41,7 @@ const ChatWindow = ({ messages, onSendMessage, conversation, userId }) => {
     navigator.geolocation.getCurrentPosition(
       (position) => {
         const { latitude, longitude } = position.coords;
-        const url = `https://www.openstreetmap.org/?mlat=${latitude}&mlon=${longitude}#map=17/${latitude}/${longitude}`;
+        const url = `https://www.google.com/maps?q=${latitude},${longitude}`;
         setLocationLink(url);
         onSendMessage(url); // Gửi link vị trí trực tiếp
         setError("");
@@ -97,7 +97,7 @@ const ChatWindow = ({ messages, onSendMessage, conversation, userId }) => {
             className={styles.messageLink}
             style={linkStyle}
           >
-            {content.includes("openstreetmap") ? "📍 Xem vị trí" : content}
+            {content.includes("google.com/maps") ? "📍 Xem vị trí" : content}
           </a>
         );
       } else {
@@ -117,7 +117,7 @@ const ChatWindow = ({ messages, onSendMessage, conversation, userId }) => {
                 className={styles.messageLink}
                 style={linkStyle}
               >
-                {matches[i].includes("openstreetmap")
+                {matches[i].includes("google.com/maps")
                   ? "📍 Xem vị trí"
                   : matches[i]}
               </a>
