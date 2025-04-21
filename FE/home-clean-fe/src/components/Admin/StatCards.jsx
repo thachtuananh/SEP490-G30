@@ -7,7 +7,7 @@ import {
   DollarOutlined,
 } from "@ant-design/icons";
 
-const StatCards = ({ loading, revenueData, jobData }) => {
+const StatCards = ({ loading, revenueData, jobData, balanceResult }) => {
   // Format number with commas
   const formatNumber = (num) => {
     return num ? num.toLocaleString() : "0";
@@ -21,6 +21,16 @@ const StatCards = ({ loading, revenueData, jobData }) => {
     );
   };
 
+  // Format balance data
+  const getFormattedBalance = () => {
+    if (!balanceResult || balanceResult.totalBalance === undefined) return "0đ";
+    const balance = balanceResult.totalBalance;
+    const formattedValue = formatNumber(Math.abs(balance)); // Use absolute value for formatting
+
+    // Format based on whether value is positive or negative
+    return balance >= 0 ? `${formattedValue}đ` : `-${formattedValue}đ`;
+  };
+
   const cardData = [
     {
       title: "Tổng số công việc",
@@ -29,13 +39,13 @@ const StatCards = ({ loading, revenueData, jobData }) => {
       iconBgColor: "#f0f5ff",
       iconColor: "#1890ff",
     },
-    {
-      title: "Công việc hoàn thành",
-      value: jobData ? formatNumber(jobData.DONE) : "0",
-      icon: <ShoppingCartOutlined />,
-      iconBgColor: "#fffbe6",
-      iconColor: "#faad14",
-    },
+    // {
+    //   title: "Công việc hoàn thành",
+    //   value: jobData ? formatNumber(jobData.DONE) : "0",
+    //   icon: <ShoppingCartOutlined />,
+    //   iconBgColor: "#fffbe6",
+    //   iconColor: "#faad14",
+    // },
     {
       title: "Tổng doanh thu",
       value: revenueData ? `${formatNumber(revenueData.totalRevenue)}đ` : "0đ",
@@ -48,7 +58,7 @@ const StatCards = ({ loading, revenueData, jobData }) => {
   return (
     <Row gutter={[16, 16]}>
       {cardData.map((card, index) => (
-        <Col xs={24} sm={12} md={12} lg={8} key={index}>
+        <Col xs={24} sm={12} md={12} lg={12} key={index}>
           <StatCard
             title={card.title}
             value={card.value}

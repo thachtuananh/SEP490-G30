@@ -61,7 +61,20 @@ const AppSidebar = () => {
     {
       key: "admin-withdrawal",
       icon: <DollarOutlined />,
-      label: <Link to="/admin/admin-withdrawal">Yêu cầu rút tiền</Link>,
+      // label: "Quản lý rút tiền",
+      label: <Link to="/admin/admin-withdrawal">Quản lý rút tiền</Link>,
+      // children: [
+      //   {
+      //     key: "/admin/withdrawal-owners",
+      //     icon: <UserOutlined />,
+      //     label: <Link to="/admin/withdrawal-owners">Chủ nhà</Link>,
+      //   },
+      //   {
+      //     key: "/admin/withdrawal-cleaners",
+      //     icon: <ClearOutlined />,
+      //     label: <Link to="/admin/withdrawal-cleaners">Người dọn dẹp</Link>,
+      //   },
+      // ],
     },
     {
       key: "admin-report",
@@ -113,6 +126,8 @@ const AppSidebar = () => {
     // Check if current path is inside a submenu
     if (currentPath.includes("/admin/report")) {
       return ["admin-report"];
+    } else if (currentPath.includes("/admin/withdrawal")) {
+      return ["admin-withdrawal"];
     } else if (
       currentPath.includes("/admin/owners") ||
       currentPath.includes("/admin/cleaners") ||

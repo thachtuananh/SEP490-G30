@@ -41,13 +41,12 @@ const { Title, Text } = Typography;
 const { Option } = Select;
 const { confirm } = Modal;
 
-const WithdrawalRequests = () => {
+const CustomerWithdrawalRequests = () => {
   const [searchText, setSearchText] = useState("");
   const [withdrawalRequests, setWithdrawalRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
   const [statusFilter, setStatusFilter] = useState("PENDING");
-  const [userTypeFilter, setUserTypeFilter] = useState("all");
   const [error, setError] = useState(null);
   const navigate = useNavigate();
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
@@ -103,6 +102,7 @@ const WithdrawalRequests = () => {
       setError(null);
       const token = sessionStorage.getItem("token");
 
+      // Added userType=customer to filter only customer withdrawals
       const response = await axios.get(
         `${BASE_URL}/admin/withdrawalRequests?status=${statusFilter}`,
         {
@@ -113,7 +113,12 @@ const WithdrawalRequests = () => {
         }
       );
 
-      setWithdrawalRequests(response.data.data || []);
+      // Filter out any withdrawal requests with null customer or cleaner
+      const validRequests = (response.data.data || []).filter(
+        (request) => request.customer !== null || request.cleaner !== null
+      );
+
+      setWithdrawalRequests(validRequests);
       setLoading(false);
     } catch (error) {
       console.error("Error fetching withdrawal requests:", error);
@@ -155,14 +160,11 @@ const WithdrawalRequests = () => {
   };
 
   // Show confirmation dialog before approving withdrawal
-  // Show confirmation dialog before approving withdrawal
   const showApproveConfirm = (record) => {
     let transactionCode = "";
 
-    const userName = record.customer
-      ? record.customer.full_name
-      : record.cleaner?.name;
-    const userType = record.customer ? "chủ nhà" : "người dọn nhà";
+    // Safely get the user name
+    const userName = record.customer ? record.customer.name : "N/A";
 
     Modal.confirm({
       title: "Xác nhận duyệt yêu cầu rút tiền",
@@ -173,18 +175,16 @@ const WithdrawalRequests = () => {
           <Text strong>Chi tiết yêu cầu:</Text>
           <ul style={{ paddingLeft: 20, marginTop: 8 }}>
             <li>
-              <Text>
-                Người dùng: {userName} ({userType})
-              </Text>
+              <Text>Người dùng: {userName} (chủ nhà)</Text>
             </li>
             <li>
               <Text>Số tiền: {formatCurrency(record.amount)}</Text>
             </li>
             <li>
-              <Text>Ngân hàng: {record.bankName}</Text>
+              <Text>Ngân hàng: {record.bankName || "N/A"}</Text>
             </li>
             <li>
-              <Text>Số tài khoản: {record.cardNumber}</Text>
+              <Text>Số tài khoản: {record.cardNumber || "N/A"}</Text>
             </li>
           </ul>
           <div style={{ marginTop: 16 }}>
@@ -216,10 +216,8 @@ const WithdrawalRequests = () => {
   const showRejectConfirm = (record) => {
     let rejectionReason = "";
 
-    const userName = record.customer
-      ? record.customer.full_name
-      : record.cleaner?.name;
-    const userType = record.customer ? "chủ nhà" : "người dọn nhà";
+    // Safely get the user name
+    const userName = record.customer ? record.customer.name : "N/A";
 
     Modal.confirm({
       title: "Xác nhận từ chối yêu cầu rút tiền",
@@ -230,18 +228,16 @@ const WithdrawalRequests = () => {
           <Text strong>Chi tiết yêu cầu:</Text>
           <ul style={{ paddingLeft: 20, marginTop: 8 }}>
             <li>
-              <Text>
-                Người dùng: {userName} ({userType})
-              </Text>
+              <Text>Người dùng: {userName} (chủ nhà)</Text>
             </li>
             <li>
               <Text>Số tiền: {formatCurrency(record.amount)}</Text>
             </li>
             <li>
-              <Text>Ngân hàng: {record.bankName}</Text>
+              <Text>Ngân hàng: {record.bankName || "N/A"}</Text>
             </li>
             <li>
-              <Text>Số tài khoản: {record.cardNumber}</Text>
+              <Text>Số tài khoản: {record.cardNumber || "N/A"}</Text>
             </li>
           </ul>
           <div style={{ marginTop: 16 }}>
@@ -356,27 +352,21 @@ const WithdrawalRequests = () => {
   const parseDate = (dateStr) => new Date(dateStr);
 
   const filteredWithdrawalRequests = withdrawalRequests.filter((record) => {
+    // Safe access to properties when customer might be null
+    const customerName = record.customer?.name?.toLowerCase() || "";
+
     // Filter by search text
     const searchMatch =
-      record.customer?.full_name
-        ?.toLowerCase()
+      customerName.includes(searchText.toLowerCase()) ||
+      (record.cardNumber || "").includes(searchText) ||
+      (record.bankName || "")
+        .toLowerCase()
         .includes(searchText.toLowerCase()) ||
-      record.cleaner?.name?.toLowerCase().includes(searchText.toLowerCase()) ||
-      record.cardNumber?.includes(searchText) ||
-      record.bankName?.toLowerCase().includes(searchText.toLowerCase()) ||
-      record.accountHolderName
-        ?.toLowerCase()
+      (record.accountHolderName || "")
+        .toLowerCase()
         .includes(searchText.toLowerCase());
 
-    // Filter by user type
-    let userTypeMatch = true;
-    if (userTypeFilter === "customer") {
-      userTypeMatch = record.customer !== null;
-    } else if (userTypeFilter === "cleaner") {
-      userTypeMatch = record.cleaner !== null;
-    }
-
-    return searchMatch && userTypeMatch;
+    return searchMatch;
   });
 
   const statusColors = {
@@ -393,26 +383,20 @@ const WithdrawalRequests = () => {
       sorter: (a, b) => a.id - b.id,
     },
     {
-      title: "Loại người dùng",
-      key: "userType",
-      render: (_, record) => (
-        <Tag color={record.customer ? "blue" : "purple"}>
-          {record.customer ? "Chủ nhà" : "Người dọn nhà"}
-        </Tag>
-      ),
-    },
-    {
-      title: "Tên người dùng",
+      title: "Tên chủ nhà",
       key: "userName",
-      render: (_, record) => (
-        <span style={{ fontWeight: 500 }}>
-          {record.customer ? record.customer.full_name : record.cleaner?.name}
-        </span>
-      ),
+      render: (_, record) => {
+        // Safely handle null customer
+        if (!record.customer) {
+          return <span style={{ color: "#999" }}>N/A</span>;
+        }
+        return <span style={{ fontWeight: 500 }}>{record.customer.name}</span>;
+      },
       sorter: (a, b) => {
-        const nameA = a.customer ? a.customer.full_name : a.cleaner?.name;
-        const nameB = b.customer ? b.customer.full_name : b.cleaner?.name;
-        return nameA?.localeCompare(nameB);
+        // Safe sorting when customer might be null
+        const nameA = a.customer?.name || "";
+        const nameB = b.customer?.name || "";
+        return nameA.localeCompare(nameB);
       },
     },
     {
@@ -475,6 +459,7 @@ const WithdrawalRequests = () => {
                 onClick={() => showApproveConfirm(record)}
                 size="small"
                 loading={actionLoading}
+                disabled={!record.customer && !record.cleaner}
               >
                 Duyệt
               </Button>
@@ -484,26 +469,27 @@ const WithdrawalRequests = () => {
                 onClick={() => showRejectConfirm(record)}
                 size="small"
                 loading={actionLoading}
+                disabled={!record.customer && !record.cleaner}
               >
                 Từ chối
               </Button>
             </>
           )}
-          {/* <Button
+          <Button
             type="default"
             icon={<EyeOutlined />}
             // onClick={() => viewDetails(record.id)}
             size="small"
           >
             Chi tiết
-          </Button> */}
+          </Button>
         </Space>
       ),
     },
   ];
 
   //   const viewDetails = (id) => {
-  //     navigate(`/admin/withdrawal-requests/${id}`);
+  //     navigate(`/admin/customer-withdrawal-requests/${id}`);
   //   };
 
   // Updated breadcrumb items
@@ -511,19 +497,18 @@ const WithdrawalRequests = () => {
     {
       title: <HomeOutlined />,
     },
-    // {
-    //   title: (
-    //     <>
-    //       <DollarOutlined />
-    //       <span>Tài chính</span>
-    //     </>
-    //   ),
-    // },
     {
       title: (
         <>
           <DollarOutlined />
-          <span>Yêu cầu rút tiền</span>
+          <span>Tài chính</span>
+        </>
+      ),
+    },
+    {
+      title: (
+        <>
+          <span>Yêu cầu rút tiền - Chủ nhà</span>
         </>
       ),
     },
@@ -547,6 +532,13 @@ const WithdrawalRequests = () => {
 
   // Custom render for empty state with more descriptive messages
   const customEmpty = () => {
+    // Special case for withdrawal requests with null customer/cleaner
+    const hasNullUserRequests =
+      withdrawalRequests.length > 0 &&
+      withdrawalRequests.some(
+        (req) => req.customer === null && req.cleaner === null
+      );
+
     // Handle different empty states
     let description = "Không có yêu cầu rút tiền nào";
     let showRetryButton = false;
@@ -554,6 +546,9 @@ const WithdrawalRequests = () => {
     if (error) {
       description = error;
       showRetryButton = true;
+    } else if (hasNullUserRequests) {
+      description =
+        "Phát hiện yêu cầu rút tiền không hợp lệ (không có thông tin người dùng)";
     } else if (
       filteredWithdrawalRequests.length === 0 &&
       withdrawalRequests.length > 0
@@ -561,7 +556,7 @@ const WithdrawalRequests = () => {
       description = "Không tìm thấy yêu cầu rút tiền nào phù hợp với bộ lọc";
     } else if (withdrawalRequests.length === 0) {
       // This is the state when there are no requests for the current status filter
-      description = `Không có yêu cầu rút tiền nào ở trạng thái "${
+      description = `Không có yêu cầu rút tiền nào của chủ nhà ở trạng thái "${
         statusFilter === "PENDING"
           ? "Đang chờ"
           : statusFilter === "APPROVED"
@@ -632,7 +627,7 @@ const WithdrawalRequests = () => {
                   }}
                 >
                   <Title level={3} style={{ margin: 0 }}>
-                    Danh sách yêu cầu rút tiền
+                    Danh sách yêu cầu rút tiền - Chủ nhà
                   </Title>
                   <Space
                     style={{
@@ -666,7 +661,7 @@ const WithdrawalRequests = () => {
                 <div style={{ marginBottom: 16 }}>
                   <Space wrap>
                     <span>
-                      <FilterOutlined /> Lọc:
+                      <FilterOutlined /> Lọc theo trạng thái:
                     </span>
                     <Select
                       style={{ width: 150 }}
@@ -677,38 +672,21 @@ const WithdrawalRequests = () => {
                       <Option value="APPROVED">Đã duyệt</Option>
                       <Option value="REJECTED">Đã từ chối</Option>
                     </Select>
-
-                    <Select
-                      style={{ width: 150 }}
-                      value={userTypeFilter}
-                      onChange={setUserTypeFilter}
-                    >
-                      <Option value="all">Tất cả người dùng</Option>
-                      <Option value="customer">Chủ nhà</Option>
-                      <Option value="cleaner">Người dọn nhà</Option>
-                    </Select>
                   </Space>
                 </div>
 
-                {/* Show Alert only for critical errors, not for "no data" cases */}
-                {/* {error && error.includes("kết nối") && (
+                {/* Show alert for null user records if they exist */}
+                {withdrawalRequests.some(
+                  (req) => req.customer === null && req.cleaner === null
+                ) && (
                   <Alert
-                    message="Lỗi kết nối"
-                    description={error}
-                    type="error"
+                    message="Cảnh báo"
+                    description="Một số yêu cầu rút tiền không có thông tin người dùng hợp lệ và đã được ẩn khỏi danh sách."
+                    type="warning"
                     showIcon
                     style={{ marginBottom: 16 }}
-                    action={
-                      <Button
-                        size="small"
-                        type="primary"
-                        onClick={fetchWithdrawalRequests}
-                      >
-                        Thử lại
-                      </Button>
-                    }
                   />
-                )} */}
+                )}
 
                 <Table
                   columns={columns}
@@ -717,12 +695,12 @@ const WithdrawalRequests = () => {
                   bordered
                   loading={loading}
                   scroll={{ x: "max-content" }}
-                  // pagination={{
-                  //   pageSize: 10,
-                  //   showSizeChanger: true,
-                  //   showTotal: (total) => `Tổng ${total} yêu cầu`,
-                  //   style: { justifyContent: "center" },
-                  // }}
+                  pagination={{
+                    pageSize: 10,
+                    showSizeChanger: true,
+                    showTotal: (total) => `Tổng ${total} yêu cầu`,
+                    style: { justifyContent: "center" },
+                  }}
                   locale={{
                     emptyText: customEmpty,
                   }}
@@ -736,4 +714,4 @@ const WithdrawalRequests = () => {
   );
 };
 
-export default WithdrawalRequests;
+export default CustomerWithdrawalRequests;

@@ -53,6 +53,8 @@ import LoginAdmin from "../pages/Admin/LoginAdmin";
 import ProtectedAdminRoute from "./ProtectedAdminRoute";
 import CleanerListBan from "../pages/Admin/ManageUser/Cleaner/CleanerListBan";
 import AdminWithdrawl from "../pages/Admin/ManageWithdrawl/WithdrawlRequests";
+import CleanerWithdrawal from "../pages/Admin/ManageWithdrawl/CleanerWithdrawalRequests";
+import OwnerWithdrawl from "../pages/Admin/ManageWithdrawl/CustomerWithdrawalRequests";
 import AdminManageAI from "../pages/Admin/ManageAI";
 import CleanerReport from "../pages/Admin/ManageReport/CleanerReport";
 import OwnerReport from "../pages/Admin/ManageReport/OwnerReport";
@@ -181,6 +183,22 @@ const Routers = () => {
           </ProtectedAdminRoute>
         }
       />
+      {/* <Route
+        path="/admin/withdrawal-owners"
+        element={
+          <ProtectedAdminRoute>
+            <OwnerWithdrawl />
+          </ProtectedAdminRoute>
+        }
+      />
+      <Route
+        path="/admin/withdrawal-cleaners"
+        element={
+          <ProtectedAdminRoute>
+            <CleanerWithdrawal />
+          </ProtectedAdminRoute>
+        }
+      /> */}
       <Route
         path="/admin/ai-assistant"
         element={

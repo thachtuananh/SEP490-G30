@@ -48,7 +48,7 @@ const formatTime = (dateString) => {
 
 // Hàm format khoảng cách
 const formatDistance = (distance) => {
-  return `Khoảng cách: ${Math.round(distance)} m`;
+  return `Khoảng cách: ${Math.round(distance)} km`;
 };
 
 // Component JobCard
