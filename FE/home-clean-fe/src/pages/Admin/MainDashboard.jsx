@@ -94,7 +94,7 @@ const TransactionHistory = ({ visible, onClose }) => {
       },
     },
     {
-      title: "Số tiền",
+      title: "Số tiền (VNĐ)",
       dataIndex: "amount",
       key: "amount",
       render: (amount, record) => {
@@ -104,7 +104,7 @@ const TransactionHistory = ({ visible, onClose }) => {
             style={{ color: isNegative ? "red" : "green", fontWeight: "bold" }}
           >
             {isNegative ? "-" : "+"}
-            {amount.toLocaleString()} VND
+            {amount.toLocaleString()}
           </span>
         );
       },
@@ -204,7 +204,7 @@ const TransactionHistory = ({ visible, onClose }) => {
           dataSource={transactions}
           rowKey="id"
           scroll={{ x: 800 }}
-          pagination={{ pageSize: 10 }}
+          pagination={{ pageSize: 6 }}
         />
       </Spin>
     </Modal>
@@ -265,11 +265,11 @@ const MainDashboard = () => {
         setLoading(true);
 
         // Fetch total balance
-        const balanceResponse = await fetch(`${BASE_URL}/admin/totalBalance`, {
-          headers,
-        });
-        const balanceResult = await balanceResponse.json();
-        setBalanceData(balanceResult);
+        // const balanceResponse = await fetch(`${BASE_URL}/admin/totalBalance`, {
+        //   headers,
+        // });
+        // const balanceResult = await balanceResponse.json();
+        // setBalanceData(balanceResult);
 
         // Fetch revenue
         const revenueResponse = await fetch(`${BASE_URL}/admin/real-revenue`, {
