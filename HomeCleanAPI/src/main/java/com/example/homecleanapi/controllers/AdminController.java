@@ -46,16 +46,18 @@ public class AdminController {
     public ResponseEntity<Map<String, Object>> approveOrRejectWithdrawal(
             @PathVariable Long withdrawalRequestId,
             @RequestParam String action,
-            @RequestBody(required = false) Map<String, Object> body) {  // Thêm @RequestBody cho lý do từ chối
+            @RequestBody Map<String, Object> body) {  // Thêm @RequestBody cho lý do từ chối
 
-        // Lấy lý do từ chối từ body nếu có
+        // Lấy lý do từ chối và transactionCode từ body nếu có
         String rejectionReason = body != null && body.containsKey("rejectionReason") ? (String) body.get("rejectionReason") : null;
+        String transactionCode = body != null && body.containsKey("transactionCode") ? (String) body.get("transactionCode") : null;
 
         Map<String, Object> response = withdrawalRequestService.approveOrRejectWithdrawalRequest(
-                withdrawalRequestId, action, rejectionReason);
+                withdrawalRequestId, action, rejectionReason, transactionCode); // Thêm transactionCode
 
         return new ResponseEntity<>(response, (HttpStatus) response.get("status"));
     }
+
 
 
 

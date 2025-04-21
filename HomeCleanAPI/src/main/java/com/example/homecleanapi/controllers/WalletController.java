@@ -227,11 +227,11 @@ public class WalletController {
 
             if ("vnpay".equalsIgnoreCase(paymentMethod)) {
                 // Xử lý thanh toán qua VNPay
+//                Map<String, Object> response =
                 walletService.depositMoney(customerId, amount, request);
-                String redirectUrl = "https://house-clean-platform.web.app/depositOwner?status=success";
-                return ResponseEntity.status(HttpStatus.FOUND)
-                        .header(HttpHeaders.LOCATION, redirectUrl)
-                        .build();
+                String redirectUrl = "https://house-clean-platform.web.app/DepositOwner?status=fail";
+                return ResponseEntity.status(HttpStatus.OK).header(HttpHeaders.LOCATION, redirectUrl).build();
+//                return ResponseEntity.ok(response);
             }else {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                         .body(Map.of("message", "Invalid payment method"));

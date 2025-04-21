@@ -204,7 +204,7 @@ public class WithdrawalRequestService {
 
 
 
-    public Map<String, Object> approveOrRejectWithdrawalRequest(Long withdrawalRequestId, String action, String rejectionReason) {
+    public Map<String, Object> approveOrRejectWithdrawalRequest(Long withdrawalRequestId, String action, String rejectionReason, String transactionCode) {
         Map<String, Object> response = new HashMap<>();
 
         // Kiểm tra xem yêu cầu rút tiền có tồn tại không
@@ -226,8 +226,16 @@ public class WithdrawalRequestService {
 
         // Kiểm tra hành động của admin (APPROVE hoặc REJECT)
         if ("APPROVE".equalsIgnoreCase(action)) {
-            // Nếu APPROVE, cập nhật trạng thái là "WITHDREW"
-            withdrawalRequest.setStatus("WITHDREW");
+            // Kiểm tra xem transactionCode có được cung cấp không
+            if (transactionCode == null || transactionCode.trim().isEmpty()) {
+                response.put("message", "Mã giao dịch là bắt buộc khi chấp nhận yêu cầu");
+                response.put("status", HttpStatus.BAD_REQUEST);
+                return response;
+            }
+
+            // Nếu APPROVE, cập nhật trạng thái là "WITHDREW" và lưu mã giao dịch
+            withdrawalRequest.setStatus("APPROVED");
+            withdrawalRequest.setTransactionCode(transactionCode); // Lưu mã giao dịch
 
             // Cập nhật lại yêu cầu rút tiền trong cơ sở dữ liệu
             withdrawalRequestRepository.save(withdrawalRequest);
@@ -301,6 +309,7 @@ public class WithdrawalRequestService {
 
         return response;
     }
+
 
 
 

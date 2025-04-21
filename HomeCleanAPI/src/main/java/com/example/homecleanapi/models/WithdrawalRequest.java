@@ -44,8 +44,19 @@ public class WithdrawalRequest {
     @Column(name = "reason")
     private String rejectionReason;
 
+    @Column(name = "transaction_code")
+    private String transactionCode;
+
     // Getters and Setters
 
+
+    public String getTransactionCode() {
+        return transactionCode;
+    }
+
+    public void setTransactionCode(String transactionCode) {
+        this.transactionCode = transactionCode;
+    }
 
     public String getRejectionReason() {
         return rejectionReason;
