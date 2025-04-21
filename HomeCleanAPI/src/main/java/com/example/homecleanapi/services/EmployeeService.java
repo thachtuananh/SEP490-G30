@@ -191,8 +191,20 @@ public class EmployeeService {
 
     // Update Employee Profile
     public ResponseEntity<Map<String, Object>> updateEmployeeInformation(CleanerUpdateProfile request, Integer employeeId) {
+        Map<String, Object> response = new HashMap<>();
         Employee employee = employeeRepository.findById(employeeId)
                 .orElseThrow(() -> new RuntimeException("Employee not found"));
+
+        // Kiểm tra nếu email thay đổi thì phải kiểm tra trùng
+        String newEmail = request.getEmail();
+        if (newEmail != null && !newEmail.equalsIgnoreCase(employee.getEmail())) {
+            Optional<Employee> existingEmail = employeeRepository.findEmployeeByEmail(newEmail);
+            if (existingEmail.isPresent()) {
+                response.put("message", "Email đã được sử dụng bởi nhân viên khác!");
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+            }
+            employee.setEmail(newEmail);
+        }
 
         String base64 = request.getProfile_image();
         byte[] decoded = Base64.getDecoder().decode(base64);
