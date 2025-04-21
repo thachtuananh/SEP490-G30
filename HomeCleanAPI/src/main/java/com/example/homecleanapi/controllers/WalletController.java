@@ -160,7 +160,7 @@ public class WalletController {
 //                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Transaction not found");
 //            }
             String redirectUrl = "https://house-clean-platform.web.app/depositOwnerfail?status=fail";
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).header(HttpHeaders.LOCATION, redirectUrl).build();
+            return ResponseEntity.status(HttpStatus.FOUND).header(HttpHeaders.LOCATION, redirectUrl).build();
 //            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Thanh toán thất bại! Mã lỗi: " + responseCode);
         }
     }
