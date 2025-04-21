@@ -102,7 +102,9 @@ const WorkDetailsDescription = () => {
       navigate("/homeclean");
       setIsModalOpen(false);
     } catch (error) {
-      message.error("Nhận việc thất bại, vui lòng thử lại!");
+      message.error(
+        "Bạn đang ứng tuyển hoặc đã có lịch làm việc trong một công việc cách công việc này nhỏ hơn 2 giờ"
+      );
     }
   };
 
