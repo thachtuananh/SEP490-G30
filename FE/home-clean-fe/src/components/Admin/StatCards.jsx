@@ -39,13 +39,13 @@ const StatCards = ({ loading, revenueData, jobData, balanceResult }) => {
       iconBgColor: "#f0f5ff",
       iconColor: "#1890ff",
     },
-    {
-      title: "Tổng số tiền nắm giữ",
-      value: getFormattedBalance(),
-      icon: <DollarOutlined />,
-      iconBgColor: "#fffbe6",
-      iconColor: "#faad14",
-    },
+    // {
+    //   title: "Công việc hoàn thành",
+    //   value: jobData ? formatNumber(jobData.DONE) : "0",
+    //   icon: <ShoppingCartOutlined />,
+    //   iconBgColor: "#fffbe6",
+    //   iconColor: "#faad14",
+    // },
     {
       title: "Tổng doanh thu",
       value: revenueData ? `${formatNumber(revenueData.totalRevenue)}đ` : "0đ",
@@ -58,7 +58,7 @@ const StatCards = ({ loading, revenueData, jobData, balanceResult }) => {
   return (
     <Row gutter={[16, 16]}>
       {cardData.map((card, index) => (
-        <Col xs={24} sm={12} md={12} lg={8} key={index}>
+        <Col xs={24} sm={12} md={12} lg={12} key={index}>
           <StatCard
             title={card.title}
             value={card.value}
