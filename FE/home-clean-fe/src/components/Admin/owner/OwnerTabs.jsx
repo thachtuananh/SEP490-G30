@@ -27,12 +27,20 @@ const OwnerTabs = ({
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
+  const [accountActive, setAccountActive] = useState(!ownerData?.is_deleted);
 
   // Function to format date and time
   const formatDateTime = (dateTimeString) => {
     const date = new Date(dateTimeString);
-    const formattedDate = date.toLocaleDateString("vi-VN");
-    const formattedTime = date.toLocaleTimeString("vi-VN");
+    const formattedDate = date.toLocaleDateString("vi-VN", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    });
+    const formattedTime = date.toLocaleTimeString("vi-VN", {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
     return `${formattedDate} ${formattedTime}`;
   };
 
@@ -46,15 +54,21 @@ const OwnerTabs = ({
   };
 
   const showEditModal = () => {
+    setAccountActive(!ownerData.is_deleted);
     form.setFieldsValue({
       fullName: ownerData.name,
       phone: ownerData.phone,
+      email: ownerData.email,
     });
     setIsEditModalVisible(true);
   };
 
   const handleEditCancel = () => {
     setIsEditModalVisible(false);
+  };
+
+  const handleAccountStatusChange = (isActive) => {
+    setAccountActive(isActive);
   };
 
   const handleEditSubmit = async () => {
@@ -64,6 +78,9 @@ const OwnerTabs = ({
 
       const token = sessionStorage.getItem("token");
       const customerId = ownerData.id || ownerData.customerId;
+
+      // The API expects false for active accounts and true for inactive accounts
+      const accountStatus = !accountActive;
 
       const response = await fetch(
         `${BASE_URL}/admin/customers/${customerId}/update`,
@@ -77,6 +94,8 @@ const OwnerTabs = ({
           body: JSON.stringify({
             phone: values.phone,
             fullName: values.fullName,
+            email: values.email,
+            accountStatus: accountStatus,
           }),
         }
       );
@@ -113,6 +132,16 @@ const OwnerTabs = ({
             </Descriptions.Item>
             <Descriptions.Item label="Số điện thoại">
               {ownerData?.phone}
+            </Descriptions.Item>
+            <Descriptions.Item label="Email">
+              {ownerData?.email || "Chưa cập nhật"}
+            </Descriptions.Item>
+            <Descriptions.Item label="Trạng thái">
+              {ownerData?.is_deleted === false ? (
+                <Badge status="success" text="Đang hoạt động" />
+              ) : (
+                <Badge status="error" text="Không hoạt động" />
+              )}
             </Descriptions.Item>
             <Descriptions.Item label="Ngày tạo">
               {ownerData ? formatDateTime(ownerData.created_at) : ""}
@@ -202,6 +231,7 @@ const OwnerTabs = ({
           initialValues={{
             fullName: ownerData?.name,
             phone: ownerData?.phone,
+            email: ownerData?.email,
           }}
         >
           <Form.Item
@@ -232,6 +262,42 @@ const OwnerTabs = ({
             ]}
           >
             <Input placeholder="Nhập số điện thoại" />
+          </Form.Item>
+
+          <Form.Item
+            name="email"
+            label="Email"
+            rules={[
+              {
+                required: true,
+                message: "Vui lòng nhập email",
+              },
+              {
+                type: "email",
+                message: "Email không đúng định dạng",
+              },
+            ]}
+          >
+            <Input placeholder="Nhập email" />
+          </Form.Item>
+
+          <Form.Item label="Trạng thái tài khoản">
+            <Input.Group compact>
+              <Button
+                type={accountActive ? "primary" : "default"}
+                onClick={() => handleAccountStatusChange(true)}
+                style={{ width: "50%" }}
+              >
+                Đang hoạt động
+              </Button>
+              <Button
+                type={!accountActive ? "primary" : "default"}
+                onClick={() => handleAccountStatusChange(false)}
+                style={{ width: "50%" }}
+              >
+                Không hoạt động
+              </Button>
+            </Input.Group>
           </Form.Item>
         </Form>
       </Modal>

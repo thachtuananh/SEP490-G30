@@ -11,7 +11,7 @@ import styles from "../../assets/CSS/createjob/Pay.module.css";
 const { Title, Text } = Typography;
 
 const Pay = ({ onPaymentMethodChange }) => {
-  const [selectedMethod, setSelectedMethod] = useState("vnpay");
+  const [selectedMethod, setSelectedMethod] = useState("VNPay");
 
   const handleMethodChange = (e) => {
     const method = e.target.value;
@@ -86,7 +86,7 @@ const Pay = ({ onPaymentMethodChange }) => {
                 </Space>
               </Col>
               <Col>
-                <Radio value="vnpay" />
+                <Radio value="VNPay" />
               </Col>
             </Row>
           </div>
