@@ -143,7 +143,8 @@ public class AdminCustomerService {
                 "phone", customer.getPhone(),
                 "name", customer.getFull_name(),
                 "created_at", customer.getCreated_at(),
-                "is_deleted", customer.isDeleted(),  // Cập nhật với is_deleted
+                "is_deleted", customer.isDeleted(),
+                "email", customer.getEmail(),
                 "password_hash", customer.getPassword_hash()
         ));
     }

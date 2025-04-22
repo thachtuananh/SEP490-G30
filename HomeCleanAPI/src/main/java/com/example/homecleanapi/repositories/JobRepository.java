@@ -37,10 +37,11 @@ public interface JobRepository extends JpaRepository<Job, Long> {
 
     @Query("SELECT EXTRACT(YEAR FROM j.updatedAt) AS year, " +
             "EXTRACT(MONTH FROM j.updatedAt) AS month, " +
-            "SUM(j.totalPrice) AS revenue " +
+            "SUM(j.totalPrice * 0.15) AS revenue " +  // Tính 15% của tổng giá trị cho mỗi công việc
             "FROM Job j WHERE j.status = 'DONE' " +
             "GROUP BY EXTRACT(YEAR FROM j.updatedAt), EXTRACT(MONTH FROM j.updatedAt)")
     List<Object[]> findRevenueByYearAndMonthNative();
+
 
 
     List<Job> getJobsByStatus(JobStatus status);

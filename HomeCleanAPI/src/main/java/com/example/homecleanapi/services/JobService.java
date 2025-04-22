@@ -548,6 +548,9 @@ public class JobService {
         // Lấy tất cả các job mà customer đã đặt
         List<Job> jobs = jobRepository.findByCustomerId(customerId);
 
+        // Sắp xếp các công việc theo scheduledTime giảm dần (công việc mới nhất sẽ được hiện đầu tiên)
+        jobs.sort((job1, job2) -> job2.getScheduledTime().compareTo(job1.getScheduledTime()));
+
         for (Job job : jobs) {
             Map<String, Object> jobInfo = new HashMap<>();
 
@@ -625,6 +628,7 @@ public class JobService {
 
         return bookedJobs;
     }
+
 
 
 
