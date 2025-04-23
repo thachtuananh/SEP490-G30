@@ -131,13 +131,11 @@ function LoginAdmin() {
             >
               <Form.Item
                 name="phone"
-                rules={[
-                  { required: true, message: "Vui lòng nhập số điện thoại!" },
-                ]}
+                rules={[{ required: true, message: "Vui lòng nhập email!" }]}
               >
                 <Input
                   prefix={<UserOutlined className="site-form-item-icon" />}
-                  placeholder="Số điện thoại"
+                  placeholder="Email"
                 />
               </Form.Item>
 

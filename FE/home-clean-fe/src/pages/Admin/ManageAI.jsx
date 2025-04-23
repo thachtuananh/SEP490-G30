@@ -28,6 +28,7 @@ import { useNavigate } from "react-router-dom";
 import AppSidebar from "../../components/Admin/AppSidebar";
 import AppHeader from "../../components/Admin/AppHeader";
 import axios from "axios";
+import { URL_CHAT_AI } from "../../utils/config";
 
 const { Content } = Layout;
 const { Title, Text } = Typography;
@@ -86,7 +87,7 @@ const ManageAI = () => {
     try {
       // Make API call
       const response = await axios.post(
-        "http://localhost:8080/consultation/uploadDocument",
+        `${URL_CHAT_AI}/consultation/uploadDocument`,
         formData,
         {
           headers: {
@@ -130,7 +131,7 @@ const ManageAI = () => {
         setDeleteLoading(true);
         try {
           await axios.post(
-            "http://localhost:8080/consultation/deleteCollection",
+            `${URL_CHAT_AI}/consultation/deleteCollection`,
             {},
             {
               headers: {

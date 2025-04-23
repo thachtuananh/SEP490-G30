@@ -16,6 +16,8 @@ import {
   validateIdentityNumber,
 } from "../../../utils/validate";
 
+const { TextArea } = Input;
+
 export const PersonaInformation = () => {
   const { cleaner, dispatch } = useContext(AuthContext);
   const [isLoading, setIsLoading] = useState(false);
@@ -391,12 +393,9 @@ export const PersonaInformation = () => {
         <input
           type="text"
           value={cleanerPhone}
-          onChange={(e) => {
-            setPhone(e.target.value);
-            setPhoneError(""); // Clear error on change
-          }}
+          readOnly
+          style={{ backgroundColor: "#f0f0f0", cursor: "not-allowed" }}
         />
-        {phoneError && <div className="error-message">{phoneError}</div>}
       </div>
 
       <div className="form-group">
@@ -437,13 +436,14 @@ export const PersonaInformation = () => {
 
       <div className="form-group">
         <b>Kinh nghiệm</b>
-        <input
+        <TextArea
           type="text"
           value={cleanerExp}
           onChange={(e) => {
             setExperience(e.target.value);
             setExperienceError(""); // Clear error on change
           }}
+          style={{ minHeight: "100px" }}
         />
         {experienceError && (
           <div className="error-message">{experienceError}</div>

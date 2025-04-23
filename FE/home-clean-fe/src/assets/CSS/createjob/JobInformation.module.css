@@ -34,14 +34,67 @@
 
 .totalContainer {
   display: flex;
+  flex-direction: column;
   justify-content: space-between;
-  align-items: center;
-  /* padding: 20px 0px 10px 0px; */
 }
 
-.totalPrice {
-  font-size: 20px;
-  margin: 0;
+.priceColumn {
+  width: 100%;
+  padding: 8px 0%;
+}
+
+.priceLabelValue {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px; /* Space between label and value */
+}
+.priceLabel {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* .priceValue {
+  font-size: 14px;
+  font-weight: 500;
+  text-align: right;
+} */
+
+/* Highlight the total payment row */
+.priceColumn:last-child .priceLabel {
+  font-size: 16px;
+}
+
+.priceColumn:last-child .priceValue {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+/* Responsive adjustments */
+@media (max-width: 480px) {
+  .totalContainer {
+    padding: 12px 0;
+  }
+
+  .priceColumn {
+    padding: 6px 8px;
+  }
+
+  .priceLabel {
+    font-size: 13px;
+  }
+
+  .priceValue {
+    font-size: 13px;
+  }
+
+  .priceColumn:last-child .priceLabel {
+    font-size: 15px;
+  }
+
+  .priceColumn:last-child .priceValue {
+    font-size: 16px;
+  }
 }
 
 .actionButtons {

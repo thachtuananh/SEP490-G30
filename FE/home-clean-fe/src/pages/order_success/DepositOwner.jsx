@@ -17,7 +17,7 @@ const DepositOwner = () => {
   return (
     <div
       style={{
-        minHeight: 531,
+        minHeight: 600,
         textAlign: "center",
         alignContent: "center",
         display: "flex",
