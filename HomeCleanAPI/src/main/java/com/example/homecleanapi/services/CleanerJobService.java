@@ -236,6 +236,12 @@ public class CleanerJobService {
 			Job existingJob = existingApplication.getJob();
 			LocalDateTime existingJobTime = existingJob.getScheduledTime();
 
+			// Kiểm tra trạng thái của job cũ
+			if (existingJob.getStatus().equals(JobStatus.DONE) || existingJob.getStatus().equals(JobStatus.CANCELLED) || existingJob.getStatus().equals(JobStatus.AUTO_CANCELLED)) {
+				// Nếu job đã hoàn thành, bị hủy hoặc tự động hủy, cho phép apply vào job khác
+				continue;
+			}
+
 			// Tính sự khác biệt giữa thời gian công việc hiện tại và công việc đã có, tính theo phút
 			long differenceInMinutes = Math.abs(ChronoUnit.MINUTES.between(existingJobTime, jobScheduledTime));
 
@@ -245,6 +251,7 @@ public class CleanerJobService {
 				return response;
 			}
 		}
+
 
 		// Tạo job application và lưu vào database
 		JobApplication jobApplication = new JobApplication();
@@ -1048,32 +1055,45 @@ public class CleanerJobService {
 		// Debugging: Kiểm tra xem có dữ liệu nào được lấy từ jobServiceDetailRepository không
 		System.out.println("Number of JobServiceDetails found: " + jobServiceDetails.size());
 
-		// Tính số lần xuất hiện của mỗi job_id
-		Map<Long, Integer> jobCountMap = new HashMap<>();
+		// Tạo Map để theo dõi số lần xuất hiện của job_id trong bảng job_service_detail
+		Map<Long, Integer> jobIdCountMap = new HashMap<>();
+
+		// Duyệt qua tất cả các JobServiceDetail để đếm số lần xuất hiện của job_id
 		for (JobServiceDetail jobServiceDetail : jobServiceDetails) {
 			Long jobId = jobServiceDetail.getJob().getId();
-			jobCountMap.put(jobId, jobCountMap.getOrDefault(jobId, 0) + 1);  // Đếm số lần mỗi job_id xuất hiện
+			jobIdCountMap.put(jobId, jobIdCountMap.getOrDefault(jobId, 0) + 1);
 		}
 
-		// Debugging: In ra số lần xuất hiện của mỗi job_id
-		System.out.println("Job count map: " + jobCountMap);
+		// Debugging: In ra map jobId -> số lần xuất hiện
+		System.out.println("Job ID Count Map: " + jobIdCountMap);
 
 		// Duyệt qua tất cả các JobServiceDetail để lấy chi tiết job
 		for (JobServiceDetail jobServiceDetail : jobServiceDetails) {
 			Job job = jobServiceDetail.getJob();
 			Long jobId = job.getId();
 
-			// Debugging: Kiểm tra service_id và job_id trước khi tiếp tục
-			System.out.println("Checking Job ID: " + jobId + " with Service ID: " + serviceId);
-
-			// Nếu job có nhiều dịch vụ (tức là combo), thì không thêm vào danh sách
-			if (jobCountMap.get(jobId) > 1) {
-				// Debugging: In ra lý do job bị bỏ qua
-				System.out.println("Skipping jobId " + jobId + " because it is a combo.");
-				continue;  // Nếu có nhiều hơn 1 dịch vụ cho job, bỏ qua
+			// Kiểm tra xem job này có phải là combo hay không
+			if (jobIdCountMap.get(jobId) > 1) {
+				System.out.println("Skipping jobId " + jobId + " because it is a combo (multiple job_id entries).");
+				continue; // Bỏ qua job combo
 			}
 
-			// Kiểm tra trạng thái job (chỉ lấy các job đang mở)
+			// Kiểm tra xem job có job_type là "SINGLE" không
+			if (!"SINGLE".equals(job.getJobType())) {
+				System.out.println("Skipping jobId " + jobId + " because it is not a SINGLE job.");
+				continue; // Bỏ qua job không phải là "SINGLE"
+			}
+
+			// Kiểm tra nếu job đã có cleaner apply
+			Optional<JobApplication> jobApplicationOpt = jobApplicationRepository.findByJobId(jobId);
+			if (jobApplicationOpt.isPresent()) {
+				System.out.println("Skipping jobId " + jobId + " because it already has a cleaner applied.");
+				continue; // Bỏ qua job đã có cleaner apply
+			}
+
+			System.out.println("Job ID " + jobId + " is a SINGLE job, continuing processing.");
+
+			// Kiểm tra trạng thái job (chỉ lấy các job đang OPEN)
 			if (job != null && job.getStatus() == JobStatus.OPEN) {
 				Map<String, Object> jobInfo = new HashMap<>();
 				jobInfo.put("jobId", job.getId());
@@ -1136,8 +1156,16 @@ public class CleanerJobService {
 
 
 
+
+
+
+
+
+
+
+
 	// lấy cac job đang là combo
-	public List<Map<String, Object>> getComboJobs() {
+	public List<Map<String, Object>> getComboJobs(Long cleanerId) {
 		List<Map<String, Object>> comboJobs = new ArrayList<>();
 
 		// Lấy tất cả các JobServiceDetail
@@ -1152,6 +1180,14 @@ public class CleanerJobService {
 			if (job != null && job.getStatus() == JobStatus.OPEN) { // Kiểm tra job có trạng thái OPEN
 				// Kiểm tra nếu job chưa được đếm
 				if (!countedJobIds.contains(job.getId())) {
+					// Kiểm tra nếu job đã có cleaner apply
+					Optional<JobApplication> jobApplicationOpt = jobApplicationRepository.findByJobIdAndCleanerId(job.getId(), cleanerId);
+					if (jobApplicationOpt.isPresent()) {
+						System.out.println("Skipping jobId " + job.getId() + " because cleaner " + cleanerId + " has already applied.");
+						countedJobIds.add(job.getId());  // Đánh dấu job này đã được đếm
+						continue; // Bỏ qua job đã có cleaner apply
+					}
+
 					// Lấy tất cả các JobServiceDetail liên quan đến job này
 					List<JobServiceDetail> jobServiceDetailsForJob = jobServiceDetailRepository
 							.findByJobId(job.getId());
@@ -1163,7 +1199,6 @@ public class CleanerJobService {
 						jobInfo.put("status", job.getStatus());
 						jobInfo.put("scheduledTime", job.getScheduledTime());
 						jobInfo.put("totalPrice", job.getTotalPrice());
-
 
 						// Thêm thông tin về customer đã book job
 						Customers customer = job.getCustomer();
@@ -1205,6 +1240,8 @@ public class CleanerJobService {
 
 		return comboJobs;
 	}
+
+
 
 	public boolean setCurrentAddress(Integer cleanerId, Integer addressId) {
 		// Lấy tất cả các địa chỉ của cleaner
@@ -1417,10 +1454,21 @@ public class CleanerJobService {
 
 		// Kiểm tra trùng lịch của cleaner
 		List<Job> existingJobs = jobRepository.findByCleanerIdAndScheduledTimeBetween(cleanerId, jobTime.minusHours(2), jobTime.plusHours(2));
+
 		if (!existingJobs.isEmpty()) {
-			response.put("message", "Người dọn này đã có lịch trùng với thời gian bạn chọn");
-			return response;
+			// Kiểm tra từng công việc đã có để đảm bảo không trùng với các công việc đã làm
+			for (Job existingJob : existingJobs) {
+				// Kiểm tra trạng thái công việc
+				if (existingJob.getStatus() != JobStatus.DONE &&
+						existingJob.getStatus() != JobStatus.CANCELLED &&
+						existingJob.getStatus() != JobStatus.AUTO_CANCELLED) {
+					// Nếu trạng thái không phải là DONE, CANCELLED, AUTO_CANCELLED, thì thông báo trùng lịch
+					response.put("message", "Người dọn này đã có lịch trùng với thời gian bạn chọn");
+					return response;
+				}
+			}
 		}
+
 
 		// Lưu Job vào cơ sở dữ liệu trước khi tạo JobServiceDetail
 		job = jobRepository.save(job);

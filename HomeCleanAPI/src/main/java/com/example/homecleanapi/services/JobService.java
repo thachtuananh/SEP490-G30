@@ -211,6 +211,12 @@ public class JobService {
             totalPrice += serviceDetail.getPrice() ;
         }
 
+        if (request.getServices().size() > 1) {
+            job.setJobType("COMBO");
+        } else {
+            job.setJobType("SINGLE");
+        }
+
         // Kiểm tra ngày và giờ để tính phí tăng thêm
         // Kiểm tra ngày và giờ để tính phí tăng thêm
         LocalDateTime jobScheduledTime = job.getScheduledTime();
