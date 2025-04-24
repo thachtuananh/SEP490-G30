@@ -311,34 +311,48 @@ const JobInfomation = ({
           </Text>
         </Paragraph>
 
-        {priceAdjustment && (
+        {/* {priceAdjustment && (
           <Paragraph className={styles.infoRow} style={{ color: "#1890ff" }}>
             <Text>Phụ phí</Text>
             <Text style={{ color: "red" }}>
               +{priceAdjustment.percentage}% do {priceAdjustment.reason}
             </Text>
           </Paragraph>
-        )}
+        )} */}
 
         <div className={styles.divider}></div>
 
         <div className={styles.totalContainer}>
-          <Text>Tổng thanh toán</Text>
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "flex-end",
-            }}
-          >
-            {priceAdjustment && basePrice !== adjustedPrice && (
-              <Text delete style={{ fontSize: "0.9rem", color: "#999" }}>
+          {/* Base price row */}
+          <div className={styles.priceColumn}>
+            <div className={styles.priceLabelValue}>
+              <Text className={styles.priceLabel}>Giá cơ bản</Text>
+              <Text className={styles.priceValue}>
                 {basePrice.toLocaleString()} VNĐ
               </Text>
-            )}
-            <Title level={4} className={styles.totalPrice}>
-              {Math.round(adjustedPrice).toLocaleString()} VNĐ
-            </Title>
+            </div>
+          </div>
+
+          {/* Surcharge row */}
+          {priceAdjustment && (
+            <div className={styles.priceColumn}>
+              <div className={styles.priceLabelValue}>
+                <Text className={styles.priceLabel}>Phụ phí</Text>
+                <Text className={styles.priceValue} style={{ color: "red" }}>
+                  +{priceAdjustment.percentage}% do {priceAdjustment.reason}
+                </Text>
+              </div>
+            </div>
+          )}
+
+          {/* Total payment row */}
+          <div className={styles.priceColumn}>
+            <div className={styles.priceLabelValue}>
+              <Text className={styles.priceLabel}>Tổng thanh toán</Text>
+              <Text className={styles.priceValue}>
+                {Math.round(adjustedPrice).toLocaleString()} VNĐ
+              </Text>
+            </div>
           </div>
         </div>
       </div>

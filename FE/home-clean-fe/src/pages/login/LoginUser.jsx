@@ -73,7 +73,8 @@ function Login() {
         message.success("Đăng nhập thành công!");
         navigate("/"); // Điều hướng đến trang Home của Customer
       } else {
-        message.error(result.message || "Đăng nhập thất bại.");
+        // message.error(result.message || "Đăng nhập thất bại.");
+        message.error("Đăng nhập thất bại.");
       }
     } catch (error) {
       message.error("Lỗi máy chủ, vui lòng thử lại sau.");
