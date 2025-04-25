@@ -234,6 +234,94 @@ public class ScheduleService {
     }
 
 
+    @Scheduled(cron = "0 * * * * *")  // Thực thi mỗi phút
+    public void autoCancelPaidJobs() {
+        System.out.println("Check Paid Jobs for Auto Cancel");
+
+        ZoneId zoneId = ZoneId.of("Asia/Ho_Chi_Minh");
+        LocalDateTime now = LocalDateTime.now(zoneId);  // Lấy thời gian hiện tại
+        System.out.println("Check Paid Jobs at: " + now);
+
+        // Lấy tất cả các job có trạng thái PAID
+        List<Job> jobs = jobRepository.findAllByStatus(JobStatus.PAID);
+        System.out.println("Tổng số job PAID: " + jobs.size());
+
+        List<Job> updatedJobs = new ArrayList<>();
+        List<TransactionHistory> transactionHistories = new ArrayList<>();
+
+        for (Job job : jobs) {
+            // Kiểm tra nếu job có trạng thái PAID và đã quá 5 phút kể từ thời gian cập nhật
+            if (job.getUpdatedAt() != null && job.getUpdatedAt().isBefore(now.minusMinutes(5))) {
+
+                // Kiểm tra nếu job vẫn chưa chuyển sang OPEN hoặc BOOKED
+                if (job.getStatus() == JobStatus.PAID) {
+
+                    // Đổi trạng thái job thành AUTO_CANCELLED
+                    job.setStatus(JobStatus.AUTO_CANCELLED);
+                    updatedJobs.add(job);
+
+                    // Hoàn tiền cho customer vào ví
+                    Optional<CustomerWallet> walletOpt = customerWalletRepository.findByCustomerId(Long.valueOf(job.getCustomer().getId()));
+                    if (walletOpt.isPresent()) {
+                        CustomerWallet wallet = walletOpt.get();
+                        // Cộng lại số tiền vào ví
+                        wallet.setBalance(wallet.getBalance() + job.getTotalPrice());
+                        customerWalletRepository.save(wallet);  // Lưu ví cập nhật
+
+                        TransactionHistory transactionHistory = new TransactionHistory();
+                        transactionHistory.setCustomer(wallet.getCustomer());  // Gán thông tin customer
+                        transactionHistory.setAmount(job.getTotalPrice());  // Số tiền hoàn lại
+                        transactionHistory.setTransactionType("Refund");  // Loại giao dịch là hoàn tiền
+                        transactionHistory.setTransactionDate(LocalDateTime.now(zoneId));  // Ngày giờ giao dịch
+                        transactionHistory.setPaymentMethod(job.getPaymentMethod());  // Phương thức thanh toán là ví
+                        transactionHistory.setStatus("SUCCESS");  // Trạng thái giao dịch là hoàn tất
+
+                        // Lưu thông tin vào bảng transaction_history
+                        transactionHistoryRepository.save(transactionHistory);
+
+                        System.out.println("Đã hoàn tiền cho customer " + job.getCustomer().getId());
+                    }
+
+                    // Gửi thông báo cho customer
+                    NotificationDTO customerNotification = new NotificationDTO(
+                            job.getCustomer().getId(),
+                            "Đơn hàng của bạn đã bị hủy do chưa thanh toán",
+                            "AUTO_MESSAGE",
+                            LocalDate.now(zoneId)
+                    );
+                    notificationService.processNotification(customerNotification, "CUSTOMER", job.getCustomer().getId());
+
+                    // Gửi thông báo cho cleaner
+                    if (job.getCleaner() != null) {
+                        NotificationDTO cleanerNotification = new NotificationDTO(
+                                job.getCleaner().getId(),
+                                "Công việc của bạn đã bị hủy do khách hàng chưa thanh toán",
+                                "AUTO_MESSAGE",
+                                LocalDate.now(zoneId)
+                        );
+                        notificationService.processNotification(cleanerNotification, "CLEANER", job.getCleaner().getId());
+                    }
+
+                    System.out.println("Đã tự động hủy Job " + job.getId());
+                }
+            }
+        }
+
+        // Lưu các thay đổi nếu có
+        if (!updatedJobs.isEmpty()) {
+            jobRepository.saveAll(updatedJobs);
+            System.out.println("Đã cập nhật trạng thái cho " + updatedJobs.size() + " công việc.");
+        }
+
+        // Lưu lịch sử giao dịch vào bảng transaction_history
+        if (!transactionHistories.isEmpty()) {
+            transactionHistoryRepository.saveAll(transactionHistories);
+            System.out.println("Đã cập nhật " + transactionHistories.size() + " giao dịch.");
+        }
+    }
+
+
+
 
 
 }
