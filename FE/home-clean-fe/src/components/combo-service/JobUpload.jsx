@@ -104,6 +104,12 @@ const JobUpload = () => {
       (typeof service.serviceId === "number" && service.serviceId > 4)
   );
 
+  // Filter out displayOnlyServices for modal display
+  const modalServices = allServices.filter(
+    (service) =>
+      !displayOnlyServices.some((dos) => dos.serviceId === service.serviceId)
+  );
+
   const showServiceModal = () => {
     setIsServiceModalVisible(true);
   };
@@ -178,14 +184,14 @@ const JobUpload = () => {
         </section>
       </div>
 
-      {/* Service Selection Modal - keep this as a modal */}
+      {/* Service Selection Modal - now with filtered services */}
       <ServiceSelectionModal
         isVisible={isServiceModalVisible}
         onCancel={handleServiceCancel}
         onOk={handleServiceOk}
         selectedServices={selectedServices}
         onServiceChange={onServiceChange}
-        allServices={allServices}
+        allServices={modalServices} // Use the filtered services list
       />
     </>
   );
