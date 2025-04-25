@@ -957,7 +957,7 @@ public class CleanerJobService {
 
 
 	// list job theo service và số lượng
-	public Map<String, Object> getJobsByService() {
+	public Map<String, Object> getJobsByService(Long cleanerId) {
 		Map<String, Object> jobsByService = new HashMap<>();
 		Map<String, Object> comboJobs = new HashMap<>(); // Dành cho các công việc combo (chỉ đếm số lượng)
 		String comboKey = "combo"; // Sử dụng một ID duy nhất cho combo
@@ -979,6 +979,13 @@ public class CleanerJobService {
 				String serviceName = service.getName(); // Lấy tên dịch vụ từ bảng Services
 
 				if (job != null && job.getStatus() == JobStatus.OPEN) { // Kiểm tra job có trạng thái OPEN
+
+					// Kiểm tra nếu cleaner đã apply vào job này, nếu có thì không đếm công việc này
+					Optional<JobApplication> jobApplicationOpt = jobApplicationRepository.findByJobIdAndCleanerId(job.getId(), cleanerId);
+					if (jobApplicationOpt.isPresent()) {
+						continue; // Bỏ qua job này nếu cleaner đã apply
+					}
+
 					// Nếu dịch vụ chưa tồn tại trong danh sách, tạo mới
 					if (!jobsByService.containsKey(serviceName)) {
 						Map<String, Object> serviceInfo = new HashMap<>();
@@ -991,8 +998,7 @@ public class CleanerJobService {
 					// Kiểm tra nếu job chưa được đếm
 					if (!countedJobIds.contains(job.getId())) {
 						// Kiểm tra nếu job có nhiều dịch vụ (tức là combo)
-						List<JobServiceDetail> jobServiceDetailsForJob = jobServiceDetailRepository
-								.findByJobId(job.getId());
+						List<JobServiceDetail> jobServiceDetailsForJob = jobServiceDetailRepository.findByJobId(job.getId());
 
 						// Nếu job có nhiều dịch vụ thì đếm là combo
 						if (jobServiceDetailsForJob.size() > 1) {
@@ -1039,6 +1045,7 @@ public class CleanerJobService {
 
 		return jobsByService; // Trả về danh sách các công việc phân loại theo dịch vụ, bao gồm cả combo
 	}
+
 
 
 
