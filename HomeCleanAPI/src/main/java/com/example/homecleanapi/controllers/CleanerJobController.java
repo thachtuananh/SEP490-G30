@@ -168,16 +168,17 @@ public class CleanerJobController {
     
     
     // lấy job đang là combo
-    @GetMapping("/jobs/combo")
-    public ResponseEntity<List<Map<String, Object>>> getComboJobs() {
-        List<Map<String, Object>> comboJobs = cleanerJobService.getComboJobs();
-        
+    @GetMapping("/jobs/combo/{cleanerId}")
+    public ResponseEntity<List<Map<String, Object>>> getComboJobs(@PathVariable Long cleanerId) {
+        List<Map<String, Object>> comboJobs = cleanerJobService.getComboJobs(cleanerId);
+
         if (comboJobs.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(List.of(Map.of("message", "No combo jobs found")));
         }
 
         return ResponseEntity.ok(comboJobs);
     }
+
 
     @PutMapping("/{cleanerId}/addresses/{addressId}/set-current")
     public ResponseEntity<String> setCurrentAddress(@PathVariable("cleanerId") Integer cleanerId,

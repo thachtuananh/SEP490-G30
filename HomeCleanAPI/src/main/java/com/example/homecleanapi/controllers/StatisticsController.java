@@ -25,8 +25,9 @@ public class StatisticsController {
     }
 
     @GetMapping("/revenue-by-year-and-month")
-    public ResponseEntity<Map<String, Map<Integer, Double>>> getRevenueByYearAndMonth() {
-        Map<String, Map<Integer, Double>> revenueStats = statisticsService.getRevenueByYearAndMonth();
+    public ResponseEntity<Map<String, Map<String, Double>>> getRevenueByYearAndMonth() {
+        Map<String, Map<String, Double>> revenueStats = statisticsService.getRevenueByYearAndMonth();
         return ResponseEntity.ok(revenueStats);
     }
+
 }
