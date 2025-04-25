@@ -1,5 +1,16 @@
 import React, { useState, useEffect } from "react";
-import { Card, Button, Typography } from "antd";
+import {
+  Card,
+  Button,
+  Typography,
+  Row,
+  Col,
+  Space,
+  Layout,
+  Carousel,
+  ConfigProvider,
+  Divider,
+} from "antd";
 import {
   CheckCircleFilled,
   LeftOutlined,
@@ -7,33 +18,42 @@ import {
 } from "@ant-design/icons";
 import Navbar from "../components/Home/Cleaner/Navbar";
 import Footer from "../components/Home/Cleaner/Footer";
-import "../styles/HouseCleanPricing.css";
 
 const { Title, Text, Paragraph } = Typography;
+const { Content } = Layout;
 
 export default function HouseCleanPricingPage() {
-  const [currentSlide, setCurrentSlide] = useState(1); // Start with the middle slide (index 1)
-  const [isMobile, setIsMobile] = useState(false);
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const [screenSize, setScreenSize] = useState({
+    isMobile: false,
+    isTablet: false,
+    isDesktop: false,
+  });
+  const carouselRef = React.useRef();
 
-  // Check if we're on mobile viewport
+  // Check screen size for responsiveness
   useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth <= 768);
+    const checkScreenSize = () => {
+      const width = window.innerWidth;
+      setScreenSize({
+        isMobile: width <= 576,
+        isTablet: width > 576 && width <= 992,
+        isDesktop: width > 992,
+      });
     };
 
-    checkMobile(); // Check on mount
-    window.addEventListener("resize", checkMobile);
+    checkScreenSize();
+    window.addEventListener("resize", checkScreenSize);
 
     return () => {
-      window.removeEventListener("resize", checkMobile);
+      window.removeEventListener("resize", checkScreenSize);
     };
   }, []);
 
-  // Service data - Designed to match the screenshot layout
-  // Service data - Modified to show worker salary information
+  // Service data
   const services = [
     {
-      id: 0,
+      id: 1,
       title: "Dọn nhà vệ sinh",
       priceRange: "80-140k",
       unit: "/lần",
@@ -41,7 +61,7 @@ export default function HouseCleanPricingPage() {
       serviceLabel: "Thu nhập người dọn",
     },
     {
-      id: 1,
+      id: 2,
       title: "Dọn phòng khách",
       priceRange: "150-200k",
       unit: "/lần",
@@ -49,7 +69,7 @@ export default function HouseCleanPricingPage() {
       serviceLabel: "Thu nhập người dọn",
     },
     {
-      id: 2,
+      id: 3,
       title: "Dọn phòng ngủ",
       priceRange: "120-170k",
       unit: "/lần",
@@ -57,7 +77,7 @@ export default function HouseCleanPricingPage() {
       serviceLabel: "Thu nhập người dọn",
     },
     {
-      id: 3,
+      id: 4,
       title: "Dọn dẹp nhà mới xây, sau sửa chữa",
       priceRange: "150-250k",
       unit: "/lần",
@@ -65,7 +85,7 @@ export default function HouseCleanPricingPage() {
       serviceLabel: "Thu nhập người dọn",
     },
     {
-      id: 4,
+      id: 5,
       title: "Dọn phòng bếp",
       priceRange: "130-180k",
       unit: "/lần",
@@ -74,234 +94,410 @@ export default function HouseCleanPricingPage() {
     },
   ];
 
-  // Calculate previous and next indexes with wrap-around
-  const getPrevIndex = (current) => {
-    return current === 0 ? services.length - 1 : current - 1;
-  };
-
-  const getNextIndex = (current) => {
-    return current === services.length - 1 ? 0 : current + 1;
-  };
-
   const handlePrev = () => {
-    setCurrentSlide(getPrevIndex(currentSlide));
+    carouselRef.current.prev();
   };
 
   const handleNext = () => {
-    setCurrentSlide(getNextIndex(currentSlide));
+    carouselRef.current.next();
   };
 
-  // Render service card with highlight status
-  const renderServiceCard = (service, position) => {
-    // Position determines styling:
-    // -1: left card (prev), 0: center card (current, highlight), 1: right card (next)
-    const isHighlighted = position === 0;
+  // Update currentSlide to reflect the center slide
+  const afterChange = (currentIndex) => {
+    setCurrentSlide(currentIndex);
+  };
+
+  // Calculate slidesToShow based on screen size
+  const getSlidesToShow = () => {
+    if (screenSize.isMobile) return 1;
+    if (screenSize.isTablet) return 2;
+    return 3;
+  };
+
+  // Render service card
+  const renderServiceCard = (service) => {
+    const { isMobile, isTablet } = screenSize;
+
+    return (
+      <Card
+        hoverable
+        className="service-card"
+        style={{
+          minHeight: isMobile ? "350px" : isTablet ? "380px" : "400px",
+          margin: isMobile ? "0 auto" : isTablet ? "10px auto" : "20px 10px",
+          maxWidth: isMobile ? "280px" : isTablet ? "320px" : "360px",
+          width: "100%",
+          borderRadius: "16px",
+          transition: "all 0.3s ease",
+          border: "none",
+        }}
+        bodyStyle={{
+          padding: isMobile ? "24px 16px" : isTablet ? "28px 20px" : "32px",
+          height: "100%",
+          display: "flex",
+          flexDirection: "column",
+        }}
+      >
+        <Space
+          direction="vertical"
+          size={isMobile ? "small" : "middle"}
+          style={{ width: "100%", flex: 1 }}
+        >
+          <Text
+            className="service-label"
+            style={{
+              fontSize: isMobile ? "12px" : "14px",
+              fontWeight: 500,
+            }}
+          >
+            {service.serviceLabel}
+          </Text>
+
+          <Title
+            level={isMobile ? 5 : 4}
+            className="service-title"
+            style={{
+              margin: "0",
+              fontWeight: 600,
+              fontSize: isMobile ? "16px" : isTablet ? "18px" : "20px",
+            }}
+          >
+            {service.title}
+          </Title>
+
+          <Space align="baseline">
+            <Title
+              level={isMobile ? 3 : 2}
+              className="service-price"
+              style={{
+                margin: "8px 0",
+                fontWeight: 700,
+                fontSize: isMobile ? "20px" : isTablet ? "24px" : "28px",
+              }}
+            >
+              {service.priceRange}
+            </Title>
+            <Text
+              className="service-unit"
+              style={{
+                fontSize: isMobile ? "14px" : "16px",
+              }}
+            >
+              {service.unit}
+            </Text>
+          </Space>
+
+          <Divider
+            className="service-divider"
+            style={{
+              margin: isMobile ? "12px 0" : "16px 0",
+            }}
+          />
+
+          <Space
+            direction="vertical"
+            size={isMobile ? "small" : "small"}
+            style={{ width: "100%", flex: 1 }}
+          >
+            {service.features.map((feature, idx) => (
+              <Space key={idx} align="start">
+                <CheckCircleFilled
+                  className="service-icon-carousel"
+                  style={{
+                    fontSize: isMobile ? "14px" : "16px",
+                    marginTop: "3px",
+                  }}
+                />
+                <Text
+                  className="service-feature"
+                  style={{
+                    fontSize: isMobile ? "12px" : "14px",
+                  }}
+                >
+                  {feature}
+                </Text>
+              </Space>
+            ))}
+          </Space>
+        </Space>
+      </Card>
+    );
+  };
+
+  // Carousel for both mobile and desktop
+  const renderCarousel = () => {
+    const { isMobile, isTablet } = screenSize;
 
     return (
       <div
-        className={
-          position === 0
-            ? "center-card"
-            : position === -1
-            ? "left-card"
-            : "right-card"
-        }
+        style={{
+          padding: isMobile ? "0 8px" : isTablet ? "0 24px" : "0 40px",
+          position: "relative",
+        }}
       >
-        <Card
-          className={isHighlighted ? "card-highlight" : "card-normal"}
+        <Button
+          type="primary"
+          shape="circle"
+          icon={<LeftOutlined />}
+          onClick={handlePrev}
+          size={isMobile ? "middle" : "large"}
           style={{
-            backgroundColor: isHighlighted ? "#0D9466" : "white",
+            position: "absolute",
+            left: isMobile ? 0 : isTablet ? 4 : 0,
+            top: "50%",
+            transform: "translateY(-50%)",
+            zIndex: 2,
+            backgroundColor: "#0D9466",
+            border: "none",
+            boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
+            width: isMobile ? "32px" : "40px",
+            height: isMobile ? "32px" : "40px",
           }}
+        />
+
+        <Carousel
+          ref={carouselRef}
+          afterChange={afterChange}
+          dots={{ className: "custom-carousel-dots" }}
+          slidesToShow={getSlidesToShow()}
+          slidesToScroll={1}
+          centerMode={true}
+          centerPadding={isMobile ? "0" : isTablet ? "20px" : "40px"}
+          effect="scrollx"
+          autoplay
+          autoplaySpeed={5000}
+          initialSlide={0}
+          className="service-carousel"
+          responsive={[
+            {
+              breakpoint: 576,
+              settings: {
+                slidesToShow: 1,
+                centerPadding: "0",
+              },
+            },
+            {
+              breakpoint: 992,
+              settings: {
+                slidesToShow: 2,
+                centerPadding: "20px",
+              },
+            },
+            {
+              breakpoint: 1200,
+              settings: {
+                slidesToShow: 3,
+                centerPadding: "40px",
+              },
+            },
+          ]}
         >
-          <div className="card-content">
-            <Title
-              level={5}
-              className={isHighlighted ? "text-white" : "text-dark"}
-            >
-              {service.serviceLabel}
-            </Title>
-            <Title
-              level={4}
-              className={isHighlighted ? "title-white" : "title-dark"}
-            >
-              {service.title}
-            </Title>
-            {/* <Text
-              className={
-                isHighlighted ? "description-light" : "description-dark"
-              }
-            >
-              Lorem ipsum dolor sit amet consectetur adipiscing elit.
-            </Text> */}
-
-            <Title
-              level={3}
-              className={isHighlighted ? "price-white" : "price-dark"}
-            >
-              {service.priceRange}
-              <Text className={isHighlighted ? "unit-light" : "unit-dark"}>
-                {service.unit}
-              </Text>
-            </Title>
-
-            {service.priceNote && isHighlighted && (
-              <Text className="subtext-light">{service.priceNote}</Text>
-            )}
-
-            <div className="features-container">
-              <Text
-                className={
-                  isHighlighted ? "features-label-light" : "features-label-dark"
-                }
-              >
-                Bạn sẽ nhận được
-              </Text>
-              <ul className="features-list">
-                {service.features.map((feature, idx) => (
-                  <li key={idx} className="feature-item">
-                    <CheckCircleFilled
-                      className={isHighlighted ? "check-light" : "check-dark"}
-                    />
-                    <Text
-                      className={
-                        isHighlighted
-                          ? "feature-text-light"
-                          : "feature-text-dark"
-                      }
-                    >
-                      {feature}
-                    </Text>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            <Button
-              type={isHighlighted ? "default" : "primary"}
-              block
+          {services.map((service, index) => (
+            <div
+              key={index}
               style={{
-                backgroundColor: isHighlighted ? "white" : "#0D9466",
-                color: isHighlighted ? "#0D9466" : "white",
+                padding: isMobile ? "0" : isTablet ? "0 5px" : "0 10px",
               }}
-              className="rent-button"
             >
-              Thuê ngay
-            </Button>
-          </div>
-        </Card>
+              {renderServiceCard(service)}
+            </div>
+          ))}
+        </Carousel>
+
+        <Button
+          type="primary"
+          shape="circle"
+          icon={<RightOutlined />}
+          onClick={handleNext}
+          size={isMobile ? "middle" : "large"}
+          style={{
+            position: "absolute",
+            right: isMobile ? 0 : isTablet ? 4 : 0,
+            top: "50%",
+            transform: "translateY(-50%)",
+            zIndex: 2,
+            backgroundColor: "#0D9466",
+            border: "none",
+            boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
+            width: isMobile ? "32px" : "40px",
+            height: isMobile ? "32px" : "40px",
+          }}
+        />
       </div>
     );
   };
-
-  // If on mobile, render single card view
-  const renderMobileView = () => {
-    return (
-      <div className="mobile-carousel">
-        <div className="mobile-card-container">
-          {renderServiceCard(services[currentSlide], 0)}
-        </div>
-
-        <div className="mobile-navigation">
-          <Button
-            shape="circle"
-            icon={<LeftOutlined />}
-            onClick={handlePrev}
-            className="carousel-arrow carousel-prev-arrow"
-          />
-
-          <div className="carousel-dots">
-            {services.map((_, index) => (
-              <span
-                key={index}
-                className={`carousel-dot ${
-                  currentSlide === index ? "active" : ""
-                }`}
-                onClick={() => setCurrentSlide(index)}
-              />
-            ))}
-          </div>
-
-          <Button
-            shape="circle"
-            icon={<RightOutlined />}
-            onClick={handleNext}
-            className="carousel-arrow carousel-next-arrow"
-          />
-        </div>
-      </div>
-    );
-  };
-
-  // Get the previous, current, and next services for the carousel
-  const prevService = services[getPrevIndex(currentSlide)];
-  const currentService = services[currentSlide];
-  const nextService = services[getNextIndex(currentSlide)];
 
   return (
-    <>
-      <Navbar />
-      <div className="pricing-container">
-        <div className="pricing-content">
-          {/* Header */}
-          <div className="pricing-header">
-            <Title level={2} className="pricing-title">
-              BẢNG TIỀN CÔNG
-            </Title>
-            {/* <Title level={2} className="pricing-title">
-              Bạn sẽ nhận được những gì với số tiền bạn bỏ ra
-            </Title>
-            */}
-            <Paragraph className="pricing-subtitle">
-              Chúng tôi cam kết mức thu nhập hấp dẫn và ổn định cho đội ngũ nhân
-              viên, đảm bảo quyền lợi tương xứng với công sức bỏ ra
-            </Paragraph>
+    <ConfigProvider>
+      <Layout>
+        <Navbar />
+        <Content>
+          <div
+            style={{
+              padding: screenSize.isMobile
+                ? "24px 12px"
+                : screenSize.isTablet
+                ? "40px 24px"
+                : "64px 32px",
+              maxWidth: "1400px",
+              margin: "0 auto",
+            }}
+          >
+            <Row
+              justify="center"
+              style={{ marginBottom: screenSize.isMobile ? 32 : 48 }}
+            >
+              <Col
+                xs={24}
+                sm={22}
+                md={20}
+                lg={16}
+                style={{ textAlign: "center" }}
+              >
+                <Title
+                  level={screenSize.isMobile ? 2 : 1}
+                  style={{
+                    fontSize: screenSize.isMobile
+                      ? 24
+                      : screenSize.isTablet
+                      ? 30
+                      : 36,
+                    fontWeight: 700,
+                    color: "#262626",
+                    marginBottom: screenSize.isMobile ? 12 : 16,
+                  }}
+                >
+                  BẢNG TIỀN CÔNG
+                </Title>
+                <Paragraph
+                  style={{
+                    fontSize: screenSize.isMobile
+                      ? 14
+                      : screenSize.isTablet
+                      ? 16
+                      : 18,
+                    color: "#595959",
+                    lineHeight: 1.6,
+                    marginBottom: 0,
+                  }}
+                >
+                  Chúng tôi cam kết mang đến mức thu nhập hấp dẫn, ổn định và
+                  công bằng, đảm bảo quyền lợi tương xứng với công sức bạn bỏ
+                  ra.
+                </Paragraph>
+              </Col>
+            </Row>
+
+            {renderCarousel()}
           </div>
+        </Content>
+        <Footer />
+      </Layout>
 
-          {/* Render different carousel based on screen size */}
-          {isMobile ? (
-            renderMobileView()
-          ) : (
-            <>
-              {/* Three-Card Carousel for desktop */}
-              <div className="three-card-carousel">
-                <Button
-                  shape="circle"
-                  icon={<LeftOutlined />}
-                  onClick={handlePrev}
-                  className="carousel-arrow carousel-prev-arrow"
-                />
+      <style jsx global>{`
+        /* Hide dots */
+        .custom-carousel-dots,
+        .custom-carousel-dots li {
+          display: none !important;
+        }
 
-                <div className="cards-container">
-                  {renderServiceCard(prevService, -1)}
-                  {renderServiceCard(currentService, 0)}
-                  {renderServiceCard(nextService, 1)}
-                </div>
+        /* Basic slide styling */
+        .ant-carousel .slick-slide {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+        }
 
-                <Button
-                  shape="circle"
-                  icon={<RightOutlined />}
-                  onClick={handleNext}
-                  className="carousel-arrow carousel-next-arrow"
-                />
-              </div>
+        /* Default card styles */
+        .service-card {
+          background-color: white;
+          transform: scale(0.95);
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
 
-              {/* Dots indicator */}
-              {/* <div className="carousel-dots">
-                {services.map((_, index) => (
-                  <span
-                    key={index}
-                    className={`carousel-dot ${
-                      currentSlide === index ? "active" : ""
-                    }`}
-                    onClick={() => setCurrentSlide(index)}
-                  />
-                ))}
-              </div> */}
-            </>
-          )}
-        </div>
-      </div>
-      <Footer />
-    </>
+        .service-card:hover {
+          transform: translateY(-4px) scale(1.05) !important;
+          box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12) !important;
+        }
+
+        .service-label {
+          color: #8c8c8c;
+        }
+
+        .service-title {
+          color: #262626;
+        }
+
+        .service-price {
+          color: #0d9466;
+        }
+
+        .service-unit {
+          color: #595959;
+        }
+
+        .service-divider {
+          border-color: #e8e8e8;
+        }
+
+        .service-icon-carousel {
+          color: #0d9466;
+        }
+
+        .service-feature {
+          color: #595959;
+        }
+
+        /* Center slide styling - this is key for fixing the highlight issue */
+        .slick-current .service-card {
+          background-color: #0d9466 !important;
+          transform: scale(1.05) !important;
+          box-shadow: 0 8px 24px rgba(13, 148, 102, 0.3) !important;
+        }
+
+        .slick-current .service-label,
+        .slick-current .service-title,
+        .slick-current .service-price,
+        .slick-current .service-unit,
+        .slick-current .service-feature {
+          color: #ffffff !important;
+        }
+
+        .slick-current .service-icon-carousel {
+          color: #b3e6d1 !important;
+        }
+
+        .slick-current .service-divider {
+          border-color: #4db38e !important;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 576px) {
+          .slick-current .service-card {
+            height: auto !important;
+            padding: 24px 16px !important;
+          }
+
+          /* Ensure navigation buttons don't overlap content on very small screens */
+          .ant-carousel {
+            margin: 0 10px;
+          }
+        }
+
+        @media (min-width: 577px) and (max-width: 992px) {
+          .slick-current .service-card {
+            height: auto !important;
+            padding: 28px 20px !important;
+          }
+        }
+
+        @media (min-width: 993px) {
+          .slick-current .service-card {
+            height: 460px !important;
+            padding: 40px 32px !important;
+          }
+        }
+      `}</style>
+    </ConfigProvider>
   );
 }

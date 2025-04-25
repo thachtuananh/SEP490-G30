@@ -28,12 +28,12 @@ function Hero() {
         const data = await response.json();
 
         // Filter out any service with ID 5, 7, 8 from the API response to avoid duplicates
-        const filteredServices = data.filter(
-          (service) => ![5, 7, 8].includes(service.serviceId)
-        );
+        // const filteredServices = data.filter(
+        //   (service) => ![5, 7, 8].includes(service.serviceId)
+        // );
 
         // Set all services including our hardcoded combo service
-        setAllServices([...filteredServices, comboService]);
+        setAllServices([...data, comboService]);
         setLoading(false);
       } catch (error) {
         console.error("Error fetching services:", error);
