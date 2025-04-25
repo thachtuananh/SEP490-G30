@@ -30,8 +30,6 @@ public class CleanerReport {
 
     private String reportType;
     private String description;
-
-    @Enumerated(EnumType.STRING)
     private String status = "PENDING";
     private LocalDate createdAt = ZonedDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh")).toLocalDate();
     private LocalDate updatedAt = ZonedDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh")).toLocalDate();

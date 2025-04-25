@@ -83,21 +83,21 @@ public class VnpayController {
                 } else {
                     // Nếu không tìm thấy Job, trả về URL thất bại
                     String redirectUrl = "https://house-clean-platform.web.app/orderfail?status=fail";
-                    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    return ResponseEntity.status(HttpStatus.FOUND)
                             .header(HttpHeaders.LOCATION, redirectUrl)
                             .build();
                 }
             } else {
                 // Thanh toán thất bại (responseCode khác "00")
                 String redirectUrl = "https://house-clean-platform.web.app/orderfail?status=fail";
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                return ResponseEntity.status(HttpStatus.FOUND)
                         .header(HttpHeaders.LOCATION, redirectUrl)
                         .build();
             }
         } catch (Exception e) {
             e.printStackTrace();
             String redirectUrl = "https://house-clean-platform.web.app/orderfail?status=fail";
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+            return ResponseEntity.status(HttpStatus.FOUND)
                     .header(HttpHeaders.LOCATION, redirectUrl)
                     .build();
         }

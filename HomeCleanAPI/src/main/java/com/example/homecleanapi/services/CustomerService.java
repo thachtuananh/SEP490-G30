@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -77,7 +78,18 @@ public class CustomerService {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         }
 
-        
+        // Kiểm tra nếu email bị thay đổi
+        String newEmail = request.getEmail();
+        if (newEmail != null && !newEmail.equalsIgnoreCase(customer.getEmail())) {
+            // Kiểm tra email có bị trùng không
+            Optional<Customers> existingEmail = customerRepository.findByEmail((newEmail));
+            if (existingEmail.isPresent()) {
+                response.put("message", "Email đã được sử dụng bởi người khác!");
+                return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body(response);
+            }
+            customer.setEmail(newEmail);
+        }
+
         customer.setFull_name(request.getFullName());
         customer.setEmail(request.getEmail());
         customer.setPhone(request.getPhone());

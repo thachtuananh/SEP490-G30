@@ -18,10 +18,8 @@ public class Report {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
     @Column(name = "reporter_id")
     private Integer customerId;
-
     @Column(name = "reported_user_id")
     private Integer cleanerId;
 
@@ -29,14 +27,12 @@ public class Report {
     @JoinColumn(name = "job_id", referencedColumnName = "id")
     private Job job;
 
-    private String reportType;
-    private String description;
+    private String reportType;  
+    private String description; 
 
-    private String status = "PENDING";  // Default status
-
+    private String status = "PENDING";
     private LocalDate createdAt = ZonedDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh")).toLocalDate();
     private LocalDate updatedAt = ZonedDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh")).toLocalDate();
     private LocalDate resolvedAt;
     private String adminResponse;
 }
-
