@@ -325,12 +325,14 @@ const JobInfomation = ({
         <div className={styles.totalContainer}>
           {/* Base price row */}
           <div className={styles.priceColumn}>
-            <div className={styles.priceLabelValue}>
-              <Text className={styles.priceLabel}>Giá cơ bản</Text>
-              <Text className={styles.priceValue}>
-                {basePrice.toLocaleString()} VNĐ
-              </Text>
-            </div>
+            {priceAdjustment && basePrice !== adjustedPrice && (
+              <div className={styles.priceLabelValue}>
+                <Text className={styles.priceLabel}>Giá cơ bản</Text>
+                <Text className={styles.priceValue}>
+                  {basePrice.toLocaleString()} VNĐ
+                </Text>
+              </div>
+            )}
           </div>
 
           {/* Surcharge row */}

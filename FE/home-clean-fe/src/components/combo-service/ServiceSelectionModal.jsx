@@ -32,6 +32,19 @@ const ServiceSelectionModal = ({
   onServiceChange,
   allServices,
 }) => {
+  // Helper function to get the correct icon for a service
+  const getServiceIcon = (service) => {
+    const iconId = service.displayId || service.serviceId;
+    return iconMap[iconId] || donPhongKhach;
+  };
+
+  // Filter out combo service (either ID 5 or serviceId "combo")
+  const filteredServices = allServices.filter(
+    (service) =>
+      service.serviceId !== 5 &&
+      !(service.serviceId === "combo" && service.displayId === 5)
+  );
+
   return (
     <Modal
       title="Chọn dịch vụ"
@@ -68,58 +81,55 @@ const ServiceSelectionModal = ({
     >
       <p>Chọn những dịch vụ bạn muốn</p>
       <div className={styles.serviceCheckboxGrid}>
-        {allServices
-          // Filter out the combo service (ID: 5)
-          .filter((service) => service.serviceId !== 5)
-          .map((service) => (
-            <div
-              key={service.serviceId}
-              className={`${styles.serviceCheckboxItem} ${
-                selectedServices.includes(service.serviceId)
-                  ? styles.serviceCheckboxItemSelected
-                  : ""
-              }`}
-              style={{
-                border: selectedServices.includes(service.serviceId)
-                  ? "1px solid #039855"
-                  : "1px solid #e6e6e6",
-                borderRadius: "8px",
-                padding: "16px",
-                textAlign: "center",
-                cursor: "pointer",
-              }}
-              onClick={() => onServiceChange(service.serviceId)}
-            >
-              <div style={{ marginBottom: "8px" }}>
-                <img
-                  src={iconMap[service.serviceId]}
-                  alt={service.serviceName}
-                  style={{ width: "40px", height: "40px" }}
-                />
-              </div>
-              <div style={{ fontWeight: "500", marginBottom: "4px" }}>
-                {service.serviceName}
-              </div>
-              <div style={{ fontSize: "12px", color: "#8c8c8c" }}>
-                {service.description && service.description.length > 80
-                  ? `${service.description.substring(0, 77)}...`
-                  : service.description}
-              </div>
-              <div
-                style={{
-                  marginTop: "12px",
-                  display: "flex",
-                  justifyContent: "center",
-                }}
-              >
-                <Checkbox
-                  checked={selectedServices.includes(service.serviceId)}
-                  className={styles.serviceCheckbox}
-                  onChange={(e) => e.stopPropagation()}
-                />
-              </div>
+        {filteredServices.map((service) => (
+          <div
+            key={service.serviceId}
+            className={`${styles.serviceCheckboxItem} ${
+              selectedServices.includes(service.serviceId)
+                ? styles.serviceCheckboxItemSelected
+                : ""
+            }`}
+            style={{
+              border: selectedServices.includes(service.serviceId)
+                ? "1px solid #039855"
+                : "1px solid #e6e6e6",
+              borderRadius: "8px",
+              padding: "16px",
+              textAlign: "center",
+              cursor: "pointer",
+            }}
+            onClick={() => onServiceChange(service.serviceId)}
+          >
+            <div style={{ marginBottom: "8px" }}>
+              <img
+                src={getServiceIcon(service)}
+                alt={service.serviceName}
+                style={{ width: "40px", height: "40px" }}
+              />
             </div>
-          ))}
+            <div style={{ fontWeight: "500", marginBottom: "4px" }}>
+              {service.serviceName}
+            </div>
+            <div style={{ fontSize: "12px", color: "#8c8c8c" }}>
+              {service.description && service.description.length > 80
+                ? `${service.description.substring(0, 77)}...`
+                : service.description}
+            </div>
+            <div
+              style={{
+                marginTop: "12px",
+                display: "flex",
+                justifyContent: "center",
+              }}
+            >
+              <Checkbox
+                checked={selectedServices.includes(service.serviceId)}
+                className={styles.serviceCheckbox}
+                onChange={(e) => e.stopPropagation()}
+              />
+            </div>
+          </div>
+        ))}
       </div>
     </Modal>
   );
