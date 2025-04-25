@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Card, Button, Dropdown, Spin, Typography, Empty } from "antd";
+import { Card, Button, Dropdown, Spin, Typography, Empty, Flex } from "antd";
 import { AreaChartOutlined, CaretDownOutlined } from "@ant-design/icons";
 import {
   BarChart,
@@ -16,7 +16,7 @@ import { BASE_URL } from "../../utils/config";
 const SalesChart = ({ revenueData, loading: parentLoading }) => {
   const [loading, setLoading] = useState(false);
   const [chartData, setChartData] = useState(null);
-  const [selectedView, setSelectedView] = useState("overview"); // "overview" or "monthly"
+  const [selectedView, setSelectedView] = useState("monthly"); // "overview" or "monthly"
 
   // Format number with commas
   const formatNumber = (num) => {
@@ -131,22 +131,32 @@ const SalesChart = ({ revenueData, loading: parentLoading }) => {
 
     if (selectedView === "overview") {
       return (
-        <div style={{ height: 300 }}>
-          <div style={{ fontSize: 36, textAlign: "center", marginBottom: 16 }}>
-            {revenueData ? formatNumber(revenueData.totalRevenue) : "0"}đ
-          </div>
-          <AreaChartOutlined
+        <div style={{ height: 300, display: "flex", justifyContent: "center" }}>
+          <div
             style={{
-              fontSize: 80,
-              color: "#e6f7ff",
-              display: "block",
-              margin: "0 auto",
+              fontSize: 36,
+              textAlign: "center",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexDirection: "column",
+              gap: "10px",
             }}
-          />
-          <div style={{ textAlign: "center", marginTop: 16 }}>
-            {revenueData
-              ? "Báo cáo tổng doanh thu"
-              : "Biểu đồ sẽ được hiển thị bằng Ant Design Charts trong triển khai thực tế"}
+          >
+            {revenueData ? formatNumber(revenueData.totalRevenue) : "0"}đ
+            <AreaChartOutlined
+              style={{
+                fontSize: 80,
+                color: "#e6f7ff",
+                display: "block",
+                margin: "0 auto",
+              }}
+            />
+            <div style={{ textAlign: "center", fontSize: 16 }}>
+              {revenueData
+                ? "Báo cáo tổng doanh thu"
+                : "Biểu đồ báo cáo tổng doanh thu"}
+            </div>
           </div>
         </div>
       );
@@ -203,7 +213,7 @@ const SalesChart = ({ revenueData, loading: parentLoading }) => {
       extra={
         <Dropdown menu={{ items: viewOptions }}>
           <Button>
-            {selectedView === "overview" ? "Tổng quan" : "Theo tháng"}{" "}
+            {selectedView === "overview" ? "Tổng quan" : "Theo tháng"}
             <CaretDownOutlined />
           </Button>
         </Dropdown>
