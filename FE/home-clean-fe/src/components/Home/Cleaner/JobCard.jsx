@@ -19,7 +19,7 @@ function JobCard({ image, title, description, count, id }) {
       let isCombo = false;
 
       if (title === "Dọn dẹp theo Combo") {
-        url = `${BASE_URL}/cleaner/jobs/combo`;
+        url = `${BASE_URL}/cleaner/jobs/combo/${id}`;
         isCombo = true;
       }
 

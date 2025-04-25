@@ -10,6 +10,7 @@ const JobUploadCard = ({
   description,
   onComboSelect,
   isDisabled = false,
+  displayId, // Add this prop to handle combo service
 }) => {
   const [truncatedDescription, setTruncatedDescription] = useState("");
 
@@ -42,10 +43,14 @@ const JobUploadCard = ({
       e.preventDefault(); // Ngăn mọi hành động nếu bị vô hiệu hóa
       return;
     }
-    if (id === 5 && onComboSelect) {
+    // Check for either numeric ID 5 or string ID "combo" with displayId 5
+    if ((id === 5 || (id === "combo" && displayId === 5)) && onComboSelect) {
       onComboSelect();
     }
   };
+
+  // Check if this is a combo service (either ID 5 or string ID "combo" with displayId 5)
+  const isComboService = id === 5 || (id === "combo" && displayId === 5);
 
   return (
     <Card
@@ -69,7 +74,7 @@ const JobUploadCard = ({
           </p>
         </div>
         <div className={styles.buttonContainer}>
-          {id === 5 ? (
+          {isComboService ? (
             <button
               className={`${styles.serviceButton} ${
                 isDisabled ? styles.disabledButton : ""

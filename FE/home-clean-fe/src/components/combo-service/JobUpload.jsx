@@ -41,23 +41,26 @@ const JobUpload = () => {
   const [allServices, setAllServices] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Hardcoded combo service (only ID 5)
+  // Define special services with custom identifiers that won't conflict with API data
   const comboService = {
-    serviceId: 5,
+    serviceId: "combo", // Use a string identifier instead of a number
+    displayId: 5, // For icon mapping purposes
     serviceName: "Dọn dẹp theo Combo",
     description: "Chọn nhiều dịch vụ cùng 1 lúc",
   };
 
-  // Hardcoded display-only services (ID 7 and 8)
+  // Hardcoded display-only services with string IDs
   const displayOnlyServices = [
     {
-      serviceId: 7,
+      serviceId: "office",
+      displayId: 7, // For icon mapping purposes
       serviceName: "Dọn dẹp văn phòng, khu làm việc",
       description:
         "Vệ sinh văn phòng, lau bàn ghế, hút bụi, dọn dẹp không gian làm việc",
     },
     {
-      serviceId: 8,
+      serviceId: "periodic",
+      displayId: 8, // For icon mapping purposes
       serviceName: "Dọn dẹp nhà theo định kỳ",
       description:
         "Vệ sinh nhà cửa định kỳ theo tuần/tháng, duy trì không gian sạch sẽ",
@@ -75,13 +78,8 @@ const JobUpload = () => {
         }
         const data = await response.json();
 
-        // Filter out any service with ID 5, 7, 8 from the API response to avoid duplicates
-        const filteredServices = data.filter(
-          (service) => ![5, 7, 8].includes(service.serviceId)
-        );
-
-        // Set all services including our hardcoded combo service
-        setAllServices([...filteredServices, comboService]);
+        // Set all services including our special services
+        setAllServices([...data, comboService, ...displayOnlyServices]);
         setLoading(false);
       } catch (error) {
         console.error("Error fetching services:", error);
@@ -94,17 +92,17 @@ const JobUpload = () => {
   }, []);
 
   // For display in the main page - split the services into two rows
-  // Get services with ID 1-4 for first row
+  // Get regular services (those with numeric IDs from API, typically 1-4)
   const regularServices = allServices.filter(
-    (service) => service.serviceId <= 4
+    (service) => typeof service.serviceId === "number" && service.serviceId <= 4
   );
 
-  // Get services with ID >= 5 for second row (including combo and display-only services)
-  const specialServices = [
-    comboService,
-    ...allServices.filter((service) => service.serviceId > 5),
-    ...displayOnlyServices,
-  ];
+  // Get special services (combo and display-only with string IDs plus any numeric IDs > 4)
+  const specialServices = allServices.filter(
+    (service) =>
+      typeof service.serviceId === "string" ||
+      (typeof service.serviceId === "number" && service.serviceId > 4)
+  );
 
   const showServiceModal = () => {
     setIsServiceModalVisible(true);
@@ -139,10 +137,6 @@ const JobUpload = () => {
     });
   };
 
-  // if (loading) {
-  //   return <div className={styles.loading}>Đang tải dịch vụ...</div>;
-  // }
-
   return (
     <>
       <div className={styles.pageContainer}>
@@ -165,11 +159,20 @@ const JobUpload = () => {
             <JobUploadCard
               key={service.serviceId}
               id={service.serviceId}
-              icon={getIconByServiceId(service.serviceId)}
+              // Use displayId for icon mapping if available, otherwise use serviceId
+              icon={getIconByServiceId(service.displayId || service.serviceId)}
               title={service.serviceName}
               description={service.description}
               onComboSelect={showServiceModal}
-              isDisabled={[7, 8].includes(service.serviceId)} // Disable for ID 7 and 8
+              // Check for displayId of 7 or 8, or serviceId for string-based IDs
+              isDisabled={
+                service.displayId === 7 ||
+                service.displayId === 8 ||
+                service.serviceId === "office" ||
+                service.serviceId === "periodic"
+              }
+              // Pass down the displayId to use for combo service check
+              displayId={service.displayId}
             />
           ))}
         </section>
