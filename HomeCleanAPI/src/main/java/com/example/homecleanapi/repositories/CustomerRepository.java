@@ -6,6 +6,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
 @Repository
 public interface CustomerRepository extends JpaRepository<Customers, Long> {
     Customers findByPhone(String phone);
@@ -18,4 +20,6 @@ public interface CustomerRepository extends JpaRepository<Customers, Long> {
     long countByIsDeleted(@Param("isDeleted") Boolean isDeleted);
 
     Customers findCustomersByEmail(String email);
+
+    Optional<Customers> findByEmail(String email);
 }

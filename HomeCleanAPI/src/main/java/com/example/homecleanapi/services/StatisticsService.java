@@ -37,28 +37,38 @@ public class StatisticsService {
         return new Statistics(activeCustomers, lockedCustomers, activeCleaners, lockedCleaners, unverifiedCleaners);
     }
 
-    public Map<String, Map<Integer, Double>> getRevenueByYearAndMonth() {
+    public Map<String, Map<String, Double>> getRevenueByYearAndMonth() {
         List<Object[]> results = jobRepository.findRevenueByYearAndMonthNative();
-        Map<String, Map<Integer, Double>> revenueMap = new HashMap<>();
+        Map<String, Map<String, Double>> revenueMap = new HashMap<>();
+
+        // Mảng chứa tên các tháng
+        String[] monthNames = {
+                "Tháng 1", "Tháng 2", "Tháng 3", "Tháng 4", "Tháng 5", "Tháng 6",
+                "Tháng 7", "Tháng 8", "Tháng 9", "Tháng 10", "Tháng 11", "Tháng 12"
+        };
 
         for (Object[] row : results) {
-            // Giả sử cấu trúc row: [year, month, sum]
+            // Giả sử cấu trúc row: [year, month, revenue]
             Integer year = (Integer) row[0];
             Integer month = (Integer) row[1];
-            Double sum   = (Double) row[2];
+            Double revenue = (Double) row[2];
 
             // Chuyển year thành String để làm khóa ngoài
             String yearKey = year.toString();
 
-            // Lấy (hoặc khởi tạo) Map tháng -> doanh thu cho năm hiện tại
-            Map<Integer, Double> monthMap = revenueMap.computeIfAbsent(yearKey, y -> new HashMap<>());
+            // Chuyển month thành tên tháng
+            String monthName = monthNames[month - 1]; // Tháng bắt đầu từ 0 trong mảng, nhưng tháng trong DB bắt đầu từ 1
 
-            // Đưa tổng doanh thu vào Map tháng tương ứng
-            monthMap.put(month, sum);
+            // Lấy (hoặc khởi tạo) Map tháng -> doanh thu cho năm hiện tại
+            Map<String, Double> monthMap = revenueMap.computeIfAbsent(yearKey, y -> new HashMap<>());
+
+            // Đưa doanh thu vào Map tháng tương ứng
+            monthMap.put(monthName, revenue);
         }
 
         return revenueMap;
     }
+
 
 
 
