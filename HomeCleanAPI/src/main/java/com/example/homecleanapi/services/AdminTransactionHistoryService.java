@@ -90,6 +90,18 @@ public class AdminTransactionHistoryService {
         return totalRevenue;
     }
 
+    public double calculateTotalRevenues() {
+        // Lấy tất cả các công việc có trạng thái DONE
+        List<Job> completedJobs = jobRepository.findByStatus(JobStatus.DONE);
+
+        // Tính tổng doanh thu từ totalPrice của các job
+        double totalRevenue = completedJobs.stream()
+                .mapToDouble(Job::getTotalPrice)  // Lấy totalPrice của từng job
+                .sum();  // Tính tổng
+
+        return totalRevenue;
+    }
+
 
 }
 
