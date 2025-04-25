@@ -5,8 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="6dd32c25-99a1-4da0-a769-374f6713cd9c" name="Changes" comment="Hot fix JWT author">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/services/ScheduleService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/services/ScheduleService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/utils/OpenAPIConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/utils/OpenAPIConfig.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
