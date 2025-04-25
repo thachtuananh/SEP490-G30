@@ -1,6 +1,7 @@
 package com.example.homecleanapi.controllers;
 
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -168,12 +169,15 @@ public class WalletController {
 
     @GetMapping("/{cleanerId}/transaction-historycleaner")
     public ResponseEntity<List<TransactionHistory>> getTransactionHistorycleaner(@PathVariable Long cleanerId) {
-        // Lấy danh sách giao dịch có status là SUCCESS
+        // Lấy danh sách giao dịch có status là SUCCESS và sắp xếp theo thời gian giao dịch
         List<TransactionHistory> transactionHistoryList = walletService.getTransactionHistoryByCleanerId(cleanerId);
 
         if (transactionHistoryList.isEmpty()) {
             return ResponseEntity.noContent().build();
         }
+
+        // Sắp xếp các giao dịch theo thời gian, giao dịch sớm nhất lên đầu
+        transactionHistoryList.sort(Comparator.comparing(TransactionHistory::getTransactionDate));
 
         // Nếu có giao dịch, trả về danh sách giao dịch nhưng không bao gồm thông tin của cleaner
         List<TransactionHistory> filteredTransactionHistoryList = transactionHistoryList.stream()
@@ -186,6 +190,7 @@ public class WalletController {
         return ResponseEntity.ok(filteredTransactionHistoryList);
     }
 
+
     @GetMapping("/{customerId}/transaction-historycustomer")
     public ResponseEntity<List<TransactionHistory>> getTransactionHistorycustomer(@PathVariable Long customerId) {
         // Lấy danh sách giao dịch có status là SUCCESS cho customer
@@ -195,6 +200,9 @@ public class WalletController {
         if (transactionHistoryList.isEmpty()) {
             return ResponseEntity.noContent().build();
         }
+
+        // Sắp xếp các giao dịch theo thời gian, giao dịch mới nhất lên trước
+        transactionHistoryList.sort(Comparator.comparing(TransactionHistory::getTransactionDate).reversed());
 
         // Nếu có giao dịch, trả về danh sách giao dịch nhưng không bao gồm thông tin của customer
         List<TransactionHistory> filteredTransactionHistoryList = transactionHistoryList.stream()
@@ -206,6 +214,7 @@ public class WalletController {
 
         return ResponseEntity.ok(filteredTransactionHistoryList);
     }
+
 
 
 

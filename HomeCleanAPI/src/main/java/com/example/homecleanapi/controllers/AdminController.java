@@ -137,5 +137,17 @@ public class AdminController {
         return new ResponseEntity<>(jobs, HttpStatus.OK);
     }
 
+    @GetMapping("/revenue")
+    public ResponseEntity<Map<String, Object>> getTotalRevenue() {
+        double totalRevenue = adminTransactionHistoryService.calculateTotalRevenues();
+
+        // Tạo response
+        Map<String, Object> response = new HashMap<>();
+        response.put("totalRevenue", totalRevenue);
+
+        return ResponseEntity.ok(response);
+    }
+
+
 
 }
