@@ -128,11 +128,25 @@ public class NotificationService {
         List<String> updatedNotifications = rawNotifications.stream()
                 .map(obj -> {
                     try {
-                        NotificationDTO notification = objectMapper.readValue(obj.toString(), NotificationDTO.class);
+                        String json = obj.toString();
+                        NotificationDTO notification;
+
+                        // Nếu json bắt đầu bằng "[" -> mảng -> lấy phần tử đầu tiên
+                        if (json.trim().startsWith("[")) {
+                            List<NotificationDTO> notifications = objectMapper.readValue(json, new com.fasterxml.jackson.core.type.TypeReference<List<NotificationDTO>>() {});
+                            if (notifications.isEmpty()) {
+                                throw new RuntimeException("Empty notification array");
+                            }
+                            notification = notifications.get(0); // Lấy phần tử đầu tiên
+                        } else {
+                            notification = objectMapper.readValue(json, NotificationDTO.class);
+                        }
+
                         if (!notification.isRead()) {
                             notification.setRead(true);
                         }
                         return objectMapper.writeValueAsString(notification);
+
                     } catch (JsonProcessingException e) {
                         throw new RuntimeException("Error processing notification JSON", e);
                     }
@@ -140,8 +154,9 @@ public class NotificationService {
                 .collect(Collectors.toList());
 
         // Ghi đè lại toàn bộ list trong Redis
-        redisTemplate.delete(key); // Xóa cũ
-        redisTemplate.opsForList().rightPushAll(key, updatedNotifications); // Ghi mới từ đầu
+        redisTemplate.delete(key);
+        redisTemplate.opsForList().rightPushAll(key, updatedNotifications);
     }
+
 
 }
