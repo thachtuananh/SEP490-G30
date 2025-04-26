@@ -77,7 +77,7 @@ function Navbar() {
     fetchNotificationCount();
 
     // Set up polling to refresh notification count every minute
-    const intervalId = setInterval(fetchNotificationCount, 120000);
+    const intervalId = setInterval(fetchNotificationCount, 60000);
 
     return () => clearInterval(intervalId);
   }, [user]);
@@ -146,8 +146,8 @@ function Navbar() {
     if (user) {
       try {
         setIsLoading(true);
-        // const count = await getUnreadNotificationCount();
-        setNotificationCount(0);
+        const count = await getUnreadNotificationCount();
+        setNotificationCount(count);
       } catch (error) {
         console.error("Failed to refresh notifications:", error);
       } finally {
@@ -199,7 +199,7 @@ function Navbar() {
             notificationCount > 0 ? styles.notification_active : ""
           }`}
           style={{ fontSize: "20px" }}
-          spin={isLoading}
+          // spin={isLoading}
         />
       </div>
     </Badge>
@@ -250,8 +250,6 @@ function Navbar() {
       onOpenChange={(visible) => {
         setIsPopupNotification(visible);
         if (visible) {
-          // Reset notification count when opening the popover
-          setNotificationCount(0);
           // Refresh notification count when opening the popover
           refreshNotifications();
         }
