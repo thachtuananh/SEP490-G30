@@ -70,9 +70,9 @@ public class NotificationService {
         for (Object obj : rawNotifications) {
             try {
                 NotificationDTO notification = objectMapper.readValue(obj.toString(), NotificationDTO.class);
-                if (!notification.isRead()) {
-                    notifications.add(notification);
-                }
+//                if (!notification.isRead()) {
+//                    notifications.add(notification);
+//                }
             } catch (JsonProcessingException e) {
                 // Log lỗi parse nhưng bỏ qua, không throw
                 System.out.println("Error parsing notification: " + e.getMessage());
