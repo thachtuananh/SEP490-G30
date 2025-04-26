@@ -128,13 +128,50 @@ export const getUnreadNotificationCount = async () => {
         }
         
         const notifications = await getNotifications();
-        // Count notifications that have an isRead property that is false
-        // If isRead property doesn't exist, assume it's unread
-        return notifications.filter(notification =>
-            notification.isRead === false || notification.isRead === undefined
+        // Count notifications that have isRead = false or read = false
+        return notifications.filter(notification => 
+            (notification.isRead === false || notification.isRead === undefined) && 
+            (notification.read === false || notification.read === undefined)
         ).length;
     } catch (error) {
         console.error('Error getting unread notification count:', error);
         return 0;
+    }
+};
+
+export const markAllNotificationsAsRead = async (role, userId) => {
+    try {
+        // Get token from sessionStorage
+        const token = sessionStorage.getItem('token');
+        if (!token) {
+            throw new Error('Authentication token not found');
+        }
+        if (!role) {
+            throw new Error('Role is required');
+        }
+        if (!userId) {
+            throw new Error('User ID is required');
+        }
+
+        // Set up request headers with the token
+        const headers = {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+        };
+
+        // Make the API call to mark all notifications as read
+        const response = await axios.post(
+            `${BASE_URL}/notification/${role}/${userId}/markAllAsReaded`,
+            {},
+            { headers }
+        );
+
+        // Update local read state when marking all as read
+        notificationsReadLocally = true;
+        
+        return response.data;
+    } catch (error) {
+        console.error('Error marking all notifications as read:', error);
+        throw error;
     }
 };

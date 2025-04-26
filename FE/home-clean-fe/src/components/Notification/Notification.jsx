@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { List, Typography, Spin, Empty, Button } from "antd";
 import { useNavigate } from "react-router-dom";
-import { DeleteOutlined } from "@ant-design/icons";
+import { DeleteOutlined, CheckOutlined } from "@ant-design/icons";
 import {
   getNotifications,
   deleteAllNotifications,
+  markAllNotificationsAsRead,
 } from "../../services/NotificationService";
 import styles from "../../assets/CSS/Notification/Notification.module.css";
 import jwt_decode from "jwt-decode";
@@ -17,7 +18,9 @@ const Notification = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [clearLoading, setClearLoading] = useState(false);
+  const [markReadLoading, setMarkReadLoading] = useState(false);
   const role = sessionStorage.getItem("role");
+
   // Fetch notifications when component mounts
   useEffect(() => {
     fetchNotifications();
@@ -60,6 +63,34 @@ const Notification = () => {
     }
   };
 
+  // Function to mark all notifications as read
+  const handleMarkAllAsRead = async () => {
+    try {
+      setMarkReadLoading(true);
+      // Get role and userId from token
+      const token = sessionStorage.getItem("token");
+      const decodedToken = jwt_decode(token);
+      const { role, id } = decodedToken;
+
+      // Call API to mark all notifications as read
+      await markAllNotificationsAsRead(role, id);
+
+      // Update notifications in state to show as read
+      setNotifications(
+        notifications.map((notification) => ({
+          ...notification,
+          isRead: true,
+          read: true,
+        }))
+      );
+    } catch (error) {
+      console.error("Error marking notifications as read:", error);
+      setError("Không thể đánh dấu đã đọc. Vui lòng thử lại sau.");
+    } finally {
+      setMarkReadLoading(false);
+    }
+  };
+
   // Format date for display
   const formatDate = (dateString) => {
     if (!dateString) return "";
@@ -86,6 +117,17 @@ const Notification = () => {
     }
   };
 
+  // Check if a notification is unread (considering both isRead and read properties)
+  const isNotificationUnread = (notification) => {
+    return (
+      (notification.isRead === false || notification.isRead === undefined) &&
+      (notification.read === false || notification.read === undefined)
+    );
+  };
+
+  // Check if there are any unread notifications
+  const hasUnreadNotifications = notifications.some(isNotificationUnread);
+
   return (
     <div className={styles.notification_container} style={{ width: "250px" }}>
       <div className={styles.notification_header}>
@@ -99,17 +141,32 @@ const Notification = () => {
           <Title level={5} style={{ margin: 0 }}>
             Thông báo
           </Title>
-          {notifications.length > 0 && (
-            <DeleteOutlined
-              onClick={handleClearAllNotifications}
-              style={{
-                color: "red",
-                cursor: "pointer",
-                opacity: clearLoading ? 0.5 : 1,
-              }}
-              spin={clearLoading}
-            />
-          )}
+          <div style={{ display: "flex", gap: "8px" }}>
+            {hasUnreadNotifications && (
+              <CheckOutlined
+                onClick={handleMarkAllAsRead}
+                style={{
+                  color: "green",
+                  cursor: "pointer",
+                  opacity: markReadLoading ? 0.5 : 1,
+                }}
+                // spin={markReadLoading}
+                title="Đánh dấu tất cả đã đọc"
+              />
+            )}
+            {notifications.length > 0 && (
+              <DeleteOutlined
+                onClick={handleClearAllNotifications}
+                style={{
+                  color: "red",
+                  cursor: "pointer",
+                  opacity: clearLoading ? 0.5 : 1,
+                }}
+                spin={clearLoading}
+                title="Xóa tất cả thông báo"
+              />
+            )}
+          </div>
         </div>
       </div>
 
@@ -145,7 +202,7 @@ const Notification = () => {
             renderItem={(item) => (
               <List.Item
                 className={`${styles.notification_item} ${
-                  !item.isRead ? styles.unread : ""
+                  isNotificationUnread(item) ? styles.unread : ""
                 }`}
                 onClick={handleNotificationClick}
                 style={{ cursor: "pointer" }}
@@ -153,7 +210,7 @@ const Notification = () => {
                 <List.Item.Meta
                   title={
                     <div className={styles.notification_title}>
-                      {!item.isRead && (
+                      {isNotificationUnread(item) && (
                         <span className={styles.unread_indicator} />
                       )}
                     </div>

@@ -91,17 +91,21 @@ function JobSection({ title }) {
       try {
         // Get token from sessionStorage
         const token = sessionStorage.getItem("token");
+        const cleanerId = sessionStorage.getItem("cleanerId");
 
         if (!token) {
           throw new Error("No authentication token found");
         }
 
-        const response = await fetch(`${BASE_URL}/cleaner/jobs/by-service`, {
-          headers: {
-            accept: "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        const response = await fetch(
+          `${BASE_URL}/cleaner/jobs/by-service/${cleanerId}`,
+          {
+            headers: {
+              accept: "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
 
         if (!response.ok) {
           throw new Error("Failed to fetch job counts");
