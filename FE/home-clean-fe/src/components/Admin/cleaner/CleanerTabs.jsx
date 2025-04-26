@@ -12,6 +12,12 @@ import {
 } from "antd";
 import JobHistoryTable from "../cleaner/JobHistoryTable";
 import { BASE_URL } from "../../../utils/config";
+import {
+  validatePhone,
+  validateName,
+  validateEmail,
+  validateAge,
+} from "../../../utils/validate";
 
 const CleanerTabs = ({
   cleanerData,
@@ -90,13 +96,56 @@ const CleanerTabs = ({
       const values = await profileForm.validateFields();
       setLoading(true);
 
+      // Custom validation
+      const nameError = validateName(values.name);
+      const phoneError = validatePhone(values.phone);
+      const emailError = validateEmail(values.email);
+      const ageError = validateAge(values.age);
+
+      if (nameError || phoneError || emailError || ageError) {
+        if (nameError) {
+          profileForm.setFields([
+            {
+              name: "name",
+              errors: [nameError],
+            },
+          ]);
+        }
+        if (phoneError) {
+          profileForm.setFields([
+            {
+              name: "phone",
+              errors: [phoneError],
+            },
+          ]);
+        }
+        if (emailError) {
+          profileForm.setFields([
+            {
+              name: "email",
+              errors: [emailError],
+            },
+          ]);
+        }
+        if (ageError) {
+          profileForm.setFields([
+            {
+              name: "age",
+              errors: [ageError],
+            },
+          ]);
+        }
+        setLoading(false);
+        return;
+      }
+
       const token = sessionStorage.getItem("token");
       const cleanerId = cleanerData.id || cleanerData.cleanerId;
 
       const response = await fetch(
         `${BASE_URL}/admin/cleaners/${cleanerId}/update`,
         {
-          method: "PUT",
+          method: "PATCH",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
@@ -365,8 +414,13 @@ const CleanerTabs = ({
             label="Họ và tên"
             rules={[
               {
-                required: true,
-                message: "Vui lòng nhập họ và tên",
+                validator: (_, value) => {
+                  const error = validateName(value);
+                  if (error) {
+                    return Promise.reject(error);
+                  }
+                  return Promise.resolve();
+                },
               },
             ]}
           >
@@ -378,12 +432,13 @@ const CleanerTabs = ({
             label="Số điện thoại"
             rules={[
               {
-                required: true,
-                message: "Vui lòng nhập số điện thoại",
-              },
-              {
-                pattern: /^[0-9]+$/,
-                message: "Số điện thoại chỉ được chứa số",
+                validator: (_, value) => {
+                  const error = validatePhone(value);
+                  if (error) {
+                    return Promise.reject(error);
+                  }
+                  return Promise.resolve();
+                },
               },
             ]}
           >
@@ -395,12 +450,13 @@ const CleanerTabs = ({
             label="Email"
             rules={[
               {
-                required: true,
-                message: "Vui lòng nhập email",
-              },
-              {
-                type: "email",
-                message: "Vui lòng nhập đúng định dạng email",
+                validator: (_, value) => {
+                  const error = validateEmail(value);
+                  if (error) {
+                    return Promise.reject(error);
+                  }
+                  return Promise.resolve();
+                },
               },
             ]}
           >
@@ -412,12 +468,13 @@ const CleanerTabs = ({
             label="Tuổi"
             rules={[
               {
-                required: true,
-                message: "Vui lòng nhập tuổi",
-              },
-              {
-                pattern: /^[0-9]+$/,
-                message: "Tuổi phải là số",
+                validator: (_, value) => {
+                  const error = validateAge(value);
+                  if (error) {
+                    return Promise.reject(error);
+                  }
+                  return Promise.resolve();
+                },
               },
             ]}
           >
