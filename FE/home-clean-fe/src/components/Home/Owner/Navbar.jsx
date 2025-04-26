@@ -199,7 +199,7 @@ function Navbar() {
             notificationCount > 0 ? styles.notification_active : ""
           }`}
           style={{ fontSize: "20px" }}
-          spin={isLoading}
+          // spin={isLoading}
         />
       </div>
     </Badge>
