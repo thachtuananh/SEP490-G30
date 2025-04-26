@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -65,16 +66,21 @@ public class NotificationService {
             return Collections.emptyList();
         }
 
-        return rawNotifications.stream()
-                .map(obj -> {
-                    try {
-                        return objectMapper.readValue(obj.toString(), NotificationDTO.class);
-                    } catch (JsonProcessingException e) {
-                        throw new RuntimeException("Error converting JSON to NotificationDTO", e);
-                    }
-                })
-                .filter(notification -> !notification.isRead())
-                .collect(Collectors.toList());
+        List<NotificationDTO> notifications = new ArrayList<>();
+        for (Object obj : rawNotifications) {
+            try {
+                NotificationDTO notification = objectMapper.readValue(obj.toString(), NotificationDTO.class);
+                if (!notification.isRead()) {
+                    notifications.add(notification);
+                }
+            } catch (JsonProcessingException e) {
+                // Log lỗi parse nhưng bỏ qua, không throw
+                System.out.println("Error parsing notification: " + e.getMessage());
+                // Bạn có thể dùng logger thay vì System.out nếu cần production-ready
+            }
+        }
+
+        return notifications;
     }
 
     private String generateRedisKey(String role, Integer userId) {
