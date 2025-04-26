@@ -148,10 +148,6 @@ function Navbar() {
 
   const toggleNotification = () => {
     setIsPopupNotification(!isPopupNotification);
-    // Reset notification count when opening the notification panel
-    if (!isPopupNotification) {
-      setNotificationCount(0);
-    }
     // Close menu when toggling notification on mobile
     if (isMobile && isMenuOpen) {
       setIsMenuOpen(false);
@@ -163,8 +159,8 @@ function Navbar() {
     if (cleaner) {
       try {
         setIsLoading(true);
-        // const count = await getUnreadNotificationCount();
-        setNotificationCount(0);
+        const count = await getUnreadNotificationCount();
+        setNotificationCount(count);
       } catch (error) {
         console.error("Failed to refresh notifications:", error);
       } finally {
@@ -270,8 +266,6 @@ function Navbar() {
       onOpenChange={(visible) => {
         setIsPopupNotification(visible);
         if (visible) {
-          // Reset notification count when opening the popover
-          setNotificationCount(0);
           // Refresh notification count when opening the popover
           refreshNotifications();
         }
