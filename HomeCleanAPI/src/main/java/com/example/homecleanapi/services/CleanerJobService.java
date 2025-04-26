@@ -1501,40 +1501,53 @@ public class CleanerJobService {
 			}
 			ServiceDetail serviceDetail = serviceDetailOpt.get();
 
-			// Tính giá dịch vụ
 			double serviceDetailPrice = serviceDetail.getPrice();
-
 			double finalPrice = serviceDetailPrice;
 
-			// Kiểm tra giờ cao điểm và phụ phí
-			double peakTimeFee = 0;
+			// Tính phí tăng thêm (phụ phí giờ đặc biệt)
+			double specialTimeFee = 0;
 			DayOfWeek dayOfWeek = job.getScheduledTime().getDayOfWeek();
 			int hour = job.getScheduledTime().getHour();
-			int minute = job.getScheduledTime().getMinute(); // Lấy phút
+			int minute = job.getScheduledTime().getMinute();
 
+			System.out.println("Scheduled Time: " + job.getScheduledTime()); // Debug: Kiểm tra thời gian đã lên lịch
+			System.out.println("Day of Week: " + dayOfWeek); // Debug: Kiểm tra ngày trong tuần
+			System.out.println("Hour: " + hour); // Debug: Kiểm tra giờ
+
+	// Kiểm tra ngày cuối tuần (Thứ 7 và Chủ Nhật)
 			if (dayOfWeek == DayOfWeek.SATURDAY || dayOfWeek == DayOfWeek.SUNDAY) {
-				// Nếu là thứ 7 hoặc chủ nhật
-				if (hour > 18 || (hour == 18 && minute >= 0)) {
-					if (hour < 22 || (hour == 22 && minute == 0)) {
-						// Nếu giờ từ 18h00 đến 21h59 vào thứ 7 hoặc chủ nhật
-						peakTimeFee = 0.2 * finalPrice; // 20% phụ phí vào thứ 7 hoặc chủ nhật từ 18h đến 22h
-					} else {
-						// Nếu sau 22h chủ nhật hoặc thứ 7
-						peakTimeFee = 0.1 * finalPrice; // 10% phụ phí vào chủ nhật ngoài giờ cao điểm
-					}
+				// Phụ phí 20% từ 18h đến 22h vào cuối tuần
+				if (hour >= 18 && hour < 22) {
+					specialTimeFee = 0.2 * finalPrice; // 20% phụ phí
+					System.out.println("Applying 20% price increase for weekend between 18:00 and 21:59.");
 				}
-			} else if (hour >= 18 && hour < 22) {
-				// Nếu vào giờ từ 18h00 đến 21h59 từ thứ 2 đến thứ 6
-				peakTimeFee = 0.1 * finalPrice; // 10% phụ phí vào giờ cao điểm
-			} else if (hour == 22 && minute == 0) {
-				// Nếu vào giờ 22h00 từ thứ 2 đến thứ 6
-				peakTimeFee = 0.1 * finalPrice; // 10% phụ phí vào giờ 22h00
+				// Phụ phí 10% sau 22h vào cuối tuần
+				else if (hour >= 22) {
+					specialTimeFee = 0.1 * finalPrice; // 10% phụ phí sau 22h
+					System.out.println("Applying 10% price increase for weekend after 22:00.");
+				}
+				// Phụ phí 10% từ 0h đến 18h vào cuối tuần (đảm bảo tất cả các giờ còn lại)
+				else {
+					specialTimeFee = 0.1 * finalPrice; // 10% phụ phí trước 18h
+					System.out.println("Applying 10% price increase for weekend before 18:00.");
+				}
+			}
+	// Kiểm tra giờ cao điểm trong tuần (từ 18h đến 22h)
+			else if (hour >= 18 && hour < 22) {
+				specialTimeFee = 0.1 * finalPrice; // 10% phụ phí trong tuần từ 18h đến 22h
+				System.out.println("Applying 10% price increase for weekdays between 18:00 and 21:59.");
+			}
+	// Kiểm tra 22h00 trong tuần
+			else if (hour == 22 && minute == 0) {
+				specialTimeFee = 0.1 * finalPrice; // 10% phụ phí vào giờ 22h00 trong tuần
+				System.out.println("Applying 10% price increase for weekdays at 22:00.");
 			}
 
-			finalPrice += peakTimeFee; // Cộng phụ phí vào giá cuối
+			finalPrice += specialTimeFee; // Cộng phí đặc biệt vào giá cuối
 
-			// Cộng tổng giá cho tất cả các dịch vụ
+// Cộng tổng giá cho tất cả các dịch vụ
 			totalPrice += finalPrice;
+
 
 			// Tạo JobServiceDetail và lưu vào cơ sở dữ liệu
 			JobServiceDetail jobServiceDetail = new JobServiceDetail();

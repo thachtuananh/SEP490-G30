@@ -13,6 +13,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -47,8 +48,8 @@ public class ScheduleService {
         System.out.println("Check Job and Delete at: " + now);
 
         // Lấy tất cả job OPEN
-        List<Job> jobs = jobRepository.findAllByStatus(JobStatus.OPEN);
-        System.out.println("Tổng số job OPEN: " + jobs.size());
+        List<Job> jobs = jobRepository.findAllByStatusIn(Arrays.asList(JobStatus.OPEN, JobStatus.BOOKED));
+        System.out.println("Tổng số job OPEN và BOOKED: " + jobs.size());
 
         List<Job> updatedJobs = new ArrayList<>();
         List<JobApplication> applicationsToUpdate = new ArrayList<>();
