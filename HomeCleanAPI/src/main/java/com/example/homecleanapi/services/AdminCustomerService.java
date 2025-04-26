@@ -96,6 +96,10 @@ public class AdminCustomerService {
             customer.setDeleted(request.getAccountStatus());  // Cập nhật is_deleted
         }
 
+        if (request.getEmail() != null) {
+            customer.setPhone(request.getEmail());
+        }
+
         customerRepository.save(customer);
 
         return ResponseEntity.ok(Map.of(
