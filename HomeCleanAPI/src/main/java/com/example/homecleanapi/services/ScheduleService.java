@@ -307,22 +307,35 @@ public class ScheduleService {
                     }
 
                     // Gửi thông báo cho customer
-                    NotificationDTO customerNotification = new NotificationDTO(
-                            job.getCustomer().getId(),
-                            "Đơn hàng của bạn đã bị hủy do chưa thanh toán",
-                            "AUTO_MESSAGE",
-                            LocalDate.now(zoneId)
-                    );
+//                    NotificationDTO customerNotification = new NotificationDTO(
+//                            job.getCustomer().getId(),
+//                            "Đơn hàng của bạn đã bị hủy do chưa thanh toán",
+//                            "AUTO_MESSAGE",
+//                            LocalDate.now(zoneId)
+//                    );
+                    NotificationDTO customerNotification = new NotificationDTO();
+                    customerNotification.setUserId(job.getCustomer().getId());
+                    customerNotification.setMessage("Đơn hàng của bạn đã bị hủy do chưa thanh toán");
+                    customerNotification.setType("AUTO_MESSAGE");
+                    customerNotification.setTimestamp(LocalDate.now(zoneId));
+                    customerNotification.setRead(false); // ✅ set read = false
+
                     notificationService.processNotification(customerNotification, "CUSTOMER", job.getCustomer().getId());
 
                     // Gửi thông báo cho cleaner
                     if (job.getCleaner() != null) {
-                        NotificationDTO cleanerNotification = new NotificationDTO(
-                                job.getCleaner().getId(),
-                                "Công việc của bạn đã bị hủy do khách hàng chưa thanh toán",
-                                "AUTO_MESSAGE",
-                                LocalDate.now(zoneId)
-                        );
+//                        NotificationDTO cleanerNotification = new NotificationDTO(
+//                                job.getCleaner().getId(),
+//                                "Công việc của bạn đã bị hủy do khách hàng chưa thanh toán",
+//                                "AUTO_MESSAGE",
+//                                LocalDate.now(zoneId)
+//                        );
+                        NotificationDTO cleanerNotification = new NotificationDTO();
+                        cleanerNotification.setUserId(job.getCustomer().getId());
+                        cleanerNotification.setMessage("Công việc của bạn đã bị hủy do khách hàng chưa thanh toán");
+                        cleanerNotification.setType("AUTO_MESSAGE");
+                        cleanerNotification.setTimestamp(LocalDate.now(zoneId));
+                        cleanerNotification.setRead(false); // ✅ set read = false
                         notificationService.processNotification(cleanerNotification, "CLEANER", job.getCleaner().getId());
                     }
 
