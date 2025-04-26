@@ -97,7 +97,7 @@ public class AdminCustomerService {
         }
 
         if (request.getEmail() != null) {
-            customer.setPhone(request.getEmail());
+            customer.setEmail(request.getEmail());
         }
 
         customerRepository.save(customer);
