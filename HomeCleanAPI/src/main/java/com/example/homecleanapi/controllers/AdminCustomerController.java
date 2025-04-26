@@ -45,7 +45,7 @@ public class AdminCustomerController {
 
 
     // API cập nhật thông tin khách hàng
-    @PutMapping(value = "/{customer_id}/update", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PatchMapping(value = "/{customer_id}/update", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Map<String, Object>> updateCustomer(
             @PathVariable("customer_id") Integer customerId,
             @RequestBody CustomerProfileAdminDTO request,

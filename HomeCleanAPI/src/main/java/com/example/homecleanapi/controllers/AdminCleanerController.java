@@ -41,7 +41,7 @@ public class AdminCleanerController {
         return ResponseEntity.status(403).body(Map.of("message", "Access denied"));
     }
 
-    @PutMapping("/{cleaner_id}/update")
+    @PatchMapping("/{cleaner_id}/update")
     public ResponseEntity<Map<String, Object>> updateCleaner(@PathVariable("cleaner_id") Long cleanerId,
                                                              @RequestBody CleanerProfileRequest request,
                                                              HttpServletRequest requestHttp) {
