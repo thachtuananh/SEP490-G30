@@ -70,6 +70,7 @@ public class NotificationService {
         for (Object obj : rawNotifications) {
             try {
                 NotificationDTO notification = objectMapper.readValue(obj.toString(), NotificationDTO.class);
+                notifications.add(notification);
 //                if (!notification.isRead()) {
 //                    notifications.add(notification);
 //                }
