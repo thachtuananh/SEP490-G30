@@ -25,7 +25,9 @@ const MenuInfomation = ({ selectedMenu, setSelectedMenu }) => {
           <p className="profile-name">
             <strong>{user?.customerName || "Người dùng"}</strong>
           </p>
-          {/* <p className="profile-email">{user?.email || "Chưa có email"}</p> */}
+          <p className="profile-email">
+            {user?.customerEmail || "Chưa có email"}
+          </p>
         </div>
       </div>
       <hr className="menu-separator" />

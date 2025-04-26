@@ -376,6 +376,9 @@ const MainDashboard = () => {
 
                 {/* Charts Row */}
                 <Row gutter={[24, 24]}>
+                  <Col xs={24} lg={24}>
+                    <SalesChart revenueData={revenueData} loading={loading} />
+                  </Col>
                   {/* <Col xs={24} lg={24}>
                     <SalesChart revenueData={revenueData} loading={loading} />
                   </Col> */}
