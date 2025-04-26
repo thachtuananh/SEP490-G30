@@ -37,7 +37,8 @@ public class NotificationService {
         }
 
         String key = generateRedisKey(role, userId);
-
+        // Đảm bảo thông báo mới luôn là chưa đọc
+        notification.setRead(false);
         try {
             // Convert Object -> JSON String trước khi lưu vào Redis
             String jsonNotification = objectMapper.writeValueAsString(notification);
@@ -72,6 +73,7 @@ public class NotificationService {
                         throw new RuntimeException("Error converting JSON to NotificationDTO", e);
                     }
                 })
+                .filter(notification -> !notification.isRead())
                 .collect(Collectors.toList());
     }
 
@@ -87,12 +89,14 @@ public class NotificationService {
     }
 
     public void sendBulkNotifications(String role, List<Integer> userIds, NotificationContent notifications) {
-        for(Integer userId : userIds) {
-            NotificationDTO userNotification = new NotificationDTO(
-                    userId,
-                    notifications.getMessage(),
-                    notifications.getType(),
-                    LocalDate.now());
+        for (Integer userId : userIds) {
+            NotificationDTO userNotification = new NotificationDTO();
+            userNotification.setUserId(userId);
+            userNotification.setMessage(notifications.getMessage());
+            userNotification.setType(notifications.getType());
+            userNotification.setTimestamp(LocalDate.now());
+            userNotification.setRead(false); // Chắc chắn chưa đọc
+
             processNotification(userNotification, role, userId);
         }
     }
@@ -102,4 +106,36 @@ public class NotificationService {
 
         redisTemplate.delete(key);
     }
+
+    public void markAllAsRead(String role, Integer userId) {
+        if (role == null || userId == null) {
+            throw new IllegalArgumentException("Role and userId must not be null");
+        }
+
+        String key = generateRedisKey(role, userId);
+        List<Object> rawNotifications = redisTemplate.opsForList().range(key, 0, -1);
+
+        if (rawNotifications == null || rawNotifications.isEmpty()) {
+            return;
+        }
+
+        List<String> updatedNotifications = rawNotifications.stream()
+                .map(obj -> {
+                    try {
+                        NotificationDTO notification = objectMapper.readValue(obj.toString(), NotificationDTO.class);
+                        if (!notification.isRead()) {
+                            notification.setRead(true);
+                        }
+                        return objectMapper.writeValueAsString(notification);
+                    } catch (JsonProcessingException e) {
+                        throw new RuntimeException("Error processing notification JSON", e);
+                    }
+                })
+                .collect(Collectors.toList());
+
+        // Ghi đè lại toàn bộ list trong Redis
+        redisTemplate.delete(key); // Xóa cũ
+        redisTemplate.opsForList().rightPushAll(key, updatedNotifications); // Ghi mới từ đầu
+    }
+
 }
