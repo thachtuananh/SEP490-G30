@@ -6,6 +6,9 @@ export const validatePhone = (phone) => {
     
     if (trimmedPhone.length > 12) return "Số điện thoại không được vượt quá 12 ký tự!";
     
+    // Check if phone contains any non-numeric characters
+    if (/\D/.test(trimmedPhone)) return "Số điện thoại chỉ được nhập số!";
+    
     const phoneRegex = /^[0-9]{10}$/;
     if (!phoneRegex.test(trimmedPhone)) return "Số điện thoại phải có 10 chữ số!";
     
