@@ -45,6 +45,8 @@ public interface JobApplicationRepository extends JpaRepository<JobApplication, 
 
 	List<JobApplication> findJobApplicationByJobIdAndStatus(Long jobId, String status);
 
+	List<JobApplication> findAllByStatus(String status);
+
 
 
 }

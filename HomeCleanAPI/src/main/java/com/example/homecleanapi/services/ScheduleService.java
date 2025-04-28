@@ -4,6 +4,7 @@ import com.example.homecleanapi.dtos.NotificationDTO;
 import com.example.homecleanapi.enums.JobStatus;
 import com.example.homecleanapi.models.*;
 import com.example.homecleanapi.repositories.*;
+import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -356,6 +357,110 @@ public class ScheduleService {
             System.out.println("Đã cập nhật " + transactionHistories.size() + " giao dịch.");
         }
     }
+
+
+    // tự động hủy job hoặc hủy apply nếu trùng lịch
+    @Scheduled(cron = "0 * * * * *")  // Thực thi mỗi phút
+    @Transactional
+    public void autoCheckJobAndCleanerSchedule() {
+        System.out.println("Checking cleaner schedule for job conflicts...");
+
+        ZoneId zoneId = ZoneId.of("Asia/Ho_Chi_Minh");
+        LocalDateTime now = LocalDateTime.now(zoneId);
+        System.out.println("Checking cleaner schedules at: " + now);
+
+        List<JobApplication> applicationsToUpdate = new ArrayList<>();
+        List<Job> jobsToCancel = new ArrayList<>();
+
+        // 1. Huỷ apply Pending nếu cleaner đã nhận job khác trùng lịch
+        List<JobApplication> pendingApplications = jobApplicationRepository.findAllByStatus("Pending");
+
+        for (JobApplication pendingApp : pendingApplications) {
+            Long cleanerId = Long.valueOf(pendingApp.getCleaner().getId());
+            LocalDateTime pendingJobTime = pendingApp.getJob().getScheduledTime();
+            LocalDateTime pendingEndTime = pendingJobTime.plusHours(2);
+
+            List<JobApplication> acceptedApps = jobApplicationRepository.findByCleanerIdAndStatus(cleanerId, "Accepted");
+
+            for (JobApplication acceptedApp : acceptedApps) {
+                LocalDateTime acceptedTime = acceptedApp.getJob().getScheduledTime();
+                LocalDateTime acceptedEndTime = acceptedTime.plusHours(2);
+
+                if (!pendingApp.getJob().getId().equals(acceptedApp.getJob().getId()) &&
+                        acceptedTime.isBefore(pendingEndTime) &&
+                        acceptedEndTime.isAfter(pendingJobTime)) {
+
+                    pendingApp.setStatus("Cancelled");
+                    applicationsToUpdate.add(pendingApp);
+                    System.out.println("Cancelled pending application for job " + pendingApp.getJob().getId() + " because cleaner accepted another job " + acceptedApp.getJob().getId());
+                }
+            }
+        }
+
+        // 2. Huỷ Job BOOKED nếu cleaner đang làm job khác (IN_PROGRESS hoặc đã ACCEPT job khác)
+        List<Job> bookedJobs = jobRepository.findAllByStatus(JobStatus.BOOKED);
+
+        for (Job bookedJob : bookedJobs) {
+            if (bookedJob.getCleaner() != null) {
+                Long cleanerId = Long.valueOf(bookedJob.getCleaner().getId());
+                LocalDateTime bookedTime = bookedJob.getScheduledTime();
+                LocalDateTime bookedEndTime = bookedTime.plusHours(2);
+
+                // Kiểm tra các Job đang IN_PROGRESS
+                List<Job> inProgressJobs = jobRepository.findByCleanerIdAndStatus(cleanerId, JobStatus.IN_PROGRESS);
+
+                boolean conflict = false;
+                for (Job inProgressJob : inProgressJobs) {
+                    LocalDateTime inProgressTime = inProgressJob.getScheduledTime();
+                    LocalDateTime inProgressEndTime = inProgressTime.plusHours(2);
+
+                    if (!bookedJob.getId().equals(inProgressJob.getId()) &&
+                            inProgressTime.isBefore(bookedEndTime) &&
+                            inProgressEndTime.isAfter(bookedTime)) {
+                        conflict = true;
+                        break;
+                    }
+                }
+
+                // Kiểm tra thêm nếu cleaner đã accept job khác
+                List<JobApplication> acceptedApps = jobApplicationRepository.findByCleanerIdAndStatus(cleanerId, "Accepted");
+
+                for (JobApplication acceptedApp : acceptedApps) {
+                    LocalDateTime acceptedTime = acceptedApp.getJob().getScheduledTime();
+                    LocalDateTime acceptedEndTime = acceptedTime.plusHours(2);
+
+                    if (!bookedJob.getId().equals(acceptedApp.getJob().getId()) &&
+                            acceptedTime.isBefore(bookedEndTime) &&
+                            acceptedEndTime.isAfter(bookedTime)) {
+                        conflict = true;
+                        break;
+                    }
+                }
+
+                if (conflict) {
+                    bookedJob.setStatus(JobStatus.AUTO_CANCELLED);
+                    jobsToCancel.add(bookedJob);
+                    System.out.println("Auto-cancelled booked job " + bookedJob.getId() + " because cleaner has another job.");
+                }
+            }
+        }
+
+        // Save all changes
+        if (!jobsToCancel.isEmpty()) {
+            jobRepository.saveAll(jobsToCancel);
+            System.out.println("Cancelled " + jobsToCancel.size() + " jobs.");
+        }
+
+        if (!applicationsToUpdate.isEmpty()) {
+            jobApplicationRepository.saveAll(applicationsToUpdate);
+            System.out.println("Updated " + applicationsToUpdate.size() + " job applications.");
+        }
+    }
+
+
+
+
+
 
 
 
