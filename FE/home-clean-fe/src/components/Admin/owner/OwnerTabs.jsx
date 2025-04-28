@@ -13,6 +13,11 @@ import {
 import JobHistoryTable from "../owner/JobHistoryTable";
 import axios from "axios";
 import { BASE_URL } from "../../../utils/config";
+import {
+  validatePhone,
+  validateName,
+  validateEmail,
+} from "../../../utils/validate"; // Import validation functions
 
 const OwnerTabs = ({
   ownerData,
@@ -76,6 +81,40 @@ const OwnerTabs = ({
       const values = await form.validateFields();
       setLoading(true);
 
+      // Custom validation
+      const nameError = validateName(values.fullName);
+      const phoneError = validatePhone(values.phone);
+      const emailError = validateEmail(values.email);
+
+      if (nameError || phoneError || emailError) {
+        if (nameError) {
+          form.setFields([
+            {
+              name: "fullName",
+              errors: [nameError],
+            },
+          ]);
+        }
+        if (phoneError) {
+          form.setFields([
+            {
+              name: "phone",
+              errors: [phoneError],
+            },
+          ]);
+        }
+        if (emailError) {
+          form.setFields([
+            {
+              name: "email",
+              errors: [emailError],
+            },
+          ]);
+        }
+        setLoading(false);
+        return;
+      }
+
       const token = sessionStorage.getItem("token");
       const customerId = ownerData.id || ownerData.customerId;
 
@@ -85,7 +124,7 @@ const OwnerTabs = ({
       const response = await fetch(
         `${BASE_URL}/admin/customers/${customerId}/update`,
         {
-          method: "PUT",
+          method: "PATCH",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
@@ -239,8 +278,13 @@ const OwnerTabs = ({
             label="Họ và tên"
             rules={[
               {
-                required: true,
-                message: "Vui lòng nhập họ và tên",
+                validator: (_, value) => {
+                  const error = validateName(value);
+                  if (error) {
+                    return Promise.reject(error);
+                  }
+                  return Promise.resolve();
+                },
               },
             ]}
           >
@@ -252,12 +296,13 @@ const OwnerTabs = ({
             label="Số điện thoại"
             rules={[
               {
-                required: true,
-                message: "Vui lòng nhập số điện thoại",
-              },
-              {
-                pattern: /^[0-9]+$/,
-                message: "Số điện thoại chỉ được chứa số",
+                validator: (_, value) => {
+                  const error = validatePhone(value);
+                  if (error) {
+                    return Promise.reject(error);
+                  }
+                  return Promise.resolve();
+                },
               },
             ]}
           >
@@ -269,12 +314,13 @@ const OwnerTabs = ({
             label="Email"
             rules={[
               {
-                required: true,
-                message: "Vui lòng nhập email",
-              },
-              {
-                type: "email",
-                message: "Email không đúng định dạng",
+                validator: (_, value) => {
+                  const error = validateEmail(value);
+                  if (error) {
+                    return Promise.reject(error);
+                  }
+                  return Promise.resolve();
+                },
               },
             ]}
           >
