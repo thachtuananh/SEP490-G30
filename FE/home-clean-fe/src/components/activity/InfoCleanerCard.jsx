@@ -1,79 +1,131 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
+import { Rate, Spin, Empty, List, Card, Typography, Divider } from "antd";
 import styles from "../activity/InfoCleanerCard.module.css";
+import { BASE_URL } from "../../utils/config";
+
+const { Text, Title, Paragraph } = Typography;
 
 export const InfoCleanerCard = ({ cleaner }) => {
+  const [feedbacks, setFeedbacks] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (cleaner && cleaner.cleanerId) {
+      fetchCleanerFeedbacks(cleaner.cleanerId);
+    }
+  }, [cleaner]);
+
+  const fetchCleanerFeedbacks = async (cleanerId) => {
+    setLoading(true);
+    try {
+      const response = await fetch(
+        `${BASE_URL}/customer/cleaners/${cleanerId}/feedbacks`
+      );
+      if (!response.ok) {
+        throw new Error("Failed to fetch feedbacks");
+      }
+      const data = await response.json();
+      setFeedbacks(data);
+    } catch (error) {
+      console.error("Error fetching cleaner feedbacks:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Calculate average rating
+  const calculateAverageRating = () => {
+    if (!feedbacks || feedbacks.length === 0) return 0;
+    const total = feedbacks.reduce((sum, feedback) => sum + feedback.rating, 0);
+    return (total / feedbacks.length).toFixed(1);
+  };
+
   return (
     <div className={styles.cardContainer}>
-      <div className={styles.cardContent}>
-        {/* Thông tin cơ bản */}
-        <div className={styles.basicInfo}>
-          <img
-            src={`data:image/png;base64,${cleaner.profileImage}`}
-            alt="Avatar"
-            style={{ borderRadius: "10px" }}
-          />
-          <strong>Tên : {cleaner.cleanerName}</strong>
-          <div className={styles.divider}></div>
-          <p>Tuổi : {cleaner.age}</p>
-          <p>CCCD: {cleaner.identityNumber}</p>
-          <p>Email : {cleaner.email}</p>
-          <p>Số điện thoại : {cleaner.phoneNumber}</p>
-          <p>Kinh nghiệm : {cleaner.experience}</p>
+      <div className={styles.flexContainer}>
+        {/* Left section - Original cleaner info */}
+        <div className={styles.leftSection}>
+          <div className={styles.cardContent}>
+            {/* Thông tin cơ bản */}
+            <div className={styles.basicInfo}>
+              <img
+                src={`data:image/png;base64,${cleaner.profileImage}`}
+                alt="Avatar"
+              />
+              <strong>Tên : {cleaner.cleanerName}</strong>
+              <div className={styles.divider}></div>
+              <p>Tuổi : {cleaner.age}</p>
+              <p>CCCD: {cleaner.identityNumber}</p>
+              <p>Email : {cleaner.email}</p>
+              <p>Kinh nghiệm : {cleaner.experience}</p>
+
+              {/* Display average rating if available */}
+              {feedbacks.length > 0 && (
+                <div className={styles.ratingContainer}>
+                  <Rate
+                    disabled
+                    defaultValue={parseFloat(calculateAverageRating())}
+                    allowHalf
+                  />
+                  <Text strong className={styles.ratingText}>
+                    {calculateAverageRating()} ({feedbacks.length} đánh giá)
+                  </Text>
+                </div>
+              )}
+            </div>
+
+            {/* Mô tả thông tin */}
+            <div className={styles.infoSection}>
+              {/* Could add additional info here if needed */}
+            </div>
+          </div>
         </div>
 
-        {/* Mô tả thông tin */}
-        <div className={styles.infoSection}>
-          {/* các ô button */}
-          {/* <div className={styles.stats}>
-                        <div className={styles.statBox}>
-                            <p className={styles.statLabel}>Số người theo dõi</p>
-                            <b>29 người</b>
-                        </div>
-                        <div className={styles.statBox}>
-                            <p className={styles.statLabel}>Số giờ thuê</p>
-                            <b>48h</b>
-                        </div>
-                        <div className={styles.statBox}>
-                            <p className={styles.statLabel}>Tỷ lệ hoàn thành</p>
-                            <b>100%</b>
-                        </div>
-                        <div className={styles.statBox}>
-                            <p className={styles.statLabel}>Đánh giá</p>
-                            <b>25 đánh giá</b>
-                        </div>
-                    </div> */}
+        {/* Right section - Feedback section */}
+        <div className={styles.rightSection}>
+          <Title level={4} style={{ marginBottom: "20px" }}>
+            Đánh giá từ khách hàng
+          </Title>
 
-          {/* Thông tin địa chỉ */}
-          {/* <div className={styles.location}>
-            <b>Khu vực hoạt động</b>
-            <p>Quận A - Quận B - HN</p>
-          </div> */}
+          {loading ? (
+            <div className={styles.loadingContainer}>
+              <Spin size="large" />
+            </div>
+          ) : feedbacks.length === 0 ? (
+            <Empty description="Chưa có đánh giá nào" />
+          ) : (
+            <List
+              className={styles.feedbackList}
+              itemLayout="vertical"
+              dataSource={feedbacks}
+              renderItem={(feedback) => (
+                <List.Item className={styles.feedbackItem}>
+                  <Card bordered={false} className={styles.feedbackCard}>
+                    <div className={styles.feedbackHeader}>
+                      <div className={styles.jobInfoText}>
+                        <Text type="secondary">
+                          Mã công việc: {feedback.jobId}
+                        </Text>
+                      </div>
+                      <Rate
+                        disabled
+                        defaultValue={feedback.rating}
+                        className={styles.rateStars}
+                      />
+                    </div>
 
-          {/* Mô tả thông tin */}
-          {/* <div className={styles.description}>
-                        <b>Thông tin</b>
-                        <p>
-                            Lorem ipsum dolor sit amet, consectetur adipiscing elit,
-                            sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-                            Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris
-                            nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in
-                            reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
-                            pariatur. Excepteur sint occaecat cupidatat non proident,
-                            sunt in culpa qui officia deserunt mollit anim id est laborum.
-                        </p>
-                    </div> */}
+                    <Divider style={{ margin: "12px 0" }} />
+
+                    <Paragraph className={styles.feedbackComment}>
+                      {feedback.comment}
+                    </Paragraph>
+                  </Card>
+                </List.Item>
+              )}
+            />
+          )}
         </div>
       </div>
-
-      {/* các button */}
-      {/* <div className={styles.actionButtons}>
-                <div className={styles.rejectButton}>
-                    <strong>Từ chối</strong>
-                </div>
-                <div className={styles.acceptButton}>
-                    <strong>Chấp nhận</strong>
-                </div>
-            </div> */}
     </div>
   );
 };
