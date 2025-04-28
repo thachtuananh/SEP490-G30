@@ -146,6 +146,7 @@ public class WalletController {
             adminTransactionHistory.setStatus("SUCCESS");
             adminTransactionHistory.setDescription("Nạp tiền thành công");
 
+
             // Lưu vào bảng AdminTransactionHistory
             adminTransactionHistoryRepository.save(adminTransactionHistory);
             String redirectUrl = "https://house-clean-platform.web.app/DepositOwner?status=success";
@@ -176,19 +177,28 @@ public class WalletController {
             return ResponseEntity.noContent().build();
         }
 
+        // Kiểm tra và thay thế transactionDate null bằng giá trị mặc định nếu cần
+        transactionHistoryList.forEach(transaction -> {
+            if (transaction.getTransactionDate() == null) {
+                // Thay thế bằng thời gian hiện tại nếu transactionDate là null
+                transaction.setTransactionDate(LocalDateTime.now());
+            }
+        });
+
         // Sắp xếp các giao dịch theo thời gian, giao dịch sớm nhất lên đầu
         transactionHistoryList.sort(Comparator.comparing(TransactionHistory::getTransactionDate));
 
         // Nếu có giao dịch, trả về danh sách giao dịch nhưng không bao gồm thông tin của cleaner
         List<TransactionHistory> filteredTransactionHistoryList = transactionHistoryList.stream()
                 .map(transaction -> {
-                    transaction.setCleaner(null);
+                    transaction.setCleaner(null); // Xóa thông tin cleaner khỏi giao dịch
                     return transaction;
                 })
                 .collect(Collectors.toList());
 
         return ResponseEntity.ok(filteredTransactionHistoryList);
     }
+
 
 
     @GetMapping("/{customerId}/transaction-historycustomer")
@@ -200,6 +210,14 @@ public class WalletController {
         if (transactionHistoryList.isEmpty()) {
             return ResponseEntity.noContent().build();
         }
+
+        // Kiểm tra và thay thế transactionDate null bằng giá trị mặc định nếu cần
+        transactionHistoryList.forEach(transaction -> {
+            if (transaction.getTransactionDate() == null) {
+                // Thay thế bằng thời gian hiện tại nếu transactionDate là null
+                transaction.setTransactionDate(LocalDateTime.now());
+            }
+        });
 
         // Sắp xếp các giao dịch theo thời gian, giao dịch mới nhất lên trước
         transactionHistoryList.sort(Comparator.comparing(TransactionHistory::getTransactionDate).reversed());
@@ -214,6 +232,7 @@ public class WalletController {
 
         return ResponseEntity.ok(filteredTransactionHistoryList);
     }
+
 
 
 

@@ -4,6 +4,7 @@ import com.example.homecleanapi.dtos.NotificationDTO;
 import com.example.homecleanapi.enums.JobStatus;
 import com.example.homecleanapi.models.*;
 import com.example.homecleanapi.repositories.*;
+import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -13,6 +14,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -47,8 +49,8 @@ public class ScheduleService {
         System.out.println("Check Job and Delete at: " + now);
 
         // Lấy tất cả job OPEN
-        List<Job> jobs = jobRepository.findAllByStatus(JobStatus.OPEN);
-        System.out.println("Tổng số job OPEN: " + jobs.size());
+        List<Job> jobs = jobRepository.findAllByStatusIn(Arrays.asList(JobStatus.OPEN, JobStatus.BOOKED));
+        System.out.println("Tổng số job OPEN và BOOKED: " + jobs.size());
 
         List<Job> updatedJobs = new ArrayList<>();
         List<JobApplication> applicationsToUpdate = new ArrayList<>();
@@ -232,6 +234,198 @@ public class ScheduleService {
             System.out.println("Đã cập nhật " + transactionHistories.size() + " giao dịch.");
         }
     }
+
+
+    @Scheduled(cron = "0 * * * * *")  // Thực thi mỗi phút
+    public void autoCancelPaidJobs() {
+        System.out.println("Check Paid Jobs for Auto Cancel");
+
+        ZoneId zoneId = ZoneId.of("Asia/Ho_Chi_Minh");
+        LocalDateTime now = LocalDateTime.now(zoneId);  // Lấy thời gian hiện tại
+        System.out.println("Check Paid Jobs at: " + now);
+
+        // Lấy tất cả các job có trạng thái PAID
+        List<Job> jobs = jobRepository.findAllByStatus(JobStatus.PAID);
+        System.out.println("Tổng số job PAID: " + jobs.size());
+
+        List<Job> updatedJobs = new ArrayList<>();
+        List<TransactionHistory> transactionHistories = new ArrayList<>();
+
+        for (Job job : jobs) {
+            // Kiểm tra nếu job có trạng thái PAID và đã quá 5 phút kể từ thời gian cập nhật
+            if (job.getUpdatedAt() != null && job.getUpdatedAt().isBefore(now.minusMinutes(5))) {
+
+                // Kiểm tra nếu job vẫn chưa chuyển sang OPEN hoặc BOOKED
+                if (job.getStatus() == JobStatus.PAID) {
+
+                    // Đổi trạng thái job thành AUTO_CANCELLED
+                    job.setStatus(JobStatus.AUTO_CANCELLED);
+                    updatedJobs.add(job);
+
+                    // Hoàn tiền cho customer vào ví
+                    Optional<CustomerWallet> walletOpt = customerWalletRepository.findByCustomerId(Long.valueOf(job.getCustomer().getId()));
+                    if (walletOpt.isPresent()) {
+                        CustomerWallet wallet = walletOpt.get();
+                        // Cộng lại số tiền vào ví
+                        wallet.setBalance(wallet.getBalance() + job.getTotalPrice());
+                        customerWalletRepository.save(wallet);  // Lưu ví cập nhật
+
+                        TransactionHistory transactionHistory = new TransactionHistory();
+                        transactionHistory.setCustomer(wallet.getCustomer());  // Gán thông tin customer
+                        transactionHistory.setAmount(job.getTotalPrice());  // Số tiền hoàn lại
+                        transactionHistory.setTransactionType("Refund");  // Loại giao dịch là hoàn tiền
+                        transactionHistory.setTransactionDate(LocalDateTime.now(zoneId));  // Ngày giờ giao dịch
+                        transactionHistory.setPaymentMethod(job.getPaymentMethod());  // Phương thức thanh toán là ví
+                        transactionHistory.setStatus("SUCCESS");  // Trạng thái giao dịch là hoàn tất
+
+                        // Lưu thông tin vào bảng transaction_history
+                        transactionHistoryRepository.save(transactionHistory);
+
+                        System.out.println("Đã hoàn tiền cho customer " + job.getCustomer().getId());
+                    }
+
+                    // Gửi thông báo cho customer
+                    NotificationDTO customerNotification = new NotificationDTO(
+                            job.getCustomer().getId(),
+                            "Đơn hàng của bạn đã bị hủy do chưa thanh toán",
+                            "AUTO_MESSAGE",
+                            LocalDate.now(zoneId)
+                    );
+                    notificationService.processNotification(customerNotification, "CUSTOMER", job.getCustomer().getId());
+
+                    // Gửi thông báo cho cleaner
+                    if (job.getCleaner() != null) {
+                        NotificationDTO cleanerNotification = new NotificationDTO(
+                                job.getCleaner().getId(),
+                                "Công việc của bạn đã bị hủy do khách hàng chưa thanh toán",
+                                "AUTO_MESSAGE",
+                                LocalDate.now(zoneId)
+                        );
+                        notificationService.processNotification(cleanerNotification, "CLEANER", job.getCleaner().getId());
+                    }
+
+                    System.out.println("Đã tự động hủy Job " + job.getId());
+                }
+            }
+        }
+
+        // Lưu các thay đổi nếu có
+        if (!updatedJobs.isEmpty()) {
+            jobRepository.saveAll(updatedJobs);
+            System.out.println("Đã cập nhật trạng thái cho " + updatedJobs.size() + " công việc.");
+        }
+
+        // Lưu lịch sử giao dịch vào bảng transaction_history
+        if (!transactionHistories.isEmpty()) {
+            transactionHistoryRepository.saveAll(transactionHistories);
+            System.out.println("Đã cập nhật " + transactionHistories.size() + " giao dịch.");
+        }
+    }
+
+
+    // tự động hủy job hoặc hủy apply nếu trùng lịch
+    @Scheduled(cron = "0 * * * * *")  // Thực thi mỗi phút
+    @Transactional
+    public void autoCheckJobAndCleanerSchedule() {
+        System.out.println("Checking cleaner schedule for job conflicts...");
+
+        ZoneId zoneId = ZoneId.of("Asia/Ho_Chi_Minh");
+        LocalDateTime now = LocalDateTime.now(zoneId);
+        System.out.println("Checking cleaner schedules at: " + now);
+
+        List<JobApplication> applicationsToUpdate = new ArrayList<>();
+        List<Job> jobsToCancel = new ArrayList<>();
+
+        // 1. Huỷ apply Pending nếu cleaner đã nhận job khác trùng lịch
+        List<JobApplication> pendingApplications = jobApplicationRepository.findAllByStatus("Pending");
+
+        for (JobApplication pendingApp : pendingApplications) {
+            Long cleanerId = Long.valueOf(pendingApp.getCleaner().getId());
+            LocalDateTime pendingJobTime = pendingApp.getJob().getScheduledTime();
+            LocalDateTime pendingEndTime = pendingJobTime.plusHours(2);
+
+            List<JobApplication> acceptedApps = jobApplicationRepository.findByCleanerIdAndStatus(cleanerId, "Accepted");
+
+            for (JobApplication acceptedApp : acceptedApps) {
+                LocalDateTime acceptedTime = acceptedApp.getJob().getScheduledTime();
+                LocalDateTime acceptedEndTime = acceptedTime.plusHours(2);
+
+                if (!pendingApp.getJob().getId().equals(acceptedApp.getJob().getId()) &&
+                        acceptedTime.isBefore(pendingEndTime) &&
+                        acceptedEndTime.isAfter(pendingJobTime)) {
+
+                    pendingApp.setStatus("Cancelled");
+                    applicationsToUpdate.add(pendingApp);
+                    System.out.println("Cancelled pending application for job " + pendingApp.getJob().getId() + " because cleaner accepted another job " + acceptedApp.getJob().getId());
+                }
+            }
+        }
+
+        // 2. Huỷ Job BOOKED nếu cleaner đang làm job khác (IN_PROGRESS hoặc đã ACCEPT job khác)
+        List<Job> bookedJobs = jobRepository.findAllByStatus(JobStatus.BOOKED);
+
+        for (Job bookedJob : bookedJobs) {
+            if (bookedJob.getCleaner() != null) {
+                Long cleanerId = Long.valueOf(bookedJob.getCleaner().getId());
+                LocalDateTime bookedTime = bookedJob.getScheduledTime();
+                LocalDateTime bookedEndTime = bookedTime.plusHours(2);
+
+                // Kiểm tra các Job đang IN_PROGRESS
+                List<Job> inProgressJobs = jobRepository.findByCleanerIdAndStatus(cleanerId, JobStatus.IN_PROGRESS);
+
+                boolean conflict = false;
+                for (Job inProgressJob : inProgressJobs) {
+                    LocalDateTime inProgressTime = inProgressJob.getScheduledTime();
+                    LocalDateTime inProgressEndTime = inProgressTime.plusHours(2);
+
+                    if (!bookedJob.getId().equals(inProgressJob.getId()) &&
+                            inProgressTime.isBefore(bookedEndTime) &&
+                            inProgressEndTime.isAfter(bookedTime)) {
+                        conflict = true;
+                        break;
+                    }
+                }
+
+                // Kiểm tra thêm nếu cleaner đã accept job khác
+                List<JobApplication> acceptedApps = jobApplicationRepository.findByCleanerIdAndStatus(cleanerId, "Accepted");
+
+                for (JobApplication acceptedApp : acceptedApps) {
+                    LocalDateTime acceptedTime = acceptedApp.getJob().getScheduledTime();
+                    LocalDateTime acceptedEndTime = acceptedTime.plusHours(2);
+
+                    if (!bookedJob.getId().equals(acceptedApp.getJob().getId()) &&
+                            acceptedTime.isBefore(bookedEndTime) &&
+                            acceptedEndTime.isAfter(bookedTime)) {
+                        conflict = true;
+                        break;
+                    }
+                }
+
+                if (conflict) {
+                    bookedJob.setStatus(JobStatus.AUTO_CANCELLED);
+                    jobsToCancel.add(bookedJob);
+                    System.out.println("Auto-cancelled booked job " + bookedJob.getId() + " because cleaner has another job.");
+                }
+            }
+        }
+
+        // Save all changes
+        if (!jobsToCancel.isEmpty()) {
+            jobRepository.saveAll(jobsToCancel);
+            System.out.println("Cancelled " + jobsToCancel.size() + " jobs.");
+        }
+
+        if (!applicationsToUpdate.isEmpty()) {
+            jobApplicationRepository.saveAll(applicationsToUpdate);
+            System.out.println("Updated " + applicationsToUpdate.size() + " job applications.");
+        }
+    }
+
+
+
+
+
+
 
 
 

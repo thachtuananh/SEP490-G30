@@ -69,5 +69,8 @@ public interface JobRepository extends JpaRepository<Job, Long> {
         END
     """)
     List<JobGroupedStatusCount> countJobByStatus();
+
+
+    List<Job> findAllByStatusIn(List<JobStatus> statuses);
 }
 
