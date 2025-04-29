@@ -245,8 +245,8 @@
 }
 
 .message_container {
-  width: 500px;
-  height: 500px;
+  width: 600px;
+  height: 550px;
 }
 
 .message__main {
@@ -267,6 +267,8 @@
   flex-direction: column;
   gap: 10px;
   box-sizing: border-box;
+  height: 100%;
+  padding: 10px;
 }
 
 .message_user {
