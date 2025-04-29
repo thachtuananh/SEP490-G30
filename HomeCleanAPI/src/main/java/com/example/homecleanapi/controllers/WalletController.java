@@ -91,9 +91,6 @@ public class WalletController {
             if ("vnpay".equalsIgnoreCase(paymentMethod)) {
                 Map<String, Object> response = walletService.createPaymentForDepositVnpay(cleanerId, amount, request);
                 return ResponseEntity.ok(response);
-            } else if ("zalopay".equalsIgnoreCase(paymentMethod)) {
-                Map<String, Object> response = walletService.createPaymentForDepositZalopay(cleanerId, amount);
-                return ResponseEntity.ok(response);
             } else {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", "Invalid payment method"));
             }

@@ -2,21 +2,17 @@ package com.example.homecleanapi.services;
 
 import com.example.homecleanapi.dtos.BookJobRequest;
 import com.example.homecleanapi.dtos.BookJobRequest.ServiceRequest;
-import com.example.homecleanapi.dtos.JobSummaryDTO;
 import com.example.homecleanapi.enums.JobStatus;
 import com.example.homecleanapi.models.*;
 import com.example.homecleanapi.repositories.*;
 
-import com.example.homecleanapi.vnPay.VnpayRequest;
-import com.example.homecleanapi.vnPay.VnpayService;
+import com.example.homecleanapi.dtos.VnpayRequest;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import java.text.DecimalFormat;
 import java.time.DayOfWeek;

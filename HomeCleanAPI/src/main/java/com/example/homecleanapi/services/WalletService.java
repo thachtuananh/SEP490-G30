@@ -1,23 +1,16 @@
 package com.example.homecleanapi.services;
 
-import java.net.http.HttpRequest;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
 import com.example.homecleanapi.models.*;
 import com.example.homecleanapi.repositories.*;
-import com.example.homecleanapi.zaloPay.ZalopayService;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import com.example.homecleanapi.paymentForWallets.VnpayRequestWallet;
-import com.example.homecleanapi.paymentForWallets.VnpayServiceWallet;
+import com.example.homecleanapi.dtos.VnpayRequestWallet;
 
 @Service
 public class WalletService {
@@ -30,9 +23,6 @@ public class WalletService {
     
     @Autowired
     private VnpayServiceWallet vnpayServiceWallet;
-
-    @Autowired
-    private ZalopayService zalopayService;
 
     @Autowired
     private TransactionHistoryRepository transactionHistoryRepository;
@@ -161,51 +151,6 @@ public class WalletService {
             return response;
         }
     }
-
-
-
-    public Map<String, Object> createPaymentForDepositZalopay(Long cleanerId, double amount) {
-        Map<String, Object> response = new HashMap<>();
-        if (amount <= 0) {
-            response.put("message", "Số tiền nạp phải lớn hơn 0.");
-            return response;
-        }
-
-        try {
-            // Gọi ZaloPay service để tạo thanh toán
-            Map<String, Object> orderRequest = new HashMap<>();
-
-            orderRequest.put("amount", String.valueOf((long) (amount * 100)));
-
-
-            // Lấy paymentUrl từ ZaloPay
-            String paymentUrl = zalopayService.createOrder(orderRequest);
-
-            // Lưu thông tin vào Wallet và cập nhật txnRef
-            Optional<Wallet> walletOpt = walletRepository.findByCleanerId(cleanerId);
-            Wallet wallet = walletOpt.orElseGet(() -> {
-                Wallet newWallet = new Wallet();
-                newWallet.setCleaner(cleanerRepository.findById(cleanerId).orElseThrow());
-                newWallet.setBalance(0.0);  // Khởi tạo ví mới với số dư 0
-                return newWallet;
-            });
-
-            // Tạo txnRef duy nhất cho ZaloPay và lưu vào Wallet
-            String txnRef = "ZALOPAY_" + System.currentTimeMillis();  // Tạo txnRef cho ZaloPay
-            wallet.setTxnRef(txnRef);
-            walletRepository.save(wallet);
-
-            response.put("paymentUrl", paymentUrl);  // Trả lại paymentUrl từ ZaloPay để cleaner thực hiện thanh toán
-            response.put("txnRef", txnRef);  // Trả txnRef để theo dõi giao dịch
-
-        } catch (Exception e) {
-            response.put("message", "Failed to create payment through ZaloPay: " + e.getMessage());
-        }
-
-        return response;
-    }
-
-
     // Hàm để trích xuất txnRef từ URL trả về của VNPay
     private String extractTxnRefFromUrl(String paymentUrl) {
         try {

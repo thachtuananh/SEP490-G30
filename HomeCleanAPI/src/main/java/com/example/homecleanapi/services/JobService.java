@@ -3,8 +3,7 @@ package com.example.homecleanapi.services;
 
 
 import com.example.homecleanapi.dtos.JobDTO;
-import com.example.homecleanapi.vnPay.VnpayRequest;
-import com.example.homecleanapi.vnPay.VnpayService;
+import com.example.homecleanapi.dtos.VnpayRequest;
 import com.example.homecleanapi.dtos.BookJobRequest;
 import com.example.homecleanapi.dtos.BookJobRequest.ServiceRequest;
 import com.example.homecleanapi.enums.JobStatus;
@@ -17,7 +16,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
