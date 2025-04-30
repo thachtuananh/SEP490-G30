@@ -44,13 +44,13 @@ const JobUploadCard = ({
       return;
     }
     // Check for either numeric ID 5 or string ID "combo" with displayId 5
-    if ((id === 5 || (id === "combo" && displayId === 5)) && onComboSelect) {
+    if (id === "combo" && displayId === 5 && onComboSelect) {
       onComboSelect();
     }
   };
 
   // Check if this is a combo service (either ID 5 or string ID "combo" with displayId 5)
-  const isComboService = id === 5 || (id === "combo" && displayId === 5);
+  const isComboService = id === "combo" && displayId === 5;
 
   return (
     <Card
