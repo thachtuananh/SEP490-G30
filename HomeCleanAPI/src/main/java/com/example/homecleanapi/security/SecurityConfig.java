@@ -7,7 +7,6 @@ import com.example.homecleanapi.services.CustomAdminUserDetailsService;
 import com.example.homecleanapi.services.CustomCustomerUserDetailsService;
 import com.example.homecleanapi.services.CustomEmployeeUserDetailsService;
 import com.example.homecleanapi.utils.JwtUtils;
-import io.netty.handler.codec.http.HttpMethod;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;

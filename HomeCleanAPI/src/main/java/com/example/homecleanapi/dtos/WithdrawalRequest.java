@@ -1,5 +1,7 @@
-package com.example.homecleanapi.models;
+package com.example.homecleanapi.dtos;
 
+import com.example.homecleanapi.models.Customers;
+import com.example.homecleanapi.models.Employee;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
