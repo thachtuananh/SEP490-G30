@@ -1,6 +1,5 @@
 package com.example.homecleanapi.models;
 
-import com.example.homecleanapi.enums.ReportStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;

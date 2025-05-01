@@ -1,14 +1,13 @@
 package com.example.homecleanapi.controllers;
 
 
-import com.example.homecleanapi.dtos.EmployeeDTO;
+import com.example.homecleanapi.services.FindCleanerService;
 import com.example.homecleanapi.dtos.ServiceDTO;
+import com.example.homecleanapi.services.ServiceDisplayService;
+import com.example.homecleanapi.dtos.EmployeeDTO;
 import com.example.homecleanapi.models.CustomerAddresses;
-import com.example.homecleanapi.models.Customers;
 import com.example.homecleanapi.repositories.CustomerAddressRepository;
 import com.example.homecleanapi.repositories.CustomerRepository;
-import com.example.homecleanapi.services.FindCleanerService;
-import com.example.homecleanapi.services.ServiceDisplayService;
 
 import java.util.List;
 

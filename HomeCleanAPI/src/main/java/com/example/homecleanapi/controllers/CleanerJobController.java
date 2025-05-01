@@ -1,22 +1,17 @@
 package com.example.homecleanapi.controllers;
 
-import com.example.homecleanapi.dtos.JobSummaryDTO;
-import com.example.homecleanapi.enums.JobStatus;
 import com.example.homecleanapi.services.CleanerJobService;
-
 import com.example.homecleanapi.services.FindCleanerService;
+import com.example.homecleanapi.dtos.JobSummaryDTO;
+
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
-import com.example.homecleanapi.services.JobService;
-import com.example.homecleanapi.utils.JwtUtils;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 

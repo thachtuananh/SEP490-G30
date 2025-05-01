@@ -1,12 +1,12 @@
 package com.example.homecleanapi.services;
 
 
-import com.example.homecleanapi.models.Conversation;
+import com.example.homecleanapi.repositories.CustomerRepository;
 import com.example.homecleanapi.models.Customers;
 import com.example.homecleanapi.models.Employee;
-import com.example.homecleanapi.repositories.ConversationRepository;
-import com.example.homecleanapi.repositories.CustomerRepository;
 import com.example.homecleanapi.repositories.EmployeeRepository;
+import com.example.homecleanapi.models.Conversation;
+import com.example.homecleanapi.repositories.ConversationRepository;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.beans.factory.annotation.Autowired;

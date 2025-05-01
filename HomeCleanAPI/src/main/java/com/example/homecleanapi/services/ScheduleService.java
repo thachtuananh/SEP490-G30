@@ -1,5 +1,12 @@
 package com.example.homecleanapi.services;
 
+import com.example.homecleanapi.models.Wallet;
+import com.example.homecleanapi.repositories.WalletRepository;
+import com.example.homecleanapi.models.Job;
+import com.example.homecleanapi.models.JobApplication;
+import com.example.homecleanapi.models.Employee;
+import com.example.homecleanapi.repositories.JobApplicationRepository;
+import com.example.homecleanapi.repositories.JobRepository;
 import com.example.homecleanapi.dtos.NotificationDTO;
 import com.example.homecleanapi.enums.JobStatus;
 import com.example.homecleanapi.models.*;
@@ -324,7 +331,7 @@ public class ScheduleService {
 
 
     // tự động hủy job hoặc hủy apply nếu trùng lịch
-    @Scheduled(cron = "0 * * * * *")  // Thực thi mỗi phút
+    @Scheduled(cron = "0 * * * * *")
     @Transactional
     public void autoCheckJobAndCleanerSchedule() {
         System.out.println("Checking cleaner schedule for job conflicts...");
@@ -347,16 +354,25 @@ public class ScheduleService {
             List<JobApplication> acceptedApps = jobApplicationRepository.findByCleanerIdAndStatus(cleanerId, "Accepted");
 
             for (JobApplication acceptedApp : acceptedApps) {
-                LocalDateTime acceptedTime = acceptedApp.getJob().getScheduledTime();
+                Job acceptedJob = acceptedApp.getJob();
+
+                // BỎ QUA nếu job đã hoàn tất hoặc bị hủy
+                if (acceptedJob.getStatus() == JobStatus.DONE ||
+                        acceptedJob.getStatus() == JobStatus.CANCELLED ||
+                        acceptedJob.getStatus() == JobStatus.AUTO_CANCELLED) {
+                    continue;
+                }
+
+                LocalDateTime acceptedTime = acceptedJob.getScheduledTime();
                 LocalDateTime acceptedEndTime = acceptedTime.plusHours(2);
 
-                if (!pendingApp.getJob().getId().equals(acceptedApp.getJob().getId()) &&
+                if (!pendingApp.getJob().getId().equals(acceptedJob.getId()) &&
                         acceptedTime.isBefore(pendingEndTime) &&
                         acceptedEndTime.isAfter(pendingJobTime)) {
 
                     pendingApp.setStatus("Cancelled");
                     applicationsToUpdate.add(pendingApp);
-                    System.out.println("Cancelled pending application for job " + pendingApp.getJob().getId() + " because cleaner accepted another job " + acceptedApp.getJob().getId());
+                    System.out.println("Cancelled pending application for job " + pendingApp.getJob().getId() + " because cleaner accepted another job " + acceptedJob.getId());
                 }
             }
         }
@@ -386,14 +402,22 @@ public class ScheduleService {
                     }
                 }
 
-                // Kiểm tra thêm nếu cleaner đã accept job khác
+                // Kiểm tra thêm nếu cleaner đã accept job khác (trừ những job đã DONE/CANCELLED)
                 List<JobApplication> acceptedApps = jobApplicationRepository.findByCleanerIdAndStatus(cleanerId, "Accepted");
 
                 for (JobApplication acceptedApp : acceptedApps) {
-                    LocalDateTime acceptedTime = acceptedApp.getJob().getScheduledTime();
+                    Job acceptedJob = acceptedApp.getJob();
+
+                    if (acceptedJob.getStatus() == JobStatus.DONE ||
+                            acceptedJob.getStatus() == JobStatus.CANCELLED ||
+                            acceptedJob.getStatus() == JobStatus.AUTO_CANCELLED) {
+                        continue;
+                    }
+
+                    LocalDateTime acceptedTime = acceptedJob.getScheduledTime();
                     LocalDateTime acceptedEndTime = acceptedTime.plusHours(2);
 
-                    if (!bookedJob.getId().equals(acceptedApp.getJob().getId()) &&
+                    if (!bookedJob.getId().equals(acceptedJob.getId()) &&
                             acceptedTime.isBefore(bookedEndTime) &&
                             acceptedEndTime.isAfter(bookedTime)) {
                         conflict = true;
@@ -420,6 +444,7 @@ public class ScheduleService {
             System.out.println("Updated " + applicationsToUpdate.size() + " job applications.");
         }
     }
+
 
 
 
