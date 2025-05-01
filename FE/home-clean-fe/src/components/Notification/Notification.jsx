@@ -150,7 +150,6 @@ const Notification = () => {
                   cursor: "pointer",
                   opacity: markReadLoading ? 0.5 : 1,
                 }}
-                // spin={markReadLoading}
                 title="Đánh dấu tất cả đã đọc"
               />
             )}
@@ -217,10 +216,30 @@ const Notification = () => {
                   }
                   description={
                     <>
-                      <div className={styles.notification_message}>
+                      <div
+                        className={styles.notification_message}
+                        style={{
+                          fontWeight: isNotificationUnread(item)
+                            ? "bold"
+                            : "normal",
+                          color: isNotificationUnread(item)
+                            ? "#313134"
+                            : "normal",
+                        }}
+                      >
                         {item.message}
                       </div>
-                      <div className={styles.notification_time}>
+                      <div
+                        className={styles.notification_time}
+                        style={{
+                          fontWeight: isNotificationUnread(item)
+                            ? "bold"
+                            : "normal",
+                          color: isNotificationUnread(item)
+                            ? "#313134"
+                            : "normal",
+                        }}
+                      >
                         {formatDate(item.timestamp)}
                       </div>
                     </>
