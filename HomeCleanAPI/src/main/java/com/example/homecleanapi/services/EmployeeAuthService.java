@@ -116,6 +116,7 @@ public class EmployeeAuthService {
         response.put("phone", employee.getPhone());
         response.put("cleanerId", employee.getId());
         response.put("name", employee.getName());
+        response.put("image", employee.getProfile_image());
         response.put("role", "Employee");
 
         return ResponseEntity.ok(response);
