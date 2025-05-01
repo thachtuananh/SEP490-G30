@@ -10,9 +10,9 @@ import java.io.IOException;
 import java.util.*;
 
 @RestController
-@Tag(name = "GPT")
+@Tag(name = "GEMINI")
 @RequestMapping("/consultation")
-public class ConsultationController {
+public class GeminiConsultationController {
 
     @Autowired
     private GeminiService geminiService;
@@ -77,7 +77,7 @@ Câu hỏi: %s
 
 
 
-    @PostMapping("/clearCache")
+    @PostMapping("/deleteCollection")
     public String clearCache() {
         uploadedDocs.clear();
         return "Đã xóa tất cả tài liệu đã tải lên.";
