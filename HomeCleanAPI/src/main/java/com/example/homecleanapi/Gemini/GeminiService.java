@@ -1,4 +1,4 @@
-package com.example.homecleanapi.GPT;
+package com.example.homecleanapi.Gemini;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
@@ -25,7 +25,7 @@ public class GeminiService {
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
-        // ❌ KHÔNG sử dụng setBearerAuth nữa
+
 
         HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, headers);
 
