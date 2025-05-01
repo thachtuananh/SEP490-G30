@@ -130,7 +130,7 @@ public class CleanerJobController {
     public ResponseEntity<List<Map<String, Object>>> getAppliedJobs2(@PathVariable Long cleanerId) {
         List<Map<String, Object>> appliedJobs = cleanerJobService.getAppliedJobsForCleaner(cleanerId);
         if (appliedJobs.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(List.of(Map.of("message", "No applied jobs")));
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(List.of(Map.of("message", "Bạn đang không ứng tuyển bất kỳ một công việc nào.")));
         }
         return ResponseEntity.ok(appliedJobs);
     }
@@ -142,7 +142,7 @@ public class CleanerJobController {
         Map<String, Object> jobsByService = cleanerJobService.getJobsByService(cleanerId);
 
         if (jobsByService.isEmpty()) {
-            jobsByService.put("message", "No jobs found by service");
+            jobsByService.put("message", "Hiện tại, không có công việc nào tồn tại trong hệ thống của dịch vụ này.");
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(jobsByService);
         }
 
@@ -157,7 +157,7 @@ public class CleanerJobController {
         List<Map<String, Object>> jobDetails = cleanerJobService.getJobsDetailsByService(serviceId);
         
         if (jobDetails.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(List.of(Map.of("message", "No jobs found for this service")));
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(List.of(Map.of("message", "Hiện tại, không có công việc nào tồn tại trong hệ thống của dịch vụ này.")));
         }
 
         return ResponseEntity.ok(jobDetails);
@@ -170,7 +170,7 @@ public class CleanerJobController {
         List<Map<String, Object>> comboJobs = cleanerJobService.getComboJobs(cleanerId);
 
         if (comboJobs.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(List.of(Map.of("message", "No combo jobs found")));
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(List.of(Map.of("message", "Hiện tại, không có công việc nào tồn tại trong hệ thống của dịch vụ này.")));
         }
 
         return ResponseEntity.ok(comboJobs);
