@@ -1,8 +1,7 @@
 package com.example.homecleanapi.services;
 
-import com.example.homecleanapi.dtos.ReportUpdateDTO;
 import com.example.homecleanapi.dtos.ReportRequestDTO;
-import com.example.homecleanapi.enums.ReportStatus;
+import com.example.homecleanapi.dtos.ReportUpdateDTO;
 import com.example.homecleanapi.models.CleanerReport;
 import com.example.homecleanapi.models.Job;
 import com.example.homecleanapi.models.JobApplication;

@@ -273,6 +273,16 @@ const JobCard = ({ job, refreshJobs, isAppliedTab }) => {
                   console.error("Error sending completion SMS:", error);
                 });
             }
+            if (newStatus.toUpperCase() === "ARRIVED") {
+              const smsMessageArrived = `[HouseClean] Cleaner ${cleanerName} đã đến ${job.customerAddress} để làm việc lúc ${formattedDate}. SĐT Cleaner: ${cleanerPhone}. Bạn vui lòng mở cửa và để ý điện thoại nhé.`;
+              sendSms(job.customerPhone, smsMessageArrived)
+                .then(() => {
+                  console.log("Completion SMS sent successfully");
+                })
+                .catch((error) => {
+                  console.error("Error sending completion SMS:", error);
+                });
+            }
           })
           .catch((error) => {
             console.error("Error updating status:", error);

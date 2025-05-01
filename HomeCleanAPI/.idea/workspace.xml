@@ -6,8 +6,8 @@
   <component name="ChangeListManager">
     <list default="true" id="6dd32c25-99a1-4da0-a769-374f6713cd9c" name="Changes" comment="Hot fix JWT author">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/repositories/JobApplicationRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/repositories/JobApplicationRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/services/ScheduleService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/services/ScheduleService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/Gemini/ConsultationController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/Gemini/GeminiConsultationController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/application.properties" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -69,9 +69,9 @@
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
     &quot;Spring Boot.HomeCleanApiApplication.executor&quot;: &quot;Run&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;manhtt3-DONE&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;manhtt3-gemini&quot;,
     &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;D:/PROJECT-GITHUB&quot;,
+    &quot;last_opened_file_path&quot;: &quot;D:/FPT&quot;,
     &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
     &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
     &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
@@ -134,6 +134,10 @@
       <workItem from="1745550427847" duration="1423000" />
       <workItem from="1745652169442" duration="9987000" />
       <workItem from="1745733573081" duration="12041000" />
+      <workItem from="1745803406132" duration="33622000" />
+      <workItem from="1745937175469" duration="1854000" />
+      <workItem from="1745977625714" duration="12202000" />
+      <workItem from="1746063983686" duration="1711000" />
     </task>
     <task id="LOCAL-00001" summary="update application">
       <option name="closed" value="true" />

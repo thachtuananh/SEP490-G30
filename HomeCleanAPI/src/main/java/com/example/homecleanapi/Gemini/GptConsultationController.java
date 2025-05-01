@@ -1,4 +1,5 @@
-package com.example.homecleanapi.GPT;
+package com.example.homecleanapi.Gemini;
+
 
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,8 +13,8 @@ import java.io.IOException;
 
 @RestController
 @Tag(name = "GPT")
-@RequestMapping("/consultation")
-public class ConsultationController {
+@RequestMapping("/consultationgpt")
+public class GptConsultationController {
 
     @Autowired
     private QdrantService qdrantService;

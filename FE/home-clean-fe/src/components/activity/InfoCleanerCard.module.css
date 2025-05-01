@@ -1,172 +1,319 @@
 /* Container tổng */
 .cardContainer {
-    background: white;
-    border-radius: 10px;
-    max-width: 1100px;
-    margin: 0 auto;
-    padding-bottom: 30px;
+  background: white;
+  border-radius: 10px;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding-bottom: 30px;
 }
 
 /* Nội dung chính */
 .cardContent {
-    width: 90%;
-    max-width: 1000px;
-    margin: 0 auto;
-    padding: 50px 0px 20px 0px;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 20px;
+  width: 90%;
+  max-width: 1000px;
+  margin: 0 auto;
+  /* padding: 50px 0px 20px 0px; */
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
 }
 
 /* Thông tin cơ bản */
 .basicInfo {
-    display: flex;
-    flex-direction: column;
-    row-gap: 5px;
-    width: 300px;
-    text-align: center;
+  display: flex;
+  flex-direction: column;
+  row-gap: 5px;
+  width: 300px;
+  text-align: center;
 }
 
-.avatar {
-    width: 100%;
-    max-width: 280px;
-    height: 180px;
-    border: 1px solid gray;
-    border-radius: 5px;
-    margin: 0 auto;
+.basicInfo img {
+  /* width: 100%; */
+  max-width: 280px;
+  /* height: 180px;
+  border: 1px solid gray;
+  border-radius: 5px; */
+  margin: 0 auto;
 }
 
 .divider {
-    height: 2px;
-    background: rgb(216, 215, 215);
+  height: 2px;
+  background: rgb(216, 215, 215);
 }
 
 /* Mô tả thông tin */
 .infoSection {
-    flex: 1;
-    padding: 10px 10px 10px 50px;
+  flex: 1;
+  padding: 10px 10px 10px 50px;
 }
 
 /* Các ô thống kê */
 .stats {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-    justify-content: center;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
 }
 
 .statBox {
-    border: 2px solid rgb(34, 190, 9);
-    border-radius: 5px;
-    padding: 8px;
-    background: rgb(155, 245, 192);
-    text-align: center;
-    flex: 1;
-    min-width: 80px;
-    max-width: 150px;
+  border: 2px solid rgb(34, 190, 9);
+  border-radius: 5px;
+  padding: 8px;
+  background: rgb(155, 245, 192);
+  text-align: center;
+  flex: 1;
+  min-width: 80px;
+  max-width: 150px;
 }
 
 /* Địa chỉ */
 .location {
-    padding: 15px 0px;
-    display: flex;
-    flex-direction: column;
-    row-gap: 8px;
-    text-align: center;
+  padding: 15px 0px;
+  display: flex;
+  flex-direction: column;
+  row-gap: 8px;
+  text-align: center;
 }
 
 /* Mô tả thông tin */
 .description {
-    max-width: 580px;
-    text-align: justify;
-    margin: 0 auto;
+  max-width: 580px;
+  text-align: justify;
+  margin: 0 auto;
 }
 
 /* Các nút bấm */
 .actionButtons {
-    display: flex;
-    gap: 20px;
-    justify-content: center;
-    padding-top: 20px;
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  padding-top: 20px;
 }
 
 .rejectButton,
 .acceptButton {
-    width: 150px;
-    padding: 10px 20px;
-    text-align: center;
-    color: white;
-    border-radius: 5px;
-    cursor: pointer;
-    font-weight: bold;
+  width: 150px;
+  padding: 10px 20px;
+  text-align: center;
+  color: white;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
 }
 
 .rejectButton:hover,
 .acceptButton:hover {
-    transform: scale(1.05);
+  transform: scale(1.05);
 }
 
 .rejectButton {
-    background: rgb(131, 129, 129);
+  background: rgb(131, 129, 129);
 }
 
 .acceptButton {
-    background: rgb(13, 129, 20);
+  background: rgb(13, 129, 20);
 }
 
 /* ------------------------- */
 /* RESPONSIVE CHO MÀN HÌNH NHỎ */
 /* ------------------------- */
 @media (max-width: 768px) {
-    .cardContainer {
-        padding-bottom: 20px;
-    }
+  .cardContainer {
+    padding-bottom: 20px;
+  }
 
-    .cardContent {
-        flex-direction: column;
-        padding: 20px 15px;
-        text-align: center;
-    }
+  .cardContent {
+    flex-direction: column;
+    /* padding: 20px 15px; */
+    text-align: center;
+  }
 
-    .basicInfo {
-        width: 100%;
-        float: left;
-    }
+  .basicInfo {
+    width: 100%;
+    float: left;
+  }
 
-    .avatar {
-        width: 60%;
-        max-width: 200px;
-        height: auto;
-    }
+  .basicInfo img {
+    width: 60%;
+    max-width: 200px;
+    height: auto;
+  }
 
-    .infoSection {
-        padding: 0;
-    }
+  .infoSection {
+    padding: 0;
+  }
 
-    .stats {
-        flex-direction: column;
-        align-items: center;
-    }
+  .stats {
+    flex-direction: column;
+    align-items: center;
+  }
 
-    .statBox {
-        width: 80%;
-        max-width: 250px;
-    }
+  .statBox {
+    width: 80%;
+    max-width: 250px;
+  }
 
-    .description {
-        max-width: 100%;
-        padding: 0 10px;
-    }
+  .description {
+    max-width: 100%;
+    padding: 0 10px;
+  }
 
-    .actionButtons {
-        flex-direction: column;
-        align-items: center;
-        gap: 10px;
-    }
+  .actionButtons {
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
 
-    .rejectButton,
-    .acceptButton {
-        width: 80%;
-        max-width: 200px;
-    }
+  .rejectButton,
+  .acceptButton {
+    width: 80%;
+    max-width: 200px;
+  }
+}
+
+/* ------------------------- */
+/* NEW STYLES FOR FEEDBACK SECTION */
+/* ------------------------- */
+
+/* Flex container for side-by-side layout */
+.flexContainer {
+  display: flex;
+  width: 100%;
+  gap: 30px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+/* Left section - cleaner info */
+.leftSection {
+  flex: 1;
+  /* min-width: 300px; */
+}
+
+/* Right section - feedback */
+.rightSection {
+  flex: 1.5;
+  border-left: 1px solid #f0f0f0;
+  padding-left: 30px;
+}
+
+/* Avatar styling */
+.avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 10px;
+  object-fit: cover;
+}
+
+/* Name and rating section */
+.nameSection {
+  display: flex;
+  flex-direction: column;
+  margin-top: 10px;
+  align-items: center;
+}
+
+/* Rating container */
+.ratingContainer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+  justify-content: center;
+}
+
+.ratingText {
+  font-size: 14px;
+}
+
+/* Info grid for cleaner details */
+.infoGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  margin: 15px 0;
+}
+
+.infoItem {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* Loading container */
+.loadingContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
+}
+
+/* Feedback list */
+.feedbackList {
+  max-height: 400px;
+  overflow-y: auto;
+  padding-right: 8px;
+  margin-top: 15px;
+}
+
+.feedbackItem {
+  margin-bottom: 16px;
+}
+
+.feedbackCard {
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Feedback header - user info and rating */
+.feedbackHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.userInfo {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.rateStars {
+  font-size: 14px;
+}
+
+/* Service tags */
+.serviceInfo {
+  margin-bottom: 12px;
+}
+
+.feedbackComment {
+  margin-bottom: 0;
+  text-align: left;
+}
+
+/* Responsive for feedback section */
+@media (max-width: 768px) {
+  .flexContainer {
+    flex-direction: column;
+    padding: 15px;
+  }
+
+  .rightSection {
+    border-left: none;
+    border-top: 1px solid #f0f0f0;
+    padding-left: 0;
+    padding-top: 20px;
+    margin-top: 15px;
+  }
+
+  .infoGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .feedbackList {
+    max-height: 300px;
+  }
 }

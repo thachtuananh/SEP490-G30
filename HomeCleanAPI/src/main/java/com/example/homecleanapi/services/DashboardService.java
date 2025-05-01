@@ -1,7 +1,5 @@
 package com.example.homecleanapi.services;
 
-import com.example.homecleanapi.enums.JobStatus;
-import com.example.homecleanapi.models.Job;
 import com.example.homecleanapi.repositories.JobGroupedStatusCount;
 import com.example.homecleanapi.repositories.JobRepository;
 import org.springframework.beans.factory.annotation.Autowired;

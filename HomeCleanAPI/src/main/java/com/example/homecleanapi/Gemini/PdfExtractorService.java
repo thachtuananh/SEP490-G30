@@ -1,4 +1,4 @@
-package com.example.homecleanapi.GPT;
+package com.example.homecleanapi.Gemini;
 
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;

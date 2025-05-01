@@ -1,11 +1,14 @@
 package com.example.homecleanapi.services;
 
+import com.example.homecleanapi.repositories.CleanerRepository;
+import com.example.homecleanapi.repositories.CustomerRepository;
+import com.example.homecleanapi.models.Wallet;
+import com.example.homecleanapi.repositories.WalletRepository;
 import com.example.homecleanapi.dtos.WithdrawalDTO;
+import com.example.homecleanapi.dtos.WithdrawalRequest;
 import com.example.homecleanapi.models.*;
 import com.example.homecleanapi.repositories.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -84,7 +87,7 @@ public class WithdrawalRequestService {
         }
 
         // Tạo yêu cầu rút tiền
-        com.example.homecleanapi.models.WithdrawalRequest withdrawalRequest = new com.example.homecleanapi.models.WithdrawalRequest();
+        WithdrawalRequest withdrawalRequest = new WithdrawalRequest();
         withdrawalRequest.setCustomer(wallet.getCustomer());
         withdrawalRequest.setAmount(request.getAmount());
         withdrawalRequest.setStatus("PENDING");
@@ -167,7 +170,7 @@ public class WithdrawalRequestService {
         }
 
         // Tạo yêu cầu rút tiền cho cleaner
-        com.example.homecleanapi.models.WithdrawalRequest withdrawalRequest = new com.example.homecleanapi.models.WithdrawalRequest();
+        WithdrawalRequest withdrawalRequest = new WithdrawalRequest();
         withdrawalRequest.setCleaner(wallet.getCleaner());  // Set cleaner vào withdrawalRequest
         withdrawalRequest.setAmount(request.getAmount());
         withdrawalRequest.setStatus("PENDING");

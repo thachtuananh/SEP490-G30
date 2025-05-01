@@ -1,6 +1,12 @@
 package com.example.homecleanapi.services;
 
+import com.example.homecleanapi.repositories.JobApplicationRepository;
+import com.example.homecleanapi.repositories.JobRepository;
 import com.example.homecleanapi.dtos.FeedbackRequest;
+import com.example.homecleanapi.models.Job;
+import com.example.homecleanapi.models.JobApplication;
+import com.example.homecleanapi.models.Employee;
+import com.example.homecleanapi.repositories.EmployeeRepository;
 import com.example.homecleanapi.models.*;
 import com.example.homecleanapi.repositories.*;
 import com.example.homecleanapi.enums.JobStatus; // Import Enum JobStatus

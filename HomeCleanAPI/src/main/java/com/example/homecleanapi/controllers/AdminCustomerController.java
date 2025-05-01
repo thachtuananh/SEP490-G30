@@ -1,14 +1,12 @@
 package com.example.homecleanapi.controllers;
 
-import com.example.homecleanapi.dtos.*;
-import com.example.homecleanapi.models.Job;
 import com.example.homecleanapi.services.AdminCustomerService;
-import com.example.homecleanapi.services.CustomerService;
-import com.example.homecleanapi.services.CustomerAuthService;
+import com.example.homecleanapi.dtos.CustomerProfileAdminDTO;
+import com.example.homecleanapi.dtos.CustomerRegisterRequest;
+import com.example.homecleanapi.dtos.*;
 import com.example.homecleanapi.utils.JwtUtils;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
