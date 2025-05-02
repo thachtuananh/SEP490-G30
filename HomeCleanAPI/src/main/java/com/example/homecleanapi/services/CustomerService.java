@@ -1,20 +1,15 @@
 package com.example.homecleanapi.services;
 
+import com.example.homecleanapi.repositories.CustomerRepository;
 import com.example.homecleanapi.dtos.CustomerAddressesDTO;
 import com.example.homecleanapi.dtos.CustomerProfileRequest;
-import com.example.homecleanapi.dtos.EmployeeLocationsDTO;
 import com.example.homecleanapi.models.CustomerAddresses;
 import com.example.homecleanapi.models.Customers;
-import com.example.homecleanapi.models.Employee;
-import com.example.homecleanapi.models.EmployeeLocations;
 import com.example.homecleanapi.repositories.CustomerAddressRepository;
-import com.example.homecleanapi.repositories.CustomerRepository;
 
 import com.example.homecleanapi.utils.ConvertAddressToLatLong;
-import org.hibernate.jdbc.Expectation;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
 
 
 import org.springframework.http.HttpStatus;

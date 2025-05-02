@@ -1,11 +1,9 @@
 package com.example.homecleanapi.controllers;
 
-import com.example.homecleanapi.dtos.BookJobRequest;
-import com.example.homecleanapi.dtos.CleanerSessionInfo;
-import com.example.homecleanapi.dtos.FeedbackRequest;
 import com.example.homecleanapi.models.CustomerAddresses;
-import com.example.homecleanapi.services.CleanerJobService;
 import com.example.homecleanapi.services.JobService;
+import com.example.homecleanapi.dtos.BookJobRequest;
+import com.example.homecleanapi.services.CleanerJobService;
 
 
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -17,7 +15,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 

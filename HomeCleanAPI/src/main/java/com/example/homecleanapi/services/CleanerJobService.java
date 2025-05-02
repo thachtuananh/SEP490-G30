@@ -1,8 +1,19 @@
 package com.example.homecleanapi.services;
 
+import com.example.homecleanapi.repositories.EmployeeAddressRepository;
+import com.example.homecleanapi.repositories.ServiceRepository;
+import com.example.homecleanapi.models.Services;
+import com.example.homecleanapi.repositories.CleanerRepository;
+import com.example.homecleanapi.repositories.WalletRepository;
+import com.example.homecleanapi.models.Feedback;
+import com.example.homecleanapi.repositories.FeedbackRepository;
+import com.example.homecleanapi.repositories.JobApplicationRepository;
+import com.example.homecleanapi.repositories.JobRepository;
+import com.example.homecleanapi.models.Employee;
+import com.example.homecleanapi.models.Customers;
+import com.example.homecleanapi.repositories.CustomerRepo;
 import com.example.homecleanapi.dtos.BookJobRequest;
 import com.example.homecleanapi.dtos.BookJobRequest.ServiceRequest;
-import com.example.homecleanapi.dtos.JobSummaryDTO;
 import com.example.homecleanapi.enums.JobStatus;
 import com.example.homecleanapi.models.*;
 import com.example.homecleanapi.repositories.*;
@@ -12,11 +23,9 @@ import com.example.homecleanapi.vnPay.VnpayService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import java.text.DecimalFormat;
 import java.time.DayOfWeek;

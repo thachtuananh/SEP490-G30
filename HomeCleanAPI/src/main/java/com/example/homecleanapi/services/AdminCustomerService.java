@@ -2,11 +2,17 @@
 
 package com.example.homecleanapi.services;
 
+import com.example.homecleanapi.repositories.CustomerRepository;
+import com.example.homecleanapi.repositories.EmployeeRepository;
+import com.example.homecleanapi.dtos.CustomerProfileAdminDTO;
+import com.example.homecleanapi.dtos.CustomerRegisterRequest;
+import com.example.homecleanapi.repositories.CustomerRepo;
+import com.example.homecleanapi.repositories.JobRepository;
+import com.example.homecleanapi.repositories.JobApplicationRepository;
 import com.example.homecleanapi.dtos.*;
 import com.example.homecleanapi.models.Customers;
 import com.example.homecleanapi.models.Job;
 import com.example.homecleanapi.models.JobApplication;
-import com.example.homecleanapi.repositories.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;

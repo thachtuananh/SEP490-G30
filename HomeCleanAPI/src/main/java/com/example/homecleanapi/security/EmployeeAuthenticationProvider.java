@@ -1,8 +1,6 @@
 package com.example.homecleanapi.security;
 
-import com.example.homecleanapi.models.Customers;
 import com.example.homecleanapi.models.Employee;
-import com.example.homecleanapi.repositories.CustomerRepository;
 import com.example.homecleanapi.repositories.EmployeeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;

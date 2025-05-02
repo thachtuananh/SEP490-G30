@@ -1,6 +1,6 @@
 package com.example.homecleanapi.repositories;
 
-import com.example.homecleanapi.models.WithdrawalRequest;
+import com.example.homecleanapi.dtos.WithdrawalRequest;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

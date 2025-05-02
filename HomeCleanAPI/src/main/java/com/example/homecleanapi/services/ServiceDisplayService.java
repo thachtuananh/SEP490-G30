@@ -2,9 +2,9 @@ package com.example.homecleanapi.services;
 import com.example.homecleanapi.dtos.ServiceDTO;
 import com.example.homecleanapi.models.ServiceDetail;
 import com.example.homecleanapi.models.Services;
-import com.example.homecleanapi.repositories.ServiceRepository;
 import com.example.homecleanapi.repositories.ServiceDetailRepository;
 
+import com.example.homecleanapi.repositories.ServiceRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

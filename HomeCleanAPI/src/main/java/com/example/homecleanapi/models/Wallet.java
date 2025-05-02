@@ -12,7 +12,7 @@ public class Wallet {
 
     @ManyToOne
     @JoinColumn(name = "cleaner_id", nullable = false)
-    private Employee cleaner; 
+    private Employee cleaner;
 
     private Double balance;
 
