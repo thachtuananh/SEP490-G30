@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { Pagination, Spin, Empty, Alert } from "antd";
+import { Pagination, Alert } from "antd";
 import styles from "../components/activityJob/JobList.module.css";
 import TabSelector from "../components/activityJob/TabSelector";
+import SearchBar from "../components/activityJob/SearchBar";
 import JobCard from "../components/activityJob/JobCard";
 import Navbar from "../components/Home/Cleaner/Navbar";
 import Footer from "../components/Home/Cleaner/Footer";
@@ -10,8 +11,11 @@ import { BASE_URL } from "../utils/config";
 const ActivityJob = () => {
   const [activeTab, setActiveTab] = useState("doing");
   const [jobs, setJobs] = useState([]);
+  const [filteredJobs, setFilteredJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [searchActive, setSearchActive] = useState(false);
+  const [searchText, setSearchText] = useState("");
 
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
@@ -25,6 +29,8 @@ const ActivityJob = () => {
   const fetchJobs = (tabType) => {
     setLoading(true);
     setError(null);
+    setSearchActive(false);
+    setSearchText("");
 
     const cleanerId = sessionStorage.getItem("cleanerId");
     const token = sessionStorage.getItem("token");
@@ -68,6 +74,7 @@ const ActivityJob = () => {
       })
       .then((data) => {
         setJobs(data);
+        setFilteredJobs(data);
         setTotalJobs(data.length);
         setCurrentPage(1); // Reset to first page when tab changes
         setLoading(false);
@@ -81,6 +88,36 @@ const ActivityJob = () => {
 
   const refreshJobs = () => {
     fetchJobs(activeTab);
+  };
+
+  // Handle search by order code
+  const handleSearch = (searchText) => {
+    if (!searchText) {
+      setFilteredJobs(jobs);
+      setSearchActive(false);
+      setSearchText("");
+      setTotalJobs(jobs.length);
+    } else {
+      const results = jobs.filter(
+        (job) =>
+          job.orderCode &&
+          job.orderCode.toLowerCase().includes(searchText.toLowerCase())
+      );
+      setFilteredJobs(results);
+      setSearchActive(true);
+      setSearchText(searchText);
+      setTotalJobs(results.length);
+    }
+    setCurrentPage(1);
+  };
+
+  // Clear search results
+  const handleClearSearch = () => {
+    setFilteredJobs(jobs);
+    setSearchActive(false);
+    setSearchText("");
+    setTotalJobs(jobs.length);
+    setCurrentPage(1);
   };
 
   // Get dynamic header content based on active tab
@@ -116,6 +153,10 @@ const ActivityJob = () => {
 
   // Get empty state message based on active tab
   const getEmptyStateMessage = () => {
+    if (searchActive) {
+      return `Không tìm thấy đơn hàng nào với mã đơn hàng "${searchText}"`;
+    }
+
     switch (activeTab) {
       case "doing":
         return "Không có công việc nào đang làm";
@@ -143,7 +184,7 @@ const ActivityJob = () => {
   const getCurrentJobs = () => {
     const startIndex = (currentPage - 1) * pageSize;
     const endIndex = startIndex + pageSize;
-    return jobs.slice(startIndex, endIndex);
+    return filteredJobs.slice(startIndex, endIndex);
   };
 
   // Custom styles for Ant Design pagination to match design
@@ -151,6 +192,66 @@ const ActivityJob = () => {
     marginTop: "24px",
     textAlign: "center",
     fontFamily: "Inter, sans-serif",
+  };
+
+  // Thông báo kết quả tìm kiếm được cải thiện
+  const renderSearchNotification = () => {
+    if (!searchActive) return null;
+
+    if (filteredJobs.length === 0) {
+      return (
+        <div
+          className={styles.searchNotification}
+          style={{
+            background: "#fff7e6",
+            border: "1px solid #ffe7ba",
+            borderRadius: "4px",
+            padding: "12px 16px",
+            marginBottom: "20px",
+            display: "flex",
+            alignItems: "center",
+            fontSize: "14px",
+            color: "#d46b08",
+            justifyContent: "center",
+          }}
+        >
+          <i
+            className="ti ti-alert-circle"
+            style={{ marginRight: "8px", fontSize: "16px" }}
+          ></i>
+          <span>
+            Không tìm thấy đơn hàng nào với mã đơn hàng "
+            <strong>{searchText}</strong>"
+          </span>
+        </div>
+      );
+    }
+
+    return (
+      <div
+        className={styles.searchNotification}
+        style={{
+          background: "#e6f7ff",
+          border: "1px solid #bae7ff",
+          borderRadius: "4px",
+          padding: "12px 16px",
+          marginBottom: "20px",
+          display: "flex",
+          alignItems: "center",
+          fontSize: "14px",
+          color: "#1890ff",
+        }}
+      >
+        <i
+          className="ti ti-search"
+          style={{ marginRight: "8px", fontSize: "16px" }}
+        ></i>
+        <span>
+          Tìm thấy <strong>{filteredJobs.length}</strong> kết quả cho mã đơn
+          hàng "<strong>{searchText}</strong>"
+        </span>
+      </div>
+    );
   };
 
   return (
@@ -174,6 +275,12 @@ const ActivityJob = () => {
 
           <TabSelector activeTab={activeTab} onTabChange={handleTabChange} />
 
+          {/* Search Bar Component */}
+          <SearchBar onSearch={handleSearch} onClear={handleClearSearch} />
+
+          {/* Hiển thị thông báo tìm kiếm được cải thiện */}
+          {renderSearchNotification()}
+
           {loading && (
             <div className={styles.emptyState}>
               <div className={styles.loadingSpinner}></div>
@@ -186,10 +293,20 @@ const ActivityJob = () => {
               <div className={styles.emptyIcon}>
                 <i className="ti ti-clipboard-list"></i>
               </div>
+              <p className={styles.emptyMessage}>{error}</p>
+            </div>
+          )}
+
+          {!loading && !error && filteredJobs.length === 0 && (
+            <div className={styles.emptyState}>
+              <div className={styles.emptyIcon}>
+                <i className="ti ti-clipboard-list"></i>
+              </div>
               <p className={styles.emptyMessage}>{getEmptyStateMessage()}</p>
             </div>
           )}
-          {!loading && !error && jobs.length > 0 && (
+
+          {!loading && !error && filteredJobs.length > 0 && (
             <>
               <div>
                 {getCurrentJobs().map((job) => (
@@ -208,8 +325,6 @@ const ActivityJob = () => {
                   pageSize={pageSize}
                   total={totalJobs}
                   onChange={handlePageChange}
-                  // showSizeChanger
-                  // pageSizeOptions={["5", "10", "20"]}
                   style={{
                     display: "flex",
                     justifyContent: "center",
