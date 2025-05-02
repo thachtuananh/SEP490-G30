@@ -512,6 +512,7 @@ const JobCard = ({ job, refreshJobs, isAppliedTab }) => {
           </h2>
           <div style={{ marginTop: "8px", color: "#6b7280", fontSize: "14px" }}>
             <div>Khách hàng: {job.customerName}</div>
+            <div>Mã đơn hàng: {job.orderCode}</div>
             {displayStatus.toUpperCase() !== "PENDING" ||
               (displayStatus.toUpperCase() !== "CANCELLED" && (
                 <div>SĐT: {job.customerPhone}</div>

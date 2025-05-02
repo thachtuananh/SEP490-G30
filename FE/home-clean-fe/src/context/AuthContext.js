@@ -129,6 +129,7 @@ const AuthReducer = (state, action) => {
             sessionStorage.removeItem("customerId");
             sessionStorage.removeItem("cleanerId");
             sessionStorage.removeItem("adminId");
+            localStorage.removeItem("image");
             return {
                 ...state,
                 user: null,

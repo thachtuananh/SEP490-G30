@@ -55,8 +55,8 @@ export const InfoCleanerCard = ({ cleaner }) => {
               <strong>Tên : {cleaner.cleanerName}</strong>
               <div className={styles.divider}></div>
               <p>Tuổi : {cleaner.age}</p>
-              <p>CCCD: {cleaner.identityNumber}</p>
-              <p>Email : {cleaner.email}</p>
+              {/* <p>CCCD: {cleaner.identityNumber}</p> */}
+              {/* <p>Email : {cleaner.email}</p> */}
               <p>Kinh nghiệm : {cleaner.experience}</p>
 
               {/* Display average rating if available */}
