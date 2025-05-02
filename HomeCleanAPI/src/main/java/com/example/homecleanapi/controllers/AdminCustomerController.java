@@ -122,4 +122,8 @@ public class AdminCustomerController {
         return "Admin".equals(role) || "Manager".equals(role);
     }
 
+    @PostMapping(value = "/cancel/job/{jobId}/manual/{customerId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Map<String, Object>> cancelJobManual(@PathVariable Long customerId, @PathVariable Long jobId) {
+        return customerService.cancelJobForAdmin(jobId, customerId);
+    }
 }
