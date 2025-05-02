@@ -1062,54 +1062,30 @@ public class CleanerJobService {
 
 
 	// xem các job thuộc phần filter service
-	public List<Map<String, Object>> getJobsDetailsByService(Long serviceId) {
+	public List<Map<String, Object>> getJobsDetailsByService(Long serviceId, Long cleanerId) {
 		List<Map<String, Object>> jobDetailsList = new ArrayList<>();
-
-		// Lấy tất cả các JobServiceDetail liên quan đến serviceId
 		List<JobServiceDetail> jobServiceDetails = jobServiceDetailRepository.findByServiceId(serviceId);
 
-		// Debugging: Kiểm tra xem có dữ liệu nào được lấy từ jobServiceDetailRepository không
-		System.out.println("Number of JobServiceDetails found: " + jobServiceDetails.size());
-
-		// Tạo Map để theo dõi số lần xuất hiện của job_id trong bảng job_service_detail
 		Map<Long, Integer> jobIdCountMap = new HashMap<>();
-
-		// Duyệt qua tất cả các JobServiceDetail để đếm số lần xuất hiện của job_id
 		for (JobServiceDetail jobServiceDetail : jobServiceDetails) {
 			Long jobId = jobServiceDetail.getJob().getId();
 			jobIdCountMap.put(jobId, jobIdCountMap.getOrDefault(jobId, 0) + 1);
 		}
 
-		// Debugging: In ra map jobId -> số lần xuất hiện
-		System.out.println("Job ID Count Map: " + jobIdCountMap);
-
-		// Duyệt qua tất cả các JobServiceDetail để lấy chi tiết job
 		for (JobServiceDetail jobServiceDetail : jobServiceDetails) {
 			Job job = jobServiceDetail.getJob();
 			Long jobId = job.getId();
 
-			// Kiểm tra xem job này có phải là combo hay không
-			if (jobIdCountMap.get(jobId) > 1) {
-				System.out.println("Skipping jobId " + jobId + " because it is a combo (multiple job_id entries).");
-				continue; // Bỏ qua job combo
+			if (jobIdCountMap.get(jobId) > 1 || !"SINGLE".equals(job.getJobType())) {
+				continue;
 			}
 
-			// Kiểm tra xem job có job_type là "SINGLE" không
-			if (!"SINGLE".equals(job.getJobType())) {
-				System.out.println("Skipping jobId " + jobId + " because it is not a SINGLE job.");
-				continue; // Bỏ qua job không phải là "SINGLE"
+			// ✅ Kiểm tra xem cleanerId đã apply chưa
+			boolean cleanerHasApplied = jobApplicationRepository.existsByJobIdAndCleanerId(jobId, cleanerId);
+			if (cleanerHasApplied) {
+				continue; // Bỏ qua nếu cleaner đã apply
 			}
 
-			// Kiểm tra nếu job đã có cleaner apply
-			Optional<JobApplication> jobApplicationOpt = jobApplicationRepository.findByJobId(jobId);
-			if (jobApplicationOpt.isPresent()) {
-				System.out.println("Skipping jobId " + jobId + " because it already has a cleaner applied.");
-				continue; // Bỏ qua job đã có cleaner apply
-			}
-
-			System.out.println("Job ID " + jobId + " is a SINGLE job, continuing processing.");
-
-			// Kiểm tra trạng thái job (chỉ lấy các job đang OPEN)
 			if (job != null && job.getStatus() == JobStatus.OPEN) {
 				Map<String, Object> jobInfo = new HashMap<>();
 				jobInfo.put("jobId", job.getId());
@@ -1118,7 +1094,10 @@ public class CleanerJobService {
 				jobInfo.put("scheduledTime", job.getScheduledTime());
 				jobInfo.put("totalPrice", job.getTotalPrice());
 
-				// Thêm thông tin về customer đã book job
+				if (job.getOrderCode() != null) {
+					jobInfo.put("orderCode", job.getOrderCode());
+				}
+
 				Customers customer = job.getCustomer();
 				if (customer != null) {
 					jobInfo.put("customerId", customer.getId());
@@ -1126,7 +1105,6 @@ public class CleanerJobService {
 					jobInfo.put("customerPhone", customer.getPhone());
 				}
 
-				// Thêm thông tin về địa chỉ của customer
 				CustomerAddresses customerAddress = job.getCustomerAddress();
 				if (customerAddress != null) {
 					jobInfo.put("customerAddressId", customerAddress.getId());
@@ -1135,12 +1113,11 @@ public class CleanerJobService {
 					jobInfo.put("longitude", customerAddress.getLongitude());
 				}
 
-				// Lấy tất cả các JobServiceDetail cho job này
-				List<JobServiceDetail> jobServiceDetailsForJob = jobServiceDetailRepository.findByJobId(job.getId());
+				List<JobServiceDetail> jobServiceDetailsForJob = jobServiceDetailRepository.findByJobId(jobId);
 				List<Map<String, String>> services = new ArrayList<>();
-				for (JobServiceDetail jobServiceDetailForJob : jobServiceDetailsForJob) {
+				for (JobServiceDetail jsd : jobServiceDetailsForJob) {
 					Map<String, String> serviceInfo = new HashMap<>();
-					Services service = jobServiceDetailForJob.getService();
+					Services service = jsd.getService();
 					serviceInfo.put("serviceName", service.getName());
 					serviceInfo.put("serviceDescription", service.getDescription());
 					services.add(serviceInfo);
@@ -1148,20 +1125,12 @@ public class CleanerJobService {
 
 				jobInfo.put("services", services);
 				jobDetailsList.add(jobInfo);
-
-				// Debugging: In ra thông tin của job đã được thêm vào danh sách
-				System.out.println("Job added: " + jobInfo);
-			} else {
-				// Nếu job không phải là OPEN, thông báo bỏ qua
-				System.out.println("Skipping jobId " + jobId + " because it is not OPEN.");
 			}
 		}
 
-		// Debugging: In ra danh sách kết quả
-		System.out.println("Final jobDetailsList: " + jobDetailsList);
-
 		return jobDetailsList;
 	}
+
 
 
 
