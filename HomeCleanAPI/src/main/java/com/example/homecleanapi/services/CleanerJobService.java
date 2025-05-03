@@ -1574,6 +1574,15 @@ public class CleanerJobService {
 			// Cập nhật trạng thái job sau khi thanh toán thành công
 			job.setStatus(JobStatus.BOOKED);  // Cập nhật trạng thái job thành BOOKED sau khi thanh toán
 			jobRepository.save(job);  // Lưu job vào database
+
+			TransactionHistory transaction = new TransactionHistory();
+			transaction.setCustomer(customer);
+			transaction.setAmount(totalPrice);
+			transaction.setTransactionType("BOOKING");
+			transaction.setPaymentMethod("WALLET");
+			transaction.setStatus("SUCCESS");
+
+			transactionHistoryRepository.save(transaction);
 		} else if ("vnpay".equalsIgnoreCase(request.getPaymentMethod())) {
 			// Tạo VNPay Request với số tiền thanh toán
 			VnpayRequest vnpayRequest = new VnpayRequest();
