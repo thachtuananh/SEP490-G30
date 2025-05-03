@@ -326,6 +326,12 @@ public class AdminCustomerService {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
             }
 
+            // Kiểm tra trạng thái của job
+            if (job.getStatus().equals(JobStatus.DONE)) {
+                response.put("message", "Người dùng đã xác nhận dọn dẹp hoàn thành, không thể hủy công việc này được.");
+                return ResponseEntity.status(HttpStatus.ALREADY_REPORTED).body(response);
+            }
+
             double refundAmount = job.getTotalPrice();
 
             CustomerWallet wallet = customerWalletRepository.findByCustomerId(customerId).orElse(null);

@@ -1,5 +1,7 @@
 package com.example.homecleanapi.Gemini;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
@@ -25,24 +27,33 @@ public class GeminiService {
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
-
-
         HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, headers);
 
         try {
             String url = GEMINI_API_URL + "?key=" + apiKey;
-            ResponseEntity<Map> response = restTemplate.postForEntity(url, entity, Map.class);
+            ResponseEntity<String> response = restTemplate.postForEntity(url, entity, String.class);
 
-            List<Map<String, Object>> candidates = (List<Map<String, Object>>) response.getBody().get("candidates");
-            if (candidates == null || candidates.isEmpty()) return "Không có phản hồi từ Gemini.";
+            // In ra toàn bộ JSON để theo dõi
+            String jsonBody = response.getBody();
 
-            Map<String, Object> first = candidates.get(0);
-            Map<String, Object> content = (Map<String, Object>) first.get("content");
-            List<Map<String, String>> parts = (List<Map<String, String>>) content.get("parts");
-            return parts.get(0).get("text");
+            // Parse chuỗi JSON để lấy phần text
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode root = mapper.readTree(jsonBody);
+
+            JsonNode textNode = root.path("candidates")
+                    .path(0)
+                    .path("content")
+                    .path("parts")
+                    .path(0)
+                    .path("text");
+
+            String text = textNode.isMissingNode() ? "Không có phản hồi từ Gemini." : textNode.asText();
+
+            // Trả về cả JSON gốc và phần text trích ra (nếu muốn)
+            return "{ \"text\": \"" + text + "\", \"raw\": " + jsonBody + " }";
 
         } catch (Exception e) {
-            return "Gemini API lỗi: " + e.getMessage();
+            return "{\"error\": \"Gemini API lỗi: " + e.getMessage() + "\"}";
         }
     }
 }
