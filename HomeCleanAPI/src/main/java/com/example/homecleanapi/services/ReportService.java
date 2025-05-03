@@ -65,10 +65,14 @@ public class ReportService {
         }
 
         Job job = optionalJob.get();
-        Integer cleanerId = job.getCleaner().getId();
-        if (jobApplicationOptional.isPresent()) {
+        Integer cleanerId = null;
+
+        if (jobApplicationOptional.isPresent() && jobApplicationOptional.get().getCleaner() != null) {
             cleanerId = jobApplicationOptional.get().getCleaner().getId();
+        } else if (job.getCleaner() != null) {
+            cleanerId = job.getCleaner().getId();
         }
+
 //        JobApplication job_application = jobApplicationOptional.get();
 
         Report report = new Report();
