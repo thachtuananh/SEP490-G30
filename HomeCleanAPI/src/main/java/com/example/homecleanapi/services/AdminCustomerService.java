@@ -351,7 +351,7 @@ public class AdminCustomerService {
             // Cập nhật trạng thái job
             System.out.println("Trạng thái trước: " + job.getStatus()); // thêm dòng này trước khi set
             job.setStatus(JobStatus.CANCELLED);
-            jobRepository.save(job);
+            jobRepository.saveAndFlush(job);
 
             response.put("message", "Công việc đã được huỷ thành công");
             response.put("jobId", jobId);
