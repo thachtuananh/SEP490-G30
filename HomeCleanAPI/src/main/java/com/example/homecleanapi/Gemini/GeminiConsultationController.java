@@ -45,11 +45,11 @@ public class GeminiConsultationController {
     }
 
     @PostMapping("/ask")
-    public String askConsultation(@RequestBody Map<String, String> request) {
+    public Map<String, String> askConsultation(@RequestBody Map<String, String> request) {
         String question = request.get("question");
 
         if (uploadedDocs.isEmpty()) {
-            return "Hiện tại chưa có tài liệu nào được tải lên để tham khảo.";
+            return Map.of("answer", "Hiện tại chưa có tài liệu nào được tải lên để tham khảo.");
         }
 
         // Gộp toàn bộ nội dung các file PDF đã upload
@@ -72,8 +72,10 @@ Nếu không tìm thấy thông tin cần thiết trong tài liệu, hãy trả 
 Câu hỏi: %s
 """, allContent, question);
 
-        return geminiService.askGemini(prompt);
+        String answer = geminiService.askGemini(prompt);
+        return Map.of("answer", answer);
     }
+
 
 
 
