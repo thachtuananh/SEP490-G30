@@ -2,6 +2,7 @@ package com.example.homecleanapi.Gemini;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
@@ -33,13 +34,11 @@ public class GeminiService {
             String url = GEMINI_API_URL + "?key=" + apiKey;
             ResponseEntity<String> response = restTemplate.postForEntity(url, entity, String.class);
 
-            // In ra toàn bộ JSON để theo dõi
             String jsonBody = response.getBody();
-
-            // Parse chuỗi JSON để lấy phần text
             ObjectMapper mapper = new ObjectMapper();
-            JsonNode root = mapper.readTree(jsonBody);
 
+            // Parse để lấy phần "text"
+            JsonNode root = mapper.readTree(jsonBody);
             JsonNode textNode = root.path("candidates")
                     .path(0)
                     .path("content")
@@ -49,8 +48,12 @@ public class GeminiService {
 
             String text = textNode.isMissingNode() ? "Không có phản hồi từ Gemini." : textNode.asText();
 
-            // Trả về cả JSON gốc và phần text trích ra (nếu muốn)
-            return "{ \"text\": \"" + text + "\", \"raw\": " + jsonBody + " }";
+            // Tạo ObjectNode để build JSON kết quả
+            ObjectNode result = mapper.createObjectNode();
+            result.put("text", text);
+            result.set("raw", root);
+
+            return mapper.writeValueAsString(result);
 
         } catch (Exception e) {
             return "{\"error\": \"Gemini API lỗi: " + e.getMessage() + "\"}";
