@@ -241,7 +241,7 @@ public class JobService {
         String orderCode = customerId + LocalDate.now().format(DateTimeFormatter.ofPattern("ddMMyy")) +
                 UUID.randomUUID().toString().substring(0, 8).toUpperCase();
         job.setOrderCode(orderCode);
-
+        job.setTotalPrice(totalPrice);
         // Lưu job và chi tiết
         job = jobRepository.save(job);
         for (JobServiceDetail jsd : jobServiceDetails) {
