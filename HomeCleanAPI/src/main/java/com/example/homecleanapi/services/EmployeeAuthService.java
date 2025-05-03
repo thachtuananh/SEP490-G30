@@ -97,7 +97,7 @@ public class EmployeeAuthService {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
         }
         // Kiểm tra nếu tài khoản bị khóa hoặc chưa xác thực
-        if (employee.getIs_verified() == false || employee.getIsDeleted() == true) {
+        if (employee.getIs_verified() == false && employee.getIsDeleted() == true) {
             response.put("message", "Tài khoản của bạn chưa xác thực");
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
         }
