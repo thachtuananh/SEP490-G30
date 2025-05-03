@@ -46,6 +46,9 @@ public interface JobApplicationRepository extends JpaRepository<JobApplication, 
 
 	List<JobApplication> findAllByStatus(String status);
 
+	boolean existsByJobIdAndCleanerId(Long jobId, Long cleanerId);
+
+
 
 
 }
