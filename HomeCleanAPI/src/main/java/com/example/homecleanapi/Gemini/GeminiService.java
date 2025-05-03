@@ -33,12 +33,21 @@ public class GeminiService {
         try {
             String url = GEMINI_API_URL + "?key=" + apiKey;
             ResponseEntity<String> response = restTemplate.postForEntity(url, entity, String.class);
+            String responseBody = response.getBody();
 
-            String jsonBody = response.getBody();
             ObjectMapper mapper = new ObjectMapper();
+            JsonNode root;
 
-            // Parse để lấy phần "text"
-            JsonNode root = mapper.readTree(jsonBody);
+            try {
+                root = mapper.readTree(responseBody);
+            } catch (Exception e) {
+                // Nếu không parse được JSON, trả về dưới dạng text thuần
+                ObjectNode fallback = mapper.createObjectNode();
+                fallback.put("text", responseBody);
+                fallback.put("raw", "Không phải JSON hợp lệ");
+                return mapper.writeValueAsString(fallback);
+            }
+
             JsonNode textNode = root.path("candidates")
                     .path(0)
                     .path("content")
@@ -48,15 +57,14 @@ public class GeminiService {
 
             String text = textNode.isMissingNode() ? "Không có phản hồi từ Gemini." : textNode.asText();
 
-            // Tạo ObjectNode để build JSON kết quả
             ObjectNode result = mapper.createObjectNode();
             result.put("text", text);
             result.set("raw", root);
-
             return mapper.writeValueAsString(result);
 
         } catch (Exception e) {
             return "{\"error\": \"Gemini API lỗi: " + e.getMessage() + "\"}";
         }
     }
+
 }
