@@ -28,7 +28,7 @@ export async function getReportByJobId(jobId,customerId) {
         const token = sessionStorage.getItem("token");
         
         // Using the direct API endpoint as requested
-        const response = await fetch(`${BASE_URL}/reports/${customerId}/get-report-customer/${jobId}`, {
+        const response = await fetch(`${BASE_URL}/reports/${customerId}/get-report-customer/${jobId}/detail-report`, {
             headers: {
                 "Authorization": `Bearer ${token}`,
                 "Content-Type": "application/json",
