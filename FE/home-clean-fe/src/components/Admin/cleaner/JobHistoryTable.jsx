@@ -127,18 +127,15 @@ const JobHistoryTable = ({
         ],
         onFilter: (value, record) => record.jobStatus === value,
       },
-      {
-        title: "Hành động",
-        key: "action",
-        render: (_, record) => (
-          <Button
-            type="link"
-            onClick={() => navigate(`/admin/jobs/${record.jobId}`)}
-          >
-            Chi tiết
-          </Button>
-        ),
-      },
+      // {
+      //   title: "Hành động",
+      //   key: "action",
+      //   render: (_, record) => (
+      //     <Button type="primary" onClick={() => fetchJobDetails(record.jobId)}>
+      //       Chi tiết
+      //     </Button>
+      //   ),
+      // },
     ];
 
     // Add date and total price columns only for desktop view

@@ -10,12 +10,13 @@ function JobCard({ image, title, description, count, id }) {
   const handleCardClick = async () => {
     try {
       const token = sessionStorage.getItem("token");
+      const cleanerId = sessionStorage.getItem("cleanerId");
       if (!token) {
         message.warning("Bạn cần đăng nhập để xem chi tiết công việc.");
         return;
       }
 
-      let url = `${BASE_URL}/cleaner/jobs/details/by-service/${id}`;
+      let url = `${BASE_URL}/cleaner/jobs/details/by-service/${id}/cleaner/${cleanerId}`;
       let isCombo = false;
 
       if (title === "Dọn dẹp theo Combo") {

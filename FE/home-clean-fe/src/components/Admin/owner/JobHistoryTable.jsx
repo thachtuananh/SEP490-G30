@@ -176,7 +176,7 @@ const JobHistoryTable = ({
           key: "action",
           render: (_, record) => (
             <Button
-              type="link"
+              type="primary"
               onClick={() => fetchJobDetails(record.jobId)}
               loading={loading}
             >
@@ -377,8 +377,8 @@ const JobHistoryTable = ({
             size="middle"
             layout="vertical"
           >
-            <Descriptions.Item label="Mã công việc" span={2}>
-              {jobDetails.jobId}
+            <Descriptions.Item label="Mã đơn hàng" span={2}>
+              {jobDetails.orderCode || "Không có mã đơn hàng"}
             </Descriptions.Item>
             <Descriptions.Item label="Khách hàng">
               {jobDetails.fullName}

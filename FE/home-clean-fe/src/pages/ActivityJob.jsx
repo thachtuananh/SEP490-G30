@@ -288,7 +288,7 @@ const ActivityJob = () => {
             </div>
           )}
 
-          {!loading && error && (
+          {/* {!loading && error && (
             <div className={styles.emptyState}>
               <div className={styles.emptyIcon}>
                 <i className="ti ti-clipboard-list"></i>
@@ -298,6 +298,15 @@ const ActivityJob = () => {
           )}
 
           {!loading && !error && filteredJobs.length === 0 && (
+            <div className={styles.emptyState}>
+              <div className={styles.emptyIcon}>
+                <i className="ti ti-clipboard-list"></i>
+              </div>
+              <p className={styles.emptyMessage}>{getEmptyStateMessage()}</p>
+            </div>
+          )} */}
+
+          {!loading && error && (
             <div className={styles.emptyState}>
               <div className={styles.emptyIcon}>
                 <i className="ti ti-clipboard-list"></i>
