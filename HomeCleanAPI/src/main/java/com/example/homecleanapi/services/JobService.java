@@ -242,6 +242,7 @@ public class JobService {
                 UUID.randomUUID().toString().substring(0, 8).toUpperCase();
         job.setOrderCode(orderCode);
 
+        job.setTotalPrice(totalPrice);
         // Lưu job và chi tiết
         job = jobRepository.save(job);
         for (JobServiceDetail jsd : jobServiceDetails) {
@@ -271,11 +272,13 @@ public class JobService {
                 return response;
             }
         }
+
         response.put("message", "Đặt lịch thành công");
         response.put("jobId", job.getId());
         response.put("orderCode", job.getOrderCode());
         response.put("status", job.getStatus());
         response.put("totalPrice", totalPrice);
+
 
         return response;
     }
@@ -481,6 +484,16 @@ public class JobService {
         // Cộng 85% giá trị đơn vào ví của cleaner
         wallet.setBalance(wallet.getBalance() + cleanerPayment);
         walletRepository.save(wallet);
+
+        TransactionHistory txn = new TransactionHistory();
+        txn.setCleaner(cleaner);
+        txn.setCustomer(job.getCustomer());
+        txn.setAmount(cleanerPayment);
+        txn.setTransactionType("CREDIT");
+        txn.setPaymentMethod("WALLET");
+        txn.setStatus("SUCCESS");
+
+        transactionHistoryRepository.save(txn);
 
         response.put("message", "Job status updated to DONE, and cleaner's wallet has been credited with 85% of the job value");
         return response;
