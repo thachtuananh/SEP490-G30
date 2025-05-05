@@ -8,6 +8,7 @@ import com.example.homecleanapi.dtos.ChangePasswordRequest;
 import com.example.homecleanapi.dtos.CleanerRegisterRequest;
 import com.example.homecleanapi.dtos.ForgotPasswordRequest;
 import com.example.homecleanapi.dtos.LoginRequest;
+import com.example.homecleanapi.repositories.WalletRepository;
 import com.example.homecleanapi.utils.JwtUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,13 +27,15 @@ public class EmployeeAuthService {
     private final JwtUtils jwtUtils;
     private final AvatarService avatarService;
     private final EmailService emailService;
+    private final WalletRepository walletRepository;
 
-    public EmployeeAuthService(EmployeeRepository employeeRepository, PasswordEncoder passwordEncoder, JwtUtils jwtUtils, AvatarService avatarService, EmailService emailService) {
+    public EmployeeAuthService(EmployeeRepository employeeRepository, PasswordEncoder passwordEncoder, JwtUtils jwtUtils, AvatarService avatarService, EmailService emailService, WalletRepository walletRepository) {
         this.employeeRepository = employeeRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtUtils = jwtUtils;
         this.avatarService = avatarService;
         this.emailService = emailService;
+        this.walletRepository = walletRepository;
     }
 
     public ResponseEntity<Map<String, Object>> cleanerRegister(CleanerRegisterRequest request) {
@@ -65,11 +68,16 @@ public class EmployeeAuthService {
 
         // Thiết lập các giá trị mặc định cho identity_verified và is_deleted
         employee.setIs_verified(false);  // identity_verified = false
-        employee.setIsDeleted(true);     // is_deleted = true
+        employee.setIsDeleted(false);     // is_deleted = false
 
         // Lưu thông tin cleaner vào database
         employeeRepository.save(employee);
 
+        Wallet cleanerWallet = new Wallet();
+        cleanerWallet.setCleaner(employee);
+        cleanerWallet.setBalance(0.0);
+        cleanerWallet.setUpdatedAt(LocalDateTime.now());
+        walletRepository.save(cleanerWallet);
 
         // Thiết lập thông báo thành công
         response.put("message", "Đăng ký tài khoản thành công, chờ xác thực phía houseclean");

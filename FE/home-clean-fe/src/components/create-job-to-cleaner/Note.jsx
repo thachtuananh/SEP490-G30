@@ -15,7 +15,7 @@ const Note = ({ onNoteChange }) => {
     <div className={styles.noteContainer}>
       <Title level={5}>Ghi chú cho Cleaner</Title>
       <TextArea
-        placeholder="Nhập ghi chú cho người giúp việc..."
+        placeholder="Nhập ghi chú cho Người dọn dẹp..."
         autoSize={{ minRows: 4 }}
         style={{ width: "100%" }}
         onChange={handleChange}

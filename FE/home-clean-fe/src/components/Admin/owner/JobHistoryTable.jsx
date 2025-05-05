@@ -68,7 +68,7 @@ const JobHistoryTable = ({
       case "CANCELLED":
         return "Đã hủy";
       case "AUTO_CANCELLED":
-        return "Đã hủy do quá thời gian";
+        return "Đã hủy do quá thời gian hoặc trùng lịch";
       case "DONE":
         return "Hoàn tất công việc";
       case "BOOKED":

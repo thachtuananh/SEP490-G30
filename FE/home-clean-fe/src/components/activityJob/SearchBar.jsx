@@ -1,28 +1,21 @@
-import React, { useState, useEffect } from "react";
-import { Input, Button, Row, Col, Space } from "antd";
+import React, { useState } from "react";
+import { Input, Button, Space } from "antd";
 import { SearchOutlined, CloseOutlined } from "@ant-design/icons";
 
 const SearchBar = ({ onSearch, onClear }) => {
   const [searchText, setSearchText] = useState("");
 
-  // Tự động tìm kiếm khi text thay đổi
-  useEffect(() => {
-    // Thêm một khoảng trễ nhỏ để tránh gọi hàm search quá nhiều lần
-    const delaySearch = setTimeout(() => {
-      if (searchText.trim()) {
-        onSearch(searchText.trim());
-      } else if (searchText === "") {
-        // Nếu xóa hết text thì gọi onClear
-        onClear();
-      }
-    }, 300); // 300ms độ trễ
-
-    return () => clearTimeout(delaySearch);
-  }, [searchText, onSearch, onClear]);
-
   const handleClear = () => {
     setSearchText("");
     onClear();
+  };
+
+  const handleSearch = () => {
+    if (searchText.trim()) {
+      onSearch(searchText.trim());
+    } else {
+      onClear(); // Có thể gọi onClear nếu người dùng bấm "Tìm kiếm" khi không nhập gì
+    }
   };
 
   return (
@@ -52,7 +45,7 @@ const SearchBar = ({ onSearch, onClear }) => {
         <Button
           type="primary"
           icon={<SearchOutlined />}
-          onClick={() => onSearch(searchText.trim())}
+          onClick={handleSearch}
           size="large"
         >
           Tìm kiếm

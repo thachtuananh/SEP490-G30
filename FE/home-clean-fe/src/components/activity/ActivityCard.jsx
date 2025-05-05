@@ -40,6 +40,7 @@ import { sendSms } from "../../services/SMSService";
 
 export const ActivityCard = ({ data, onDelete }) => {
   const [activities, setActivities] = useState([]);
+  const [filteredActivities, setFilteredActivities] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [cleanerList, setCleanerList] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -53,6 +54,9 @@ export const ActivityCard = ({ data, onDelete }) => {
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const [selectedJobIdForReport, setSelectedJobIdForReport] = useState(null);
 
+  const [statusFilter, setStatusFilter] = useState("ALL");
+  const [searchOrderCode, setSearchOrderCode] = useState("");
+
   const customerName = sessionStorage.getItem("name");
   const customerPhone = sessionStorage.getItem("phone");
 
@@ -64,8 +68,35 @@ export const ActivityCard = ({ data, onDelete }) => {
   useEffect(() => {
     if (data) {
       setActivities(data);
+      applyFilters(data, statusFilter, searchOrderCode);
     }
   }, [data]);
+
+  useEffect(() => {
+    applyFilters(activities, statusFilter, searchOrderCode);
+  }, [statusFilter, searchOrderCode]);
+
+  const applyFilters = (data, status, orderCode) => {
+    let result = [...data];
+
+    // Filter by status
+    if (status !== "ALL") {
+      result = result.filter((activity) => activity.status === status);
+    }
+
+    // Filter by orderCode
+    if (orderCode && orderCode.trim() !== "") {
+      result = result.filter(
+        (activity) =>
+          activity.orderCode &&
+          activity.orderCode.toLowerCase().includes(orderCode.toLowerCase())
+      );
+    }
+
+    setFilteredActivities(result);
+    // Reset to first page when filters change
+    setCurrentPage(1);
+  };
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -111,7 +142,7 @@ export const ActivityCard = ({ data, onDelete }) => {
       case "CANCELLED":
         return "Đã hủy";
       case "AUTO_CANCELLED":
-        return "Đã hủy do quá thời gian";
+        return "Đã hủy do quá thời gian hoặc trùng lịch";
       case "DONE":
         return "Hoàn tất công việc";
       case "BOOKED":
@@ -517,7 +548,7 @@ export const ActivityCard = ({ data, onDelete }) => {
               fontSize: "14px",
               width: "auto",
               minWidth: "80px",
-              "@media (max-width: 768px)": {
+              "@media (maxWidth: 768px)": {
                 padding: "6px 12px",
                 fontSize: "12px",
                 minWidth: "60px",
@@ -668,7 +699,9 @@ export const ActivityCard = ({ data, onDelete }) => {
                       </div>
                     ))}
                 </div>
-
+                <div className={styles.orderCode}>
+                  <strong>Mã đơn hàng:</strong> {activity.orderCode}
+                </div>
                 <div className={styles.infoGrid}>
                   <div className={styles.infoItem}>
                     <MdCalendarToday className={styles.icon} />
@@ -834,7 +867,7 @@ export const ActivityCard = ({ data, onDelete }) => {
 
       {/* Cleaner List Modal */}
       <Modal
-        title="Danh sách người giúp việc"
+        title="Danh sách người dọn dẹp"
         open={isModalOpen}
         onCancel={() => {
           setIsModalOpen(false);

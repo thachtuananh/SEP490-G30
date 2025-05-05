@@ -57,7 +57,7 @@ function LoginSelection() {
                     checked={selectedType === "cleaner"}
                     onChange={(e) => setSelectedType(e.target.value)}
                   />
-                  <span className="option-text">Người giúp việc</span>
+                  <span className="option-text">Người dọn dẹp</span>
                 </label>
               </div>
             </div>
