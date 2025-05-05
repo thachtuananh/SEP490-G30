@@ -46,7 +46,7 @@ public class AdminCleanerService {
         cleaner.setIs_verified(false); // Mặc định chưa xác minh
         cleaner.setExperience(request.getExperience());
 
-        cleaner.setIsDeleted(true);
+        cleaner.setIsDeleted(false);
         cleaner.setStatus(true);
         cleaner.setCreated_at(LocalDateTime.now());
         cleaner.setUpdated_at(LocalDateTime.now());

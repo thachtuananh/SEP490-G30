@@ -1794,12 +1794,41 @@ public class CleanerJobService {
 	        jobApplication.setStatus("Accepted");
 	        job.setStatus(JobStatus.IN_PROGRESS);  // Đặt trạng thái công việc là IN_PROGRESS
 	        response.put("message", "Job has been accepted");
-	    } else if ("reject".equalsIgnoreCase(action)) {
-	        // Khi job bị reject, cập nhật trạng thái job về CANCELLED
-	        jobApplication.setStatus("Rejected");
-	        job.setStatus(JobStatus.CANCELLED);  // Đặt trạng thái công việc là CANCELLED
-	        response.put("message", "Job has been rejected and cancelled");
-	    } else {
+		} else if ("reject".equalsIgnoreCase(action)) {
+			jobApplication.setStatus("Rejected");
+			job.setStatus(JobStatus.CANCELLED); // Đặt trạng thái công việc là CANCELLED
+
+			// Lấy thông tin customer và ví
+			Customers customer = job.getCustomer();
+			if (customer != null) {
+				CustomerWallet wallet = customerWalletRepository.findByCustomer(customer)
+						.orElseThrow(() -> new RuntimeException("Customer wallet not found"));
+
+				Double refundAmount = job.getTotalPrice();
+
+				// Cộng tiền vào ví
+				wallet.setBalance(wallet.getBalance() + refundAmount);
+				wallet.setUpdatedAt(LocalDateTime.now());
+				customerWalletRepository.save(wallet);
+
+				// Lưu lịch sử giao dịch
+				TransactionHistory transaction = new TransactionHistory();
+				transaction.setCustomer(customer);
+				transaction.setCleaner(cleaner);
+				transaction.setAmount(refundAmount);
+				transaction.setTransactionType("REFUND");
+				transaction.setPaymentMethod("WALLET");
+				transaction.setStatus("SUCCESS");
+				transaction.setTransactionDate(LocalDateTime.now());
+
+				transactionHistoryRepository.save(transaction);
+
+				response.put("refundAmount", refundAmount);
+			}
+
+			response.put("message", "Job has been rejected, cancelled and refunded to customer");
+		}
+		else {
 	        response.put("message", "Invalid action. Use 'accept' or 'reject'");
 	        return response;
 	    }

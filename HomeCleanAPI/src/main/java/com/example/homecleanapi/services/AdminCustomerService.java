@@ -329,7 +329,7 @@ public class AdminCustomerService {
             // Kiểm tra trạng thái của job
             if (job.getStatus().equals(JobStatus.DONE)) {
                 response.put("message", "Người dùng đã xác nhận dọn dẹp hoàn thành, không thể hủy công việc này được.");
-                return ResponseEntity.status(HttpStatus.ALREADY_REPORTED).body(response);
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
             }
 
             double refundAmount = job.getTotalPrice();
