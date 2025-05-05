@@ -8,7 +8,8 @@ import com.example.homecleanapi.models.JobServiceDetail;
 
 public interface JobServiceDetailRepository extends JpaRepository<JobServiceDetail, Long> {
 	List<JobServiceDetail> findByJobId(Long jobId);
-	
+
+
 	List<JobServiceDetail> findByJobIdIn(List<Long> jobIds);
 	
 	List<JobServiceDetail> findByServiceId(Long serviceId);

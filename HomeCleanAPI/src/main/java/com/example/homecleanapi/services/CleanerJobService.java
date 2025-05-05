@@ -689,31 +689,27 @@ public class CleanerJobService {
 	public List<Map<String, Object>> getCompletedJobs(Long cleanerId) {
 		List<Map<String, Object>> completedJobs = new ArrayList<>();
 
-		// Lấy danh sách các JobApplication của cleaner có trạng thái 'ACCEPTED'
 		List<JobApplication> jobApplications = jobApplicationRepository.findByCleanerIdAndStatus(cleanerId, "Accepted");
 
-		// Kiểm tra nếu không có công việc nào đã được chấp nhận
 		if (jobApplications.isEmpty()) {
-			return completedJobs; // Trả về danh sách trống nếu không có công việc
+			return completedJobs;
 		}
 
-		// Duyệt qua từng JobApplication và lấy các Job có status là DONE
 		for (JobApplication jobApplication : jobApplications) {
-			Job job = jobApplication.getJob(); // Lấy Job từ JobApplication
+			Job job = jobApplication.getJob();
 
-			if (job.getStatus() == JobStatus.DONE) { // Kiểm tra nếu công việc có trạng thái DONE
+			if (job.getStatus() == JobStatus.DONE) {
 				Map<String, Object> jobInfo = new HashMap<>();
 				jobInfo.put("jobId", job.getId());
 				jobInfo.put("scheduledTime", job.getScheduledTime());
 				jobInfo.put("status", job.getStatus());
 				jobInfo.put("totalPrice", job.getTotalPrice());
+				jobInfo.put("updatedAt", job.getUpdatedAt());
 
-				// Thêm thông tin mã đơn hàng
 				if (job.getOrderCode() != null) {
 					jobInfo.put("orderCode", job.getOrderCode());
 				}
 
-				// Thêm thông tin về customer đã book job
 				Customers customer = job.getCustomer();
 				if (customer != null) {
 					jobInfo.put("customerId", customer.getId());
@@ -721,7 +717,6 @@ public class CleanerJobService {
 					jobInfo.put("customerPhone", customer.getPhone());
 				}
 
-				// Thêm thông tin về địa chỉ của customer
 				CustomerAddresses customerAddress = job.getCustomerAddress();
 				if (customerAddress != null) {
 					jobInfo.put("customerAddressId", customerAddress.getId());
@@ -730,23 +725,18 @@ public class CleanerJobService {
 					jobInfo.put("longitude", customerAddress.getLongitude());
 				}
 
-				// Lấy tất cả các JobServiceDetail cho job này
 				List<JobServiceDetail> jobServiceDetails = jobServiceDetailRepository.findByJobId(job.getId());
-				System.out.println("JobServiceDetails for jobId " + job.getId() + ": " + jobServiceDetails);
 
-				// Nếu có dịch vụ, thêm vào jobInfo
 				if (jobServiceDetails != null && !jobServiceDetails.isEmpty()) {
 					List<Map<String, Object>> serviceList = new ArrayList<>();
 
-					// Duyệt qua tất cả các dịch vụ trong bảng job_service_detail
 					for (JobServiceDetail jobServiceDetail : jobServiceDetails) {
 						Services service = jobServiceDetail.getService();
 						if (service != null) {
 							Map<String, Object> serviceInfo = new HashMap<>();
-							serviceInfo.put("serviceName", service.getName()); // Lấy tên dịch vụ
+							serviceInfo.put("serviceName", service.getName());
 							serviceInfo.put("serviceDescription", service.getDescription());
 
-							// Lấy các chi tiết dịch vụ
 							ServiceDetail serviceDetail = jobServiceDetail.getServiceDetail();
 							if (serviceDetail != null) {
 								serviceInfo.put("serviceDetailId", serviceDetail.getId());
@@ -762,41 +752,41 @@ public class CleanerJobService {
 						}
 					}
 
-					// Thêm thông tin dịch vụ vào jobInfo
 					jobInfo.put("services", serviceList);
 				} else {
-					// Nếu không có dịch vụ nào, thông báo không có dịch vụ
 					jobInfo.put("services", "No services found for this job");
 				}
 
-				completedJobs.add(jobInfo); // Thêm thông tin job vào danh sách
+				completedJobs.add(jobInfo);
 			}
 		}
 
-		return completedJobs; // Trả về danh sách công việc đã hoàn thành
+		completedJobs.sort((j1, j2) -> {
+			Date date1 = (Date) j1.get("updatedAt");
+			Date date2 = (Date) j2.get("updatedAt");
+			return date2.compareTo(date1); // Descending order
+		});
+
+		return completedJobs;
 	}
+
 
 
 	// ds job đang làm
 	public List<Map<String, Object>> getInProgressJobs(Long cleanerId) {
 		List<Map<String, Object>> inProgressJobs = new ArrayList<>();
 
-		// Lấy danh sách các JobApplication của cleaner có trạng thái 'ACCEPTED'
 		List<JobApplication> jobApplications = jobApplicationRepository.findByCleanerIdAndStatus(cleanerId, "Accepted");
 
 		System.out.println("Found job applications: " + jobApplications.size());
 
-		// Kiểm tra nếu không có công việc nào đã được chấp nhận
 		if (jobApplications.isEmpty()) {
-			return inProgressJobs; // Trả về danh sách trống nếu không có công việc
+			return inProgressJobs;
 		}
 
-		// Duyệt qua từng JobApplication và lấy các Job có trạng thái là IN_PROGRESS,
-		// ARRIVED, STARTED, COMPLETED, BOOKED
 		for (JobApplication jobApplication : jobApplications) {
-			Job job = jobApplication.getJob(); // Lấy Job từ JobApplication
+			Job job = jobApplication.getJob();
 
-			// Kiểm tra nếu job có trạng thái là một trong các trạng thái cần thiết
 			if (job.getStatus() == JobStatus.IN_PROGRESS || job.getStatus() == JobStatus.ARRIVED
 					|| job.getStatus() == JobStatus.COMPLETED
 					|| job.getStatus() == JobStatus.BOOKED) {
@@ -806,11 +796,13 @@ public class CleanerJobService {
 				jobInfo.put("status", job.getStatus());
 				jobInfo.put("totalPrice", job.getTotalPrice());
 
+				// Thêm thông tin thời gian cập nhật để sắp xếp
+				jobInfo.put("updatedAt", job.getUpdatedAt());
+
 				// Thêm thông tin mã đơn hàng
 				if (job.getOrderCode() != null) {
 					jobInfo.put("orderCode", job.getOrderCode());
 				}
-
 
 				// Thêm thông tin về customer đã book job
 				Customers customer = job.getCustomer();
@@ -836,15 +828,13 @@ public class CleanerJobService {
 				if (jobServiceDetails != null && !jobServiceDetails.isEmpty()) {
 					List<Map<String, Object>> serviceList = new ArrayList<>();
 
-					// Duyệt qua tất cả các dịch vụ trong bảng job_service_detail
 					for (JobServiceDetail jobServiceDetail : jobServiceDetails) {
 						Services service = jobServiceDetail.getService();
 						if (service != null) {
 							Map<String, Object> serviceInfo = new HashMap<>();
-							serviceInfo.put("serviceName", service.getName()); // Lấy tên dịch vụ
+							serviceInfo.put("serviceName", service.getName());
 							serviceInfo.put("serviceDescription", service.getDescription());
 
-							// Lấy các chi tiết dịch vụ
 							ServiceDetail serviceDetail = jobServiceDetail.getServiceDetail();
 							if (serviceDetail != null) {
 								serviceInfo.put("serviceDetailId", serviceDetail.getId());
@@ -860,19 +850,27 @@ public class CleanerJobService {
 						}
 					}
 
-					// Thêm thông tin dịch vụ vào jobInfo
 					jobInfo.put("services", serviceList);
 				} else {
-					// Nếu không có dịch vụ nào, thông báo không có dịch vụ
 					jobInfo.put("services", "No services found for this job");
 				}
 
-				inProgressJobs.add(jobInfo); // Thêm thông tin job vào danh sách
+				inProgressJobs.add(jobInfo);
 			}
 		}
 
-		return inProgressJobs; // Trả về danh sách các công việc đang làm
+		inProgressJobs.sort((job1, job2) -> {
+			LocalDateTime updated1 = (LocalDateTime) job1.get("updatedAt");
+			LocalDateTime updated2 = (LocalDateTime) job2.get("updatedAt");
+			if (updated1 == null && updated2 == null) return 0;
+			if (updated1 == null) return 1;
+			if (updated2 == null) return -1;
+			return updated2.compareTo(updated1);
+		});
+
+		return inProgressJobs;
 	}
+
 
 
 	// ds job mà cleaner đã apply
