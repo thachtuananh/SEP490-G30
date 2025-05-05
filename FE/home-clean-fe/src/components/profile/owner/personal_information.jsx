@@ -300,9 +300,9 @@ export const PersonaInformation = () => {
         <input
           className="input-field"
           type="text"
-          name="phone"
           value={customerPhone}
-          onChange={(e) => setPhone(e.target.value)}
+          readOnly
+          style={{ backgroundColor: "#f0f0f0", cursor: "not-allowed" }}
         />
       </div>
 

@@ -536,7 +536,7 @@ function Navbar() {
             </li>
             <li>
               <Link to="/cleaner-section" className="nav-link">
-                Danh sách cleaner
+                Danh sách người giúp việc
               </Link>
             </li>
             {/* <li>

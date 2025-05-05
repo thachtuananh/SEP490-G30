@@ -53,6 +53,7 @@ export const ReportModal = ({ visible, jobId, onClose }) => {
   // Fetch reports for the current job
   const fetchReports = async () => {
     setLoading(true);
+    setReports([]);
     try {
       const response = await getReportByJobId(jobId, customerId);
 

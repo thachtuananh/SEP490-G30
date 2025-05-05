@@ -254,7 +254,7 @@ const JobCard = ({ job, refreshJobs, isAppliedTab }) => {
             );
             sendNotification(
               job.customerId,
-              `Người dọn ${sessionStorage.getItem(
+              `Người giúp việc ${sessionStorage.getItem(
                 "name"
               )} cập nhật trạng thái: ${
                 getStatusLabel(newStatus) || "Trạng thái"
@@ -277,11 +277,16 @@ const JobCard = ({ job, refreshJobs, isAppliedTab }) => {
               const smsMessageArrived = `[HouseClean] Cleaner ${cleanerName} đã đến ${job.customerAddress} để làm việc lúc ${formattedDate}. SĐT Cleaner: ${cleanerPhone}. Bạn vui lòng mở cửa và để ý điện thoại nhé.`;
               sendSms(job.customerPhone, smsMessageArrived)
                 .then(() => {
-                  console.log("Completion SMS sent successfully");
+                  console.log("Arrival SMS sent successfully");
                 })
                 .catch((error) => {
-                  console.error("Error sending completion SMS:", error);
+                  console.error("Error sending arrival SMS:", error);
                 });
+            }
+
+            // After successfully updating status, call the refresh function
+            if (typeof refreshJobs === "function") {
+              refreshJobs();
             }
           })
           .catch((error) => {
@@ -327,7 +332,7 @@ const JobCard = ({ job, refreshJobs, isAppliedTab }) => {
             // Notify customer about cancellation
             sendNotification(
               customerId,
-              `Người dọn ${sessionStorage.getItem(
+              `Người giúp việc ${sessionStorage.getItem(
                 "name"
               )} đã hủy ứng tuyển dịch vụ: ${
                 job.services[0]?.serviceName || "Dọn dẹp"
@@ -388,9 +393,9 @@ const JobCard = ({ job, refreshJobs, isAppliedTab }) => {
             createConversation(job.customerId, cleanerId),
             sendNotification(
               job.customerId,
-              `Người dọn ${sessionStorage.getItem("name")} đã nhận dịch vụ: ${
-                job.services[0]?.serviceName || "Dọn dẹp"
-              }`,
+              `Người giúp việc ${sessionStorage.getItem(
+                "name"
+              )} đã nhận dịch vụ: ${job.services[0]?.serviceName || "Dọn dẹp"}`,
               "BOOKED",
               "Customer"
             ),
@@ -412,7 +417,7 @@ const JobCard = ({ job, refreshJobs, isAppliedTab }) => {
           Promise.all([
             sendNotification(
               job.customerId,
-              `Người dọn ${sessionStorage.getItem(
+              `Người giúp việc ${sessionStorage.getItem(
                 "name"
               )} đã từ chối dịch vụ: ${
                 job.services[0]?.serviceName || "Dọn dẹp"
@@ -512,11 +517,11 @@ const JobCard = ({ job, refreshJobs, isAppliedTab }) => {
           </h2>
           <div style={{ marginTop: "8px", color: "#6b7280", fontSize: "14px" }}>
             <div>Khách hàng: {job.customerName}</div>
-            <div>Mã đơn hàng: {job.orderCode}</div>
-            {displayStatus.toUpperCase() !== "PENDING" ||
-              (displayStatus.toUpperCase() !== "CANCELLED" && (
-                <div>SĐT: {job.customerPhone}</div>
-              ))}
+            <div>Mã đơn hàng: {job.orderCode || "Không có thông tin"} </div>
+            {(displayStatus.toUpperCase() !== "PENDING" ||
+              displayStatus.toUpperCase() !== "CANCELLED") && (
+              <div>SĐT: {job.customerPhone}</div>
+            )}
           </div>
         </div>
         <span
@@ -597,7 +602,7 @@ const JobCard = ({ job, refreshJobs, isAppliedTab }) => {
                 onClick={fetchCustomerDetails}
                 loading={loadingCustomerDetails}
               >
-                Xem thông tin chi tiết Owner
+                Xem thông tin Chủ Nhà
               </Button>
             )}
             {displayStatus.toUpperCase() === "REJECTED" && (
@@ -663,7 +668,7 @@ const JobCard = ({ job, refreshJobs, isAppliedTab }) => {
                   onClick={fetchCustomerDetails}
                   loading={loadingCustomerDetails}
                 >
-                  Xem thông tin chi tiết Owner
+                  Xem thông tin Chủ Nhà
                 </Button>
                 <Button
                   className={styles.cancelBtn}

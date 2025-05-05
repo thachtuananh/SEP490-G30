@@ -252,7 +252,7 @@ const JobInfomation = ({
         Promise.all([
           sendNotification(
             state.cleanerId,
-            `Người thuê ${sessionStorage.getItem(
+            `Chủ nhà ${sessionStorage.getItem(
               "name"
             )} đã đặt dịch vụ trực tiếp với bạn`,
             "BOOKED",

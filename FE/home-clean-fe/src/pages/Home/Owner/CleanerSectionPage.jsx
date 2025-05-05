@@ -518,6 +518,7 @@ function CleanersPage() {
                     cleanerId={cleaner.id}
                     cleanerImg={cleaner.profileImage}
                     cleanerName={cleaner.fullName}
+                    cleanerDistance={cleaner.distance}
                     cleanerPhone={cleaner.phoneNumber}
                     isOnline={isOnline(cleaner.id)}
                   />

@@ -76,7 +76,18 @@ const JobCard = ({ job }) => {
           marginBottom: "12px",
         }}
       >
-        <Text strong style={{ fontSize: "16px", color: "#039855" }}>
+        <Text
+          strong
+          style={{
+            fontSize: "16px",
+            color: "#039855",
+            maxWidth: "70%",
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+          }}
+          title={job.serviceName} // Shows full text on hover
+        >
           {job.serviceName}
         </Text>
         <Button
