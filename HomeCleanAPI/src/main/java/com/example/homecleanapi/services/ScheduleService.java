@@ -433,11 +433,11 @@ public class ScheduleService {
                     Customers customer = bookedJob.getCustomer();
                     double refundAmount = bookedJob.getTotalPrice();
 
-                    Optional<Wallet> customerWalletOpt = walletRepository.findByCustomerId(Long.valueOf((customer.getId()))) ;
+                    Optional<CustomerWallet> customerWalletOpt = customerWalletRepository.findByCustomerId(Long.valueOf((customer.getId()))) ;
                     if (customerWalletOpt.isPresent()) {
-                        Wallet customerWallet = customerWalletOpt.get();
+                        CustomerWallet customerWallet = customerWalletOpt.get();
                         customerWallet.setBalance(customerWallet.getBalance() + refundAmount);
-                        walletRepository.save(customerWallet);
+                        customerWalletRepository.save(customerWallet);
                         System.out.println("Refunded " + refundAmount + " to customer wallet for cancelled job " + bookedJob.getId());
 
                         TransactionHistory transaction = new TransactionHistory();

@@ -295,7 +295,7 @@ public class WithdrawalRequestService {
             transactionHistory.setTransactionType("WITHDRAWAL REJECTED");
             transactionHistory.setTransactionDate(LocalDateTime.now());
             transactionHistory.setPaymentMethod("Bank Transfer");
-            transactionHistory.setStatus("FAILED");  // Trạng thái giao dịch là thất bại
+            transactionHistory.setStatus("SUCCESS");
 
             // Lưu vào bảng transaction_history
             transactionHistoryRepository.save(transactionHistory);
