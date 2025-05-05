@@ -1,12 +1,11 @@
 package com.example.homecleanapi.services;
 
+import com.example.homecleanapi.models.Employee;
+import com.example.homecleanapi.repositories.EmployeeRepository;
 import com.example.homecleanapi.dtos.ChangePasswordRequest;
 import com.example.homecleanapi.dtos.CleanerRegisterRequest;
 import com.example.homecleanapi.dtos.ForgotPasswordRequest;
 import com.example.homecleanapi.dtos.LoginRequest;
-import com.example.homecleanapi.models.Customers;
-import com.example.homecleanapi.models.Employee;
-import com.example.homecleanapi.repositories.EmployeeRepository;
 import com.example.homecleanapi.utils.JwtUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -93,12 +92,12 @@ public class EmployeeAuthService {
         }
 
         // kiểm tra tài khoản bị khóa
-        if (employee.getIsDeleted() == true) {
+        if (employee.getIsDeleted()) {
             response.put("message", "Tài khoản của bạn đã bị khóa");
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
         }
         // Kiểm tra nếu tài khoản bị khóa hoặc chưa xác thực
-        if (employee.getIs_verified() == false || employee.getIsDeleted() == true) {
+        if (!employee.getIs_verified() && !employee.getIsDeleted()) {
             response.put("message", "Tài khoản của bạn chưa xác thực");
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
         }
@@ -117,6 +116,7 @@ public class EmployeeAuthService {
         response.put("phone", employee.getPhone());
         response.put("cleanerId", employee.getId());
         response.put("name", employee.getName());
+        response.put("image", employee.getProfile_image());
         response.put("role", "Employee");
 
         return ResponseEntity.ok(response);

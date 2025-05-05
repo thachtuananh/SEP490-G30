@@ -1,4 +1,5 @@
-package com.example.homecleanapi.GPT;
+package com.example.homecleanapi.Gemini;
+
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -13,7 +14,7 @@ public class ChatGPTService {
     @Value("${openai.api.key}")
     private String apiKey;
 
-    private final String API_URL = "https://api.openai.com/v1/chat/completions";  // Cập nhật API endpoint mới cho chat
+    private final String API_URL = "https://api.openai.com/v1/chat/completions";
 
     private final RestTemplate restTemplate = new RestTemplate();
 

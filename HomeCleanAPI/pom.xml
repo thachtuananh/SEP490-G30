@@ -206,6 +206,12 @@
             <version>1.6.6</version>
         </dependency>
 
+        <dependency>
+            <groupId>com.google.cloud</groupId>
+            <artifactId>google-cloud-vertexai</artifactId>
+            <version>1.12.0</version>
+        </dependency>
+
 
 
 

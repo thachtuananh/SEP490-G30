@@ -20,6 +20,5 @@ public class NotificationContent {
 	public void setType(String type) {
 		this.type = type;
 	}
-    
-    
+
 }

@@ -1,6 +1,7 @@
 package com.example.homecleanapi.controllers;
-import com.example.homecleanapi.dtos.*;
 import com.example.homecleanapi.services.AdminCleanerService;
+import com.example.homecleanapi.dtos.CleanerProfileRequest;
+import com.example.homecleanapi.dtos.*;
 import com.example.homecleanapi.utils.JwtUtils;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -8,7 +9,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.Map;
 
 
@@ -41,7 +41,7 @@ public class AdminCleanerController {
         return ResponseEntity.status(403).body(Map.of("message", "Access denied"));
     }
 
-    @PutMapping("/{cleaner_id}/update")
+    @PatchMapping("/{cleaner_id}/update")
     public ResponseEntity<Map<String, Object>> updateCleaner(@PathVariable("cleaner_id") Long cleanerId,
                                                              @RequestBody CleanerProfileRequest request,
                                                              HttpServletRequest requestHttp) {

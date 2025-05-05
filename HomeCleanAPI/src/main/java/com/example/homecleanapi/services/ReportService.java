@@ -1,8 +1,7 @@
 package com.example.homecleanapi.services;
 
-import com.example.homecleanapi.dtos.ReportUpdateDTO;
 import com.example.homecleanapi.dtos.ReportRequestDTO;
-import com.example.homecleanapi.enums.ReportStatus;
+import com.example.homecleanapi.dtos.ReportUpdateDTO;
 import com.example.homecleanapi.models.CleanerReport;
 import com.example.homecleanapi.models.Job;
 import com.example.homecleanapi.models.JobApplication;
@@ -66,12 +65,20 @@ public class ReportService {
         }
 
         Job job = optionalJob.get();
-        JobApplication job_application = jobApplicationOptional.get();
+        Integer cleanerId = null;
+
+        if (jobApplicationOptional.isPresent() && jobApplicationOptional.get().getCleaner() != null) {
+            cleanerId = jobApplicationOptional.get().getCleaner().getId();
+        } else if (job.getCleaner() != null) {
+            cleanerId = job.getCleaner().getId();
+        }
+
+//        JobApplication job_application = jobApplicationOptional.get();
 
         Report report = new Report();
         report.setJob(job);
         report.setCustomerId(job.getCustomer().getId());
-        report.setCleanerId(job_application.getCleaner().getId());
+        report.setCleanerId(cleanerId);
         report.setStatus("PENDING");
         report.setReportType(reportRequest.getReport_type());
         report.setDescription(reportRequest.getDescription());

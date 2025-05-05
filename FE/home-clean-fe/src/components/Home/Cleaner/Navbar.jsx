@@ -281,11 +281,23 @@ function Navbar() {
   const cleanerProfile = (
     <Dropdown menu={cleanerMenu} placement="bottomRight">
       <div style={{ display: "flex", alignItems: "center", cursor: "pointer" }}>
-        <Avatar icon={<UserOutlined />} style={{ marginRight: "8px" }} />
+        {localStorage.getItem("image") ? (
+          <Avatar
+            src={
+              localStorage.getItem("image").startsWith("data:")
+                ? sessionStorage.getItem("image")
+                : `data:image/jpeg;base64,${localStorage.getItem("image")}`
+            }
+            style={{ marginRight: "8px" }}
+          />
+        ) : (
+          <Avatar icon={<UserOutlined />} style={{ marginRight: "8px" }} />
+        )}
         <span>{getCleanerName()}</span>
       </div>
     </Dropdown>
   );
+
   // Login and Register buttons
   const authButtons = (
     <div style={{ display: "flex", gap: "10px" }}>

@@ -1,5 +1,12 @@
 package com.example.homecleanapi.services;
 
+import com.example.homecleanapi.models.Wallet;
+import com.example.homecleanapi.repositories.WalletRepository;
+import com.example.homecleanapi.models.Job;
+import com.example.homecleanapi.models.JobApplication;
+import com.example.homecleanapi.models.Employee;
+import com.example.homecleanapi.repositories.JobApplicationRepository;
+import com.example.homecleanapi.repositories.JobRepository;
 import com.example.homecleanapi.dtos.NotificationDTO;
 import com.example.homecleanapi.enums.JobStatus;
 import com.example.homecleanapi.models.*;
@@ -45,7 +52,7 @@ public class ScheduleService {
         System.out.println("Check Job and Delete");
 
         ZoneId zoneId = ZoneId.of("Asia/Ho_Chi_Minh");
-        LocalDateTime now = LocalDateTime.now(zoneId).minusMinutes(30);
+        LocalDateTime now = LocalDateTime.now(zoneId).minusMinutes(2);
         System.out.println("Check Job and Delete at: " + now);
 
         // Lấy tất cả job OPEN
@@ -88,12 +95,20 @@ public class ScheduleService {
                     }
 
                     // Gửi thông báo đến Customer
-                    NotificationDTO notification = new NotificationDTO(
-                            job.getCustomer().getId(),
-                            "Đơn hàng của bạn đã bị hủy do không có người nhận việc",
-                            "AUTO_MESSAGE",
-                            LocalDate.now(zoneId)
-                    );
+//                    NotificationDTO notification = new NotificationDTO(
+//                            job.getCustomer().getId(),
+//                            "Đơn hàng của bạn đã bị hủy do không có người nhận việc",
+//                            "AUTO_MESSAGE",
+//                            LocalDate.now(zoneId),
+//                            false,
+//                    );
+                    NotificationDTO notification = new NotificationDTO();
+                    notification.setUserId(job.getCustomer().getId());
+                    notification.setMessage("Đơn hàng của bạn đã bị hủy do không có người nhận việc");
+                    notification.setType("AUTO_MESSAGE");
+                    notification.setTimestamp(LocalDate.now(zoneId));
+                    notification.setRead(false); // ✅ set read = false
+
                     notificationService.processNotification(notification, "CUSTOMER", job.getCustomer().getId());
 
                     System.out.println("Đã tự động hủy Job " + job.getId());
@@ -108,12 +123,19 @@ public class ScheduleService {
                         applicationsToUpdate.add(application);
 
                         // Gửi thông báo đến Cleaner
-                        NotificationDTO cleanerNotification = new NotificationDTO(
-                                job.getCustomer().getId(),
-                                "Công việc của bạn đã bị hủy do người thuê chưa xác nhận thuê",
-                                "AUTO_MESSAGE",
-                                LocalDate.now(zoneId)
-                        );
+//                        NotificationDTO cleanerNotification = new NotificationDTO(
+//                                job.getCustomer().getId(),
+//                                "Công việc của bạn đã bị hủy do người thuê chưa xác nhận thuê",
+//                                "AUTO_MESSAGE",
+//                                LocalDate.now(zoneId),
+//                                false,
+//                        );
+                        NotificationDTO cleanerNotification = new NotificationDTO();
+                        cleanerNotification.setUserId(job.getCustomer().getId());
+                        cleanerNotification.setMessage("Công việc của bạn đã bị hủy do người thuê chưa xác nhận thuê");
+                        cleanerNotification.setType("AUTO_MESSAGE");
+                        cleanerNotification.setTimestamp(LocalDate.now(zoneId));
+                        cleanerNotification.setRead(false); // ✅ set read = false
                         notificationService.processNotification(cleanerNotification, "CLEANER", application.getCleaner().getId());
                     }
                 }
@@ -207,12 +229,20 @@ public class ScheduleService {
 
 
                     // Gửi thông báo cho cleaner
-                    NotificationDTO notification = new NotificationDTO(
-                            cleanerIdInt,
-                            "Công việc của bạn đã được hoàn thành ",
-                            "AUTO_MESSAGE",
-                            LocalDate.now(zoneId)
-                    );
+//                    NotificationDTO notification = new NotificationDTO(
+//                            cleanerIdInt,
+//                            "Công việc của bạn đã được hoàn thành ",
+//                            "AUTO_MESSAGE",
+//                            LocalDate.now(zoneId),
+//                            false,
+//                    );
+                    NotificationDTO notification = new NotificationDTO();
+                    notification.setUserId(cleanerIdInt);
+                    notification.setMessage("Công việc của bạn đã được hoàn thành");
+                    notification.setType("AUTO_MESSAGE");
+                    notification.setTimestamp(LocalDate.now(zoneId));
+                    notification.setRead(false); // ✅ set read = false
+
                     notificationService.processNotification(notification, "CLEANER", cleanerIdInt);
 
                     System.out.println("Đã tự động cập nhật trạng thái Job " + job.getId() + " thành DONE và thanh toán cho cleaner.");
@@ -285,22 +315,35 @@ public class ScheduleService {
                     }
 
                     // Gửi thông báo cho customer
-                    NotificationDTO customerNotification = new NotificationDTO(
-                            job.getCustomer().getId(),
-                            "Đơn hàng của bạn đã bị hủy do chưa thanh toán",
-                            "AUTO_MESSAGE",
-                            LocalDate.now(zoneId)
-                    );
+//                    NotificationDTO customerNotification = new NotificationDTO(
+//                            job.getCustomer().getId(),
+//                            "Đơn hàng của bạn đã bị hủy do chưa thanh toán",
+//                            "AUTO_MESSAGE",
+//                            LocalDate.now(zoneId)
+//                    );
+                    NotificationDTO customerNotification = new NotificationDTO();
+                    customerNotification.setUserId(job.getCustomer().getId());
+                    customerNotification.setMessage("Đơn hàng của bạn đã bị hủy do chưa thanh toán");
+                    customerNotification.setType("AUTO_MESSAGE");
+                    customerNotification.setTimestamp(LocalDate.now(zoneId));
+                    customerNotification.setRead(false); // ✅ set read = false
+
                     notificationService.processNotification(customerNotification, "CUSTOMER", job.getCustomer().getId());
 
                     // Gửi thông báo cho cleaner
                     if (job.getCleaner() != null) {
-                        NotificationDTO cleanerNotification = new NotificationDTO(
-                                job.getCleaner().getId(),
-                                "Công việc của bạn đã bị hủy do khách hàng chưa thanh toán",
-                                "AUTO_MESSAGE",
-                                LocalDate.now(zoneId)
-                        );
+//                        NotificationDTO cleanerNotification = new NotificationDTO(
+//                                job.getCleaner().getId(),
+//                                "Công việc của bạn đã bị hủy do khách hàng chưa thanh toán",
+//                                "AUTO_MESSAGE",
+//                                LocalDate.now(zoneId)
+//                        );
+                        NotificationDTO cleanerNotification = new NotificationDTO();
+                        cleanerNotification.setUserId(job.getCustomer().getId());
+                        cleanerNotification.setMessage("Công việc của bạn đã bị hủy do khách hàng chưa thanh toán");
+                        cleanerNotification.setType("AUTO_MESSAGE");
+                        cleanerNotification.setTimestamp(LocalDate.now(zoneId));
+                        cleanerNotification.setRead(false); // ✅ set read = false
                         notificationService.processNotification(cleanerNotification, "CLEANER", job.getCleaner().getId());
                     }
 
@@ -324,7 +367,7 @@ public class ScheduleService {
 
 
     // tự động hủy job hoặc hủy apply nếu trùng lịch
-    @Scheduled(cron = "0 * * * * *")  // Thực thi mỗi phút
+    @Scheduled(cron = "0 * * * * *")
     @Transactional
     public void autoCheckJobAndCleanerSchedule() {
         System.out.println("Checking cleaner schedule for job conflicts...");
@@ -347,16 +390,25 @@ public class ScheduleService {
             List<JobApplication> acceptedApps = jobApplicationRepository.findByCleanerIdAndStatus(cleanerId, "Accepted");
 
             for (JobApplication acceptedApp : acceptedApps) {
-                LocalDateTime acceptedTime = acceptedApp.getJob().getScheduledTime();
+                Job acceptedJob = acceptedApp.getJob();
+
+                // BỎ QUA nếu job đã hoàn tất hoặc bị hủy
+                if (acceptedJob.getStatus() == JobStatus.DONE ||
+                        acceptedJob.getStatus() == JobStatus.CANCELLED ||
+                        acceptedJob.getStatus() == JobStatus.AUTO_CANCELLED) {
+                    continue;
+                }
+
+                LocalDateTime acceptedTime = acceptedJob.getScheduledTime();
                 LocalDateTime acceptedEndTime = acceptedTime.plusHours(2);
 
-                if (!pendingApp.getJob().getId().equals(acceptedApp.getJob().getId()) &&
+                if (!pendingApp.getJob().getId().equals(acceptedJob.getId()) &&
                         acceptedTime.isBefore(pendingEndTime) &&
                         acceptedEndTime.isAfter(pendingJobTime)) {
 
                     pendingApp.setStatus("Cancelled");
                     applicationsToUpdate.add(pendingApp);
-                    System.out.println("Cancelled pending application for job " + pendingApp.getJob().getId() + " because cleaner accepted another job " + acceptedApp.getJob().getId());
+                    System.out.println("Cancelled pending application for job " + pendingApp.getJob().getId() + " because cleaner accepted another job " + acceptedJob.getId());
                 }
             }
         }
@@ -386,14 +438,22 @@ public class ScheduleService {
                     }
                 }
 
-                // Kiểm tra thêm nếu cleaner đã accept job khác
+                // Kiểm tra thêm nếu cleaner đã accept job khác (trừ những job đã DONE/CANCELLED)
                 List<JobApplication> acceptedApps = jobApplicationRepository.findByCleanerIdAndStatus(cleanerId, "Accepted");
 
                 for (JobApplication acceptedApp : acceptedApps) {
-                    LocalDateTime acceptedTime = acceptedApp.getJob().getScheduledTime();
+                    Job acceptedJob = acceptedApp.getJob();
+
+                    if (acceptedJob.getStatus() == JobStatus.DONE ||
+                            acceptedJob.getStatus() == JobStatus.CANCELLED ||
+                            acceptedJob.getStatus() == JobStatus.AUTO_CANCELLED) {
+                        continue;
+                    }
+
+                    LocalDateTime acceptedTime = acceptedJob.getScheduledTime();
                     LocalDateTime acceptedEndTime = acceptedTime.plusHours(2);
 
-                    if (!bookedJob.getId().equals(acceptedApp.getJob().getId()) &&
+                    if (!bookedJob.getId().equals(acceptedJob.getId()) &&
                             acceptedTime.isBefore(bookedEndTime) &&
                             acceptedEndTime.isAfter(bookedTime)) {
                         conflict = true;
@@ -420,6 +480,7 @@ public class ScheduleService {
             System.out.println("Updated " + applicationsToUpdate.size() + " job applications.");
         }
     }
+
 
 
 

@@ -1,16 +1,16 @@
 package com.example.homecleanapi.services;
 
+import com.example.homecleanapi.repositories.CustomerRepository;
+import com.example.homecleanapi.dtos.CustomerRegisterRequest;
 import com.example.homecleanapi.dtos.*;
 import com.example.homecleanapi.models.CustomerWallet;
 import com.example.homecleanapi.models.Customers;
 import com.example.homecleanapi.models.OtpVerification;
-import com.example.homecleanapi.repositories.CustomerRepository;
 import com.example.homecleanapi.repositories.CustomerWalletRepository;
 import com.example.homecleanapi.repositories.OtpVerificationRepository;
 import com.example.homecleanapi.utils.JwtUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.mail.MailSender;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 

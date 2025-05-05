@@ -4,12 +4,11 @@ package com.example.homecleanapi.repositories;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
-
-import com.example.homecleanapi.models.Employee;
 import com.example.homecleanapi.models.Job;
 import com.example.homecleanapi.models.JobApplication;
+import com.example.homecleanapi.models.Employee;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
 @Repository
 public interface JobApplicationRepository extends JpaRepository<JobApplication, Long> {
@@ -46,6 +45,9 @@ public interface JobApplicationRepository extends JpaRepository<JobApplication, 
 	List<JobApplication> findJobApplicationByJobIdAndStatus(Long jobId, String status);
 
 	List<JobApplication> findAllByStatus(String status);
+
+	boolean existsByJobIdAndCleanerId(Long jobId, Long cleanerId);
+
 
 
 

@@ -2,7 +2,17 @@ package com.example.homecleanapi.services;
 
 
 
+import com.example.homecleanapi.models.Services;
+import com.example.homecleanapi.models.Wallet;
+import com.example.homecleanapi.repositories.WalletRepository;
+import com.example.homecleanapi.repositories.JobApplicationRepository;
+import com.example.homecleanapi.repositories.JobRepository;
+import com.example.homecleanapi.repositories.CustomerRepository;
+import com.example.homecleanapi.models.Customers;
 import com.example.homecleanapi.dtos.JobDTO;
+import com.example.homecleanapi.repositories.ServiceRepository;
+import com.example.homecleanapi.models.Employee;
+import com.example.homecleanapi.repositories.CustomerRepo;
 import com.example.homecleanapi.vnPay.VnpayRequest;
 import com.example.homecleanapi.vnPay.VnpayService;
 import com.example.homecleanapi.dtos.BookJobRequest;
@@ -17,7 +27,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -109,7 +118,7 @@ public class JobService {
     public Map<String, Object> bookJob(@PathVariable Long customerId, @RequestBody BookJobRequest request, HttpServletRequest requestIp) {
         Map<String, Object> response = new HashMap<>();
 
-        // Kiểm tra khách hàng có tồn tại không
+        // Kiểm tra khách hàng
         Optional<Customers> customerOpt = customerRepo.findById(customerId);
         if (!customerOpt.isPresent()) {
             response.put("message", "Customer not found with customerId: " + customerId);
@@ -117,7 +126,7 @@ public class JobService {
         }
         Customers customer = customerOpt.get();
 
-        // Kiểm tra địa chỉ của customer
+        // Kiểm tra địa chỉ khách hàng
         Optional<CustomerAddresses> customerAddressOpt = customerAddressRepository.findById(request.getCustomerAddressId());
         if (!customerAddressOpt.isPresent()) {
             response.put("message", "Customer address not found");
@@ -125,201 +134,134 @@ public class JobService {
         }
         CustomerAddresses customerAddress = customerAddressOpt.get();
 
-        // Chuyển jobTime từ String sang LocalDateTime
-        LocalDateTime jobTime = null;
+        // Parse thời gian job
+        LocalDateTime jobTime;
         try {
-            DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
-            jobTime = LocalDateTime.parse(request.getJobTime(), formatter);
+            jobTime = LocalDateTime.parse(request.getJobTime(), DateTimeFormatter.ISO_LOCAL_DATE_TIME);
         } catch (Exception e) {
             response.put("message", "Invalid job time format");
             return response;
         }
 
-        // Tạo Job và gán các thuộc tính cần thiết
+        // Tạo job
         Job job = new Job();
         job.setCustomer(customer);
         job.setCustomerAddress(customerAddress);
         job.setScheduledTime(jobTime);
         job.setReminder(request.getReminder());
         job.setBookingType("CREATE");
-
-        // Kiểm tra phương thức thanh toán
-        if ("cash".equalsIgnoreCase(request.getPaymentMethod())) {
-            job.setStatus(JobStatus.OPEN);  // Nếu thanh toán bằng tiền mặt, đặt status là OPEN
-        } else if ("vnpay".equalsIgnoreCase(request.getPaymentMethod())) {
-            job.setStatus(JobStatus.PAID);  // Nếu thanh toán qua VNPay, đặt status là PAID
-        } else if ("wallet".equalsIgnoreCase(request.getPaymentMethod())) {
-            // Kiểm tra ví của customer và số dư trong ví
-            Optional<CustomerWallet> walletOpt = customerWalletRepository.findByCustomerId(customerId);
-            if (!walletOpt.isPresent()) {
-                response.put("message", "Customer wallet not found");
-                return response;
-            }
-
-            CustomerWallet wallet = walletOpt.get();
-
-            double totalPrice = 0;
-            for (ServiceRequest serviceRequest : request.getServices()) {
-                Optional<Services> serviceOpt = serviceRepository.findById(serviceRequest.getServiceId());
-                if (!serviceOpt.isPresent()) {
-                    response.put("message", "Service not found with serviceId: " + serviceRequest.getServiceId());
-                    return response;
-                }
-                Services service = serviceOpt.get();
-                Optional<ServiceDetail> serviceDetailOpt = serviceDetailRepository.findById(serviceRequest.getServiceDetailId());
-                if (!serviceDetailOpt.isPresent()) {
-                    response.put("message", "Service Detail not found for serviceId: " + serviceRequest.getServiceDetailId());
-                    return response;
-                }
-                ServiceDetail serviceDetail = serviceDetailOpt.get();
-                totalPrice += serviceDetail.getPrice() ;
-            }
-
-            // Kiểm tra nếu số dư trong ví không đủ
-            if (wallet.getBalance() < totalPrice) {
-                response.put("message", "không đủ tiền trong ví, hãy nạp thêm");
-                return response;
-            }
-
-            // Cộng tiền vào ví của customer
-            wallet.setBalance(wallet.getBalance() - totalPrice);  // Giảm số dư ví
-            customerWalletRepository.save(wallet);  // Lưu cập nhật vào ví của customer
-
-            // Cập nhật trạng thái job
-            job.setStatus(JobStatus.OPEN);
-        }
-
         job.setPaymentMethod(request.getPaymentMethod());
 
-        // Tính tổng giá cho tất cả các dịch vụ
+        // Tính tổng giá dịch vụ
         double totalPrice = 0;
-        for (ServiceRequest serviceRequest : request.getServices()) {
-            Optional<Services> serviceOpt = serviceRepository.findById(serviceRequest.getServiceId());
-            if (!serviceOpt.isPresent()) {
-                response.put("message", "Service not found with serviceId: " + serviceRequest.getServiceId());
-                return response;
-            }
-            Services service = serviceOpt.get();
-            Optional<ServiceDetail> serviceDetailOpt = serviceDetailRepository.findById(serviceRequest.getServiceDetailId());
-            if (!serviceDetailOpt.isPresent()) {
-                response.put("message", "Service Detail not found for serviceId: " + serviceRequest.getServiceDetailId());
-                return response;
-            }
-            ServiceDetail serviceDetail = serviceDetailOpt.get();
-
-            // Tính toán giá dịch vụ
-            totalPrice += serviceDetail.getPrice() ;
-        }
-
-        if (request.getServices().size() > 1) {
-            job.setJobType("COMBO");
-        } else {
-            job.setJobType("SINGLE");
-        }
-
-        // Kiểm tra ngày và giờ để tính phí tăng thêm
-        // Kiểm tra ngày và giờ để tính phí tăng thêm
-        LocalDateTime jobScheduledTime = job.getScheduledTime();
-        DayOfWeek dayOfWeek = jobScheduledTime.getDayOfWeek();
-        int hour = jobScheduledTime.getHour();
-        double priceIncrease = 0;
-
-        System.out.println("Scheduled Time: " + jobScheduledTime); // Debug: Kiểm tra thời gian đã lên lịch
-        System.out.println("Day of Week: " + dayOfWeek); // Debug: Kiểm tra ngày trong tuần
-        System.out.println("Hour: " + hour); // Debug: Kiểm tra giờ
-
-
-        if (dayOfWeek == DayOfWeek.SATURDAY || dayOfWeek == DayOfWeek.SUNDAY) {
-            // Tăng 20% cho giờ từ 18h đến 21h59
-            if (hour >= 18 && hour < 22) {
-                priceIncrease = 0.2; // Tăng 20%
-                System.out.println("Applying 20% price increase for weekend between 18:00 and 21:59.");
-            }
-            // Tăng 10% cho giờ từ 22h trở đi
-            else if (hour >= 22) {
-                priceIncrease = 0.1; // Tăng 10% cho sau 22h
-                System.out.println("Applying 10% price increase for weekend after 22:00.");
-            }
-            // Tăng 10% cho giờ từ 0h đến 18h
-            else {
-                priceIncrease = 0.1; // Tăng 10% cho trước 18h vào cuối tuần
-                System.out.println("Applying 10% price increase for weekend before 18:00.");
-            }
-        } else if (hour >= 18 && hour < 22) {
-            // Tăng 10% từ thứ 2 đến thứ 6 (giờ từ 18h đến 21h59)
-            priceIncrease = 0.1; // Tăng 10%
-            System.out.println("Applying 10% price increase for weekdays between 18:00 and 21:59.");
-        } else if (hour == 22 && jobScheduledTime.getMinute() == 0) {
-            // Tăng 10% vào giờ 22h từ thứ 2 đến thứ 6
-            priceIncrease = 0.1; // Tăng 10%
-            System.out.println("Applying 10% price increase for weekdays at 22:00.");
-        }
-
-        if (priceIncrease > 0) {
-            totalPrice += totalPrice * priceIncrease;
-            response.put("message", "The total price includes a " + (priceIncrease * 100) + "% increase due to time or day");
-            System.out.println("Total Price after increase: " + totalPrice); // Debug: Kiểm tra giá cuối cùng sau khi cộng phí tăng
-        } else {
-            System.out.println("No price increase applied.");
-        }
-
-
-
-        // Lưu Job vào cơ sở dữ liệu
-        job.setTotalPrice(totalPrice);
-
-        // Tạo mã đơn hàng orderCode theo format customerId + ddMMyy + RandomString
-        String orderCode = customerId + LocalDate.now().format(DateTimeFormatter.ofPattern("ddMMyy")) + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
-
-        job.setOrderCode(orderCode);  // Gán mã đơn hàng
-
-        job = jobRepository.save(job);
-
-        // Lưu các JobServiceDetail nếu có
         List<JobServiceDetail> jobServiceDetails = new ArrayList<>();
+
         for (ServiceRequest serviceRequest : request.getServices()) {
             Optional<Services> serviceOpt = serviceRepository.findById(serviceRequest.getServiceId());
             if (!serviceOpt.isPresent()) {
                 response.put("message", "Service not found with serviceId: " + serviceRequest.getServiceId());
                 return response;
             }
-            Services service = serviceOpt.get();
+
             Optional<ServiceDetail> serviceDetailOpt = serviceDetailRepository.findById(serviceRequest.getServiceDetailId());
             if (!serviceDetailOpt.isPresent()) {
-                response.put("message", "Service Detail not found for serviceId: " + serviceRequest.getServiceDetailId());
+                response.put("message", "Service Detail not found with serviceDetailId: " + serviceRequest.getServiceDetailId());
                 return response;
             }
-            ServiceDetail serviceDetail = serviceDetailOpt.get();
 
-            // Tạo JobServiceDetail và lưu vào danh sách
+            Services service = serviceOpt.get();
+            ServiceDetail serviceDetail = serviceDetailOpt.get();
+            totalPrice += serviceDetail.getPrice();
+
             JobServiceDetail jobServiceDetail = new JobServiceDetail();
             jobServiceDetail.setJob(job);
             jobServiceDetail.setService(service);
             jobServiceDetail.setServiceDetail(serviceDetail);
-
             jobServiceDetails.add(jobServiceDetail);
         }
 
-        // Lưu các JobServiceDetail vào cơ sở dữ liệu
+        // Tính phụ phí
+        LocalDateTime scheduledTime = job.getScheduledTime();
+        DayOfWeek day = scheduledTime.getDayOfWeek();
+        int hour = scheduledTime.getHour();
+        double priceIncrease = 0;
+
+        if (day == DayOfWeek.SATURDAY || day == DayOfWeek.SUNDAY) {
+            if (hour >= 18 && hour < 22) priceIncrease = 0.2;
+            else priceIncrease = 0.1;
+        } else if (hour >= 18 || (hour == 22 && scheduledTime.getMinute() == 0)) {
+            priceIncrease = 0.1;
+        }
+
+        if (priceIncrease > 0) {
+            totalPrice += totalPrice * priceIncrease;
+            response.put("notice", "Giá đã bao gồm phụ phí " + (priceIncrease * 100) + "% do thời gian/Ngày");
+        }
+
+        // Xử lý phương thức thanh toán
+        switch (request.getPaymentMethod().toLowerCase()) {
+            case "vnpay":
+                job.setStatus(JobStatus.PAID);
+                break;
+            case "wallet":
+                Optional<CustomerWallet> walletOpt = customerWalletRepository.findByCustomerId(customerId);
+                if (!walletOpt.isPresent()) {
+                    response.put("message", "Customer wallet not found");
+                    return response;
+                }
+                CustomerWallet wallet = walletOpt.get();
+                if (wallet.getBalance() < totalPrice) {
+                    response.put("message", "Không đủ tiền trong ví, hãy nạp thêm");
+                    return response;
+                }
+                wallet.setBalance(wallet.getBalance() - totalPrice);
+                customerWalletRepository.save(wallet);
+                job.setStatus(JobStatus.OPEN);
+
+                TransactionHistory transaction = new TransactionHistory();
+                transaction.setCustomer(customer);
+                transaction.setAmount(totalPrice);
+                transaction.setTransactionType("BOOKING");
+                transaction.setPaymentMethod("WALLET");
+                transaction.setStatus("SUCCESS");
+
+                transactionHistoryRepository.save(transaction);
+
+
+                break;
+            default:
+                response.put("message", "Phương thức thanh toán không hợp lệ");
+                return response;
+        }
+
+        // Xác định loại job
+        job.setJobType(request.getServices().size() > 1 ? "COMBO" : "SINGLE");
+
+        // Tạo orderCode
+        String orderCode = customerId + LocalDate.now().format(DateTimeFormatter.ofPattern("ddMMyy")) +
+                UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+        job.setOrderCode(orderCode);
+        job.setTotalPrice(totalPrice);
+        // Lưu job và chi tiết
+        job = jobRepository.save(job);
+        for (JobServiceDetail jsd : jobServiceDetails) {
+            jsd.setJob(job);
+        }
         jobServiceDetailRepository.saveAll(jobServiceDetails);
 
-        // Nếu chọn phương thức thanh toán VNPay
         if ("vnpay".equalsIgnoreCase(request.getPaymentMethod())) {
             try {
                 // Tạo VNPay Request với số tiền thanh toán
                 VnpayRequest vnpayRequest = new VnpayRequest();
-                long amount = (long) (totalPrice);  // Đảm bảo chuyển đổi tổng tiền thành đơn vị tiền tệ hợp lệ
-                vnpayRequest.setAmount(String.valueOf(amount)); // Gửi số tiền đã được nhân với 100
+                long amount = (long) (totalPrice);
+                vnpayRequest.setAmount(String.valueOf(amount));
 
-                // Tạo URL thanh toán VNPay
                 String paymentUrl = vnpayService.createPayment(vnpayRequest, requestIp);
 
-                // Lấy txnRef từ URL của VNPay
-                String txnRef = extractTxnRefFromUrl(paymentUrl);  // Lấy txnRef từ URL của VNPay
+                String txnRef = extractTxnRefFromUrl(paymentUrl);
 
-                // Lưu txnRef vào Job ngay sau khi tạo paymentUrl
-                job.setTxnRef(txnRef);  // Lưu txnRef vào Job
-                jobRepository.save(job);  // Lưu cập nhật txnRef vào database
+                job.setTxnRef(txnRef);
+                jobRepository.save(job);
 
                 // Trả về URL thanh toán cho người dùng
                 response.put("paymentUrl", paymentUrl);
@@ -329,16 +271,19 @@ public class JobService {
                 return response;
             }
         }
-
-        // Nếu chọn phương thức thanh toán tiền mặt, hoàn tất tạo job
-        response.put("message", "Job booked successfully");
+        response.put("message", "Đặt lịch thành công");
         response.put("jobId", job.getId());
-        response.put("orderCode", job.getOrderCode());  // Trả về orderCode
+        response.put("orderCode", job.getOrderCode());
         response.put("status", job.getStatus());
         response.put("totalPrice", totalPrice);
 
         return response;
     }
+
+
+
+
+
 
 
     public Map<String, Object> retryPayment(Long jobId, HttpServletRequest requestIp) {

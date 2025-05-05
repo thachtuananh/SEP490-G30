@@ -1,19 +1,17 @@
 package com.example.homecleanapi.services;
 
-import com.example.homecleanapi.dtos.CleanerRegisterRequest;
-import com.example.homecleanapi.dtos.CleanerUpdateProfile;
-import com.example.homecleanapi.dtos.EmployeeLocationsDTO;
 import com.example.homecleanapi.models.Employee;
+import com.example.homecleanapi.dtos.EmployeeLocationsDTO;
+import com.example.homecleanapi.repositories.EmployeeRepository;
+import com.example.homecleanapi.dtos.CleanerUpdateProfile;
 import com.example.homecleanapi.models.EmployeeLocations;
 import com.example.homecleanapi.repositories.EmployeeAddressRepository;
-import com.example.homecleanapi.repositories.EmployeeRepository;
 import com.example.homecleanapi.utils.ConvertAddressToLatLong;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.PathVariable;
 
 
 import java.io.IOException;

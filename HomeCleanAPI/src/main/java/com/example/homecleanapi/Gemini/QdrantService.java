@@ -1,4 +1,4 @@
-package com.example.homecleanapi.GPT;
+package com.example.homecleanapi.Gemini;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;

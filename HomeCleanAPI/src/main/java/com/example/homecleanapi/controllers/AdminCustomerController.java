@@ -1,14 +1,12 @@
 package com.example.homecleanapi.controllers;
 
-import com.example.homecleanapi.dtos.*;
-import com.example.homecleanapi.models.Job;
 import com.example.homecleanapi.services.AdminCustomerService;
-import com.example.homecleanapi.services.CustomerService;
-import com.example.homecleanapi.services.CustomerAuthService;
+import com.example.homecleanapi.dtos.CustomerProfileAdminDTO;
+import com.example.homecleanapi.dtos.CustomerRegisterRequest;
+import com.example.homecleanapi.dtos.*;
 import com.example.homecleanapi.utils.JwtUtils;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -45,7 +43,7 @@ public class AdminCustomerController {
 
 
     // API cập nhật thông tin khách hàng
-    @PutMapping(value = "/{customer_id}/update", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PatchMapping(value = "/{customer_id}/update", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Map<String, Object>> updateCustomer(
             @PathVariable("customer_id") Integer customerId,
             @RequestBody CustomerProfileAdminDTO request,
@@ -124,4 +122,8 @@ public class AdminCustomerController {
         return "Admin".equals(role) || "Manager".equals(role);
     }
 
+    @PostMapping(value = "/cancel/job/{jobId}/manual/{customerId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Map<String, Object>> cancelJobManual(@PathVariable Long customerId, @PathVariable Long jobId) {
+        return customerService.cancelJobForAdmin(customerId, jobId);
+    }
 }

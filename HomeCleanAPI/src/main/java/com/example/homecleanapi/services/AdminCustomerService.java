@@ -2,12 +2,14 @@
 
 package com.example.homecleanapi.services;
 
-import com.example.homecleanapi.dtos.*;
-import com.example.homecleanapi.models.Customers;
-import com.example.homecleanapi.models.Job;
-import com.example.homecleanapi.models.JobApplication;
+import com.example.homecleanapi.enums.JobStatus;
+import com.example.homecleanapi.models.*;
 import com.example.homecleanapi.repositories.*;
+import com.example.homecleanapi.dtos.CustomerProfileAdminDTO;
+import com.example.homecleanapi.dtos.CustomerRegisterRequest;
+import com.example.homecleanapi.dtos.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -38,6 +40,10 @@ public class AdminCustomerService {
 
     @Autowired
     private JobApplicationRepository jobApplicationRepository;
+    @Autowired
+    private CustomerWalletRepository customerWalletRepository;
+    @Autowired
+    private TransactionHistoryRepository transactionHistoryRepository;
 
 
     // Thêm khách hàng
@@ -94,6 +100,10 @@ public class AdminCustomerService {
 
         if (request.getAccountStatus() != null) {
             customer.setDeleted(request.getAccountStatus());  // Cập nhật is_deleted
+        }
+
+        if (request.getEmail() != null) {
+            customer.setEmail(request.getEmail());
         }
 
         customerRepository.save(customer);
@@ -298,6 +308,67 @@ public class AdminCustomerService {
         }
 
         return response;
+    }
+
+    public ResponseEntity<Map<String, Object>> cancelJobForAdmin(Long customerId, Long jobId) {
+        Map<String, Object> response = new HashMap<>();
+
+        try {
+            Customers customer = customerRepository.findById(customerId).orElse(null);
+            if (customer == null) {
+                response.put("message", "Không tìm thấy khách hàng");
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+            }
+
+            Job job = jobRepository.findById(jobId).orElse(null);
+            if (job == null) {
+                response.put("message", "Không tìm thấy công việc");
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+            }
+
+            // Kiểm tra trạng thái của job
+            if (job.getStatus().equals(JobStatus.DONE)) {
+                response.put("message", "Người dùng đã xác nhận dọn dẹp hoàn thành, không thể hủy công việc này được.");
+                return ResponseEntity.status(HttpStatus.ALREADY_REPORTED).body(response);
+            }
+
+            double refundAmount = job.getTotalPrice();
+
+            CustomerWallet wallet = customerWalletRepository.findByCustomerId(customerId).orElse(null);
+            if (wallet == null) {
+                response.put("message", "Khách hàng chưa có ví. Vui lòng liên hệ chăm sóc khách hàng để được hỗ trợ.");
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+            }
+
+            // Hoàn tiền
+            wallet.setBalance(wallet.getBalance() + refundAmount);
+            customerWalletRepository.save(wallet);
+
+            // Ghi nhận lịch sử giao dịch
+            TransactionHistory refundTransaction = new TransactionHistory();
+            refundTransaction.setCustomer(customer);
+            refundTransaction.setCleaner(null);
+            refundTransaction.setAmount(refundAmount);
+            refundTransaction.setTransactionType("Refund");
+            refundTransaction.setStatus("SUCCESS");
+            refundTransaction.setPaymentMethod("Wallet");
+            transactionHistoryRepository.save(refundTransaction);
+
+            // Cập nhật trạng thái job
+            System.out.println("Trạng thái trước: " + job.getStatus()); // thêm dòng này trước khi set
+            job.setStatus(JobStatus.CANCELLED);
+            jobRepository.saveAndFlush(job);
+
+            response.put("message", "Công việc đã được huỷ thành công");
+            response.put("jobId", jobId);
+            response.put("status", job.getStatus());
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            response.put("message", "Đã xảy ra lỗi khi huỷ công việc. Vui lòng thử lại hoặc liên hệ nhân viên kỹ thuật.");
+            response.put("error", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
     }
 
 

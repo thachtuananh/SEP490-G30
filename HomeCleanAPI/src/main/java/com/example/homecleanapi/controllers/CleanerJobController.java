@@ -1,22 +1,17 @@
 package com.example.homecleanapi.controllers;
 
-import com.example.homecleanapi.dtos.JobSummaryDTO;
-import com.example.homecleanapi.enums.JobStatus;
 import com.example.homecleanapi.services.CleanerJobService;
-
 import com.example.homecleanapi.services.FindCleanerService;
+import com.example.homecleanapi.dtos.JobSummaryDTO;
+
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
-import com.example.homecleanapi.services.JobService;
-import com.example.homecleanapi.utils.JwtUtils;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -66,7 +61,7 @@ public class CleanerJobController {
 
 
         if (response.get("message").equals("Bạn đang ứng tuyển hoặc đã có lịch làm việc trong một công việc cách công việc này nhỏ hơn 2 giờ")) {
-            return ResponseEntity.badRequest().body(response);  // Trả về mã lỗi 400
+            return ResponseEntity.badRequest().body(response);
         }
 
         return ResponseEntity.ok(response);
@@ -76,7 +71,7 @@ public class CleanerJobController {
     @PostMapping(value = "/cancel-application/{jobId}")
     public ResponseEntity<Map<String, Object>> cancelJobApplication(@PathVariable Long jobId) {
         Map<String, Object> response = cleanerJobService.cancelJobApplication(jobId);
-        if (response.containsKey("message") && response.get("message").equals("Job application not found")) {
+        if (response.containsKey("message") && response.get("message").equals("không tìm thấy công việc đã ứng tuyển")) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         }
         return ResponseEntity.ok(response);
@@ -114,7 +109,7 @@ public class CleanerJobController {
         List<Map<String, Object>> completedJobs = cleanerJobService.getCompletedJobs(cleanerId);
 
         if (completedJobs.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(List.of(Map.of("message", "No completed jobs")));
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(List.of(Map.of("message", "không có công việc hoàn thành")));
         }
 
         return ResponseEntity.ok(completedJobs);
@@ -125,7 +120,7 @@ public class CleanerJobController {
     public ResponseEntity<List<Map<String, Object>>> getInProgressJobs(@PathVariable Long cleanerId) {
         List<Map<String, Object>> inProgressJobs = cleanerJobService.getInProgressJobs(cleanerId);
         if (inProgressJobs.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(List.of(Map.of("message", "No in-progress jobs")));
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(List.of(Map.of("message", "không có công việc đang tiến hành")));
         }
         return ResponseEntity.ok(inProgressJobs);
     }
@@ -135,7 +130,7 @@ public class CleanerJobController {
     public ResponseEntity<List<Map<String, Object>>> getAppliedJobs2(@PathVariable Long cleanerId) {
         List<Map<String, Object>> appliedJobs = cleanerJobService.getAppliedJobsForCleaner(cleanerId);
         if (appliedJobs.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(List.of(Map.of("message", "No applied jobs")));
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(List.of(Map.of("message", "không có công việc nào mà bạn đã ứng tuyển")));
         }
         return ResponseEntity.ok(appliedJobs);
     }
@@ -147,7 +142,7 @@ public class CleanerJobController {
         Map<String, Object> jobsByService = cleanerJobService.getJobsByService(cleanerId);
 
         if (jobsByService.isEmpty()) {
-            jobsByService.put("message", "No jobs found by service");
+            jobsByService.put("message", "khoong có công việc nào thuộc dịch vụ này");
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(jobsByService);
         }
 
@@ -157,25 +152,30 @@ public class CleanerJobController {
 
 
     // xem job thuộc filter service
-    @GetMapping("/jobs/details/by-service/{serviceId}")
-    public ResponseEntity<List<Map<String, Object>>> getJobsDetailsByService(@PathVariable Long serviceId) {
-        List<Map<String, Object>> jobDetails = cleanerJobService.getJobsDetailsByService(serviceId);
-        
+    @GetMapping("/jobs/details/by-service/{serviceId}/cleaner/{cleanerId}")
+    public ResponseEntity<List<Map<String, Object>>> getJobsDetailsByService(
+            @PathVariable Long serviceId,
+            @PathVariable Long cleanerId) {
+
+        List<Map<String, Object>> jobDetails = cleanerJobService.getJobsDetailsByService(serviceId, cleanerId);
+
         if (jobDetails.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(List.of(Map.of("message", "No jobs found for this service")));
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(List.of(Map.of("message", "không tìm thấy công viec nào")));
         }
 
         return ResponseEntity.ok(jobDetails);
     }
-    
-    
+
+
+
     // lấy job đang là combo
     @GetMapping("/jobs/combo/{cleanerId}")
     public ResponseEntity<List<Map<String, Object>>> getComboJobs(@PathVariable Long cleanerId) {
         List<Map<String, Object>> comboJobs = cleanerJobService.getComboJobs(cleanerId);
 
         if (comboJobs.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(List.of(Map.of("message", "No combo jobs found")));
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(List.of(Map.of("message", "không có công việc combo")));
         }
 
         return ResponseEntity.ok(comboJobs);
@@ -190,7 +190,7 @@ public class CleanerJobController {
         if (success) {
             return ResponseEntity.ok("Address set as current successfully");
         } else {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Failed to update address status");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("cập nhật vị trí thất bại");
         }
     }
 

@@ -1,7 +1,7 @@
 package com.example.homecleanapi.controllers;
 
-import com.example.homecleanapi.models.Conversation;
 import com.example.homecleanapi.services.ConversationService;
+import com.example.homecleanapi.models.Conversation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
