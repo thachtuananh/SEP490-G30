@@ -43,7 +43,7 @@ public class AdminCustomerController {
 
 
     // API cập nhật thông tin khách hàng
-    @PutMapping(value = "/{customer_id}/update", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PatchMapping(value = "/{customer_id}/update", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Map<String, Object>> updateCustomer(
             @PathVariable("customer_id") Integer customerId,
             @RequestBody CustomerProfileAdminDTO request,
@@ -122,4 +122,8 @@ public class AdminCustomerController {
         return "Admin".equals(role) || "Manager".equals(role);
     }
 
+    @PostMapping(value = "/cancel/job/{jobId}/manual/{customerId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Map<String, Object>> cancelJobManual(@PathVariable Long customerId, @PathVariable Long jobId) {
+        return customerService.cancelJobForAdmin(customerId, jobId);
+    }
 }

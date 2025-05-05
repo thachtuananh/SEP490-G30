@@ -1,7 +1,7 @@
-package com.example.homecleanapi.services;
+package com.example.homecleanapi.utils;
 
 import com.example.homecleanapi.dtos.NotificationDTO;
-import com.example.homecleanapi.utils.RabbitMQConfig;
+import com.example.homecleanapi.services.NotificationService;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
