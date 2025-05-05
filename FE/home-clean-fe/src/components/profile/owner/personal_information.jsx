@@ -117,24 +117,24 @@ export const PersonaInformation = () => {
         }
       );
 
-      if (!response.ok) {
-        throw new Error("Failed to update profile");
-      }
-
       const updatedData = await response.json();
 
       // Update user in context
-      dispatch({
-        type: "UPDATE_USER",
-        payload: {
-          ...user,
-          customerName: customerName,
-          customerPhone: customerPhone,
-          customerEmail: customerEmail,
-        },
-      });
-
-      message.success("Thông tin cá nhân đã được cập nhật!");
+      if (response.ok) {
+        dispatch({
+          type: "UPDATE_USER",
+          payload: {
+            ...user,
+            customerName: customerName,
+            customerPhone: customerPhone,
+            customerEmail: customerEmail,
+          },
+        });
+        message.success("Thông tin cá nhân đã được cập nhật!");
+      } else {
+        message.error(updatedData.message || "Cập nhật thông tin thất bại!");
+        return;
+      }
     } catch (error) {
       console.error("Error updating profile:", error);
       message.error("Không thể cập nhật thông tin. Vui lòng thử lại sau.");
