@@ -113,24 +113,25 @@ export const PersonaInformation = () => {
         }
       );
 
-      if (!response.ok) {
-        throw new Error(`Error: ${response.status}`);
+      const updatedData = await response.json();
+      if (response.ok) {
+        dispatch({
+          type: "UPDATE_CLEANER",
+          payload: {
+            ...cleaner,
+            cleanerName: cleanerName,
+            cleanerPhone: cleanerPhone,
+            cleanerEmail: cleanerEmail,
+            cleanerAge: cleanerAge,
+            cleanerExp: cleanerExp,
+            cleanerIDnum: cleanerIDnum,
+            profile_image: profileImageBase64 || cleaner?.profile_image,
+          },
+        });
+        message.success("Cập nhật thông tin thành công!");
+      } else {
+        message.error(updatedData.message || "Cập nhật thông tin thất bại!");
       }
-
-      // Update context with new data
-      const updatedData = {
-        ...cleaner,
-        cleanerName: cleanerName,
-        cleanerPhone: cleanerPhone,
-        cleanerEmail: cleanerEmail,
-        cleanerAge: cleanerAge,
-        cleanerExp: cleanerExp,
-        cleanerIDnum: cleanerIDnum,
-        profile_image: profileImageBase64 || cleaner?.profile_image,
-      };
-
-      dispatch({ type: "UPDATE_CLEANER", payload: updatedData });
-      message.success("Cập nhật thông tin thành công!");
     } catch (error) {
       message.error("Cập nhật thông tin thất bại!");
     } finally {

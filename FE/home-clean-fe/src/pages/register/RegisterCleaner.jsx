@@ -42,6 +42,8 @@ function RegisterCleaner() {
   const [otpModalVisible, setOtpModalVisible] = useState(false);
   const [otpCode, setOtpCode] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [verificationModalVisible, setVerificationModalVisible] =
+    useState(false);
 
   const navigate = useNavigate();
 
@@ -263,7 +265,8 @@ function RegisterCleaner() {
       if (response.ok) {
         message.success(result.message || "Đăng ký thành công!");
         setOtpModalVisible(false);
-        navigate("/homeclean/login/cleaner");
+        // Hiển thị modal thông báo xác minh công ty thay vì chuyển hướng ngay
+        setVerificationModalVisible(true);
       } else {
         message.error(result.message || "Đăng ký thất bại!");
       }
@@ -272,6 +275,12 @@ function RegisterCleaner() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  // Xử lý đóng modal xác minh và chuyển hướng đến trang đăng nhập
+  const handleCloseVerificationModal = () => {
+    setVerificationModalVisible(false);
+    navigate("/homeclean/login/cleaner");
   };
 
   // Resend OTP if needed
@@ -620,6 +629,29 @@ function RegisterCleaner() {
           onChange={(e) => setOtpCode(e.target.value)}
           style={{ marginTop: "10px" }}
         />
+      </Modal>
+
+      {/* Verification Modal */}
+      <Modal
+        title="Thông báo xác minh"
+        visible={verificationModalVisible}
+        onCancel={handleCloseVerificationModal}
+        footer={[
+          <Button
+            key="close"
+            type="primary"
+            onClick={handleCloseVerificationModal}
+          >
+            Đóng
+          </Button>,
+        ]}
+        centered
+      >
+        <div style={{ textAlign: "center", padding: "20px 0" }}>
+          <p style={{ fontSize: "16px", fontWeight: "500" }}>
+            Bạn cần phải đến công ty để xác minh thông tin cá nhân
+          </p>
+        </div>
       </Modal>
     </div>
   );

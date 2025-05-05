@@ -116,7 +116,7 @@ export const WalletBalance = () => {
       if (response.ok) {
         setWalletData(data);
       } else {
-        throw new Error(data.message || "Không thể lấy dữ liệu ví");
+        message.error(data.message || "Không thể lấy dữ liệu ví");
       }
     } catch (error) {
       message.error("Lỗi khi tải dữ liệu ví");
@@ -144,7 +144,7 @@ export const WalletBalance = () => {
       if (response.ok) {
         setTransactionHistory(data);
       } else {
-        throw new Error(data.message || "Không thể lấy lịch sử giao dịch");
+        message.error(data.message || "Không thể lấy lịch sử giao dịch");
       }
     } catch (error) {
       message.error("Lỗi khi tải lịch sử giao dịch");
@@ -175,7 +175,7 @@ export const WalletBalance = () => {
       if (response.ok && result.status === "OK") {
         setWithdrawalHistory(result.data || []);
       } else {
-        throw new Error(result.message || "Không thể lấy lịch sử rút tiền");
+        message.info(result.message || "Không thể lấy lịch sử rút tiền");
       }
     } catch (error) {
       message.error("Lỗi khi tải lịch sử rút tiền");
@@ -230,7 +230,7 @@ export const WalletBalance = () => {
         form.resetFields();
         message.success("Đang chuyển hướng đến trang thanh toán");
       } else {
-        throw new Error(data.message || "Không thể thực hiện nạp tiền");
+        message.error(data.message || "Không thể thực hiện nạp tiền");
       }
     } catch (error) {
       message.error(`Lỗi khi nạp tiền: ${error.message}`);
@@ -290,7 +290,7 @@ export const WalletBalance = () => {
         message.success("Yêu cầu rút tiền đã được gửi đi thành công");
         fetchWalletBalance(); // Refresh wallet balance
       } else {
-        throw new Error(data.message || "Không thể thực hiện rút tiền");
+        message.error(data.message || "Không thể thực hiện rút tiền");
       }
     } catch (error) {
       message.error(`Lỗi khi rút tiền: ${error.message}`);
@@ -307,6 +307,8 @@ export const WalletBalance = () => {
       PAYMENT: "Thanh toán",
       REFUND: "Hoàn tiền",
       Refund: "Hoàn tiền",
+      BOOKING: "Thanh toán giao dịch",
+      "WITHDRAWAL REJECTED": "Rút tiền bị từ chối",
     };
 
     return translations[type] || type;
@@ -351,16 +353,25 @@ export const WalletBalance = () => {
       title: "Số tiền",
       dataIndex: "amount",
       key: "amount",
-      render: (amount) => (
-        <Text
-          style={{
-            color: amount > 0 ? "#3f8600" : "#cf1322",
-            fontWeight: "bold",
-          }}
-        >
-          {amount.toLocaleString()} VNĐ
-        </Text>
-      ),
+      render: (amount, record) => {
+        // Hiển thị màu đỏ cho transactionType là "Withdraw" hoặc "BOOKING", màu xanh cho các loại khác
+        const color =
+          record.transactionType === "Withdraw" ||
+          record.transactionType === "BOOKING"
+            ? "#cf1322" // màu đỏ
+            : "#3f8600"; // màu xanh (giữ nguyên)
+
+        return (
+          <Text
+            style={{
+              color: color,
+              fontWeight: "bold",
+            }}
+          >
+            {amount.toLocaleString()} VNĐ
+          </Text>
+        );
+      },
     },
     {
       title: "Loại giao dịch",
@@ -371,7 +382,7 @@ export const WalletBalance = () => {
 
         if (type === "DEPOSIT" || type === "DEPOSIT") {
           color = "green";
-        } else if (type === "WITHDRAW" || type === "WITHDRAW") {
+        } else if (type === "WITHDRAW" || type === "Withdraw") {
           color = "orange";
         } else if (type === "PAYMENT" || type === "PAYMENT") {
           color = "purple";
@@ -410,8 +421,8 @@ export const WalletBalance = () => {
 
         if (method === "Bank Transfer") {
           text = "Chuyển khoản";
-        } else if (method === "Wallet") {
-          text = "Hoàn tiền vào ví";
+        } else if (method === "Wallet" || method === "WALLET") {
+          text = "Ví";
         } else if (method === "VNPay") {
           text = "VNPay";
         }
