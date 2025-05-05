@@ -93,7 +93,7 @@ const WorkDetailsDescription = () => {
       message.success("Nhận việc thành công");
       sendNotification(
         job.customerId,
-        `Người dọn ${sessionStorage.getItem("name")} đã nhận dịch vụ: ${
+        `Người giúp việc ${sessionStorage.getItem("name")} đã nhận dịch vụ: ${
           job.services[0]?.serviceName || "Dọn dẹp"
         }`,
         "NHẬN VIỆC",
@@ -295,7 +295,7 @@ const WorkDetailsDescription = () => {
               ? job.services
               : job.serviceDetails || []
             ).map((item, index) => (
-              <li key={index} style={{ border: "none", padding: "8px 0" }}>
+              <li key={index} style={{ border: "none", paddingBottom: "8px" }}>
                 <Typography.Text style={{ marginRight: "5px" }}>
                   {item.serviceDetailName || item.name}
                 </Typography.Text>
@@ -318,10 +318,23 @@ const WorkDetailsDescription = () => {
               ? job.services
               : job.serviceDetails || []
             ).map((item, index) => (
-              <li key={index} style={{ border: "none", padding: "8px 0" }}>
+              <li key={index} style={{ border: "none", paddingBottom: "8px" }}>
                 <Typography.Text>{item.serviceDescription}</Typography.Text>
               </li>
             ))}
+          </ul>
+
+          <Title level={5}>Ghi chú</Title>
+          <ul
+            style={{
+              listStyleType: "disclosure-closed",
+              paddingLeft: "20px",
+              margin: "0",
+            }}
+          >
+            <li style={{ border: "none", paddingBottom: "8px" }}>
+              <Typography.Text>{job.reminder}</Typography.Text>
+            </li>
           </ul>
 
           {/* <Title level={5}>Ưu đãi</Title>

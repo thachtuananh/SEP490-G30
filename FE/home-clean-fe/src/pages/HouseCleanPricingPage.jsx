@@ -367,7 +367,7 @@ export default function HouseCleanPricingPage() {
                     marginBottom: screenSize.isMobile ? 12 : 16,
                   }}
                 >
-                  BẢNG TIỀN CÔNG
+                  BẢNG GIÁ DỊCH VỤ
                 </Title>
                 <Paragraph
                   style={{
@@ -381,9 +381,12 @@ export default function HouseCleanPricingPage() {
                     marginBottom: 0,
                   }}
                 >
-                  Chúng tôi cam kết mang đến mức thu nhập hấp dẫn, ổn định và
-                  công bằng, đảm bảo quyền lợi tương xứng với công sức bạn bỏ
-                  ra.
+                  Bảng giá hiển thị dưới đây là mức giá mà Chủ Nhà sẽ thanh toán
+                  cho mỗi công việc dọn dẹp. Sau khi hoàn thành công việc và
+                  được xác nhận, Cleaner sẽ nhận được 85% tổng giá trị dịch vụ,
+                  phần còn lại 15% sẽ được khấu trừ làm phí trung gian cho nền
+                  tảng HouseClean. Phí này bao gồm chi phí vận hành hệ thống,
+                  duy trì ứng dụng và hỗ trợ khách hàng.
                 </Paragraph>
               </Col>
             </Row>

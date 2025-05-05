@@ -146,7 +146,7 @@ const JobUpload = () => {
   return (
     <>
       <div className={styles.pageContainer}>
-        <h1 className={styles.header}>Đăng tải việc làm</h1>
+        <h1 className={styles.header}>Đăng việc cần dọn</h1>
 
         <section className={styles.servicesGrid}>
           {regularServices.map((service) => (

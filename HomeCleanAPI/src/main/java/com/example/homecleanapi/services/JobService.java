@@ -279,7 +279,6 @@ public class JobService {
         response.put("status", job.getStatus());
         response.put("totalPrice", totalPrice);
 
-
         return response;
     }
 

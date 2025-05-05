@@ -1,5 +1,8 @@
 package com.example.homecleanapi.Gemini;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
@@ -25,24 +28,43 @@ public class GeminiService {
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
-
-
         HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, headers);
 
         try {
             String url = GEMINI_API_URL + "?key=" + apiKey;
-            ResponseEntity<Map> response = restTemplate.postForEntity(url, entity, Map.class);
+            ResponseEntity<String> response = restTemplate.postForEntity(url, entity, String.class);
+            String responseBody = response.getBody();
 
-            List<Map<String, Object>> candidates = (List<Map<String, Object>>) response.getBody().get("candidates");
-            if (candidates == null || candidates.isEmpty()) return "Không có phản hồi từ Gemini.";
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode root;
 
-            Map<String, Object> first = candidates.get(0);
-            Map<String, Object> content = (Map<String, Object>) first.get("content");
-            List<Map<String, String>> parts = (List<Map<String, String>>) content.get("parts");
-            return parts.get(0).get("text");
+            try {
+                root = mapper.readTree(responseBody);
+            } catch (Exception e) {
+                // Nếu không parse được JSON, trả về dưới dạng text thuần
+                ObjectNode fallback = mapper.createObjectNode();
+                fallback.put("text", responseBody);
+                fallback.put("raw", "Không phải JSON hợp lệ");
+                return mapper.writeValueAsString(fallback);
+            }
+
+            JsonNode textNode = root.path("candidates")
+                    .path(0)
+                    .path("content")
+                    .path("parts")
+                    .path(0)
+                    .path("text");
+
+            String text = textNode.isMissingNode() ? "Không có phản hồi từ Gemini." : textNode.asText();
+
+            ObjectNode result = mapper.createObjectNode();
+            result.put("text", text);
+            result.set("raw", root);
+            return mapper.writeValueAsString(result);
 
         } catch (Exception e) {
-            return "Gemini API lỗi: " + e.getMessage();
+            return "{\"error\": \"Gemini API lỗi: " + e.getMessage() + "\"}";
         }
     }
+
 }

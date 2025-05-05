@@ -63,7 +63,7 @@ public class FindCleanerService {
             dto.setProfileImage((byte[]) row[5]);  // profile_image
             dto.setLatitude((Double) row[6]);  // latitude
             dto.setLongitude((Double) row[7]);  // longitude
-            dto.setDistance((Double) row[8]/1000);  // distance_m
+            dto.setDistance(((Number) row[8]).doubleValue() / 1000);
 
             employees.add(dto);
         }

@@ -630,11 +630,11 @@ export const WalletBalance = () => {
           </Col>
         </Row>
 
-        <div style={{ textAlign: "center" }}>
+        {/* <div style={{ textAlign: "center" }}>
           <Tag color="blue" style={{ padding: "4px 8px" }}>
             Tài khoản tiêu chuẩn
           </Tag>
-        </div>
+        </div> */}
       </Space>
 
       {/* Deposit Modal */}

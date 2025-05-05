@@ -1,4 +1,4 @@
-package com.example.homecleanapi.services;
+package com.example.homecleanapi.utils;
 
 import com.example.homecleanapi.dtos.ChatMessage;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;

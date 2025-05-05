@@ -306,7 +306,7 @@ export const WalletBalance = () => {
   const translateTransactionType = (type) => {
     const translations = {
       DEPOSIT: "Nạp tiền",
-      WITHDRAW: "Rút tiền",
+      Withdraw: "Rút tiền",
       PAYMENT: "Thanh toán",
       REFUND: "Hoàn tiền",
       Refund: "Hoàn tiền",
@@ -345,11 +345,11 @@ export const WalletBalance = () => {
 
   // Transaction history columns for the table
   const historyColumns = [
-    {
-      title: "Mã giao dịch",
-      dataIndex: "transactionId",
-      key: "transactionId",
-    },
+    // {
+    //   title: "Mã giao dịch",
+    //   dataIndex: "transactionId",
+    //   key: "transactionId",
+    // },
     {
       title: "Số tiền",
       dataIndex: "amount",
@@ -598,11 +598,11 @@ export const WalletBalance = () => {
           </Col>
         </Row>
 
-        <div style={{ textAlign: "center" }}>
+        {/* <div style={{ textAlign: "center" }}>
           <Tag color="blue" style={{ padding: "4px 8px" }}>
             Tài khoản tiêu chuẩn
           </Tag>
-        </div>
+        </div> */}
       </Space>
 
       {/* Deposit Modal */}

@@ -53,6 +53,7 @@ export const ReportModal = ({ visible, jobId, onClose }) => {
   // Fetch reports for the current job
   const fetchReports = async () => {
     setLoading(true);
+    setReports([]);
     try {
       const response = await getReportByJobId(jobId, customerId);
 
@@ -73,7 +74,15 @@ export const ReportModal = ({ visible, jobId, onClose }) => {
       setLoading(false);
     } catch (error) {
       console.error("Lỗi khi tải báo cáo:", error);
-      message.error("Không thể tải báo cáo");
+      if (
+        error.response &&
+        error.response.data &&
+        error.response.data.message
+      ) {
+        message.info(error.response.data.message);
+      } else {
+        message.info("Không có báo náo nào");
+      }
       setLoading(false);
     }
   };
@@ -161,11 +170,11 @@ export const ReportModal = ({ visible, jobId, onClose }) => {
 
     const date = new Date(dateString);
     return date.toLocaleDateString("vi-VN", {
+      day: "2-digit",
+      month: "2-digit",
       year: "numeric",
-      month: "long",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
+      // hour: "2-digit",
+      // minute: "2-digit",
     });
   };
 

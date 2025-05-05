@@ -28,7 +28,18 @@ function CleanerCard({
   rating,
   reviews,
   isOnline,
+  cleanerDistance,
 }) {
+  // Hàm format khoảng cách - chỉ hiển thị nếu có dữ liệu
+  const formatDistance = (distance) => {
+    // Kiểm tra xem distance có tồn tại không (để tránh lỗi khi undefined hoặc null)
+    if (distance !== undefined && distance !== null) {
+      // Luôn hiển thị 2 số sau dấu thập phân
+      return `Cách bạn khoảng: ${distance.toFixed(2)} km`;
+    }
+    return "Khoảng cách: Không có thông tin";
+  };
+
   return (
     <Card
       hoverable
@@ -108,7 +119,8 @@ function CleanerCard({
         description={
           <div style={{ textAlign: "center" }}>
             <Paragraph ellipsis={{ rows: 2 }} style={{ marginBottom: "8px" }}>
-              {`Dịch vụ của ${cleanerName}`}
+              {/* {`Dịch vụ của sss ${cleanerName}`} */}
+              {formatDistance(cleanerDistance)}
             </Paragraph>
             <div
               style={{

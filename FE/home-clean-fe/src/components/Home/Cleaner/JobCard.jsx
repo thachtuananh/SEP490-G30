@@ -10,12 +10,13 @@ function JobCard({ image, title, description, count, id }) {
   const handleCardClick = async () => {
     try {
       const token = sessionStorage.getItem("token");
+      const cleanerId = sessionStorage.getItem("cleanerId");
       if (!token) {
         message.warning("Bạn cần đăng nhập để xem chi tiết công việc.");
         return;
       }
 
-      let url = `${BASE_URL}/cleaner/jobs/details/by-service/${id}`;
+      let url = `${BASE_URL}/cleaner/jobs/details/by-service/${id}/cleaner/${cleanerId}`;
       let isCombo = false;
 
       if (title === "Dọn dẹp theo Combo") {
@@ -36,11 +37,22 @@ function JobCard({ image, title, description, count, id }) {
         },
       });
 
+      const data = await response.json();
+
       if (!response.ok) {
-        throw new Error("Không thể lấy thông tin công việc");
+        // Hiển thị message lỗi từ response nếu có
+        if (data && data.message) {
+          throw new Error(data.message);
+        } else {
+          throw new Error("Không thể lấy thông tin công việc");
+        }
       }
 
-      const data = await response.json();
+      // Hiển thị message từ response nếu có
+      if (data.message) {
+        message.success(data.message);
+      }
+
       message.destroy("jobLoading");
 
       if (isCombo) {
@@ -71,7 +83,8 @@ function JobCard({ image, title, description, count, id }) {
     } catch (error) {
       console.error("Lỗi khi lấy thông tin công việc:", error);
       message.error(
-        "Đã xảy ra lỗi khi lấy thông tin công việc. Vui lòng thử lại sau."
+        error.message ||
+          "Đã xảy ra lỗi khi lấy thông tin công việc. Vui lòng thử lại sau."
       );
     }
   };

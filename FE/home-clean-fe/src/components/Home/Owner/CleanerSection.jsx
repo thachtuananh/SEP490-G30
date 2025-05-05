@@ -203,7 +203,7 @@ function CleanerSection() {
               className="section-title"
               style={{ marginRight: "8px", marginBottom: isMobile ? "8px" : 0 }}
             >
-              Danh sách cleaner online
+              Danh sách người giúp việc đang hoạt động
             </h2>
             {onlineCount > 0 && (
               <span

@@ -32,6 +32,7 @@ import {
   FlagOutlined,
   FileTextOutlined,
   UserOutlined,
+  StopOutlined,
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import AppSidebar from "../../../components/Admin/AppSidebar";
@@ -49,6 +50,7 @@ const OwnerReport = () => {
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
+  const [cancelJobLoading, setCancelJobLoading] = useState(false);
   const [error, setError] = useState(null);
   const [pagination, setPagination] = useState({
     current: 1,
@@ -187,6 +189,49 @@ const OwnerReport = () => {
       action: "DENIED",
     });
     setResponseText("");
+  };
+
+  const handleCancelJob = async (jobId, customerId) => {
+    if (!jobId || !customerId) {
+      message.error("Thông tin công việc không hợp lệ!");
+      return;
+    }
+
+    try {
+      setCancelJobLoading(true);
+      const token = sessionStorage.getItem("token");
+
+      // Call the cancel job API
+      const cancelUrl = `${BASE_URL}/admin/customers/cancel/job/${jobId}/manual/${customerId}`;
+
+      await axios.post(
+        cancelUrl,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            accept: "application/json",
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      message.success("Đã hủy công việc thành công");
+      setDetailsModal({
+        visible: false,
+        report: null,
+      });
+      fetchReports();
+    } catch (error) {
+      console.error("Error canceling job:", error);
+      message.error(
+        `Không thể hủy công việc: ${
+          error.response?.data?.message || "Lỗi từ máy chủ"
+        }`
+      );
+    } finally {
+      setCancelJobLoading(false);
+    }
   };
 
   const handleResponseSubmit = async () => {
@@ -648,13 +693,30 @@ const OwnerReport = () => {
         open={detailsModal.visible}
         onCancel={() => setDetailsModal({ visible: false, report: null })}
         footer={[
-          <Button
-            key="close"
-            type="primary"
-            onClick={() => setDetailsModal({ visible: false, report: null })}
-          >
-            Đóng
-          </Button>,
+          detailsModal.report?.status === "PENDING" && (
+            <Button
+              key="cancel"
+              danger
+              icon={<StopOutlined />}
+              onClick={() => {
+                if (
+                  detailsModal.report &&
+                  detailsModal.report.jobId &&
+                  detailsModal.report.customerId
+                ) {
+                  handleCancelJob(
+                    detailsModal.report.jobId,
+                    detailsModal.report.customerId
+                  );
+                } else {
+                  message.error("Không có đủ thông tin để hủy công việc");
+                }
+              }}
+              loading={cancelJobLoading}
+            >
+              Hủy công việc
+            </Button>
+          ),
           detailsModal.report?.status === "PENDING" && (
             <Button
               key="resolve"

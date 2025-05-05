@@ -51,6 +51,7 @@ function ChatWindow({
     if (!messageContent.trim()) return;
 
     if (listMessage) {
+      // Add user message to the chat
       setListMessage((prev) => [
         ...prev,
         { isUser: true, chatContent: messageContent },
@@ -61,23 +62,50 @@ function ChatWindow({
 
       try {
         setIsLoading(true);
-        const response = await AskGpt({ question });
-        if (response) {
-          // Giả lập hiệu ứng typing từ bot
-          setIsTyping(true);
 
-          setTimeout(() => {
+        // Call API with proper error handling
+        const response = await AskGpt({ question });
+
+        // Simulate typing effect from bot
+        setIsTyping(true);
+
+        setTimeout(() => {
+          if (response && response.data) {
             setListMessage((prev) => [
               ...prev,
               { isUser: false, chatContent: response.data.answer },
             ]);
-            setIsTyping(false);
-            setIsLoading(false);
-          }, 800);
-        }
+          } else {
+            // Handle unexpected response format
+            setListMessage((prev) => [
+              ...prev,
+              {
+                isUser: false,
+                chatContent:
+                  "Xin lỗi, tôi không thể xử lý yêu cầu của bạn lúc này.",
+              },
+            ]);
+            console.error("Invalid response format:", response);
+          }
+
+          setIsTyping(false);
+          setIsLoading(false);
+        }, 800);
       } catch (error) {
+        console.error("Chat error:", error);
         setIsLoading(false);
         setIsTyping(false);
+
+        // Add error message from bot
+        setListMessage((prev) => [
+          ...prev,
+          {
+            isUser: false,
+            chatContent:
+              "Xin lỗi, có lỗi xảy ra khi xử lý yêu cầu của bạn. Vui lòng thử lại sau.",
+          },
+        ]);
+
         showToast(
           "Không thể kết nối với trợ lý ảo. Vui lòng thử lại sau!",
           "error"
