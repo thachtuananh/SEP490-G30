@@ -738,6 +738,10 @@ export const WalletBalance = () => {
             name="accountName"
             rules={[
               { required: true, message: "Vui lòng nhập tên chủ tài khoản" },
+              {
+                pattern: /^[A-Za-zÀ-ỹ\s]+$/u,
+                message: "Tên chỉ được chứa chữ cái và khoảng trắng",
+              },
             ]}
           >
             <Input placeholder="Nhập tên chủ tài khoản" />

@@ -56,7 +56,7 @@ const AppSidebar = () => {
     {
       key: "admin-ai-assistant",
       icon: <RobotOutlined />,
-      label: <Link to="/admin/ai-assistant">Quản lý AI</Link>,
+      label: <Link to="/admin/ai-assistant">Quản lý ChatBot</Link>,
     },
     {
       key: "admin-withdrawal",

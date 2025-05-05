@@ -354,6 +354,7 @@ public class AdminCustomerService {
             refundTransaction.setPaymentMethod("Wallet");
             transactionHistoryRepository.save(refundTransaction);
 
+
             // Cập nhật trạng thái job
             System.out.println("Trạng thái trước: " + job.getStatus()); // thêm dòng này trước khi set
             job.setStatus(JobStatus.CANCELLED);
