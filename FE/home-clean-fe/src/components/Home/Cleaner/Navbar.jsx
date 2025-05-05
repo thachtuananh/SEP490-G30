@@ -557,7 +557,7 @@ function Navbar() {
             {/* <li><Link to="/homeclean" className="nav-link"></Link></li> */}
             <li>
               <Link to="/homeclean/activityjob" className="nav-link">
-                Công việc
+                Quản lý công việc
               </Link>
             </li>
             {/* <li>
@@ -572,7 +572,7 @@ function Navbar() {
             </li>
             <li>
               <Link to="/homeclean/cleaner-pricing" className="nav-link">
-                Bảng tiền công
+                Bảng giá dịch vụ
               </Link>
             </li>
 

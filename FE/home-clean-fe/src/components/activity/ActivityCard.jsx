@@ -301,7 +301,7 @@ export const ActivityCard = ({ data, onDelete }) => {
       Promise.all([
         sendNotification(
           cleanerId,
-          `Chúc mừng, người thuê ${sessionStorage.getItem(
+          `Chúc mừng, Chủ nhà ${sessionStorage.getItem(
             "name"
           )} đã chấp nhận công việc`,
           "BOOKED",
@@ -353,7 +353,7 @@ export const ActivityCard = ({ data, onDelete }) => {
       Promise.all([
         sendNotification(
           cleanerId,
-          `Rất tiếc, người thuê ${sessionStorage.getItem(
+          `Rất tiếc, chủ nhà ${sessionStorage.getItem(
             "name"
           )} từ chối công việc`,
           "BOOKED",
@@ -439,7 +439,7 @@ export const ActivityCard = ({ data, onDelete }) => {
             Promise.all([
               sendNotification(
                 activity.cleanerId,
-                `Người thuê ${sessionStorage.getItem("name")} đã huỷ công việc`,
+                `Chủ nhà ${sessionStorage.getItem("name")} đã huỷ công việc`,
                 "CANCELLED",
                 "Cleaner"
               ),
@@ -508,7 +508,7 @@ export const ActivityCard = ({ data, onDelete }) => {
             }
             disabled={!record.cleanerId}
           >
-            Thuê
+            Chấp nhận
           </Button>
           <Button
             danger
@@ -741,18 +741,19 @@ export const ActivityCard = ({ data, onDelete }) => {
                       Huỷ việc
                     </Button>
                   )}
-                  {activity.status === "CANCELLED" && (
-                    <div className={styles.buttonGroup}>
-                      <Button
-                        className={styles.reportButton}
-                        onClick={() => openReportModal(activity.jobId)}
-                        danger
-                        icon={<FaFlag />}
-                      >
-                        Báo cáo
-                      </Button>
-                    </div>
-                  )}
+                  {activity.status === "CANCELLED" ||
+                    (activity.status === "COMPLETED" && (
+                      <div className={styles.buttonGroup}>
+                        <Button
+                          className={styles.reportButton}
+                          onClick={() => openReportModal(activity.jobId)}
+                          danger
+                          icon={<FaFlag />}
+                        >
+                          Báo cáo
+                        </Button>
+                      </div>
+                    ))}
                   {activity.status === "DONE" && (
                     <div className={styles.buttonGroup}>
                       <Button
@@ -799,7 +800,7 @@ export const ActivityCard = ({ data, onDelete }) => {
                       className={styles.statusButton}
                       onClick={() => handleCompleteJob(activity.jobId)}
                     >
-                      Đã hoàn thành
+                      Xác nhận đã hoàn thành
                     </Button>
                   )}
                   {activity.status === "PAID" && (
@@ -833,7 +834,7 @@ export const ActivityCard = ({ data, onDelete }) => {
 
       {/* Cleaner List Modal */}
       <Modal
-        title="Danh sách Cleaner"
+        title="Danh sách người giúp việc"
         open={isModalOpen}
         onCancel={() => {
           setIsModalOpen(false);

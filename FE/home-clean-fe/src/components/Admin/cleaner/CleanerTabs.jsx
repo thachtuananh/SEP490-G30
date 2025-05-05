@@ -289,7 +289,7 @@ const CleanerTabs = ({
     },
     {
       key: "accountVerification",
-      label: "Thông tin tài khoản & xác thực",
+      label: "Thông tin xác minh",
       children: (
         <>
           <Descriptions {...getDescriptionsLayout()}>
@@ -307,10 +307,10 @@ const CleanerTabs = ({
               {cleanerData?.created_at &&
                 formatDateTime(cleanerData.created_at)}
             </Descriptions.Item>
-            <Descriptions.Item label="Cập nhật lần cuối">
+            {/* <Descriptions.Item label="Cập nhật lần cuối">
               {cleanerData?.updated_at &&
                 formatDateTime(cleanerData.updated_at)}
-            </Descriptions.Item>
+            </Descriptions.Item> */}
             <Descriptions.Item label="Trạng thái tài khoản">
               <Badge
                 status={cleanerData?.is_deleted ? "error" : "success"}
