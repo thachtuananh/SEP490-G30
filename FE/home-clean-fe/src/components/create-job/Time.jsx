@@ -203,7 +203,7 @@ const Time = ({ onTimeChange }) => {
       <div className={styles.timeSelection}>
         <div className={styles.timeHeader}>
           <Title level={5}>Chọn giờ làm việc</Title>
-          <Paragraph>Giờ mà người giúp việc sẽ đến</Paragraph>
+          <Paragraph>Giờ mà Người dọn dẹp sẽ đến</Paragraph>
           {priceAdjustment && (
             <Paragraph className={styles.infoRow} style={{ color: "#1890ff" }}>
               <Text>Phụ phí: </Text>
@@ -253,7 +253,7 @@ const Time = ({ onTimeChange }) => {
         <div className={styles.phoneContainer}>
           <Col flex="auto">
             <Input
-              style={{ width: "200px" }}
+              style={{ width: "200px", color: "black" }}
               value={user?.customerPhone}
               disabled
             />

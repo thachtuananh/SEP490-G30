@@ -58,3 +58,58 @@
     margin: 0;
   }
 }
+
+.filterContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-bottom: 20px;
+  padding: 15px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+.statusFilter {
+  margin-right: 15px;
+}
+
+.searchBar {
+  display: flex;
+  align-items: center;
+}
+
+.searchButton {
+  cursor: pointer;
+  margin-left: 0;
+  border-radius: 0 4px 4px 0;
+}
+
+.noResults {
+  text-align: center;
+  padding: 40px 0;
+  color: #666;
+  font-size: 16px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  margin-top: 20px;
+}
+
+/* Responsive adjustments */
+@media (min-width: 768px) {
+  .filterContainer {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .statusFilter {
+    flex: 2;
+    padding-bottom: 0;
+  }
+
+  .searchBar {
+    flex: 1;
+    max-width: 300px;
+  }
+}
