@@ -101,13 +101,13 @@ export const ActivityList = () => {
   const statusOptions = [
     { value: "ALL", label: "Tất cả" },
     { value: "OPEN", label: "Đang chờ người nhận" },
-    { value: "PAID", label: "Đang chờ thanh toán qua VNPay" },
     { value: "IN_PROGRESS", label: "Người nhận việc đang tới" },
     { value: "ARRIVED", label: "Người nhận việc đã tới" },
     { value: "COMPLETED", label: "Người nhận việc đã hoàn thành" },
     { value: "CANCELLED", label: "Đã hủy" },
-    { value: "AUTO_CANCELLED", label: "Đã tự động huỷ" },
     { value: "DONE", label: "Hoàn tất công việc" },
+    { value: "AUTO_CANCELLED", label: "Đã tự động huỷ" },
+    { value: "PAID", label: "Đang chờ thanh toán qua VNPay" },
     { value: "BOOKED", label: "Đã đặt lịch" },
   ];
 
@@ -133,7 +133,7 @@ export const ActivityList = () => {
                   />
                 </Form.Item>
               </Col>
-              <Col xs={24} sm={12} md={8} lg={12}>
+              <Col xs={24} sm={12} md={12} lg={12}>
                 <Form.Item label="Mã đơn hàng">
                   <Input.Group compact>
                     <Input
