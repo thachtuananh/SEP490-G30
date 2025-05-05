@@ -392,7 +392,6 @@ public class ScheduleService {
             for (JobApplication acceptedApp : acceptedApps) {
                 Job acceptedJob = acceptedApp.getJob();
 
-                // BỎ QUA nếu job đã hoàn tất hoặc bị hủy
                 if (acceptedJob.getStatus() == JobStatus.DONE ||
                         acceptedJob.getStatus() == JobStatus.CANCELLED ||
                         acceptedJob.getStatus() == JobStatus.AUTO_CANCELLED) {
@@ -408,12 +407,13 @@ public class ScheduleService {
 
                     pendingApp.setStatus("Cancelled");
                     applicationsToUpdate.add(pendingApp);
-                    System.out.println("Cancelled pending application for job " + pendingApp.getJob().getId() + " because cleaner accepted another job " + acceptedJob.getId());
+                    System.out.println("Cancelled pending application for job " + pendingApp.getJob().getId() +
+                            " because cleaner accepted another job " + acceptedJob.getId());
                 }
             }
         }
 
-        // 2. Huỷ Job BOOKED nếu cleaner đang làm job khác (IN_PROGRESS hoặc đã ACCEPT job khác)
+        // 2. Huỷ Job BOOKED nếu cleaner đang làm job khác
         List<Job> bookedJobs = jobRepository.findAllByStatus(JobStatus.BOOKED);
 
         for (Job bookedJob : bookedJobs) {
@@ -422,7 +422,6 @@ public class ScheduleService {
                 LocalDateTime bookedTime = bookedJob.getScheduledTime();
                 LocalDateTime bookedEndTime = bookedTime.plusHours(2);
 
-                // Kiểm tra các Job đang IN_PROGRESS
                 List<Job> inProgressJobs = jobRepository.findByCleanerIdAndStatus(cleanerId, JobStatus.IN_PROGRESS);
 
                 boolean conflict = false;
@@ -438,7 +437,6 @@ public class ScheduleService {
                     }
                 }
 
-                // Kiểm tra thêm nếu cleaner đã accept job khác (trừ những job đã DONE/CANCELLED)
                 List<JobApplication> acceptedApps = jobApplicationRepository.findByCleanerIdAndStatus(cleanerId, "Accepted");
 
                 for (JobApplication acceptedApp : acceptedApps) {
@@ -464,12 +462,36 @@ public class ScheduleService {
                 if (conflict) {
                     bookedJob.setStatus(JobStatus.AUTO_CANCELLED);
                     jobsToCancel.add(bookedJob);
+
                     System.out.println("Auto-cancelled booked job " + bookedJob.getId() + " because cleaner has another job.");
+
+                    // HOÀN TIỀN CHO CUSTOMER nếu là job được book trực tiếp ---
+                    Customers customer = bookedJob.getCustomer();
+                    double refundAmount = bookedJob.getTotalPrice();
+
+                    Optional<CustomerWallet> customerWalletOpt = customerWalletRepository.findByCustomerId(Long.valueOf((customer.getId()))) ;
+                    if (customerWalletOpt.isPresent()) {
+                        CustomerWallet customerWallet = customerWalletOpt.get();
+                        customerWallet.setBalance(customerWallet.getBalance() + refundAmount);
+                        customerWalletRepository.save(customerWallet);
+                        System.out.println("Refunded " + refundAmount + " to customer wallet for cancelled job " + bookedJob.getId());
+
+                        TransactionHistory transaction = new TransactionHistory();
+                        transaction.setAmount(refundAmount);
+                        transaction.setTransactionType("Refund");
+                        transaction.setCustomer(customer);
+                        transaction.setCleaner(null);
+                        transaction.setPaymentMethod("Wallet");
+                        transaction.setStatus("SUCCESS");
+
+
+                        transactionHistoryRepository.save(transaction);
+                    }
                 }
             }
         }
 
-        // Save all changes
+        // Lưu thay đổi
         if (!jobsToCancel.isEmpty()) {
             jobRepository.saveAll(jobsToCancel);
             System.out.println("Cancelled " + jobsToCancel.size() + " jobs.");
@@ -480,6 +502,7 @@ public class ScheduleService {
             System.out.println("Updated " + applicationsToUpdate.size() + " job applications.");
         }
     }
+
 
 
 

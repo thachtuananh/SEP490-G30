@@ -14,4 +14,6 @@ public interface WalletRepository extends JpaRepository<Wallet, Long> {
     Optional<Wallet> findByCleanerId(Long cleanerId);
     
     Optional<Wallet> findByTxnRef(String txnRef);
+
+
 }
