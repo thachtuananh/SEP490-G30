@@ -486,7 +486,6 @@ public class JobService {
 
         TransactionHistory txn = new TransactionHistory();
         txn.setCleaner(cleaner);
-        txn.setCustomer(job.getCustomer());
         txn.setAmount(cleanerPayment);
         txn.setTransactionType("CREDIT");
         txn.setPaymentMethod("WALLET");
