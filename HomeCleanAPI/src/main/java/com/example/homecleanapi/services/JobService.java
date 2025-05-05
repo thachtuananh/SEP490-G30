@@ -187,11 +187,17 @@ public class JobService {
         double priceIncrease = 0;
 
         if (day == DayOfWeek.SATURDAY || day == DayOfWeek.SUNDAY) {
-            if (hour >= 18 && hour < 22) priceIncrease = 0.2;
-            else priceIncrease = 0.1;
-        } else if (hour >= 18 || (hour == 22 && scheduledTime.getMinute() == 0)) {
-            priceIncrease = 0.1;
+            if (hour >= 18 && hour < 22) {
+                priceIncrease = 0.2;
+            } else if (hour >= 6 && hour < 18) {
+                priceIncrease = 0.0;
+            }
+        } else {
+            if (hour >= 18 && hour < 22) {
+                priceIncrease = 0.1;
+            }
         }
+
 
         if (priceIncrease > 0) {
             totalPrice += totalPrice * priceIncrease;
@@ -486,7 +492,6 @@ public class JobService {
 
         TransactionHistory txn = new TransactionHistory();
         txn.setCleaner(cleaner);
-        txn.setCustomer(job.getCustomer());
         txn.setAmount(cleanerPayment);
         txn.setTransactionType("CREDIT");
         txn.setPaymentMethod("WALLET");
