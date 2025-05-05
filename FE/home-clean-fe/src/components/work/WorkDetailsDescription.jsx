@@ -93,7 +93,7 @@ const WorkDetailsDescription = () => {
       message.success("Nhận việc thành công");
       sendNotification(
         job.customerId,
-        `Người giúp việc ${sessionStorage.getItem("name")} đã nhận dịch vụ: ${
+        `Người dọn dẹp ${sessionStorage.getItem("name")} đã nhận dịch vụ: ${
           job.services[0]?.serviceName || "Dọn dẹp"
         }`,
         "NHẬN VIỆC",

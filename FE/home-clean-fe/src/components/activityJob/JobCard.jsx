@@ -248,13 +248,14 @@ const JobCard = ({ job, refreshJobs, isAppliedTab }) => {
           })
           .then((data) => {
             console.log("Status updated:", data);
+            // Chỉ cập nhật trạng thái mới trên component hiện tại
             setCurrentStatus(newStatus.toUpperCase());
             message.success(
               `Đã cập nhật trạng thái thành ${getStatusLabel(newStatus)}`
             );
             sendNotification(
               job.customerId,
-              `Người giúp việc ${sessionStorage.getItem(
+              `Người dọn dẹp ${sessionStorage.getItem(
                 "name"
               )} cập nhật trạng thái: ${
                 getStatusLabel(newStatus) || "Trạng thái"
@@ -282,11 +283,6 @@ const JobCard = ({ job, refreshJobs, isAppliedTab }) => {
                 .catch((error) => {
                   console.error("Error sending arrival SMS:", error);
                 });
-            }
-
-            // After successfully updating status, call the refresh function
-            if (typeof refreshJobs === "function") {
-              refreshJobs();
             }
           })
           .catch((error) => {
@@ -332,7 +328,7 @@ const JobCard = ({ job, refreshJobs, isAppliedTab }) => {
             // Notify customer about cancellation
             sendNotification(
               customerId,
-              `Người giúp việc ${sessionStorage.getItem(
+              `Người dọn dẹp ${sessionStorage.getItem(
                 "name"
               )} đã hủy ứng tuyển dịch vụ: ${
                 job.services[0]?.serviceName || "Dọn dẹp"
@@ -393,7 +389,7 @@ const JobCard = ({ job, refreshJobs, isAppliedTab }) => {
             createConversation(job.customerId, cleanerId),
             sendNotification(
               job.customerId,
-              `Người giúp việc ${sessionStorage.getItem(
+              `Người dọn dẹp ${sessionStorage.getItem(
                 "name"
               )} đã nhận dịch vụ: ${job.services[0]?.serviceName || "Dọn dẹp"}`,
               "BOOKED",
@@ -417,7 +413,7 @@ const JobCard = ({ job, refreshJobs, isAppliedTab }) => {
           Promise.all([
             sendNotification(
               job.customerId,
-              `Người giúp việc ${sessionStorage.getItem(
+              `Người dọn dẹp ${sessionStorage.getItem(
                 "name"
               )} đã từ chối dịch vụ: ${
                 job.services[0]?.serviceName || "Dọn dẹp"
@@ -528,10 +524,10 @@ const JobCard = ({ job, refreshJobs, isAppliedTab }) => {
           className={styles.status}
           style={{
             color: "#ffffff",
-            backgroundColor: getStatusColor(displayStatus),
+            backgroundColor: getStatusColor(currentStatus),
           }}
         >
-          {getStatusLabel(displayStatus)}
+          {getStatusLabel(currentStatus)}
         </span>
       </header>
 
