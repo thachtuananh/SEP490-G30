@@ -1,6 +1,8 @@
 package com.example.homecleanapi.services;
 
+import com.example.homecleanapi.models.CustomerWallet;
 import com.example.homecleanapi.models.Employee;
+import com.example.homecleanapi.models.Wallet;
 import com.example.homecleanapi.repositories.EmployeeRepository;
 import com.example.homecleanapi.dtos.ChangePasswordRequest;
 import com.example.homecleanapi.dtos.CleanerRegisterRequest;
@@ -12,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -66,6 +69,7 @@ public class EmployeeAuthService {
 
         // Lưu thông tin cleaner vào database
         employeeRepository.save(employee);
+
 
         // Thiết lập thông báo thành công
         response.put("message", "Đăng ký tài khoản thành công, chờ xác thực phía houseclean");
