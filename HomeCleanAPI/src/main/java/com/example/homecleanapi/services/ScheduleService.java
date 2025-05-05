@@ -446,7 +446,7 @@ public class ScheduleService {
                         transaction.setCustomer(customer);
                         transaction.setCleaner(null);
                         transaction.setPaymentMethod("Wallet");
-                        transaction.setStatus("Success");
+                        transaction.setStatus("SUCCESS");
 
 
                         transactionHistoryRepository.save(transaction);
