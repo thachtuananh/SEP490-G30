@@ -47,7 +47,7 @@ const StatCards = ({ loading, revenueData, jobData, balanceResult }) => {
     //   iconColor: "#faad14",
     // },
     {
-      title: "Tổng doanh thu",
+      title: "Tổng lợi nhuận",
       value: revenueData ? `${formatNumber(revenueData.totalRevenue)}đ` : "0đ",
       icon: <DollarOutlined />,
       iconBgColor: "#f6ffed",
