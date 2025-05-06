@@ -37,7 +37,7 @@ function CleanerCard({
       // Luôn hiển thị 2 số sau dấu thập phân
       return `Cách bạn khoảng: ${distance.toFixed(2)} km`;
     }
-    return "Khoảng cách: Không có thông tin";
+    return "";
   };
 
   return (
