@@ -1814,7 +1814,7 @@ public class CleanerJobService {
 				// Lưu lịch sử giao dịch
 				TransactionHistory transaction = new TransactionHistory();
 				transaction.setCustomer(customer);
-				transaction.setCleaner(cleaner);
+//				transaction.setCleaner(cleaner);
 				transaction.setAmount(refundAmount);
 				transaction.setTransactionType("REFUND");
 				transaction.setPaymentMethod("WALLET");
