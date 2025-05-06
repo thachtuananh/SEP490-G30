@@ -145,7 +145,7 @@ export const WalletBalance = () => {
       if (response.ok) {
         setTransactionHistory(data);
       } else {
-        message.error(data.message || "Không thể lấy lịch sử giao dịch");
+        message.error(data.message || "Không có dữ liệu lịch sử giao dịch");
       }
     } catch (error) {
       message.error("Lỗi khi tải lịch sử giao dịch");
@@ -176,7 +176,7 @@ export const WalletBalance = () => {
       if (response.ok && result.status === "OK") {
         setWithdrawalHistory(result.data || []);
       } else {
-        message.info(result.message || "Không thể lấy lịch sử rút tiền");
+        message.info(result.message || "Không có dữ liệu lịch sử rút tiền");
       }
     } catch (error) {
       message.error("Lỗi khi tải lịch sử rút tiền");
@@ -311,6 +311,7 @@ export const WalletBalance = () => {
       REFUND: "Hoàn tiền",
       Refund: "Hoàn tiền",
       CREDIT: "Tiền công",
+      "WITHDRAWAL REJECTED": "Rút tiền bị từ chối",
     };
 
     return translations[type] || type;
@@ -355,16 +356,24 @@ export const WalletBalance = () => {
       title: "Số tiền",
       dataIndex: "amount",
       key: "amount",
-      render: (amount) => (
-        <Text
-          style={{
-            color: amount > 0 ? "#3f8600" : "#cf1322",
-            fontWeight: "bold",
-          }}
-        >
-          {amount.toLocaleString()} VNĐ
-        </Text>
-      ),
+      render: (amount, record) => {
+        // Hiển thị màu đỏ cho transactionType là "Withdraw" hoặc "BOOKING", màu xanh cho các loại khác
+        const color =
+          record.transactionType === "Withdraw"
+            ? "#cf1322" // màu đỏ
+            : "#3f8600"; // màu xanh (giữ nguyên)
+
+        return (
+          <Text
+            style={{
+              color: color,
+              fontWeight: "bold",
+            }}
+          >
+            {amount.toLocaleString()} VNĐ
+          </Text>
+        );
+      },
     },
     {
       title: "Loại giao dịch",
@@ -384,6 +393,25 @@ export const WalletBalance = () => {
         }
 
         return <Tag color={color}>{translateTransactionType(type)}</Tag>;
+      },
+    },
+    {
+      title: "Thời gian",
+      dataIndex: "transactionDate",
+      key: "transactionDate",
+      render: (date) => {
+        if (date) {
+          const formattedDate = new Date(date).toLocaleString("vi-VN", {
+            hour: "2-digit",
+            minute: "2-digit",
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric",
+          });
+
+          return formattedDate;
+        }
+        return " ";
       },
     },
     {

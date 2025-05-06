@@ -144,7 +144,7 @@ export const WalletBalance = () => {
       if (response.ok) {
         setTransactionHistory(data);
       } else {
-        message.error(data.message || "Không thể lấy lịch sử giao dịch");
+        message.error(data.message || "Không có dữ liệu lịch sử giao dịch");
       }
     } catch (error) {
       message.error("Lỗi khi tải lịch sử giao dịch");
@@ -175,7 +175,7 @@ export const WalletBalance = () => {
       if (response.ok && result.status === "OK") {
         setWithdrawalHistory(result.data || []);
       } else {
-        message.info(result.message || "Không thể lấy lịch sử rút tiền");
+        message.info(result.message || "Không có dữ liệu lịch sử rút tiền");
       }
     } catch (error) {
       message.error("Lỗi khi tải lịch sử rút tiền");

@@ -49,7 +49,7 @@ const SalesChart = ({ revenueData, loading: parentLoading }) => {
         const transformedData = transformRevenueData(result);
         setChartData(transformedData);
       } else {
-        console.error("Không thể tải dữ liệu doanh thu theo tháng");
+        console.error("Không thể tải dữ liệu lợi nhuận theo tháng");
       }
     } catch (error) {
       console.error("Error fetching revenue by year and month:", error);
@@ -154,8 +154,8 @@ const SalesChart = ({ revenueData, loading: parentLoading }) => {
             />
             <div style={{ textAlign: "center", fontSize: 16 }}>
               {revenueData
-                ? "Báo cáo tổng doanh thu"
-                : "Biểu đồ báo cáo tổng doanh thu"}
+                ? "Báo cáo tổng lợi nhuận"
+                : "Biểu đồ báo cáo tổng lợi nhuận"}
             </div>
           </div>
         </div>
@@ -202,14 +202,14 @@ const SalesChart = ({ revenueData, loading: parentLoading }) => {
           alignItems: "center",
         }}
       >
-        <Empty description="Không có dữ liệu doanh thu theo tháng" />
+        <Empty description="Không có dữ liệu lợi nhuận theo tháng" />
       </div>
     );
   };
 
   return (
     <Card
-      title="Chi tiết doanh thu"
+      title="Chi tiết lợi nhuận"
       extra={
         <Dropdown menu={{ items: viewOptions }}>
           <Button>

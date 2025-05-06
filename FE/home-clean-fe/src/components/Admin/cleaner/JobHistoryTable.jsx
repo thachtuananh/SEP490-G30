@@ -178,7 +178,7 @@ const JobHistoryTable = ({
           </Col>
           <Col xs={24} sm={8}>
             <Statistic
-              title="Tổng doanh thu"
+              title="Tổng lợi nhuận"
               value={jobData
                 .filter((job) => job.jobStatus === "DONE")
                 .reduce((sum, job) => sum + job.totalPrice, 0)
