@@ -1,5 +1,6 @@
 package com.example.homecleanapi.services;
 
+import com.example.homecleanapi.dtos.NotificationDTO;
 import com.example.homecleanapi.repositories.EmployeeAddressRepository;
 import com.example.homecleanapi.repositories.ServiceRepository;
 import com.example.homecleanapi.models.Services;
@@ -32,6 +33,7 @@ import java.text.DecimalFormat;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
@@ -87,6 +89,8 @@ public class CleanerJobService {
 	private CustomerRepo customerRepository;
     @Autowired
     private WorkHistoryRepository workHistoryRepository;
+	@Autowired
+	private NotificationService notificationService;
 
 
 	public Map<String, Object> getCustomerDetails(Long cleanerId, Long customerId) {
@@ -420,6 +424,7 @@ public class CleanerJobService {
 	// accept hoặc reject cleaner
 	@Transactional
 	public Map<String, Object> acceptOrRejectApplication(Long jobId, Long cleanerId, Long customerId, String action) {
+		ZoneId zoneId = ZoneId.of("Asia/Ho_Chi_Minh");
 		Map<String, Object> response = new HashMap<>();
 
 		// Tìm customer theo customerId để xác thực quyền của customer
@@ -473,11 +478,25 @@ public class CleanerJobService {
 				if (!app.getCleaner().getId().equals(cleaner.getId())) {
 					app.setStatus("Rejected");
 					jobApplicationRepository.save(app);
+					NotificationDTO cleanerNotification = new NotificationDTO();
+					cleanerNotification.setUserId(job.getCustomer().getId());
+					cleanerNotification.setMessage("Chủ nhà: " + customer.getFull_name() + " đã từ chối bạn.");
+					cleanerNotification.setType("AUTO_MESSAGE");
+					cleanerNotification.setTimestamp(LocalDate.now(zoneId));
+					cleanerNotification.setRead(false); // ✅ set read = false
+					notificationService.processNotification(cleanerNotification, "CLEANER", Math.toIntExact(customerId));
 				}
 			}
 
 			jobApplication.setStatus("Accepted");
 			job.setStatus(JobStatus.IN_PROGRESS);
+			NotificationDTO customerNotification = new NotificationDTO();
+			customerNotification.setUserId(job.getCustomer().getId());
+			customerNotification.setMessage("Người dọn dẹp: " + cleaner.getName() + " đã được kết nối với bạn.");
+			customerNotification.setType("AUTO_MESSAGE");
+			customerNotification.setTimestamp(LocalDate.now(zoneId));
+			customerNotification.setRead(false); // ✅ set read = false
+			notificationService.processNotification(customerNotification, "CUSTOMER", Math.toIntExact(customerId));
 			response.put("message", "Cleaner has been accepted for the job");
 		} else if ("reject".equalsIgnoreCase(action)) {
 			jobApplication.setStatus("Rejected");
