@@ -472,6 +472,11 @@ public class CleanerJobService {
 
 		// Xử lý accept hoặc reject
 		if ("accept".equalsIgnoreCase(action)) {
+			if (job.getStatus() == JobStatus.IN_PROGRESS) {
+				response.put("message", "This job has already been accepted by another cleaner");
+				return response;
+			}
+
 			// Nếu chọn accept, từ chối tất cả các ứng viên khác
 			List<JobApplication> otherApplications = jobApplicationRepository.findByJob(job);
 			for (JobApplication app : otherApplications) {
