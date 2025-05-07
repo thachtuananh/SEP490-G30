@@ -91,14 +91,14 @@ const WorkDetailsDescription = () => {
       const data = await response.json();
 
       message.success("Nhận việc thành công");
-      sendNotification(
-        job.customerId,
-        `Người dọn dẹp ${sessionStorage.getItem("name")} đã nhận dịch vụ: ${
-          job.services[0]?.serviceName || "Dọn dẹp"
-        }`,
-        "NHẬN VIỆC",
-        "Customer"
-      );
+      // sendNotification(
+      //   job.customerId,
+      //   `Người dọn dẹp ${sessionStorage.getItem("name")} đã nhận dịch vụ: ${
+      //     job.services[0]?.serviceName || "Dọn dẹp"
+      //   }`,
+      //   "NHẬN VIỆC",
+      //   "Customer"
+      // );
       navigate("/homeclean");
       setIsModalOpen(false);
     } catch (error) {
