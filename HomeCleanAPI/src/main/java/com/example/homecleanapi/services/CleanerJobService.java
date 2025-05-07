@@ -21,6 +21,7 @@ import com.example.homecleanapi.repositories.*;
 import com.example.homecleanapi.vnPay.VnpayRequest;
 import com.example.homecleanapi.vnPay.VnpayService;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -417,6 +418,7 @@ public class CleanerJobService {
 
 
 	// accept hoặc reject cleaner
+	@Transactional
 	public Map<String, Object> acceptOrRejectApplication(Long jobId, Long cleanerId, Long customerId, String action) {
 		Map<String, Object> response = new HashMap<>();
 
@@ -430,8 +432,8 @@ public class CleanerJobService {
 		Customers customer = customerOpt.get();
 
 		// Tìm công việc theo jobId
-		Optional<Job> jobOpt = jobRepository.findById(jobId);
-		if (!jobOpt.isPresent()) {
+		Optional<Job> jobOpt = jobRepository.findByIdWithLock(jobId);
+		if (jobOpt.isEmpty()) {
 			response.put("message", "Job not found");
 			return response;
 		}
