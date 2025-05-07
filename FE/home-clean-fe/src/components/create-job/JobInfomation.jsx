@@ -207,19 +207,19 @@ const JobInfomation = ({
 
       if (responseData.status === "OPEN") {
         message.success("Đăng việc thành công!");
-        try {
-          await sendNotification(
-            customerId,
-            `Bạn đã đăng việc thành công: ${
-              state.serviceName ||
-              (state.serviceDetails && state.serviceDetails[0]?.serviceName) ||
-              "Dọn dẹp"
-            }`,
-            "Tạo việc"
-          );
-        } catch (notifError) {
-          console.error("Không thể gửi thông báo:", notifError);
-        }
+        // try {
+        //   await sendNotification(
+        //     customerId,
+        //     `Bạn đã đăng việc thành công: ${
+        //       state.serviceName ||
+        //       (state.serviceDetails && state.serviceDetails[0]?.serviceName) ||
+        //       "Dọn dẹp"
+        //     }`,
+        //     "Tạo việc"
+        //   );
+        // } catch (notifError) {
+        //   console.error("Không thể gửi thông báo:", notifError);
+        // }
         navigate("/");
       } else {
         console.error("Lỗi khi tạo job:", responseData);

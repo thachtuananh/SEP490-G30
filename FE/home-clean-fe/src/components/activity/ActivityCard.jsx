@@ -282,7 +282,7 @@ export const ActivityCard = ({ data, onDelete }) => {
       await hireCleaner(jobId, cleanerId, customerId);
 
       // Then create a conversation
-      await createConversation(customerId, cleanerId);
+      // await createConversation(customerId, cleanerId);
 
       // Find the specific activity/job data using jobId
       const jobData = activities.find((activity) => activity.jobId === jobId);
@@ -330,15 +330,15 @@ export const ActivityCard = ({ data, onDelete }) => {
       }. SĐT chủ nhà: ${customerPhone}. Tạm tính: ${jobData.totalPrice.toLocaleString()} VNĐ.`;
 
       Promise.all([
-        sendNotification(
-          cleanerId,
-          `Chúc mừng, Chủ nhà ${sessionStorage.getItem(
-            "name"
-          )} đã chấp nhận công việc`,
-          "BOOKED",
-          "Cleaner"
-        ),
-        sendSms(cleanerPhone, smsMessageHire),
+        // sendNotification(
+        //   cleanerId,
+        //   `Chúc mừng, Chủ nhà ${sessionStorage.getItem(
+        //     "name"
+        //   )} đã chấp nhận công việc`,
+        //   "BOOKED",
+        //   "Cleaner"
+        // ),
+        // sendSms(cleanerPhone, smsMessageHire),
       ]);
 
       updateActivityStatus(jobId, "IN_PROGRESS");
@@ -382,15 +382,15 @@ export const ActivityCard = ({ data, onDelete }) => {
       );
       const smsMessageReject = `[HouseClean] Lịch dọn tại ${jobData.customerAddress}, lúc ${formattedDate} đã bị huỷ bởi ${customerName}`;
       Promise.all([
-        sendNotification(
-          cleanerId,
-          `Rất tiếc, chủ nhà ${sessionStorage.getItem(
-            "name"
-          )} từ chối công việc`,
-          "BOOKED",
-          "Cleaner"
-        ),
-        sendSms(cleanerPhone, smsMessageReject),
+        // sendNotification(
+        //   cleanerId,
+        //   `Rất tiếc, chủ nhà ${sessionStorage.getItem(
+        //     "name"
+        //   )} từ chối công việc`,
+        //   "BOOKED",
+        //   "Cleaner"
+        // ),
+        // sendSms(cleanerPhone, smsMessageReject),
       ]);
       // Refresh cleaner list
       fetchCleaners(jobId);
@@ -468,12 +468,12 @@ export const ActivityCard = ({ data, onDelete }) => {
           const activity = activities.find((a) => a.jobId === jobId);
           if (activity && activity.cleanerId) {
             Promise.all([
-              sendNotification(
-                activity.cleanerId,
-                `Chủ nhà ${sessionStorage.getItem("name")} đã huỷ công việc`,
-                "CANCELLED",
-                "Cleaner"
-              ),
+              // sendNotification(
+              //   activity.cleanerId,
+              //   `Chủ nhà ${sessionStorage.getItem("name")} đã huỷ công việc`,
+              //   "CANCELLED",
+              //   "Cleaner"
+              // ),
             ]);
           }
         } catch (error) {
@@ -821,12 +821,25 @@ export const ActivityCard = ({ data, onDelete }) => {
                             className={styles.statusButton}
                             onClick={() => openModal(activity.jobId)}
                           >
-                            Xem thông tin Cleaner
+                            Xem thông tin người dọn dẹp
                           </Button>
                         </Badge>
                       </div>
                     )}
 
+                  {(activity.status === "DONE" ||
+                    activity.status === "COMPLETED" ||
+                    activity.status === "IN_PROGRESS") && (
+                    <Button
+                      type="default"
+                      onClick={() =>
+                        handleFetchCleanerDetail(activity.cleanerId)
+                      }
+                      disabled={!activity.cleanerId}
+                    >
+                      Xem chi tiết người dọn dẹp
+                    </Button>
+                  )}
                   {activity.status === "COMPLETED" && (
                     <Button
                       type="primary"

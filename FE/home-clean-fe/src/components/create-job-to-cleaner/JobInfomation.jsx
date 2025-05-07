@@ -249,17 +249,17 @@ const JobInfomation = ({
         }. SĐT chủ nhà: ${sessionStorage.getItem(
           "phone"
         )}. Vui lòng xác nhận sớm.`;
-        Promise.all([
-          sendNotification(
-            state.cleanerId,
-            `Chủ nhà ${sessionStorage.getItem(
-              "name"
-            )} đã đặt dịch vụ trực tiếp với bạn`,
-            "BOOKED",
-            "Cleaner"
-          ),
-          sendSms(state.phoneNumber, smsMessageBooked),
-        ]);
+        // Promise.all([
+        //   sendNotification(
+        //     state.cleanerId,
+        //     `Chủ nhà ${sessionStorage.getItem(
+        //       "name"
+        //     )} đã đặt dịch vụ trực tiếp với bạn`,
+        //     "BOOKED",
+        //     "Cleaner"
+        //   ),
+        //   sendSms(state.phoneNumber, smsMessageBooked),
+        // ]);
         navigate("/");
       } else {
         console.error("Lỗi khi tạo job:", responseData);

@@ -253,36 +253,36 @@ const JobCard = ({ job, refreshJobs, isAppliedTab }) => {
             message.success(
               `Đã cập nhật trạng thái thành ${getStatusLabel(newStatus)}`
             );
-            sendNotification(
-              job.customerId,
-              `Người dọn dẹp ${sessionStorage.getItem(
-                "name"
-              )} cập nhật trạng thái: ${
-                getStatusLabel(newStatus) || "Trạng thái"
-              }`,
-              "STATUS",
-              "Customer"
-            );
+            // sendNotification(
+            //   job.customerId,
+            //   `Người dọn dẹp ${sessionStorage.getItem(
+            //     "name"
+            //   )} cập nhật trạng thái: ${
+            //     getStatusLabel(newStatus) || "Trạng thái"
+            //   }`,
+            //   "STATUS",
+            //   "Customer"
+            // );
             if (newStatus.toUpperCase() === "COMPLETED") {
               const smsMessageCompleted = `[HouseClean] Cleaner ${cleanerName} đã hoàn thành công việc. Mời bạn đánh giá trên ứng dụng. Cảm ơn bạn!`;
 
-              sendSms(job.customerPhone, smsMessageCompleted)
-                .then(() => {
-                  console.log("Completion SMS sent successfully");
-                })
-                .catch((error) => {
-                  console.error("Error sending completion SMS:", error);
-                });
+              // sendSms(job.customerPhone, smsMessageCompleted)
+              //   .then(() => {
+              //     console.log("Completion SMS sent successfully");
+              //   })
+              //   .catch((error) => {
+              //     console.error("Error sending completion SMS:", error);
+              //   });
             }
             if (newStatus.toUpperCase() === "ARRIVED") {
               const smsMessageArrived = `[HouseClean] Cleaner ${cleanerName} đã đến ${job.customerAddress} để làm việc lúc ${formattedDate}. SĐT Cleaner: ${cleanerPhone}. Bạn vui lòng mở cửa và để ý điện thoại nhé.`;
-              sendSms(job.customerPhone, smsMessageArrived)
-                .then(() => {
-                  console.log("Arrival SMS sent successfully");
-                })
-                .catch((error) => {
-                  console.error("Error sending arrival SMS:", error);
-                });
+              // sendSms(job.customerPhone, smsMessageArrived)
+              //   .then(() => {
+              //     console.log("Arrival SMS sent successfully");
+              //   })
+              //   .catch((error) => {
+              //     console.error("Error sending arrival SMS:", error);
+              //   });
             }
           })
           .catch((error) => {
@@ -326,18 +326,18 @@ const JobCard = ({ job, refreshJobs, isAppliedTab }) => {
             message.success("Đã hủy ứng tuyển công việc thành công");
 
             // Notify customer about cancellation
-            sendNotification(
-              customerId,
-              `Người dọn dẹp ${sessionStorage.getItem(
-                "name"
-              )} đã hủy ứng tuyển dịch vụ: ${
-                job.services[0]?.serviceName || "Dọn dẹp"
-              }`,
-              "CANCELLED",
-              "Customer"
-            ).catch((error) => {
-              console.error("Error sending cancellation notification:", error);
-            });
+            // sendNotification(
+            //   customerId,
+            //   `Người dọn dẹp ${sessionStorage.getItem(
+            //     "name"
+            //   )} đã hủy ứng tuyển dịch vụ: ${
+            //     job.services[0]?.serviceName || "Dọn dẹp"
+            //   }`,
+            //   "CANCELLED",
+            //   "Customer"
+            // ).catch((error) => {
+            //   console.error("Error sending cancellation notification:", error);
+            // });
 
             // Refresh job list if refreshJobs function is provided
             if (typeof refreshJobs === "function") {
@@ -385,51 +385,51 @@ const JobCard = ({ job, refreshJobs, isAppliedTab }) => {
           const smsMessageAccept = `[HouseClean] Cleaner ${cleanerName} đã xác nhận. SĐT: ${cleanerPhone}. Dịch vụ: ${serviceInfoText}, ${formattedDate}, ${
             job.customerAddress
           }. Tạm tính: ${job.totalPrice.toLocaleString()} VND.`;
-          Promise.all([
-            createConversation(job.customerId, cleanerId),
-            sendNotification(
-              job.customerId,
-              `Người dọn dẹp ${sessionStorage.getItem(
-                "name"
-              )} đã nhận dịch vụ: ${job.services[0]?.serviceName || "Dọn dẹp"}`,
-              "BOOKED",
-              "Customer"
-            ),
-            sendSms(job.customerPhone, smsMessageAccept),
-          ])
-            .then(([conversationData, notificationData]) => {
-              console.log("Conversation created:", conversationData);
-              console.log("Notification sent:", notificationData);
-            })
-            .catch((error) => {
-              console.error("Error in post-acceptance operations:", error);
-              message.error(
-                "Có lỗi xảy ra khi xử lý sau khi chấp nhận công việc."
-              );
-            });
+          // Promise.all([
+          //   createConversation(job.customerId, cleanerId),
+          //   sendNotification(
+          //     job.customerId,
+          //     `Người dọn dẹp ${sessionStorage.getItem(
+          //       "name"
+          //     )} đã nhận dịch vụ: ${job.services[0]?.serviceName || "Dọn dẹp"}`,
+          //     "BOOKED",
+          //     "Customer"
+          //   ),
+          //   sendSms(job.customerPhone, smsMessageAccept),
+          // ])
+          //   .then(([conversationData, notificationData]) => {
+          //     console.log("Conversation created:", conversationData);
+          //     console.log("Notification sent:", notificationData);
+          //   })
+          //   .catch((error) => {
+          //     console.error("Error in post-acceptance operations:", error);
+          //     message.error(
+          //       "Có lỗi xảy ra khi xử lý sau khi chấp nhận công việc."
+          //     );
+          //   });
         } else if (action === "reject") {
           setCurrentStatus("CANCELLED");
           const smsMessageReject = `[HouseClean] Cleaner ${cleanerName} (SĐT: ${cleanerPhone}) đã huỷ lịch ${formattedDate}. Vui lòng chọn người thay thế.`;
-          Promise.all([
-            sendNotification(
-              job.customerId,
-              `Người dọn dẹp ${sessionStorage.getItem(
-                "name"
-              )} đã từ chối dịch vụ: ${
-                job.services[0]?.serviceName || "Dọn dẹp"
-              }`,
-              "REJECTED",
-              "Customer"
-            ),
-            sendSms(job.customerPhone, smsMessageReject),
-          ])
-            .then((notificationData) => {
-              console.log("Rejection notification sent:", notificationData);
-            })
-            .catch((error) => {
-              console.error("Error in sending rejection notification:", error);
-              message.error("Có lỗi xảy ra khi gửi thông báo từ chối.");
-            });
+          // Promise.all([
+          //   sendNotification(
+          //     job.customerId,
+          //     `Người dọn dẹp ${sessionStorage.getItem(
+          //       "name"
+          //     )} đã từ chối dịch vụ: ${
+          //       job.services[0]?.serviceName || "Dọn dẹp"
+          //     }`,
+          //     "REJECTED",
+          //     "Customer"
+          //   ),
+          //   sendSms(job.customerPhone, smsMessageReject),
+          // ])
+          //   .then((notificationData) => {
+          //     console.log("Rejection notification sent:", notificationData);
+          //   })
+          //   .catch((error) => {
+          //     console.error("Error in sending rejection notification:", error);
+          //     message.error("Có lỗi xảy ra khi gửi thông báo từ chối.");
+          //   });
         }
 
         message.success(
