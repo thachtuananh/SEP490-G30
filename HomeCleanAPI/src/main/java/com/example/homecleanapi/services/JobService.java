@@ -2,6 +2,7 @@ package com.example.homecleanapi.services;
 
 
 
+import com.example.homecleanapi.dtos.NotificationDTO;
 import com.example.homecleanapi.models.Services;
 import com.example.homecleanapi.models.Wallet;
 import com.example.homecleanapi.repositories.WalletRepository;
@@ -47,7 +48,7 @@ public class JobService {
     private CustomerRepo customerRepo;
     
     @Autowired
-    private CustomerAddressRepository customerAddressRepository; 
+    private CustomerAddressRepository customerAddressRepository;
     
     @Autowired
     private ServiceRepository serviceRepository;
@@ -76,6 +77,8 @@ public class JobService {
     private TransactionHistoryRepository transactionHistoryRepository;
     @Autowired
     private WorkHistoryRepository workHistoryRepository;
+    @Autowired
+    private NotificationService notificationService;
 
     public List<JobDTO> getAllJobs() {
         List<Job> jobs = jobRepository.findAll();  // Lấy tất cả các job
@@ -670,6 +673,13 @@ public class JobService {
         job.setStatus(JobStatus.CANCELLED);
         jobRepository.save(job);
 
+        NotificationDTO customerNotification = new NotificationDTO();
+        customerNotification.setUserId(job.getCustomer().getId());
+        customerNotification.setMessage("Bạn đã huỷ công việc thành công");
+        customerNotification.setType("AUTO_MESSAGE");
+        customerNotification.setTimestamp(LocalDate.now());
+        customerNotification.setRead(false); // ✅ set read = false
+        notificationService.processNotification(customerNotification, "CUSTOMER", Math.toIntExact(customerId));
         response.put("message", "Job has been cancelled successfully");
         response.put("jobId", jobId);
         response.put("status", job.getStatus());

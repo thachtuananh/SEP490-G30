@@ -56,6 +56,16 @@ public class CustomerAuthService {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
         }
 
+        if (customerRepository.existsByEmail(request.getEmail())) {
+            response.put("message", "Email bạn sử dụng đã tồn tại!!!");
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+        }
+
+        if (customerRepository.existsByEmail(request.getEmail())) {
+            response.put("message", "Email của bạn đã được sử dụng.");
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+        }
+
         // Kiểm tra OTP đã xác minh
         Optional<OtpVerification> otpOpt = otpVerificationRepository.findTopByPhoneOrderByCreatedAtDesc(request.getPhone());
         if (otpOpt.isEmpty() || !otpOpt.get().getVerified()) {
