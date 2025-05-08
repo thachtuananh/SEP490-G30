@@ -97,6 +97,7 @@ const JobCard = ({ job, refreshJobs, isAppliedTab }) => {
     useState(null);
   const cleanerName = sessionStorage.getItem("name");
   const cleanerPhone = sessionStorage.getItem("phone");
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const [feedbacks, setFeedbacks] = useState([]);
   const [averageRating, setAverageRating] = useState(0);
@@ -140,6 +141,9 @@ const JobCard = ({ job, refreshJobs, isAppliedTab }) => {
   });
 
   const fetchCustomerDetails = () => {
+    if (isProcessing) return;
+    setIsProcessing(true);
+
     setLoadingCustomerDetails(true);
     const token = sessionStorage.getItem("token");
     const cleanerId = sessionStorage.getItem("cleanerId");
@@ -176,6 +180,8 @@ const JobCard = ({ job, refreshJobs, isAppliedTab }) => {
   };
 
   const fetchFeedbacks = (customerId) => {
+    if (isProcessing) return;
+    setIsProcessing(true);
     if (!cleanerId || !customerId) return;
 
     setLoadingFeedbacks(true);
@@ -225,6 +231,7 @@ const JobCard = ({ job, refreshJobs, isAppliedTab }) => {
   };
 
   const handleStatusUpdate = (newStatus) => {
+    if (isProcessing) return;
     Modal.confirm({
       title: "Xác nhận",
       content: `Bạn có chắc muốn cập nhật trạng thái thành '${getStatusLabel(
@@ -299,6 +306,7 @@ const JobCard = ({ job, refreshJobs, isAppliedTab }) => {
   };
 
   const handleCancelJob = () => {
+    if (isProcessing) return;
     Modal.confirm({
       title: "Xác nhận hủy ứng tuyển",
       content: "Bạn có chắc muốn hủy ứng tuyển công việc này không?",
@@ -356,6 +364,7 @@ const JobCard = ({ job, refreshJobs, isAppliedTab }) => {
   };
 
   const handleJobAction = (action) => {
+    if (isProcessing) return;
     setLoading(true);
     const token = sessionStorage.getItem("token");
     const cleanerId = sessionStorage.getItem("cleanerId");
@@ -471,6 +480,7 @@ const JobCard = ({ job, refreshJobs, isAppliedTab }) => {
   };
 
   const openFeedbackModal = (jobId) => {
+    if (isProcessing) return;
     setSelectedJobIdForFeedback(jobId);
     setIsFeedbackModalOpen(true);
   };
@@ -481,6 +491,7 @@ const JobCard = ({ job, refreshJobs, isAppliedTab }) => {
   };
 
   const openReportModal = (jobId) => {
+    if (isProcessing) return;
     setSelectedJobIdForReport(jobId);
     setIsReportModalOpen(true);
   };
@@ -588,6 +599,7 @@ const JobCard = ({ job, refreshJobs, isAppliedTab }) => {
                 className={styles.cancelBtn}
                 onClick={handleCancelJob}
                 loading={loading}
+                disabled={isProcessing}
               >
                 Hủy ứng tuyển
               </Button>
@@ -597,6 +609,7 @@ const JobCard = ({ job, refreshJobs, isAppliedTab }) => {
                 className={styles.completeBtn}
                 onClick={fetchCustomerDetails}
                 loading={loadingCustomerDetails}
+                disabled={isProcessing}
               >
                 Xem thông tin Chủ Nhà
               </Button>
@@ -617,6 +630,7 @@ const JobCard = ({ job, refreshJobs, isAppliedTab }) => {
                 className={styles.cancelBtn}
                 onClick={handleCancelJob}
                 loading={loading}
+                disabled={isProcessing}
               >
                 Hủy ứng tuyển
               </Button>
@@ -626,6 +640,7 @@ const JobCard = ({ job, refreshJobs, isAppliedTab }) => {
                 className={styles.completeBtn}
                 onClick={() => handleStatusUpdate("arrived")}
                 loading={loading}
+                disabled={isProcessing}
               >
                 Đã đến nơi
               </Button>
@@ -635,6 +650,7 @@ const JobCard = ({ job, refreshJobs, isAppliedTab }) => {
                 className={styles.completeBtn}
                 onClick={() => handleStatusUpdate("completed")}
                 loading={loading}
+                disabled={isProcessing}
               >
                 Đã hoàn thành
               </Button>
@@ -645,6 +661,7 @@ const JobCard = ({ job, refreshJobs, isAppliedTab }) => {
                   className={styles.completeBtn}
                   onClick={() => openFeedbackModal(job.jobId)}
                   loading={loading}
+                  disabled={isProcessing}
                 >
                   Xem đánh giá
                 </Button>
@@ -652,6 +669,7 @@ const JobCard = ({ job, refreshJobs, isAppliedTab }) => {
                   className={styles.completeBtn}
                   onClick={() => openReportModal(job.jobId)}
                   loading={loading}
+                  disabled={isProcessing}
                 >
                   Xem báo cáo
                 </Button>
@@ -663,6 +681,7 @@ const JobCard = ({ job, refreshJobs, isAppliedTab }) => {
                   className={styles.completeBtn}
                   onClick={fetchCustomerDetails}
                   loading={loadingCustomerDetails}
+                  disabled={isProcessing}
                 >
                   Xem thông tin Chủ Nhà
                 </Button>
@@ -670,6 +689,7 @@ const JobCard = ({ job, refreshJobs, isAppliedTab }) => {
                   className={styles.cancelBtn}
                   onClick={() => handleJobAction("reject")}
                   loading={loading}
+                  disabled={isProcessing}
                 >
                   Từ chối
                 </Button>
@@ -677,6 +697,7 @@ const JobCard = ({ job, refreshJobs, isAppliedTab }) => {
                   className={styles.completeBtn}
                   onClick={() => handleJobAction("accept")}
                   loading={loading}
+                  disabled={isProcessing}
                 >
                   Chấp nhận
                 </Button>
@@ -692,7 +713,11 @@ const JobCard = ({ job, refreshJobs, isAppliedTab }) => {
         open={customerDetailsVisible}
         onCancel={() => setCustomerDetailsVisible(false)}
         footer={[
-          <Button key="close" onClick={() => setCustomerDetailsVisible(false)}>
+          <Button
+            key="close"
+            onClick={() => setCustomerDetailsVisible(false)}
+            disabled={isProcessing}
+          >
             Đóng
           </Button>,
         ]}
