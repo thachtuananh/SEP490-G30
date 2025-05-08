@@ -161,7 +161,7 @@ const Notification = () => {
                   cursor: "pointer",
                   opacity: clearLoading ? 0.5 : 1,
                 }}
-                spin={clearLoading}
+                // spin={clearLoading}
                 title="Xóa tất cả thông báo"
               />
             )}

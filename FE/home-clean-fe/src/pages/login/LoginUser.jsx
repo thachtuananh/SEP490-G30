@@ -18,6 +18,7 @@ function Login() {
   const [password, setPassword] = useState("");
   const [phoneError, setPhoneError] = useState(false);
   const [passwordError, setPasswordError] = useState(false);
+  const [isLoading, setIsLoading] = useState(false); // Thêm trạng thái loading
 
   const validateForm = useCallback(() => {
     let isValid = true;
@@ -40,11 +41,16 @@ function Login() {
 
   const handleLogin = async (e) => {
     e.preventDefault();
+
+    // Nếu đang loading thì không xử lý thêm request nữa
+    if (isLoading) return;
+
     if (!validateForm()) {
       message.error("Vui lòng điền đầy đủ thông tin.");
       return;
     }
 
+    setIsLoading(true); // Bắt đầu loading
     dispatch({ type: "LOGIN_START" });
 
     try {
@@ -74,10 +80,12 @@ function Login() {
         navigate("/"); // Điều hướng đến trang Home của Customer
       } else {
         message.error(result.message || "Đăng nhập thất bại.");
-        // message.error("Đăng nhập thất bại.");
       }
     } catch (error) {
       message.error("Lỗi máy chủ, vui lòng thử lại sau.");
+      dispatch({ type: "LOGIN_FAILURE" });
+    } finally {
+      setIsLoading(false); // Kết thúc loading bất kể thành công hay thất bại
     }
   };
 
@@ -113,6 +121,7 @@ function Login() {
                     setPhoneError(false);
                   }}
                   className={phoneError ? "error" : ""}
+                  disabled={isLoading} // Vô hiệu hóa input khi đang loading
                 />
               </div>
 
@@ -128,10 +137,11 @@ function Login() {
                       setPasswordError(false);
                     }}
                     className={passwordError ? "error" : ""}
+                    disabled={isLoading} // Vô hiệu hóa input khi đang loading
                   />
                   <span
                     className="password-toggle"
-                    onClick={() => setShowPassword(!showPassword)}
+                    onClick={() => !isLoading && setShowPassword(!showPassword)} // Chỉ cho phép click khi không loading
                   >
                     {showPassword ? <AiFillEye /> : <AiFillEyeInvisible />}
                   </span>
@@ -144,8 +154,12 @@ function Login() {
                 </Link>
               </div>
 
-              <button type="submit" className="login-button">
-                Đăng nhập
+              <button
+                type="submit"
+                className="login-button"
+                disabled={isLoading} // Vô hiệu hóa nút khi đang loading
+              >
+                {isLoading ? "Đang xử lý..." : "Đăng nhập"}
               </button>
             </form>
 

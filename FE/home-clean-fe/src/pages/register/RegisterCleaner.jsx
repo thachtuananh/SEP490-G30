@@ -498,7 +498,7 @@ function RegisterCleaner() {
                 }
                 style={{ marginBottom: "16px" }}
               >
-                <Radio.Group
+                {/* <Radio.Group
                   value={ageInputType}
                   onChange={(e) => setAgeInputType(e.target.value)}
                   style={{ marginBottom: "8px" }}
@@ -526,7 +526,15 @@ function RegisterCleaner() {
                     format="DD/MM/YYYY"
                     disabledDate={disabledDate}
                   />
-                )}
+                )} */}
+
+                <DatePicker
+                  style={{ ...inputStyle, width: "100%" }}
+                  placeholder="Chọn ngày sinh"
+                  onChange={handleDateChange}
+                  format="DD/MM/YYYY"
+                  disabledDate={disabledDate}
+                />
                 {ageInputType === "date" && formData.age && (
                   <div style={{ marginTop: "4px", fontSize: "12px" }}>
                     Tuổi của bạn: {formData.age}

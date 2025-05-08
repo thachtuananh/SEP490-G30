@@ -26,6 +26,7 @@ const JobInfomation = ({
 
   // State để kiểm tra thời gian
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isRedirecting, setIsRedirecting] = useState(false); // Thêm state để theo dõi trạng thái đang chuyển hướng
   const [currentTime, setCurrentTime] = useState(dayjs());
   const [basePrice, setBasePrice] = useState(state.price || 0);
   const [adjustedPrice, setAdjustedPrice] = useState(state.price || 0);
@@ -118,6 +119,11 @@ const JobInfomation = ({
   };
 
   const handleCreateJob = async () => {
+    // Kiểm tra nếu đang trong quá trình xử lý hoặc chuyển hướng thì không làm gì
+    if (isSubmitting || isRedirecting) {
+      return;
+    }
+
     if (!termsAccepted) {
       message.error("Vui lòng đồng ý với Điều khoản và dịch vụ để tiếp tục!");
       return;
@@ -191,9 +197,27 @@ const JobInfomation = ({
 
       // Handle VNPay payment URL if present
       if (normalizedPaymentMethod === "VNPay" && responseData.paymentUrl) {
+        // Đặt trạng thái đang chuyển hướng để chặn các click tiếp theo
+        setIsRedirecting(true);
+
+        // Hiển thị thông báo với thanh tiến trình đếm ngược
+        // let countdown = 3;
+        // const countdownInterval = setInterval(() => {
+        //   countdown -= 1;
+        //   if (countdown > 0) {
+        //     message.loading(
+        //       `Đang chuyển đến trang thanh toán VNPay sau ${countdown} giây...`,
+        //       1
+        //     );
+        //   } else {
+        //     clearInterval(countdownInterval);
+        //   }
+        // }, 1000);
+
         // Show notification that user will be redirected
         message.info(
-          "Bạn sẽ được chuyển đến cổng thanh toán VNPay trong 3 giây. Vui lòng hoàn tất thanh toán!"
+          "Bạn sẽ được chuyển đến cổng thanh toán VNPay trong 3 giây. Vui lòng hoàn tất thanh toán!",
+          3
         );
 
         // Set timeout before redirecting to payment gateway
@@ -234,6 +258,10 @@ const JobInfomation = ({
       setIsSubmitting(false);
     }
   };
+
+  // Xác định khi nào nút bị vô hiệu hóa
+  const isButtonDisabled = isSubmitting || isRedirecting || !termsAccepted;
+  const isProcessing = isSubmitting || isRedirecting;
 
   return (
     <>
@@ -362,6 +390,7 @@ const JobInfomation = ({
         <Checkbox
           checked={termsAccepted}
           onChange={(e) => setTermsAccepted(e.target.checked)}
+          disabled={isSubmitting || isRedirecting}
         >
           <Text style={{ fontSize: "14px" }}>
             Tôi đồng ý với <Text strong>Điều khoản và dịch vụ</Text> của
@@ -371,18 +400,40 @@ const JobInfomation = ({
       </div>
 
       <div className={styles.actionButtons}>
-        <Link to="/" className={styles.linkReset}>
-          <div className={styles.cancelButton}>Hủy</div>
-        </Link>
+        {isProcessing ? (
+          // Render nút Hủy không có link khi đang xử lý
+          <>
+            <Link className={styles.linkReset}>
+              <div
+                className={styles.cancelButton}
+                style={{
+                  opacity: 0.7,
+                  cursor: "not-allowed",
+                }}
+              >
+                Hủy
+              </div>
+            </Link>
+          </>
+        ) : (
+          // Render nút Hủy với link chỉ khi không đang xử lý
+          <Link to="/" className={styles.linkReset}>
+            <div className={styles.cancelButton}>Hủy</div>
+          </Link>
+        )}
         <div
           className={styles.submitButton}
           onClick={handleCreateJob}
           style={{
-            opacity: isSubmitting || !termsAccepted ? 0.7 : 1,
-            cursor: isSubmitting || !termsAccepted ? "not-allowed" : "pointer",
+            opacity: isButtonDisabled ? 0.7 : 1,
+            cursor: isButtonDisabled ? "not-allowed" : "pointer",
           }}
         >
-          {isSubmitting ? "Đang xử lý..." : "Đăng việc"}
+          {isSubmitting
+            ? "Đang xử lý..."
+            : isRedirecting
+            ? "Đang chuyển hướng..."
+            : "Đăng việc"}
         </div>
       </div>
     </>

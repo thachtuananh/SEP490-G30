@@ -53,7 +53,9 @@ export const ActivityCard = ({ data, onDelete }) => {
     useState(null);
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const [selectedJobIdForReport, setSelectedJobIdForReport] = useState(null);
-
+  const [isCleanerDetailModalOpen, setIsCleanerDetailModalOpen] =
+    useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [searchOrderCode, setSearchOrderCode] = useState("");
 
@@ -217,6 +219,22 @@ export const ActivityCard = ({ data, onDelete }) => {
     }
   }, [activities, customerId]);
 
+  const handleViewCleanerDetail = async (cleanerId) => {
+    if (isProcessing) return; // Ngăn chặn click liên tục
+    setIsProcessing(true);
+
+    try {
+      const data = await fetchCleanerDetail(cleanerId);
+      setSelectedCleaner(data);
+      setIsCleanerDetailModalOpen(true); // Mở modal hiển thị chi tiết
+    } catch (error) {
+      message.error("Không thể tải thông tin Cleaner");
+      setSelectedCleaner(null);
+    } finally {
+      setIsProcessing(false); // Đặt lại trạng thái sau khi hoàn tất
+    }
+  };
+
   // Fetch cleaner details
   const handleFetchCleanerDetail = async (cleanerId) => {
     setLoading(true);
@@ -276,7 +294,8 @@ export const ActivityCard = ({ data, onDelete }) => {
       console.error("Không tìm thấy jobId!");
       return;
     }
-
+    if (isProcessing) return; // Ngăn chặn click liên tục
+    setIsProcessing(true);
     try {
       // First, hire the cleaner
       await hireCleaner(jobId, cleanerId, customerId);
@@ -346,6 +365,8 @@ export const ActivityCard = ({ data, onDelete }) => {
     } catch (error) {
       console.error("Lỗi khi thuê cleaner:", error);
       message.error("Lỗi khi thuê cleaner");
+    } finally {
+      setIsProcessing(false); // Đặt lại trạng thái sau khi hoàn tất
     }
   };
 
@@ -435,6 +456,8 @@ export const ActivityCard = ({ data, onDelete }) => {
 
   // Complete a job
   const handleCompleteJob = async (jobId) => {
+    if (isProcessing) return;
+    setIsProcessing(true);
     try {
       await completeJob(jobId);
       message.success("Công việc đã hoàn thành!");
@@ -442,6 +465,8 @@ export const ActivityCard = ({ data, onDelete }) => {
     } catch (error) {
       console.error("Lỗi khi hoàn thành công việc:", error);
       message.error("Không thể hoàn thành công việc.");
+    } finally {
+      setIsProcessing(false); // Đặt lại trạng thái sau khi hoàn tất
     }
   };
 
@@ -537,7 +562,7 @@ export const ActivityCard = ({ data, onDelete }) => {
             onClick={() =>
               handleHireCleaner(selectedJobId, record.cleanerId, customerId)
             }
-            disabled={!record.cleanerId}
+            disabled={!record.cleanerId || isProcessing}
           >
             Chấp nhận
           </Button>
@@ -557,7 +582,7 @@ export const ActivityCard = ({ data, onDelete }) => {
             onClick={() =>
               handleRejectCleaner(selectedJobId, record.cleanerId, customerId)
             }
-            disabled={!record.cleanerId}
+            disabled={!record.cleanerId || isProcessing} // Vô hiệu hóa khi đang xử lý
           >
             Từ chối
           </Button>
@@ -770,6 +795,7 @@ export const ActivityCard = ({ data, onDelete }) => {
                       danger
                       className={styles.cancelButton}
                       onClick={() => handleDeleteJob(activity.jobId)}
+                      disabled={isProcessing}
                     >
                       Huỷ việc
                     </Button>
@@ -833,9 +859,9 @@ export const ActivityCard = ({ data, onDelete }) => {
                     <Button
                       type="default"
                       onClick={() =>
-                        handleFetchCleanerDetail(activity.cleanerId)
+                        handleViewCleanerDetail(activity.cleanerId)
                       }
-                      disabled={!activity.cleanerId}
+                      disabled={!activity.cleanerId || isProcessing}
                     >
                       Xem chi tiết người dọn dẹp
                     </Button>
@@ -845,6 +871,7 @@ export const ActivityCard = ({ data, onDelete }) => {
                       type="primary"
                       className={styles.statusButton}
                       onClick={() => handleCompleteJob(activity.jobId)}
+                      disabled={isProcessing}
                     >
                       Xác nhận đã hoàn thành
                     </Button>
@@ -854,6 +881,7 @@ export const ActivityCard = ({ data, onDelete }) => {
                       type="primary"
                       className={styles.statusButton}
                       onClick={() => handleRetryPayment(activity.jobId)}
+                      disabled={isProcessing}
                     >
                       Thanh toán lại
                     </Button>
@@ -913,6 +941,34 @@ export const ActivityCard = ({ data, onDelete }) => {
             locale={{
               emptyText: <Empty description="Chưa có Cleaner nào nhận việc" />,
             }}
+          />
+        )}
+      </Modal>
+
+      <Modal
+        title="Chi tiết người dọn dẹp"
+        open={isCleanerDetailModalOpen}
+        onCancel={() => {
+          setIsCleanerDetailModalOpen(false);
+          setSelectedCleaner(null);
+        }}
+        width={1050}
+        footer={[
+          <Button key="back" onClick={() => setIsCleanerDetailModalOpen(false)}>
+            Đóng
+          </Button>,
+        ]}
+      >
+        {loading ? (
+          <div style={{ textAlign: "center", padding: "40px 0" }}>
+            Đang tải...
+          </div>
+        ) : selectedCleaner ? (
+          <InfoCleanerCard cleaner={selectedCleaner} />
+        ) : (
+          <Empty
+            image={Empty.PRESENTED_IMAGE_SIMPLE}
+            description="Không tìm thấy thông tin người dọn dẹp"
           />
         )}
       </Modal>

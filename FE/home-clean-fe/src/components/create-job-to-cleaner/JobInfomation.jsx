@@ -31,6 +31,7 @@ const JobInfomation = ({
   const [currentTime, setCurrentTime] = useState(dayjs());
   const [basePrice, setBasePrice] = useState(state.price || 0);
   const [adjustedPrice, setAdjustedPrice] = useState(state.price || 0);
+  const [isRedirecting, setIsRedirecting] = useState(false); // Thêm state để theo dõi trạng thái đang chuyển hướng
 
   // token
   const { token, customerId } = useContext(AuthContext);
@@ -120,6 +121,10 @@ const JobInfomation = ({
   };
 
   const handleCreateJob = async () => {
+    if (isSubmitting || isRedirecting) {
+      return;
+    }
+
     if (!termsAccepted) {
       message.error("Vui lòng đồng ý với Điều khoản và dịch vụ để tiếp tục!");
       return;
@@ -203,8 +208,11 @@ const JobInfomation = ({
 
       // Xử lý nếu là VNPay và có URL thanh toán
       if (normalizedPaymentMethod === "VNPay" && responseData.paymentUrl) {
+        setIsRedirecting(true);
+
         message.info(
-          "Bạn sẽ được chuyển đến cổng thanh toán VNPay trong 3 giây. Vui lòng hoàn tất thanh toán!"
+          "Bạn sẽ được chuyển đến cổng thanh toán VNPay trong 3 giây. Vui lòng hoàn tất thanh toán!",
+          3
         );
 
         // Set timeout trước khi chuyển hướng
@@ -274,6 +282,9 @@ const JobInfomation = ({
       setIsSubmitting(false);
     }
   };
+
+  const isButtonDisabled = isSubmitting || isRedirecting || !termsAccepted;
+  const isProcessing = isSubmitting || isRedirecting;
 
   return (
     <>
@@ -407,6 +418,7 @@ const JobInfomation = ({
         <Checkbox
           checked={termsAccepted}
           onChange={(e) => setTermsAccepted(e.target.checked)}
+          disabled={isSubmitting || isRedirecting}
         >
           <Text style={{ fontSize: "14px" }}>
             Tôi đồng ý với <Text strong>Điều khoản và dịch vụ</Text> của
@@ -416,18 +428,40 @@ const JobInfomation = ({
       </div>
 
       <div className={styles.actionButtons}>
-        <Link to="/" className={styles.linkReset}>
-          <div className={styles.cancelButton}>Hủy</div>
-        </Link>
+        {isProcessing ? (
+          // Render nút Hủy không có link khi đang xử lý
+          <>
+            <Link className={styles.linkReset}>
+              <div
+                className={styles.cancelButton}
+                style={{
+                  opacity: 0.7,
+                  cursor: "not-allowed",
+                }}
+              >
+                Hủy
+              </div>
+            </Link>
+          </>
+        ) : (
+          // Render nút Hủy với link chỉ khi không đang xử lý
+          <Link to="/" className={styles.linkReset}>
+            <div className={styles.cancelButton}>Hủy</div>
+          </Link>
+        )}
         <div
           className={styles.submitButton}
           onClick={handleCreateJob}
           style={{
-            opacity: isSubmitting || !termsAccepted ? 0.7 : 1,
-            cursor: isSubmitting || !termsAccepted ? "not-allowed" : "pointer",
+            opacity: isButtonDisabled ? 0.7 : 1,
+            cursor: isButtonDisabled ? "not-allowed" : "pointer",
           }}
         >
-          {isSubmitting ? "Đang xử lý..." : "Đăng việc"}
+          {isSubmitting
+            ? "Đang xử lý..."
+            : isRedirecting
+            ? "Đang chuyển hướng..."
+            : "Đăng việc"}
         </div>
       </div>
     </>
