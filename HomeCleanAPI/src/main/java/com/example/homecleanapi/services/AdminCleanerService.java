@@ -42,7 +42,7 @@ public class AdminCleanerService {
         cleaner.setPassword(passwordEncoder.encode(request.getPassword()));
         cleaner.setAge(request.getAge());
         cleaner.setAddress(request.getAddress());
-        cleaner.setIdentity_number(request.getIdentity_number());
+        cleaner.setIdentityNumber(request.getIdentity_number());
         cleaner.setIs_verified(false); // Mặc định chưa xác minh
         cleaner.setExperience(request.getExperience());
 
@@ -82,7 +82,7 @@ public class AdminCleanerService {
         if (request.getEmail() != null) cleaner.setEmail(request.getEmail());
         if (request.getAddress() != null) cleaner.setAddress(request.getAddress());
         if (request.getAge() != null) cleaner.setAge(request.getAge());
-        if (request.getIdentityNumber() != null) cleaner.setIdentity_number(request.getIdentityNumber());
+        if (request.getIdentityNumber() != null) cleaner.setIdentityNumber(request.getIdentityNumber());
         if (request.getExperience() != null) cleaner.setExperience(request.getExperience());
         if (request.getIsVerified() != null) cleaner.setIs_verified(request.getIsVerified());
 
@@ -143,7 +143,7 @@ public class AdminCleanerService {
         result.put("password_hash", c.getPassword());
         result.put("age", c.getAge());
         result.put("address", c.getAddress());
-        result.put("identity_number", c.getIdentity_number());
+        result.put("identity_number", c.getIdentityNumber());
         result.put("identity_verified", c.getIs_verified());
         result.put("experience", c.getExperience());
 

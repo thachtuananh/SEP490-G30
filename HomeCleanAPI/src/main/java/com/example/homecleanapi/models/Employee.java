@@ -2,6 +2,9 @@ package com.example.homecleanapi.models;
 
 import com.example.homecleanapi.dtos.CleanerUpdateProfile;
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -12,6 +15,8 @@ import java.util.stream.Collectors;
 
 @Entity
 @Table(name="cleaners")
+@Getter
+@Setter
 public class Employee {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -30,7 +35,8 @@ public class Employee {
     private Integer age;
     private String address;
 
-    private String identity_number;
+    @Column(name = "identity_number")
+    private String identityNumber;
 
     @Column(name = "identity_verified")
     private Boolean is_verified;
@@ -99,13 +105,6 @@ public class Employee {
         this.profile_image = profile_image;
     }
 
-    public String getIdentity_number() {
-        return identity_number;
-    }
-
-    public void setIdentity_number(String identity_number) {
-        this.identity_number = identity_number;
-    }
 
     public Boolean getIs_verified() {
         return is_verified;
@@ -155,7 +154,7 @@ public class Employee {
         this.setEmail(request.getEmail());
         this.setPhone(request.getPhone());
         this.setAge(request.getAge());
-        this.setIdentity_number(request.getIdentity_number());
+        this.setIdentityNumber(request.getIdentity_number());
         this.setExperience(request.getExperience());
     }
 

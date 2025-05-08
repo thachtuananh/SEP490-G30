@@ -1332,7 +1332,7 @@ public class CleanerJobService {
 		cleanerInfo.put("email", cleaner.getEmail());
 		cleanerInfo.put("age", cleaner.getAge());
 		cleanerInfo.put("address", cleaner.getAddress());
-		cleanerInfo.put("identityNumber", cleaner.getIdentity_number());
+		cleanerInfo.put("identityNumber", cleaner.getIdentityNumber());
 		cleanerInfo.put("isVerified", cleaner.getIs_verified());
 		cleanerInfo.put("experience", cleaner.getExperience());
 		cleanerInfo.put("status", cleaner.getStatus() ? "Active" : "Inactive");
