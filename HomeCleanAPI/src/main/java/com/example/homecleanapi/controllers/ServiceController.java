@@ -55,7 +55,7 @@ public class ServiceController {
 
     @GetMapping("/{customerId}/nearby")
     public ResponseEntity<List<EmployeeDTO>> getNearbyEmployees(
-            @RequestParam(defaultValue = "10") int limit,
+            @RequestParam(defaultValue = "4") int limit,
             @PathVariable Integer customerId) {
         CustomerAddresses customerAddresses = customerAddressRepository.findCustomerAddressesByCustomer_IdAndCurrentIsTrue(customerId);
         List<EmployeeDTO> employees = findCleanerService.findNearbyEmployees(customerAddresses.getLatitude(), customerAddresses.getLongitude(), limit);
