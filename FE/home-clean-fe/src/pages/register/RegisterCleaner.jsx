@@ -235,7 +235,7 @@ function RegisterCleaner() {
       const result = await response.json();
 
       if (response.ok) {
-        message.success("Xác thực OTP thành công!");
+        // message.success("Xác thực OTP thành công!");
         await registerCleaner();
       } else {
         message.error(
@@ -492,7 +492,7 @@ function RegisterCleaner() {
               <Form.Item
                 label={
                   <span style={requiredLabel}>
-                    Tuổi
+                    Ngày sinh
                     <span style={requiredStar}>*</span>
                   </span>
                 }
@@ -616,7 +616,7 @@ function RegisterCleaner() {
           <Button key="back" onClick={() => setOtpModalVisible(false)}>
             Hủy
           </Button>,
-          <Button key="resend" onClick={handleResendOtp} loading={isLoading}>
+          <Button key="resend" onClick={handleResendOtp} disabled={isLoading}>
             Gửi lại OTP
           </Button>,
           <Button
