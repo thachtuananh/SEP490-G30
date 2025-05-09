@@ -40,6 +40,7 @@ services:
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: 123
+      POSTGRES_DATABASE: sep490_v2
     ports:
       - "5432:5432"
     networks:
@@ -51,14 +52,17 @@ services:
 
   web:
     build: .
+    container_name: web
     ports:
       - "8080:8080"
     depends_on:
       - postgres
     restart: unless-stopped
     #    network_mode: host
+    networks:
+      - backend
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/sep490_v2
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/sep490_v2
       - SPRING_DATASOURCE_USERNAME=sep490
       - SPRING_DATASOURCE_PASSWORD=123456
 
