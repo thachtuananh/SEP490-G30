@@ -4,7 +4,8 @@ services:
     build: .
     ports:
       - "8080:8080"
-    network_mode: host
+    restart: unless-stopped
+    #    network_mode: host
     environment:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/sep490_v2
       - SPRING_DATASOURCE_USERNAME=sep490
@@ -19,6 +20,7 @@ services:
     ports:
       - "5672:5672"
       - "15672:15672"
+    restart: unless-stopped
     networks:
       - backend
 
@@ -32,6 +34,7 @@ services:
       - "6379:6379"
     networks:
       - backend
+    restart: unless-stopped
 
   redis_insight:
     image: "redislabs/redisinsight:latest"
@@ -40,6 +43,7 @@ services:
       - "5540:5540"
     networks:
       - backend
+    restart: unless-stopped
 
   postgres:
     image: postgres:latest
@@ -51,6 +55,7 @@ services:
       - "5432:5432"
     networks:
       - backend
+    restart: unless-stopped
     volumes:
       - postgres-data:/var/lib/postgresql/data
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
