@@ -35,7 +35,7 @@ services:
     restart: unless-stopped
 
   postgres:
-    image: postgis/postgis:15-3.3
+    image: postgis/postgis:17-3.4
     container_name: postgres
     environment:
       POSTGRES_USER: postgres
