@@ -458,9 +458,9 @@ const JobInfomation = ({
           }}
         >
           {isSubmitting
-            ? "Đang xử lý..."
+            ? "Đăng việc"
             : isRedirecting
-            ? "Đang chuyển hướng..."
+            ? "Đăng việc"
             : "Đăng việc"}
         </div>
       </div>

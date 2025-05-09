@@ -157,7 +157,7 @@ function Login() {
                 className="login-button"
                 disabled={isLoading} // Vô hiệu hóa nút khi đang loading
               >
-                {isLoading ? "Đang xử lý..." : "Đăng nhập"}
+                {isLoading ? "Đăng nhập" : "Đăng nhập"}
               </button>
             </form>
 

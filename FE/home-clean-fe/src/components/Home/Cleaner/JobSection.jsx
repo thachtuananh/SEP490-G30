@@ -87,6 +87,7 @@ function JobSection({ title }) {
 
   useEffect(() => {
     const fetchJobCounts = async () => {
+      if (isLoading) return; // Prevent multiple fetches
       setIsLoading(true);
       try {
         // Get token from sessionStorage

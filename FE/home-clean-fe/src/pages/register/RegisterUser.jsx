@@ -160,7 +160,7 @@ function RegisterUser() {
       const result = await response.json();
 
       if (response.ok) {
-        message.success("Xác thực OTP thành công!");
+        // message.success("Xác thực OTP thành công!");
         await registerUser();
       } else {
         message.error(
@@ -413,7 +413,7 @@ function RegisterUser() {
           <Button key="back" onClick={() => setOtpModalVisible(false)}>
             Hủy
           </Button>,
-          <Button key="resend" onClick={handleResendOtp} loading={isLoading}>
+          <Button key="resend" onClick={handleResendOtp} disabled={isLoading}>
             Gửi lại OTP
           </Button>,
           <Button

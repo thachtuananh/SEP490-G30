@@ -136,6 +136,7 @@ function LoginAdmin() {
                 <Input
                   prefix={<UserOutlined className="site-form-item-icon" />}
                   placeholder="Email"
+                  disabled={loading}
                 />
               </Form.Item>
 
@@ -149,6 +150,7 @@ function LoginAdmin() {
                   iconRender={(visible) =>
                     visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />
                   }
+                  disabled={loading}
                 />
               </Form.Item>
 
@@ -163,7 +165,7 @@ function LoginAdmin() {
                     borderRadius: "6px",
                   }}
                 >
-                  Đăng nhập
+                  {loading ? "Đăng nhập" : "Đăng nhập"}
                 </Button>
               </Form.Item>
             </Form>
