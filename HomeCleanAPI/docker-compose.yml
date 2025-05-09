@@ -1,16 +1,5 @@
 version: "3.9"
 services:
-  web:
-    build: .
-    ports:
-      - "8080:8080"
-    restart: unless-stopped
-    #    network_mode: host
-    environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/sep490_v2
-      - SPRING_DATASOURCE_USERNAME=sep490
-      - SPRING_DATASOURCE_PASSWORD=123456
-
   rabbitmq:
     image: "rabbitmq:3-management"
     container_name: rabbitmq
@@ -59,6 +48,19 @@ services:
     volumes:
       - postgres-data:/var/lib/postgresql/data
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  web:
+    build: .
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+    restart: unless-stopped
+    #    network_mode: host
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/sep490_v2
+      - SPRING_DATASOURCE_USERNAME=sep490
+      - SPRING_DATASOURCE_PASSWORD=123456
 
 networks:
   backend:
