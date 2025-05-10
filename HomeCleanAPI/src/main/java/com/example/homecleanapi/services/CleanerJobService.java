@@ -791,9 +791,9 @@ public class CleanerJobService {
 		}
 
 		completedJobs.sort((j1, j2) -> {
-			Date date1 = (Date) j1.get("updatedAt");
-			Date date2 = (Date) j2.get("updatedAt");
-			return date2.compareTo(date1); // Descending order
+			LocalDateTime ldt1 = (LocalDateTime) j1.get("updatedAt");
+			LocalDateTime ldt2 = (LocalDateTime) j2.get("updatedAt");
+			return ldt2.compareTo(ldt1); // Descending
 		});
 
 		return completedJobs;
