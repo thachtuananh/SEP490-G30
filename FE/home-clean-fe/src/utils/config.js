@@ -6,6 +6,6 @@
 // export const URL_WEB_SOCKET = 'https://pike-armor-ms-hampton.trycloudflare.com'
 // export const URL_CHAT_AI = 'https://pike-armor-ms-hampton.trycloudflare.com'
 
-export const BASE_URL = 'https://detection-paintings-mistake-makers.trycloudflare.com/api'
-export const URL_WEB_SOCKET = 'https://detection-paintings-mistake-makers.trycloudflare.com'
-export const URL_CHAT_AI = 'https://detection-paintings-mistake-makers.trycloudflare.com'
+export const BASE_URL = 'https://turkish-content-correction-literally.trycloudflare.com/api'
+export const URL_WEB_SOCKET = 'https://turkish-content-correction-literally.trycloudflare.com'
+export const URL_CHAT_AI = 'https://turkish-content-correction-literally.trycloudflare.com'

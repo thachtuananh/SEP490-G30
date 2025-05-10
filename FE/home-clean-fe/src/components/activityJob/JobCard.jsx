@@ -31,6 +31,7 @@ import { sendSms } from "../../services/SMSService";
 import { FeedbackModal } from "./FeedbackModal";
 import { AuthContext } from "../../context/AuthContext";
 import { ReportModal } from "../../components/activityJob/ReportModal";
+import { FaFlag, FaRegCommentAlt } from "react-icons/fa";
 
 const getStatusColor = (status) => {
   const normalizedStatus = status.toUpperCase();
@@ -658,20 +659,23 @@ const JobCard = ({ job, refreshJobs, isAppliedTab }) => {
             {currentStatus === "DONE" && (
               <>
                 <Button
-                  className={styles.completeBtn}
+                  className={styles.reviewButton}
                   onClick={() => openFeedbackModal(job.jobId)}
                   loading={loading}
                   disabled={isProcessing}
+                  icon={<FaRegCommentAlt />}
                 >
-                  Xem đánh giá
+                  Đánh giá
                 </Button>
                 <Button
-                  className={styles.completeBtn}
+                  className={styles.reviewButton}
                   onClick={() => openReportModal(job.jobId)}
                   loading={loading}
                   disabled={isProcessing}
+                  danger
+                  icon={<FaFlag />}
                 >
-                  Xem báo cáo
+                  Báo cáo
                 </Button>
               </>
             )}

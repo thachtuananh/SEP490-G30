@@ -518,7 +518,7 @@ export const ActivityCard = ({ data, onDelete }) => {
         <img
           src={`data:image/png;base64,${base64}`}
           alt="Avatar"
-          style={{ width: 40, borderRadius: "50%" }}
+          style={{ width: 40, height: 40, borderRadius: "50%" }}
         />
       ),
     },
@@ -800,19 +800,21 @@ export const ActivityCard = ({ data, onDelete }) => {
                       Huỷ việc
                     </Button>
                   )}
-                  {activity.status === "CANCELLED" ||
-                    (activity.status === "COMPLETED" && (
-                      <div className={styles.buttonGroup}>
-                        <Button
-                          className={styles.reportButton}
-                          onClick={() => openReportModal(activity.jobId)}
-                          danger
-                          icon={<FaFlag />}
-                        >
-                          Báo cáo
-                        </Button>
-                      </div>
-                    ))}
+                  {(activity.status === "BOOKED" ||
+                    activity.status === "IN_PROGRESS" ||
+                    activity.status === "CANCELLED" ||
+                    activity.status === "COMPLETED") && (
+                    <div className={styles.buttonGroup}>
+                      <Button
+                        className={styles.reportButton}
+                        onClick={() => openReportModal(activity.jobId)}
+                        danger
+                        icon={<FaFlag />}
+                      >
+                        Báo cáo
+                      </Button>
+                    </div>
+                  )}
                   {activity.status === "DONE" && (
                     <div className={styles.buttonGroup}>
                       <Button
@@ -820,7 +822,7 @@ export const ActivityCard = ({ data, onDelete }) => {
                         onClick={() => openFeedbackModal(activity.jobId)}
                         icon={<FaRegCommentAlt />}
                       >
-                        Xem đánh giá
+                        Đánh giá
                       </Button>
 
                       <Button

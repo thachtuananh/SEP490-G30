@@ -403,6 +403,7 @@ const WorkDetailsDescription = () => {
             type="primary"
             onClick={handleApplyJob}
             style={{ background: "#52c41a", borderColor: "#52c41a" }}
+            disabled={loading}
           >
             Xác nhận
           </Button>,

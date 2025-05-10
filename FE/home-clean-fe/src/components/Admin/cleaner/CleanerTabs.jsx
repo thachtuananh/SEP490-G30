@@ -28,6 +28,7 @@ const CleanerTabs = ({
   navigate,
   handleDelete,
   refreshData,
+  handleRejectVerify,
 }) => {
   const [isProfileModalVisible, setIsProfileModalVisible] = useState(false);
   const [isVerificationModalVisible, setIsVerificationModalVisible] =
@@ -274,9 +275,14 @@ const CleanerTabs = ({
             }}
           >
             <Space>
-              {!cleanerData.is_deleted && (
+              {!cleanerData.is_deleted && cleanerData.identity_verified && (
                 <Button danger onClick={handleDelete}>
                   Xoá người dùng
+                </Button>
+              )}
+              {!cleanerData.identity_verified && (
+                <Button danger onClick={handleRejectVerify}>
+                  Từ chối
                 </Button>
               )}
               <Button type="primary" onClick={showEditModalProfile}>
@@ -330,9 +336,14 @@ const CleanerTabs = ({
             }}
           >
             <Space>
-              {!cleanerData.is_deleted && (
+              {!cleanerData.is_deleted && cleanerData.identity_verified && (
                 <Button danger onClick={handleDelete}>
                   Xoá người dùng
+                </Button>
+              )}
+              {!cleanerData.identity_verified && (
+                <Button danger onClick={handleRejectVerify}>
+                  Từ chối
                 </Button>
               )}
               <Button type="primary" onClick={showEditModalVerification}>

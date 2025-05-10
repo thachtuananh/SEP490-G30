@@ -159,6 +159,40 @@ const CleanerDetails = () => {
     });
   };
 
+  const handleRejectVerify = () => {
+    Modal.confirm({
+      title: "Xác nhận từ chối",
+      content: "Bạn có chắc chắn muốn từ chối xác minh người dùng này không?",
+      okText: "Từ chối",
+      okType: "danger",
+      cancelText: "Huỷ",
+      onOk: async () => {
+        try {
+          const token = sessionStorage.getItem("token");
+          const response = await fetch(
+            `${BASE_URL}/admin/cleaners/${cleanerId}/delete-cleaner-account`,
+            {
+              method: "DELETE",
+              headers: {
+                accept: "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+            }
+          );
+          if (!response.ok) {
+            throw new Error("Failed to delete user");
+          }
+          message.success("Từ chối xác minh người dùng thành công");
+          navigate("/admin/cleaners-ban");
+        } catch (error) {
+          message.error(
+            "Không thể từ chối xác minh người dùng. Vui lòng thử lại sau."
+          );
+        }
+      },
+    });
+  };
+
   const goBack = () => {
     navigate("/admin/cleaners");
   };
@@ -277,6 +311,7 @@ const CleanerDetails = () => {
               navigate={navigate}
               handleDelete={handleDelete}
               refreshData={fetchCleanerData}
+              handleRejectVerify={handleRejectVerify}
             />
           </Card>
         </Content>
