@@ -1,11 +1,14 @@
 package com.example.homecleanapi.services;
 import com.example.homecleanapi.dtos.*;
 import com.example.homecleanapi.models.Employee;
+import com.example.homecleanapi.models.EmployeeLocations;
 import com.example.homecleanapi.models.Job;
 import com.example.homecleanapi.models.JobApplication;
 import com.example.homecleanapi.repositories.CleanerRepository;
+import com.example.homecleanapi.repositories.EmployeeRepository;
 import com.example.homecleanapi.repositories.JobApplicationRepository;
 import com.example.homecleanapi.repositories.JobRepository;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -22,12 +25,14 @@ public class AdminCleanerService {
     private final PasswordEncoder passwordEncoder;
     private final JobRepository jobRepository;
     private final JobApplicationRepository jobApplicationRepository;
+    private final EmployeeRepository employeeRepository;
 
-    public AdminCleanerService(CleanerRepository cleanerRepository, PasswordEncoder passwordEncoder, JobRepository jobRepository, JobApplicationRepository jobApplicationRepository) {
+    public AdminCleanerService(CleanerRepository cleanerRepository, PasswordEncoder passwordEncoder, JobRepository jobRepository, JobApplicationRepository jobApplicationRepository, EmployeeRepository employeeRepository) {
         this.cleanerRepository = cleanerRepository;
         this.passwordEncoder = passwordEncoder;
         this.jobRepository = jobRepository;
         this.jobApplicationRepository = jobApplicationRepository;
+        this.employeeRepository = employeeRepository;
     }
 
     public ResponseEntity<Map<String, Object>> addCleaner(CleanerRegisterRequest request) {
@@ -292,7 +297,13 @@ public class AdminCleanerService {
         cleanerRepository.updateIdentityVerifiedAndDeletedStatus(cleanerId, status, isDeleted);
     }
 
+    public ResponseEntity<Map<String, Object>> deleteEmployeeWithAdminPermission(Integer employeeId) {
+        Employee employee = employeeRepository.findById(employeeId)
+                .orElseThrow(() -> new RuntimeException("Employee not found"));
+        employeeRepository.delete(employee);
 
+        return ResponseEntity.ok(Collections.singletonMap("status", "Delete success"));
+    }
 
 
 

@@ -115,6 +115,10 @@ public class AdminCleanerController {
         return ResponseEntity.ok("Identity verified and deleted status updated successfully.");
     }
 
+    @DeleteMapping("/{cleanerId}/delete-cleaner-account")
+    public ResponseEntity<?> deleteCleanerAccountNotAuth(@PathVariable Integer cleanerId) {
+        return cleanerService.deleteEmployeeWithAdminPermission(cleanerId);
+    }
 
 
 
