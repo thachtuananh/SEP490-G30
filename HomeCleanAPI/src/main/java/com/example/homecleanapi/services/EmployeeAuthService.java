@@ -120,13 +120,13 @@ public class EmployeeAuthService {
 
         // kiểm tra tài khoản bị khóa
         if (employee.getIsDeleted()) {
-            response.put("message", "Tài khoản của bạn đã bị khóa");
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
+            response.put("message", "Tài khoản của bạn không tồn tại.");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         }
         // Kiểm tra nếu tài khoản bị khóa hoặc chưa xác thực
-        if (!employee.getIs_verified() && !employee.getIsDeleted()) {
+        if (!employee.getIs_verified() && employee.getIsDeleted()) {
             response.put("message", "Tài khoản của bạn chưa xác thực");
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
 
         // Kiểm tra mật khẩu

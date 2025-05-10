@@ -1819,6 +1819,13 @@ public class CleanerJobService {
 	        }
 	        jobApplication.setStatus("Accepted");
 	        job.setStatus(JobStatus.IN_PROGRESS);  // Đặt trạng thái công việc là IN_PROGRESS
+			NotificationDTO customerNotification = new NotificationDTO();
+			customerNotification.setUserId(job.getCustomer().getId());
+			customerNotification.setMessage("Người dọn dẹp: " + cleaner.getName() + " đã nhận công việc của bạn");
+			customerNotification.setType("AUTO_MESSAGE");
+			customerNotification.setTimestamp(LocalDate.now());
+			customerNotification.setRead(false); // ✅ set read = false
+			notificationService.processNotification(customerNotification, "CUSTOMER", Math.toIntExact(job.getCustomer().getId()));
 	        response.put("message", "Job has been accepted");
 		} else if ("reject".equalsIgnoreCase(action)) {
 			jobApplication.setStatus("Rejected");
