@@ -142,7 +142,7 @@ const JobCard = ({ job, refreshJobs, isAppliedTab }) => {
   });
 
   const fetchCustomerDetails = () => {
-    if (isProcessing) return;
+    // if (isProcessing) return;
     setIsProcessing(true);
 
     setLoadingCustomerDetails(true);
@@ -417,6 +417,10 @@ const JobCard = ({ job, refreshJobs, isAppliedTab }) => {
           //       "Có lỗi xảy ra khi xử lý sau khi chấp nhận công việc."
           //     );
           //   });
+          if (typeof refreshJobs === "function") {
+            // Pass the tab to switch to as a parameter
+            refreshJobs("doing");
+          }
         } else if (action === "reject") {
           setCurrentStatus("CANCELLED");
           const smsMessageReject = `[HouseClean] Cleaner ${cleanerName} (SĐT: ${cleanerPhone}) đã huỷ lịch ${formattedDate}. Vui lòng chọn người thay thế.`;
@@ -440,6 +444,9 @@ const JobCard = ({ job, refreshJobs, isAppliedTab }) => {
           //     console.error("Error in sending rejection notification:", error);
           //     message.error("Có lỗi xảy ra khi gửi thông báo từ chối.");
           //   });
+          if (typeof refreshJobs === "function") {
+            refreshJobs();
+          }
         }
 
         message.success(
@@ -525,11 +532,14 @@ const JobCard = ({ job, refreshJobs, isAppliedTab }) => {
           </h2>
           <div style={{ marginTop: "8px", color: "#6b7280", fontSize: "14px" }}>
             <div>Khách hàng: {job.customerName}</div>
-            <div>Mã đơn hàng: {job.orderCode || "Không có thông tin"} </div>
-            {(displayStatus.toUpperCase() !== "PENDING" ||
-              displayStatus.toUpperCase() !== "CANCELLED") && (
-              <div>SĐT: {job.customerPhone}</div>
+            {!["PENDING", "CANCELLED", "ACCEPTED"].includes(
+              displayStatus.toUpperCase()
+            ) && (
+              <div>Mã đơn hàng: {job.orderCode || "Không có thông tin"} </div>
             )}
+            {!["PENDING", "CANCELLED"].includes(
+              displayStatus.toUpperCase()
+            ) && <div>SĐT: {job.customerPhone}</div>}
           </div>
         </div>
         <span
@@ -600,7 +610,7 @@ const JobCard = ({ job, refreshJobs, isAppliedTab }) => {
                 className={styles.cancelBtn}
                 onClick={handleCancelJob}
                 loading={loading}
-                disabled={isProcessing}
+                // disabled={isProcessing}
               >
                 Hủy ứng tuyển
               </Button>
@@ -610,7 +620,7 @@ const JobCard = ({ job, refreshJobs, isAppliedTab }) => {
                 className={styles.completeBtn}
                 onClick={fetchCustomerDetails}
                 loading={loadingCustomerDetails}
-                disabled={isProcessing}
+                // disabled={isProcessing}
               >
                 Xem thông tin Chủ Nhà
               </Button>
@@ -685,7 +695,7 @@ const JobCard = ({ job, refreshJobs, isAppliedTab }) => {
                   className={styles.completeBtn}
                   onClick={fetchCustomerDetails}
                   loading={loadingCustomerDetails}
-                  disabled={isProcessing}
+                  // disabled={isProcessing}
                 >
                   Xem thông tin Chủ Nhà
                 </Button>
@@ -693,7 +703,7 @@ const JobCard = ({ job, refreshJobs, isAppliedTab }) => {
                   className={styles.cancelBtn}
                   onClick={() => handleJobAction("reject")}
                   loading={loading}
-                  disabled={isProcessing}
+                  // disabled={isProcessing}
                 >
                   Từ chối
                 </Button>
