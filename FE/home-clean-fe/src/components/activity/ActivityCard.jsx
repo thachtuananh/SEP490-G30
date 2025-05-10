@@ -10,6 +10,7 @@ import {
   Pagination,
 } from "antd";
 import { InfoCleanerCard } from "../activity/InfoCleanerCard";
+import { InfoCleanerCardDetail } from "../activity/InfoCleanerCardDetail";
 import styles from "../activity/ActivityCard.module.css";
 import {
   FaRegCommentAlt,
@@ -956,6 +957,7 @@ export const ActivityCard = ({ data, onDelete }) => {
         }}
         width={1050}
         footer={[
+          <Button type="primary">Đặt lại dịch vụ</Button>,
           <Button key="back" onClick={() => setIsCleanerDetailModalOpen(false)}>
             Đóng
           </Button>,
@@ -966,7 +968,7 @@ export const ActivityCard = ({ data, onDelete }) => {
             Đang tải...
           </div>
         ) : selectedCleaner ? (
-          <InfoCleanerCard cleaner={selectedCleaner} />
+          <InfoCleanerCardDetail cleaner={selectedCleaner} />
         ) : (
           <Empty
             image={Empty.PRESENTED_IMAGE_SIMPLE}

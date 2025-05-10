@@ -145,10 +145,10 @@ export const WalletBalance = () => {
       if (response.ok) {
         setTransactionHistory(data);
       } else {
-        message.error(data.message || "Không có dữ liệu lịch sử giao dịch");
+        // message.error(data.message || "Không có dữ liệu lịch sử giao dịch");
       }
     } catch (error) {
-      message.error("Lỗi khi tải lịch sử giao dịch");
+      // message.error("Lỗi khi tải lịch sử giao dịch");
     } finally {
       setHistoryLoading(false);
     }
@@ -176,7 +176,7 @@ export const WalletBalance = () => {
       if (response.ok && result.status === "OK") {
         setWithdrawalHistory(result.data || []);
       } else {
-        message.info(result.message || "Không có dữ liệu lịch sử rút tiền");
+        // message.info(result.message || "Không có dữ liệu lịch sử rút tiền");
       }
     } catch (error) {
       message.error("Lỗi khi tải lịch sử rút tiền");
@@ -296,7 +296,10 @@ export const WalletBalance = () => {
         message.error(data.message || "Không thể thực hiện rút tiền");
       }
     } catch (error) {
-      message.error(`Lỗi khi rút tiền: ${error.message}`);
+      // message.error(`Lỗi khi rút tiền: ${error.message}`);
+      message.error(
+        "Vui lòng kiểm tra lại thông tin tài khoản ngân hàng và số tiền rút."
+      );
     } finally {
       setWithdrawalLoading(false);
     }
@@ -735,12 +738,13 @@ export const WalletBalance = () => {
             rules={[
               { required: true, message: "Vui lòng nhập số tài khoản" },
               {
-                pattern: /^[0-9]{6,19}$/,
-                message: "Số tài khoản không hợp lệ (phải có 6-19 chữ số)",
+                pattern: /^[a-zA-Z0-9]{16}$/,
+                message:
+                  "Số tài khoản phải gồm đúng 16 ký tự chữ và số, không chứa ký tự đặc biệt",
               },
             ]}
           >
-            <Input placeholder="Nhập số tài khoản ngân hàng" maxLength={19} />
+            <Input placeholder="Nhập số tài khoản ngân hàng" maxLength={16} />
           </Form.Item>
 
           <Form.Item
@@ -749,8 +753,9 @@ export const WalletBalance = () => {
             rules={[
               { required: true, message: "Vui lòng nhập tên chủ tài khoản" },
               {
-                pattern: /^[A-Za-zÀ-ỹ\s]+$/u,
-                message: "Tên chỉ được chứa chữ cái và khoảng trắng",
+                pattern: /^(?=.*[A-Za-zÀ-ỹ])[A-Za-zÀ-ỹ\s]+$/u,
+                message:
+                  "Tên chỉ được chứa chữ cái và khoảng trắng, không được để trống hoặc toàn dấu cách",
               },
             ]}
           >
@@ -839,7 +844,7 @@ export const WalletBalance = () => {
             Đóng
           </Button>,
         ]}
-        width={800}
+        width={"100%"}
       >
         <Table
           columns={withdrawalHistoryColumns}

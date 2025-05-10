@@ -54,6 +54,15 @@ export const PersonaInformation = () => {
     setOldPassword("");
     setNewPassword("");
     setConfirmPassword("");
+    setTimeout(() => {
+      // This ensures browsers don't auto-fill the password fields
+      const passwordInputs = document.querySelectorAll(
+        'input[type="password"]'
+      );
+      passwordInputs.forEach((input) => {
+        input.value = "";
+      });
+    }, 50);
   };
 
   // Validate form fields
@@ -252,7 +261,7 @@ export const PersonaInformation = () => {
         throw new Error(errorData.message || "Failed to change password");
       }
 
-      message.success("Mật khẩu đã được thay đổi thành công!");
+      // message.success("Mật khẩu đã được thay đổi thành công!");
       dispatch({ type: "LOGOUT" });
       message.info("Bạn sẽ được chuyển hướng đến trang đăng nhập sau 3 giây.");
       setTimeout(() => {
@@ -388,6 +397,7 @@ export const PersonaInformation = () => {
             iconRender={(visible) =>
               visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />
             }
+            autoComplete="new-password"
           />
         </div>
         <div style={{ marginBottom: "16px" }}>
