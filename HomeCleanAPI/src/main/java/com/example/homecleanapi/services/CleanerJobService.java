@@ -91,6 +91,8 @@ public class CleanerJobService {
     private WorkHistoryRepository workHistoryRepository;
 	@Autowired
 	private NotificationService notificationService;
+	@Autowired
+	private ConversationService conversationService;
 
 
 	public Map<String, Object> getCustomerDetails(Long cleanerId, Long customerId) {
@@ -485,11 +487,11 @@ public class CleanerJobService {
 					jobApplicationRepository.save(app);
 					NotificationDTO cleanerNotification = new NotificationDTO();
 					cleanerNotification.setUserId(job.getCustomer().getId());
-					cleanerNotification.setMessage("Chủ nhà: " + customer.getFull_name() + " đã từ chối bạn.");
+					cleanerNotification.setMessage("Chủ nhà: " + customer.getFull_name() + " đã từ chối công việc bạn đã ứng tuyển.");
 					cleanerNotification.setType("AUTO_MESSAGE");
 					cleanerNotification.setTimestamp(LocalDate.now(zoneId));
 					cleanerNotification.setRead(false); // ✅ set read = false
-					notificationService.processNotification(cleanerNotification, "CLEANER", Math.toIntExact(customerId));
+					notificationService.processNotification(cleanerNotification, "CLEANER", Math.toIntExact(cleanerId));
 				}
 			}
 
@@ -502,6 +504,7 @@ public class CleanerJobService {
 			customerNotification.setTimestamp(LocalDate.now(zoneId));
 			customerNotification.setRead(false); // ✅ set read = false
 			notificationService.processNotification(customerNotification, "CUSTOMER", Math.toIntExact(customerId));
+			conversationService.getOrCreateConversation(customerId, Math.toIntExact(cleanerId));
 			response.put("message", "Cleaner has been accepted for the job");
 		} else if ("reject".equalsIgnoreCase(action)) {
 			jobApplication.setStatus("Rejected");
@@ -1826,6 +1829,7 @@ public class CleanerJobService {
 			customerNotification.setTimestamp(LocalDate.now());
 			customerNotification.setRead(false); // ✅ set read = false
 			notificationService.processNotification(customerNotification, "CUSTOMER", Math.toIntExact(job.getCustomer().getId()));
+			conversationService.getOrCreateConversation(Long.valueOf(job.getCustomer().getId()), cleaner.getId());
 	        response.put("message", "Job has been accepted");
 		} else if ("reject".equalsIgnoreCase(action)) {
 			jobApplication.setStatus("Rejected");
@@ -1858,6 +1862,14 @@ public class CleanerJobService {
 
 				response.put("refundAmount", refundAmount);
 			}
+
+			NotificationDTO customerNotification = new NotificationDTO();
+			customerNotification.setUserId(job.getCustomer().getId());
+			customerNotification.setMessage("Người dọn dẹp: " + cleaner.getName() + " đã từ chối công việc bạn đã đặt");
+			customerNotification.setType("AUTO_MESSAGE");
+			customerNotification.setTimestamp(LocalDate.now());
+			customerNotification.setRead(false); // ✅ set read = false
+			notificationService.processNotification(customerNotification, "CUSTOMER", Math.toIntExact(job.getCustomer().getId()));
 
 			response.put("message", "Job has been rejected, cancelled and refunded to customer");
 		}
