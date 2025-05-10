@@ -282,6 +282,14 @@ public class JobService {
             }
         }
 
+        NotificationDTO customerNotification = new NotificationDTO();
+        customerNotification.setUserId(job.getCustomer().getId());
+        customerNotification.setMessage("Công việc đã được tạo thành công");
+        customerNotification.setType("AUTO_MESSAGE");
+        customerNotification.setTimestamp(LocalDate.now());
+        customerNotification.setRead(false); // ✅ set read = false
+        notificationService.processNotification(customerNotification, "CUSTOMER", Math.toIntExact(customerId));
+
         response.put("message", "Đặt lịch thành công");
         response.put("jobId", job.getId());
         response.put("orderCode", job.getOrderCode());
