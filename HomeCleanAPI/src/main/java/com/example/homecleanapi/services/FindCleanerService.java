@@ -36,7 +36,7 @@ public class FindCleanerService {
                 "       ) AS distance_m " +
                 "FROM cleaners c " +
                 "JOIN cleaner_addresses ca ON c.id = ca.cleaner_id " +
-                "WHERE ca.is_current = true " +
+                "WHERE ca.is_current = true AND c.identity_verified = true AND c.is_deleted = false " +
                 "AND ST_DWithin(" +
                 "        ca.geom, " +
                 "        ST_Transform(ST_SetSRID(ST_MakePoint(:longitude, :latitude), 4326), 3857), " +
