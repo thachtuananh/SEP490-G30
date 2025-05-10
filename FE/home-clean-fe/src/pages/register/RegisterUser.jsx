@@ -413,7 +413,16 @@ function RegisterUser() {
           <Button key="back" onClick={() => setOtpModalVisible(false)}>
             Hủy
           </Button>,
-          <Button key="resend" onClick={handleResendOtp} disabled={isLoading}>
+          <Button
+            key="resend"
+            onClick={() => {
+              // Reset input OTP ngay trong Modal khi click nút gửi lại
+              setOtpCode("");
+              // Sau đó gọi hàm xử lý gửi lại OTP
+              handleResendOtp();
+            }}
+            disabled={isLoading}
+          >
             Gửi lại OTP
           </Button>,
           <Button
