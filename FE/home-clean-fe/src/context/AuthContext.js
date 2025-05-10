@@ -100,7 +100,7 @@ const AuthReducer = (state, action) => {
             return { ...state, user: customerProfile };
 
         case "FETCH_PROFILE_SUCCESS_CLEANER":
-            const { name: cleanerName, phone: cleanerPhone, email: cleanerEmail, age: cleanerAge, address: cleanerAddress, identity_number: cleanerIDnum, experience: cleanerExp, profile_image } = action.payload;
+            const { name: cleanerName, phone: cleanerPhone, email: cleanerEmail, age: cleanerAge, address: cleanerAddress, identityNumber: cleanerIDnum, experience: cleanerExp, profile_image } = action.payload;
             const cleanerProfile = { cleanerName, cleanerPhone, cleanerEmail, cleanerAge, cleanerAddress, cleanerIDnum, cleanerExp, profile_image };
             sessionStorage.setItem("cleaner", JSON.stringify(cleanerProfile));
             return { ...state, cleaner: cleanerProfile };

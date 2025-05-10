@@ -37,6 +37,7 @@ const WorkDetailsDescription = () => {
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+  const [isSubmitting, setIsSubmitting] = useState(false); // New state to track submission status
 
   // Track window resize for responsive behavior
   useEffect(() => {
@@ -75,7 +76,14 @@ const WorkDetailsDescription = () => {
       return;
     }
 
+    // Prevent multiple submissions
+    if (isSubmitting) {
+      return;
+    }
+
     try {
+      setIsSubmitting(true); // Set submitting state to true
+
       const response = await fetch(`${BASE_URL}/cleaner/apply-job/${jobId}`, {
         method: "POST",
         headers: {
@@ -90,7 +98,7 @@ const WorkDetailsDescription = () => {
 
       const data = await response.json();
 
-      message.success("Nhận việc thành công");
+      message.success("Ứng tuyển thành công");
       // sendNotification(
       //   job.customerId,
       //   `Người dọn dẹp ${sessionStorage.getItem("name")} đã nhận dịch vụ: ${
@@ -105,8 +113,20 @@ const WorkDetailsDescription = () => {
       message.error(
         "Bạn đang ứng tuyển hoặc đã có lịch làm việc trong một công việc cách công việc này nhỏ hơn 2 giờ"
       );
+    } finally {
+      // Reset submitting state after a short delay to prevent rapid re-submissions
+      setTimeout(() => {
+        setIsSubmitting(false);
+      }, 2000); // 2 second cooldown
     }
   };
+
+  // Reset isSubmitting state when modal is closed
+  useEffect(() => {
+    if (!isModalOpen) {
+      setIsSubmitting(false);
+    }
+  }, [isModalOpen]);
 
   if (loading) {
     return (
@@ -201,12 +221,12 @@ const WorkDetailsDescription = () => {
               )}
             </div>
 
-            <Tag
+            {/* <Tag
               color={job.status === "OPEN" ? "green" : "default"}
               style={{ marginTop: isMobile ? 8 : 0 }}
             >
               {job.status === "OPEN" ? "Đang mở" : "Đã đóng"}
-            </Tag>
+            </Tag> */}
           </div>
 
           <Descriptions
@@ -273,7 +293,7 @@ const WorkDetailsDescription = () => {
                 borderColor: "#52c41a",
               }}
             >
-              Nhận việc
+              Ứng tuyển
             </Button>
           </div>
         </Card>
@@ -333,7 +353,9 @@ const WorkDetailsDescription = () => {
             }}
           >
             <li style={{ border: "none", paddingBottom: "8px" }}>
-              <Typography.Text>{job.reminder}</Typography.Text>
+              <Typography.Text>
+                {job.reminder || "Không có ghi chú"}
+              </Typography.Text>
             </li>
           </ul>
 
@@ -389,7 +411,7 @@ const WorkDetailsDescription = () => {
       </Col>
 
       <Modal
-        title="Xác nhận nhận việc"
+        title="Xác nhận ứng tuyển"
         open={isModalOpen}
         onCancel={() => setIsModalOpen(false)}
         centered
@@ -403,13 +425,14 @@ const WorkDetailsDescription = () => {
             type="primary"
             onClick={handleApplyJob}
             style={{ background: "#52c41a", borderColor: "#52c41a" }}
-            disabled={loading}
+            disabled={isSubmitting} // Disable button while submitting
+            loading={isSubmitting} // Show loading state while submitting
           >
-            Xác nhận
+            {isSubmitting ? "Xác nhận" : "Xác nhận"}
           </Button>,
         ]}
       >
-        <p>Bạn có chắc chắn muốn nhận công việc này không?</p>
+        <p>Bạn có chắc chắn muốn ứng tuyển công việc này không?</p>
       </Modal>
     </Row>
   );
