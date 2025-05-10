@@ -66,6 +66,17 @@ services:
       - SPRING_DATASOURCE_USERNAME=sep490
       - SPRING_DATASOURCE_PASSWORD=123456
 
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: qdrant
+    ports:
+      - "6333:6333"  # HTTP gRPC API
+    volumes:
+      - qdrant_storage:/qdrant/storage
+    networks:
+      - backend
+    restart: unless-stopped
+
 networks:
   backend:
     driver: bridge
