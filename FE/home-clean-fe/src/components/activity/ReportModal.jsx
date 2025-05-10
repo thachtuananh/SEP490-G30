@@ -70,6 +70,8 @@ export const ReportModal = ({ visible, jobId, onClose }) => {
       } else {
         setReports([]);
         setHasSubmittedReport(false);
+        // Automatically switch to create tab when there's no data
+        setActiveTab("create");
       }
       setLoading(false);
     } catch (error) {
@@ -81,9 +83,11 @@ export const ReportModal = ({ visible, jobId, onClose }) => {
       ) {
         message.info(error.response.data.message);
       } else {
-        message.info("Không có báo náo nào");
+        // message.info("Không có báo náo nào");
       }
       setLoading(false);
+      // Automatically switch to create tab when there's an error
+      setActiveTab("create");
     }
   };
 
@@ -359,7 +363,8 @@ export const ReportModal = ({ visible, jobId, onClose }) => {
         activeTab === "view" ? (
           <div style={{ display: "flex", justifyContent: "space-between" }}>
             <Button onClick={onClose}>Đóng</Button>
-            {!hasSubmittedReport && (
+            {/* Hide the "Create new report" button when hasSubmittedReport is true */}
+            {!hasSubmittedReport && reports.length === 0 && (
               <Button type="primary" onClick={() => setActiveTab("create")}>
                 Tạo báo cáo mới
               </Button>

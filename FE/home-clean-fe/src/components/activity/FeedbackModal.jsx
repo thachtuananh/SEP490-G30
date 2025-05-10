@@ -33,13 +33,16 @@ export const FeedbackModal = ({ visible, jobId, customerId, onClose }) => {
           rating: result.feedback.rating,
           comment: result.feedback.comment,
         });
+        setEditing(false); // Ensure we display feedback if it exists
       } else {
         setFeedback(null);
         form.resetFields();
+        setEditing(true); // Auto switch to form mode if no feedback exists
       }
     } catch (error) {
       console.error("Lỗi khi tải đánh giá:", error);
       setFeedback(null);
+      setEditing(true); // Auto switch to form mode on error
     } finally {
       setLoading(false);
     }
@@ -56,17 +59,51 @@ export const FeedbackModal = ({ visible, jobId, customerId, onClose }) => {
 
       if (feedback) {
         // Update existing feedback
-        await updateFeedback(customerId, jobId, feedbackData);
+        const updatedFeedback = await updateFeedback(
+          customerId,
+          jobId,
+          feedbackData
+        );
+        // await updateFeedback(customerId, jobId, feedbackData);
         message.success("Cập nhật đánh giá thành công!");
+        // Update the local feedback state directly with the updated data
+        if (updatedFeedback) {
+          setFeedback(updatedFeedback);
+        } else {
+          // If API doesn't return the updated feedback, use our form values
+          setFeedback({
+            ...feedback,
+            ...feedbackData,
+          });
+        }
       } else {
         // Create new feedback
-        await createFeedback(customerId, jobId, feedbackData);
+        const newFeedback = await createFeedback(
+          customerId,
+          jobId,
+          feedbackData
+        );
+        // await createFeedback(customerId, jobId, feedbackData);
         message.success("Tạo đánh giá thành công!");
+
+        // Set the newly created feedback
+        if (newFeedback) {
+          setFeedback(newFeedback);
+        } else {
+          // If API doesn't return the created feedback, use our form values
+          setFeedback({
+            rating: values.rating,
+            comment: values.comment || "",
+            status: "OK", // Ensure status is set for consistency
+          });
+        }
       }
 
-      // Reload feedback to show updated data
-      await loadFeedback();
+      // Exit editing mode to show the feedback display
       setEditing(false);
+
+      // Re-fetch feedback data to ensure we have the latest data from server
+      loadFeedback();
     } catch (error) {
       console.error("Lỗi khi lưu đánh giá:", error);
       message.error(
@@ -90,16 +127,23 @@ export const FeedbackModal = ({ visible, jobId, customerId, onClose }) => {
   };
 
   const cancelEditing = () => {
-    setEditing(false);
-    form.setFieldsValue({
-      rating: feedback?.rating || 0,
-      comment: feedback?.comment || "",
-    });
+    if (feedback) {
+      setEditing(false);
+      form.setFieldsValue({
+        rating: feedback.rating,
+        comment: feedback.comment,
+      });
+    } else {
+      // If no feedback exists and user cancels, close modal
+      // Or optionally stay in editing mode: setEditing(true);
+      onClose();
+    }
   };
 
   // Render feedback display
   const renderFeedbackDisplay = () => {
     if (!feedback) {
+      // This condition should no longer happen as we auto-switch to form
       return (
         <Empty
           description="Chưa có đánh giá nào"
@@ -174,7 +218,7 @@ export const FeedbackModal = ({ visible, jobId, customerId, onClose }) => {
       width={500}
     >
       <div className={styles.modalContent}>
-        {loading && !editing ? (
+        {loading ? (
           <div className={styles.loadingContainer}>Đang tải...</div>
         ) : editing ? (
           renderFeedbackForm()
