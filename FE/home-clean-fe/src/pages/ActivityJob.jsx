@@ -86,8 +86,15 @@ const ActivityJob = () => {
       });
   };
 
-  const refreshJobs = () => {
-    fetchJobs(activeTab);
+  const refreshJobs = (switchToTab) => {
+    if (switchToTab) {
+      // If a tab is specified, switch to it
+      setActiveTab(switchToTab);
+      // The useEffect will trigger fetchJobs for the new tab
+    } else {
+      // Otherwise just refresh the current tab
+      fetchJobs(activeTab);
+    }
   };
 
   // Handle search by order code
