@@ -1,13 +1,7 @@
 package com.example.homecleanapi.services;
 import com.example.homecleanapi.dtos.*;
-import com.example.homecleanapi.models.Employee;
-import com.example.homecleanapi.models.EmployeeLocations;
-import com.example.homecleanapi.models.Job;
-import com.example.homecleanapi.models.JobApplication;
-import com.example.homecleanapi.repositories.CleanerRepository;
-import com.example.homecleanapi.repositories.EmployeeRepository;
-import com.example.homecleanapi.repositories.JobApplicationRepository;
-import com.example.homecleanapi.repositories.JobRepository;
+import com.example.homecleanapi.models.*;
+import com.example.homecleanapi.repositories.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -26,13 +20,15 @@ public class AdminCleanerService {
     private final JobRepository jobRepository;
     private final JobApplicationRepository jobApplicationRepository;
     private final EmployeeRepository employeeRepository;
+    private final WalletRepository walletRepository;
 
-    public AdminCleanerService(CleanerRepository cleanerRepository, PasswordEncoder passwordEncoder, JobRepository jobRepository, JobApplicationRepository jobApplicationRepository, EmployeeRepository employeeRepository) {
+    public AdminCleanerService(CleanerRepository cleanerRepository, PasswordEncoder passwordEncoder, JobRepository jobRepository, JobApplicationRepository jobApplicationRepository, EmployeeRepository employeeRepository, WalletRepository walletRepository) {
         this.cleanerRepository = cleanerRepository;
         this.passwordEncoder = passwordEncoder;
         this.jobRepository = jobRepository;
         this.jobApplicationRepository = jobApplicationRepository;
         this.employeeRepository = employeeRepository;
+        this.walletRepository = walletRepository;
     }
 
     public ResponseEntity<Map<String, Object>> addCleaner(CleanerRegisterRequest request) {
@@ -300,6 +296,9 @@ public class AdminCleanerService {
     public ResponseEntity<Map<String, Object>> deleteEmployeeWithAdminPermission(Integer employeeId) {
         Employee employee = employeeRepository.findById(employeeId)
                 .orElseThrow(() -> new RuntimeException("Employee not found"));
+        Wallet employeeWallet = walletRepository.findWalletByCleaner_Id(employeeId);
+
+        walletRepository.delete(employeeWallet);
         employeeRepository.delete(employee);
 
         return ResponseEntity.ok(Collections.singletonMap("status", "Delete success"));
