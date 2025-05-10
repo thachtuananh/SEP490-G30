@@ -192,7 +192,39 @@ const CleanerDetails = () => {
       },
     });
   };
-
+  const handleAcceptVerify = () => {
+    Modal.confirm({
+      title: "Xác nhận xác minh",
+      content: "Bạn có chắc chắn muốn chấp nhận xác minh người dùng này không?",
+      okText: "Chấp nhận",
+      okType: "primary",
+      cancelText: "Huỷ",
+      onOk: async () => {
+        try {
+          const token = sessionStorage.getItem("token");
+          const response = await fetch(
+            `${BASE_URL}/admin/cleaners/${cleanerId}/identity-verified?status=true`,
+            {
+              method: "PATCH",
+              headers: {
+                accept: "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+            }
+          );
+          if (!response.ok) {
+            throw new Error("Failed to accept user");
+          }
+          message.success("Chấp nhận xác minh người dùng thành công");
+          navigate("/admin/cleaners-ban");
+        } catch (error) {
+          message.error(
+            "Không thể chấp nhận xác minh người dùng. Vui lòng thử lại sau."
+          );
+        }
+      },
+    });
+  };
   const goBack = () => {
     navigate("/admin/cleaners");
   };
@@ -250,7 +282,7 @@ const CleanerDetails = () => {
                   {!isMobile && "Quay lại"}
                 </Button> */}
                 <Title level={isMobile ? 4 : 3} style={{ margin: 0 }}>
-                  Chi tiết Cleaner
+                  Chi tiết người dọn dẹp
                 </Title>
               </div>
             </Col>
@@ -280,14 +312,14 @@ const CleanerDetails = () => {
                   wrap
                   direction={isMobile ? "vertical" : "horizontal"}
                 >
-                  <Badge
+                  {/* <Badge
                     status={cleanerData.is_deleted ? "error" : "success"}
                     text={
                       cleanerData.is_deleted
                         ? "Không hoạt động"
                         : "Đang hoạt động"
                     }
-                  />
+                  /> */}
                   <Space>
                     <Text>Xác minh CMND/CCCD:</Text>
                     {cleanerData.identity_verified ? (
@@ -312,6 +344,7 @@ const CleanerDetails = () => {
               handleDelete={handleDelete}
               refreshData={fetchCleanerData}
               handleRejectVerify={handleRejectVerify}
+              handleAcceptVerify={handleAcceptVerify}
             />
           </Card>
         </Content>

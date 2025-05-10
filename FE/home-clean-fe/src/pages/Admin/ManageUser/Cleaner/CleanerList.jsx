@@ -143,7 +143,7 @@ const CleanerList = () => {
       key: "is_deleted",
       render: (is_deleted) => {
         const color = is_deleted ? "red" : "green";
-        const text = is_deleted ? "Không hoạt động" : "Đang hoạt động";
+        const text = is_deleted ? "Đang vô hiệu hoá" : "Đang kích hoạt";
 
         return (
           <Tag color={color} style={{ borderRadius: "4px" }}>
@@ -152,8 +152,8 @@ const CleanerList = () => {
         );
       },
       filters: [
-        { text: "Đang hoạt động", value: false },
-        { text: "Không hoạt động", value: true },
+        { text: "Đang kích hoạt", value: false },
+        { text: "Đang vô hiệu hoá", value: true },
       ],
       onFilter: (value, record) => record.is_deleted === value,
     },

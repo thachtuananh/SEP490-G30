@@ -175,13 +175,13 @@ const OwnerTabs = ({
             <Descriptions.Item label="Email">
               {ownerData?.email || "Chưa cập nhật"}
             </Descriptions.Item>
-            <Descriptions.Item label="Trạng thái">
+            {/* <Descriptions.Item label="Trạng thái">
               {ownerData?.is_deleted === false ? (
                 <Badge status="success" text="Đang hoạt động" />
               ) : (
                 <Badge status="error" text="Không hoạt động" />
               )}
-            </Descriptions.Item>
+            </Descriptions.Item> */}
             <Descriptions.Item label="Ngày tạo">
               {ownerData ? formatDateTime(ownerData.created_at) : ""}
             </Descriptions.Item>
@@ -198,13 +198,13 @@ const OwnerTabs = ({
           >
             <Space>
               {!ownerData.is_deleted && (
-                <Button danger onClick={handleDelete}>
-                  Xoá người dùng
+                // <Button danger onClick={handleDelete}>
+                //   Xoá người dùng
+                // </Button>
+                <Button type="primary" onClick={showEditModal}>
+                  Chỉnh sửa
                 </Button>
               )}
-              <Button type="primary" onClick={showEditModal}>
-                Chỉnh sửa
-              </Button>
             </Space>
           </div>
         </>
@@ -247,7 +247,7 @@ const OwnerTabs = ({
       />
 
       <Modal
-        title="Chỉnh sửa thông tin Owner"
+        title="Chỉnh sửa thông tin chủ nhà"
         open={isEditModalVisible}
         onCancel={handleEditCancel}
         footer={[
@@ -334,14 +334,14 @@ const OwnerTabs = ({
                 onClick={() => handleAccountStatusChange(true)}
                 style={{ width: "50%" }}
               >
-                Đang hoạt động
+                Kích hoạt
               </Button>
               <Button
                 type={!accountActive ? "primary" : "default"}
                 onClick={() => handleAccountStatusChange(false)}
                 style={{ width: "50%" }}
               >
-                Không hoạt động
+                Vô hiệu hoá
               </Button>
             </Input.Group>
           </Form.Item>
