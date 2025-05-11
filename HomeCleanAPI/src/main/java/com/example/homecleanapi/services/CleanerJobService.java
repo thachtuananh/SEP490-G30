@@ -928,9 +928,11 @@ public class CleanerJobService {
 	        jobInfo.put("status", job.getStatus());
 	        jobInfo.put("scheduledTime", job.getScheduledTime());
 	        jobInfo.put("totalPrice", job.getTotalPrice());
+			jobInfo.put("order_code", job.getOrderCode());
 
 
-	        // Thêm thông tin về customer đã book job
+
+			// Thêm thông tin về customer đã book job
 	        Customers customer = job.getCustomer();
 	        if (customer != null) {
 	            jobInfo.put("customerId", customer.getId());
