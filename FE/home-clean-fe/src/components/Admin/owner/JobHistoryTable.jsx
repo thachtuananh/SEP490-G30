@@ -38,6 +38,8 @@ const JobHistoryTable = ({
         return "#f1ab0f";
       case "IN_PROGRESS":
         return "#e67e22";
+      case "ARRIVED":
+        return "#9b59b6";
       case "COMPLETED":
         return "#2ecc71";
       case "CANCELLED":
@@ -69,6 +71,8 @@ const JobHistoryTable = ({
         return "Đã hủy";
       case "AUTO_CANCELLED":
         return "Đã hủy do quá thời gian hoặc trùng lịch";
+      case "ARRIVED":
+        return "Người nhận việc đã tới";
       case "DONE":
         return "Hoàn tất công việc";
       case "BOOKED":
