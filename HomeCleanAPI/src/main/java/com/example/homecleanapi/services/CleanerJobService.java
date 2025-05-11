@@ -277,6 +277,14 @@ public class CleanerJobService {
 
 		jobApplicationRepository.save(jobApplication);
 
+		NotificationDTO customerNotification = new NotificationDTO();
+		customerNotification.setUserId(job.getCustomer().getId());
+		customerNotification.setMessage("Người dọn dẹp: " + cleaner.getName() + " đã ứng tuyển vào công việc của bạn.");
+		customerNotification.setType("AUTO_MESSAGE");
+		customerNotification.setTimestamp(LocalDate.now());
+		customerNotification.setRead(false); // ✅ set read = false
+		notificationService.processNotification(customerNotification, "CUSTOMER", job.getCustomer().getId());
+
 		// Thêm thông báo thành công khi không có lỗi
 		response.put("message", "Cleaner has successfully applied for the job");
 		response.put("jobId", jobId);
@@ -575,7 +583,14 @@ public class CleanerJobService {
 		workHistory.setTotalDuration(0);  // Initialize total duration as 0
 		workHistory.setEarnings(0.0);  // Set earnings to 0 initially
 		workHistoryRepository.save(workHistory);
-
+		String message = "Người dọn dẹp đã đến nơi";
+		NotificationDTO customerNotification = new NotificationDTO();
+		customerNotification.setUserId(job.getCustomer().getId());
+		customerNotification.setMessage(message);
+		customerNotification.setType("AUTO_MESSAGE");
+		customerNotification.setTimestamp(LocalDate.now());
+		customerNotification.setRead(false); // ✅ set read = false
+		notificationService.processNotification(customerNotification, "CUSTOMER", Math.toIntExact(job.getCustomer().getId()));
 		response.put("message", "Job status updated to ARRIVED, and work history has been recorded");
 		return response;
 	}
@@ -625,6 +640,14 @@ public class CleanerJobService {
 		job.setStatus(JobStatus.COMPLETED);
 		jobRepository.save(job);
 
+		String message = "Người dọn dẹp đã gửi yêu cầu xác nhận hoàn thành công việc";
+		NotificationDTO customerNotification = new NotificationDTO();
+		customerNotification.setUserId(job.getCustomer().getId());
+		customerNotification.setMessage(message);
+		customerNotification.setType("AUTO_MESSAGE");
+		customerNotification.setTimestamp(LocalDate.now());
+		customerNotification.setRead(false); // ✅ set read = false
+		notificationService.processNotification(customerNotification, "CUSTOMER", Math.toIntExact(job.getCustomer().getId()));
 		response.put("message", "Job status updated to COMPLETED");
 		return response;
 	}
