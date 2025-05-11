@@ -509,7 +509,14 @@ public class JobService {
         txn.setStatus("SUCCESS");
 
         transactionHistoryRepository.save(txn);
-
+        String message = "Chủ nhà đã xác nhận hoàn thành công việc của bạn";
+        NotificationDTO customerNotification = new NotificationDTO();
+        customerNotification.setUserId(job.getCustomer().getId());
+        customerNotification.setMessage(message);
+        customerNotification.setType("AUTO_MESSAGE");
+        customerNotification.setTimestamp(LocalDate.now());
+        customerNotification.setRead(false); // ✅ set read = false
+        notificationService.processNotification(customerNotification, "CLEANER", Math.toIntExact(cleaner.getId()));
         response.put("message", "Job status updated to DONE, and cleaner's wallet has been credited with 85% of the job value");
         return response;
     }
