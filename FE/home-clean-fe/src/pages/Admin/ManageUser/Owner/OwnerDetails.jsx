@@ -215,9 +215,9 @@ const OwnerDetails = () => {
               <div
                 style={{ display: "flex", alignItems: "center", gap: "8px" }}
               >
-                <Button icon={<ArrowLeftOutlined />} onClick={goBack}>
+                {/* <Button icon={<ArrowLeftOutlined />} onClick={goBack}>
                   {!isMobile && "Quay lại"}
-                </Button>
+                </Button> */}
                 <Title level={isMobile ? 4 : 3} style={{ margin: 0 }}>
                   Chi tiết chủ nhà
                 </Title>
