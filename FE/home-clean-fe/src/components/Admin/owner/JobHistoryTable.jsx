@@ -178,7 +178,7 @@ const JobHistoryTable = ({
             <Button
               type="primary"
               onClick={() => fetchJobDetails(record.jobId)}
-              loading={loading}
+              // loading={loading}
             >
               Chi tiết
             </Button>
@@ -266,7 +266,7 @@ const JobHistoryTable = ({
 
   return (
     <div>
-      <Card title={title} style={{ marginBottom: 16 }}>
+      {/* <Card title={title} style={{ marginBottom: 16 }}>
         <Row gutter={[16, 16]}>
           <Col xs={24} sm={8}>
             <Statistic
@@ -293,7 +293,7 @@ const JobHistoryTable = ({
             />
           </Col>
         </Row>
-      </Card>
+      </Card> */}
 
       <Table
         columns={getJobColumns()}

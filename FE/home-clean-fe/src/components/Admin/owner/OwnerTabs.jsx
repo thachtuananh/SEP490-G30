@@ -197,7 +197,7 @@ const OwnerTabs = ({
             }}
           >
             <Space>
-              {!ownerData.is_deleted && (
+              {(!ownerData.is_deleted || ownerData.is_deleted) && (
                 // <Button danger onClick={handleDelete}>
                 //   Xoá người dùng
                 // </Button>
@@ -225,7 +225,7 @@ const OwnerTabs = ({
     },
     {
       key: "bookingHistory",
-      label: "Lịch sử đặt việc",
+      label: "Lịch sử đặt việc trực tiếp",
       children: (
         <JobHistoryTable
           jobData={bookingHistory}
