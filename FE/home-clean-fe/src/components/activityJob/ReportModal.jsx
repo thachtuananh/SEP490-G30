@@ -65,9 +65,15 @@ export const ReportModal = ({ visible, jobId, onClose }) => {
         setReports([response.report]);
         // If there's already a report submitted by this cleaner, set hasSubmittedReport to true
         setHasSubmittedReport(true);
+      } else if (Array.isArray(response) && response.length > 0) {
+        // Handle the case where response might still be an array
+        setReports(response);
+        setHasSubmittedReport(true);
       } else {
         setReports([]);
         setHasSubmittedReport(false);
+        // Automatically switch to create tab when there's no data
+        setActiveTab("create");
       }
       setLoading(false);
     } catch (error) {
@@ -79,9 +85,11 @@ export const ReportModal = ({ visible, jobId, onClose }) => {
       ) {
         message.info(error.response.data.message);
       } else {
-        message.info("Không có báo cáo nào");
+        // message.info("Không có báo cáo nào");
       }
       setLoading(false);
+      // Automatically switch to create tab when there's an error
+      setActiveTab("create");
     }
   };
 
@@ -351,7 +359,8 @@ export const ReportModal = ({ visible, jobId, onClose }) => {
         activeTab === "view" ? (
           <div style={{ display: "flex", justifyContent: "space-between" }}>
             <Button onClick={onClose}>Đóng</Button>
-            {!hasSubmittedReport && (
+            {/* Hide the "Create new report" button when hasSubmittedReport is true */}
+            {!hasSubmittedReport && reports.length === 0 && (
               <Button type="primary" onClick={() => setActiveTab("create")}>
                 Tạo báo cáo mới
               </Button>

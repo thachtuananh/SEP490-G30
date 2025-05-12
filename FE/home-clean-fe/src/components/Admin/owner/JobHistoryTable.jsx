@@ -38,6 +38,8 @@ const JobHistoryTable = ({
         return "#f1ab0f";
       case "IN_PROGRESS":
         return "#e67e22";
+      case "ARRIVED":
+        return "#9b59b6";
       case "COMPLETED":
         return "#2ecc71";
       case "CANCELLED":
@@ -69,6 +71,8 @@ const JobHistoryTable = ({
         return "Đã hủy";
       case "AUTO_CANCELLED":
         return "Đã hủy do quá thời gian hoặc trùng lịch";
+      case "ARRIVED":
+        return "Người nhận việc đã tới";
       case "DONE":
         return "Hoàn tất công việc";
       case "BOOKED":
@@ -178,7 +182,7 @@ const JobHistoryTable = ({
             <Button
               type="primary"
               onClick={() => fetchJobDetails(record.jobId)}
-              loading={loading}
+              // loading={loading}
             >
               Chi tiết
             </Button>
@@ -266,7 +270,7 @@ const JobHistoryTable = ({
 
   return (
     <div>
-      <Card title={title} style={{ marginBottom: 16 }}>
+      {/* <Card title={title} style={{ marginBottom: 16 }}>
         <Row gutter={[16, 16]}>
           <Col xs={24} sm={8}>
             <Statistic
@@ -293,7 +297,7 @@ const JobHistoryTable = ({
             />
           </Col>
         </Row>
-      </Card>
+      </Card> */}
 
       <Table
         columns={getJobColumns()}

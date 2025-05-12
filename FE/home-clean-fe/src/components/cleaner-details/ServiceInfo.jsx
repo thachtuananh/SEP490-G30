@@ -34,7 +34,7 @@ export const ServiceInfo = ({
             >
               {cleanerName}
             </Title>
-            {isVerified ? (
+            {/* {isVerified ? (
               <CheckCircleFilled
                 style={{ color: "#52c41a", fontSize: 20 }}
                 title="Đã xác thực"
@@ -44,7 +44,7 @@ export const ServiceInfo = ({
                 style={{ color: "#ff4d4f", fontSize: 20 }}
                 title="Chưa xác thực"
               />
-            )}
+            )} */}
           </Space>
 
           <div style={{ marginTop: "8px", marginBottom: "8px" }}>

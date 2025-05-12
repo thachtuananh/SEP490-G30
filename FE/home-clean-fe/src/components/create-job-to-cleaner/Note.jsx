@@ -13,7 +13,7 @@ const Note = ({ onNoteChange }) => {
 
   return (
     <div className={styles.noteContainer}>
-      <Title level={5}>Ghi chú cho Cleaner</Title>
+      <Title level={5}>Ghi chú cho người dọn dẹp</Title>
       <TextArea
         placeholder="Nhập ghi chú cho Người dọn dẹp..."
         autoSize={{ minRows: 4 }}

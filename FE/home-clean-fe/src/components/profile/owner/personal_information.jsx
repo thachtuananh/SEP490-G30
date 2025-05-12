@@ -54,6 +54,15 @@ export const PersonaInformation = () => {
     setOldPassword("");
     setNewPassword("");
     setConfirmPassword("");
+    setTimeout(() => {
+      // This ensures browsers don't auto-fill the password fields
+      const passwordInputs = document.querySelectorAll(
+        'input[type="password"]'
+      );
+      passwordInputs.forEach((input) => {
+        input.value = "";
+      });
+    }, 50);
   };
 
   // Validate form fields
@@ -117,24 +126,24 @@ export const PersonaInformation = () => {
         }
       );
 
-      if (!response.ok) {
-        throw new Error("Failed to update profile");
-      }
-
       const updatedData = await response.json();
 
       // Update user in context
-      dispatch({
-        type: "UPDATE_USER",
-        payload: {
-          ...user,
-          customerName: customerName,
-          customerPhone: customerPhone,
-          customerEmail: customerEmail,
-        },
-      });
-
-      message.success("Thông tin cá nhân đã được cập nhật!");
+      if (response.ok) {
+        dispatch({
+          type: "UPDATE_USER",
+          payload: {
+            ...user,
+            customerName: customerName,
+            customerPhone: customerPhone,
+            customerEmail: customerEmail,
+          },
+        });
+        message.success("Thông tin cá nhân đã được cập nhật!");
+      } else {
+        message.error(updatedData.message || "Cập nhật thông tin thất bại!");
+        return;
+      }
     } catch (error) {
       console.error("Error updating profile:", error);
       message.error("Không thể cập nhật thông tin. Vui lòng thử lại sau.");
@@ -252,7 +261,7 @@ export const PersonaInformation = () => {
         throw new Error(errorData.message || "Failed to change password");
       }
 
-      message.success("Mật khẩu đã được thay đổi thành công!");
+      // message.success("Mật khẩu đã được thay đổi thành công!");
       dispatch({ type: "LOGOUT" });
       message.info("Bạn sẽ được chuyển hướng đến trang đăng nhập sau 3 giây.");
       setTimeout(() => {
@@ -388,6 +397,7 @@ export const PersonaInformation = () => {
             iconRender={(visible) =>
               visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />
             }
+            autoComplete="new-password"
           />
         </div>
         <div style={{ marginBottom: "16px" }}>

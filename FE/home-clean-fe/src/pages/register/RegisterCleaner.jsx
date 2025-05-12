@@ -42,6 +42,8 @@ function RegisterCleaner() {
   const [otpModalVisible, setOtpModalVisible] = useState(false);
   const [otpCode, setOtpCode] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [verificationModalVisible, setVerificationModalVisible] =
+    useState(false);
 
   const navigate = useNavigate();
 
@@ -233,7 +235,7 @@ function RegisterCleaner() {
       const result = await response.json();
 
       if (response.ok) {
-        message.success("Xác thực OTP thành công!");
+        // message.success("Xác thực OTP thành công!");
         await registerCleaner();
       } else {
         message.error(
@@ -263,7 +265,8 @@ function RegisterCleaner() {
       if (response.ok) {
         message.success(result.message || "Đăng ký thành công!");
         setOtpModalVisible(false);
-        navigate("/homeclean/login/cleaner");
+        // Hiển thị modal thông báo xác minh công ty thay vì chuyển hướng ngay
+        setVerificationModalVisible(true);
       } else {
         message.error(result.message || "Đăng ký thất bại!");
       }
@@ -272,6 +275,12 @@ function RegisterCleaner() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  // Xử lý đóng modal xác minh và chuyển hướng đến trang đăng nhập
+  const handleCloseVerificationModal = () => {
+    setVerificationModalVisible(false);
+    navigate("/homeclean/login/cleaner");
   };
 
   // Resend OTP if needed
@@ -483,13 +492,13 @@ function RegisterCleaner() {
               <Form.Item
                 label={
                   <span style={requiredLabel}>
-                    Tuổi
+                    Ngày sinh
                     <span style={requiredStar}>*</span>
                   </span>
                 }
                 style={{ marginBottom: "16px" }}
               >
-                <Radio.Group
+                {/* <Radio.Group
                   value={ageInputType}
                   onChange={(e) => setAgeInputType(e.target.value)}
                   style={{ marginBottom: "8px" }}
@@ -517,7 +526,15 @@ function RegisterCleaner() {
                     format="DD/MM/YYYY"
                     disabledDate={disabledDate}
                   />
-                )}
+                )} */}
+
+                <DatePicker
+                  style={{ ...inputStyle, width: "100%" }}
+                  placeholder="Chọn ngày sinh"
+                  onChange={handleDateChange}
+                  format="DD/MM/YYYY"
+                  disabledDate={disabledDate}
+                />
                 {ageInputType === "date" && formData.age && (
                   <div style={{ marginTop: "4px", fontSize: "12px" }}>
                     Tuổi của bạn: {formData.age}
@@ -599,7 +616,16 @@ function RegisterCleaner() {
           <Button key="back" onClick={() => setOtpModalVisible(false)}>
             Hủy
           </Button>,
-          <Button key="resend" onClick={handleResendOtp} loading={isLoading}>
+          <Button
+            key="resend"
+            onClick={() => {
+              // Reset input OTP ngay trong Modal khi click nút gửi lại
+              setOtpCode("");
+              // Sau đó gọi hàm xử lý gửi lại OTP
+              handleResendOtp();
+            }}
+            disabled={isLoading}
+          >
             Gửi lại OTP
           </Button>,
           <Button
@@ -620,6 +646,29 @@ function RegisterCleaner() {
           onChange={(e) => setOtpCode(e.target.value)}
           style={{ marginTop: "10px" }}
         />
+      </Modal>
+
+      {/* Verification Modal */}
+      <Modal
+        title="Thông báo xác minh"
+        visible={verificationModalVisible}
+        onCancel={handleCloseVerificationModal}
+        footer={[
+          <Button
+            key="close"
+            type="primary"
+            onClick={handleCloseVerificationModal}
+          >
+            Đóng
+          </Button>,
+        ]}
+        centered
+      >
+        <div style={{ textAlign: "center", padding: "20px 0" }}>
+          <p style={{ fontSize: "16px", fontWeight: "500" }}>
+            Bạn cần phải đến công ty để xác minh thông tin cá nhân
+          </p>
+        </div>
       </Modal>
     </div>
   );

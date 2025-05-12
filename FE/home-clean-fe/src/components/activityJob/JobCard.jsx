@@ -31,6 +31,7 @@ import { sendSms } from "../../services/SMSService";
 import { FeedbackModal } from "./FeedbackModal";
 import { AuthContext } from "../../context/AuthContext";
 import { ReportModal } from "../../components/activityJob/ReportModal";
+import { FaFlag, FaRegCommentAlt } from "react-icons/fa";
 
 const getStatusColor = (status) => {
   const normalizedStatus = status.toUpperCase();
@@ -97,6 +98,7 @@ const JobCard = ({ job, refreshJobs, isAppliedTab }) => {
     useState(null);
   const cleanerName = sessionStorage.getItem("name");
   const cleanerPhone = sessionStorage.getItem("phone");
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const [feedbacks, setFeedbacks] = useState([]);
   const [averageRating, setAverageRating] = useState(0);
@@ -140,6 +142,9 @@ const JobCard = ({ job, refreshJobs, isAppliedTab }) => {
   });
 
   const fetchCustomerDetails = () => {
+    // if (isProcessing) return;
+    setIsProcessing(true);
+
     setLoadingCustomerDetails(true);
     const token = sessionStorage.getItem("token");
     const cleanerId = sessionStorage.getItem("cleanerId");
@@ -176,6 +181,8 @@ const JobCard = ({ job, refreshJobs, isAppliedTab }) => {
   };
 
   const fetchFeedbacks = (customerId) => {
+    if (isProcessing) return;
+    setIsProcessing(true);
     if (!cleanerId || !customerId) return;
 
     setLoadingFeedbacks(true);
@@ -225,6 +232,7 @@ const JobCard = ({ job, refreshJobs, isAppliedTab }) => {
   };
 
   const handleStatusUpdate = (newStatus) => {
+    if (isProcessing) return;
     Modal.confirm({
       title: "Xác nhận",
       content: `Bạn có chắc muốn cập nhật trạng thái thành '${getStatusLabel(
@@ -253,36 +261,36 @@ const JobCard = ({ job, refreshJobs, isAppliedTab }) => {
             message.success(
               `Đã cập nhật trạng thái thành ${getStatusLabel(newStatus)}`
             );
-            sendNotification(
-              job.customerId,
-              `Người dọn dẹp ${sessionStorage.getItem(
-                "name"
-              )} cập nhật trạng thái: ${
-                getStatusLabel(newStatus) || "Trạng thái"
-              }`,
-              "STATUS",
-              "Customer"
-            );
+            // sendNotification(
+            //   job.customerId,
+            //   `Người dọn dẹp ${sessionStorage.getItem(
+            //     "name"
+            //   )} cập nhật trạng thái: ${
+            //     getStatusLabel(newStatus) || "Trạng thái"
+            //   }`,
+            //   "STATUS",
+            //   "Customer"
+            // );
             if (newStatus.toUpperCase() === "COMPLETED") {
               const smsMessageCompleted = `[HouseClean] Cleaner ${cleanerName} đã hoàn thành công việc. Mời bạn đánh giá trên ứng dụng. Cảm ơn bạn!`;
 
-              sendSms(job.customerPhone, smsMessageCompleted)
-                .then(() => {
-                  console.log("Completion SMS sent successfully");
-                })
-                .catch((error) => {
-                  console.error("Error sending completion SMS:", error);
-                });
+              // sendSms(job.customerPhone, smsMessageCompleted)
+              //   .then(() => {
+              //     console.log("Completion SMS sent successfully");
+              //   })
+              //   .catch((error) => {
+              //     console.error("Error sending completion SMS:", error);
+              //   });
             }
             if (newStatus.toUpperCase() === "ARRIVED") {
               const smsMessageArrived = `[HouseClean] Cleaner ${cleanerName} đã đến ${job.customerAddress} để làm việc lúc ${formattedDate}. SĐT Cleaner: ${cleanerPhone}. Bạn vui lòng mở cửa và để ý điện thoại nhé.`;
-              sendSms(job.customerPhone, smsMessageArrived)
-                .then(() => {
-                  console.log("Arrival SMS sent successfully");
-                })
-                .catch((error) => {
-                  console.error("Error sending arrival SMS:", error);
-                });
+              // sendSms(job.customerPhone, smsMessageArrived)
+              //   .then(() => {
+              //     console.log("Arrival SMS sent successfully");
+              //   })
+              //   .catch((error) => {
+              //     console.error("Error sending arrival SMS:", error);
+              //   });
             }
           })
           .catch((error) => {
@@ -299,6 +307,7 @@ const JobCard = ({ job, refreshJobs, isAppliedTab }) => {
   };
 
   const handleCancelJob = () => {
+    if (isProcessing) return;
     Modal.confirm({
       title: "Xác nhận hủy ứng tuyển",
       content: "Bạn có chắc muốn hủy ứng tuyển công việc này không?",
@@ -326,18 +335,18 @@ const JobCard = ({ job, refreshJobs, isAppliedTab }) => {
             message.success("Đã hủy ứng tuyển công việc thành công");
 
             // Notify customer about cancellation
-            sendNotification(
-              customerId,
-              `Người dọn dẹp ${sessionStorage.getItem(
-                "name"
-              )} đã hủy ứng tuyển dịch vụ: ${
-                job.services[0]?.serviceName || "Dọn dẹp"
-              }`,
-              "CANCELLED",
-              "Customer"
-            ).catch((error) => {
-              console.error("Error sending cancellation notification:", error);
-            });
+            // sendNotification(
+            //   customerId,
+            //   `Người dọn dẹp ${sessionStorage.getItem(
+            //     "name"
+            //   )} đã hủy ứng tuyển dịch vụ: ${
+            //     job.services[0]?.serviceName || "Dọn dẹp"
+            //   }`,
+            //   "CANCELLED",
+            //   "Customer"
+            // ).catch((error) => {
+            //   console.error("Error sending cancellation notification:", error);
+            // });
 
             // Refresh job list if refreshJobs function is provided
             if (typeof refreshJobs === "function") {
@@ -356,6 +365,7 @@ const JobCard = ({ job, refreshJobs, isAppliedTab }) => {
   };
 
   const handleJobAction = (action) => {
+    if (isProcessing) return;
     setLoading(true);
     const token = sessionStorage.getItem("token");
     const cleanerId = sessionStorage.getItem("cleanerId");
@@ -385,51 +395,58 @@ const JobCard = ({ job, refreshJobs, isAppliedTab }) => {
           const smsMessageAccept = `[HouseClean] Cleaner ${cleanerName} đã xác nhận. SĐT: ${cleanerPhone}. Dịch vụ: ${serviceInfoText}, ${formattedDate}, ${
             job.customerAddress
           }. Tạm tính: ${job.totalPrice.toLocaleString()} VND.`;
-          Promise.all([
-            createConversation(job.customerId, cleanerId),
-            sendNotification(
-              job.customerId,
-              `Người dọn dẹp ${sessionStorage.getItem(
-                "name"
-              )} đã nhận dịch vụ: ${job.services[0]?.serviceName || "Dọn dẹp"}`,
-              "BOOKED",
-              "Customer"
-            ),
-            sendSms(job.customerPhone, smsMessageAccept),
-          ])
-            .then(([conversationData, notificationData]) => {
-              console.log("Conversation created:", conversationData);
-              console.log("Notification sent:", notificationData);
-            })
-            .catch((error) => {
-              console.error("Error in post-acceptance operations:", error);
-              message.error(
-                "Có lỗi xảy ra khi xử lý sau khi chấp nhận công việc."
-              );
-            });
+          // Promise.all([
+          //   createConversation(job.customerId, cleanerId),
+          //   sendNotification(
+          //     job.customerId,
+          //     `Người dọn dẹp ${sessionStorage.getItem(
+          //       "name"
+          //     )} đã nhận dịch vụ: ${job.services[0]?.serviceName || "Dọn dẹp"}`,
+          //     "BOOKED",
+          //     "Customer"
+          //   ),
+          //   sendSms(job.customerPhone, smsMessageAccept),
+          // ])
+          //   .then(([conversationData, notificationData]) => {
+          //     console.log("Conversation created:", conversationData);
+          //     console.log("Notification sent:", notificationData);
+          //   })
+          //   .catch((error) => {
+          //     console.error("Error in post-acceptance operations:", error);
+          //     message.error(
+          //       "Có lỗi xảy ra khi xử lý sau khi chấp nhận công việc."
+          //     );
+          //   });
+          if (typeof refreshJobs === "function") {
+            // Pass the tab to switch to as a parameter
+            refreshJobs("doing");
+          }
         } else if (action === "reject") {
           setCurrentStatus("CANCELLED");
           const smsMessageReject = `[HouseClean] Cleaner ${cleanerName} (SĐT: ${cleanerPhone}) đã huỷ lịch ${formattedDate}. Vui lòng chọn người thay thế.`;
-          Promise.all([
-            sendNotification(
-              job.customerId,
-              `Người dọn dẹp ${sessionStorage.getItem(
-                "name"
-              )} đã từ chối dịch vụ: ${
-                job.services[0]?.serviceName || "Dọn dẹp"
-              }`,
-              "REJECTED",
-              "Customer"
-            ),
-            sendSms(job.customerPhone, smsMessageReject),
-          ])
-            .then((notificationData) => {
-              console.log("Rejection notification sent:", notificationData);
-            })
-            .catch((error) => {
-              console.error("Error in sending rejection notification:", error);
-              message.error("Có lỗi xảy ra khi gửi thông báo từ chối.");
-            });
+          // Promise.all([
+          //   sendNotification(
+          //     job.customerId,
+          //     `Người dọn dẹp ${sessionStorage.getItem(
+          //       "name"
+          //     )} đã từ chối dịch vụ: ${
+          //       job.services[0]?.serviceName || "Dọn dẹp"
+          //     }`,
+          //     "REJECTED",
+          //     "Customer"
+          //   ),
+          //   sendSms(job.customerPhone, smsMessageReject),
+          // ])
+          //   .then((notificationData) => {
+          //     console.log("Rejection notification sent:", notificationData);
+          //   })
+          //   .catch((error) => {
+          //     console.error("Error in sending rejection notification:", error);
+          //     message.error("Có lỗi xảy ra khi gửi thông báo từ chối.");
+          //   });
+          if (typeof refreshJobs === "function") {
+            refreshJobs();
+          }
         }
 
         message.success(
@@ -471,6 +488,7 @@ const JobCard = ({ job, refreshJobs, isAppliedTab }) => {
   };
 
   const openFeedbackModal = (jobId) => {
+    if (isProcessing) return;
     setSelectedJobIdForFeedback(jobId);
     setIsFeedbackModalOpen(true);
   };
@@ -481,6 +499,7 @@ const JobCard = ({ job, refreshJobs, isAppliedTab }) => {
   };
 
   const openReportModal = (jobId) => {
+    if (isProcessing) return;
     setSelectedJobIdForReport(jobId);
     setIsReportModalOpen(true);
   };
@@ -513,11 +532,14 @@ const JobCard = ({ job, refreshJobs, isAppliedTab }) => {
           </h2>
           <div style={{ marginTop: "8px", color: "#6b7280", fontSize: "14px" }}>
             <div>Khách hàng: {job.customerName}</div>
-            <div>Mã đơn hàng: {job.orderCode || "Không có thông tin"} </div>
-            {(displayStatus.toUpperCase() !== "PENDING" ||
-              displayStatus.toUpperCase() !== "CANCELLED") && (
-              <div>SĐT: {job.customerPhone}</div>
+            {!["PENDING", "CANCELLED", "ACCEPTED"].includes(
+              displayStatus.toUpperCase()
+            ) && (
+              <div>Mã đơn hàng: {job.orderCode || "Không có thông tin"} </div>
             )}
+            {!["PENDING", "CANCELLED"].includes(
+              displayStatus.toUpperCase()
+            ) && <div>SĐT: {job.customerPhone}</div>}
           </div>
         </div>
         <span
@@ -588,6 +610,7 @@ const JobCard = ({ job, refreshJobs, isAppliedTab }) => {
                 className={styles.cancelBtn}
                 onClick={handleCancelJob}
                 loading={loading}
+                // disabled={isProcessing}
               >
                 Hủy ứng tuyển
               </Button>
@@ -597,6 +620,7 @@ const JobCard = ({ job, refreshJobs, isAppliedTab }) => {
                 className={styles.completeBtn}
                 onClick={fetchCustomerDetails}
                 loading={loadingCustomerDetails}
+                // disabled={isProcessing}
               >
                 Xem thông tin Chủ Nhà
               </Button>
@@ -617,6 +641,7 @@ const JobCard = ({ job, refreshJobs, isAppliedTab }) => {
                 className={styles.cancelBtn}
                 onClick={handleCancelJob}
                 loading={loading}
+                disabled={isProcessing}
               >
                 Hủy ứng tuyển
               </Button>
@@ -626,6 +651,7 @@ const JobCard = ({ job, refreshJobs, isAppliedTab }) => {
                 className={styles.completeBtn}
                 onClick={() => handleStatusUpdate("arrived")}
                 loading={loading}
+                disabled={isProcessing}
               >
                 Đã đến nơi
               </Button>
@@ -635,6 +661,7 @@ const JobCard = ({ job, refreshJobs, isAppliedTab }) => {
                 className={styles.completeBtn}
                 onClick={() => handleStatusUpdate("completed")}
                 loading={loading}
+                disabled={isProcessing}
               >
                 Đã hoàn thành
               </Button>
@@ -642,18 +669,23 @@ const JobCard = ({ job, refreshJobs, isAppliedTab }) => {
             {currentStatus === "DONE" && (
               <>
                 <Button
-                  className={styles.completeBtn}
+                  className={styles.reviewButton}
                   onClick={() => openFeedbackModal(job.jobId)}
                   loading={loading}
+                  disabled={isProcessing}
+                  icon={<FaRegCommentAlt />}
                 >
-                  Xem đánh giá
+                  Đánh giá
                 </Button>
                 <Button
-                  className={styles.completeBtn}
+                  className={styles.reviewButton}
                   onClick={() => openReportModal(job.jobId)}
                   loading={loading}
+                  disabled={isProcessing}
+                  danger
+                  icon={<FaFlag />}
                 >
-                  Xem báo cáo
+                  Báo cáo
                 </Button>
               </>
             )}
@@ -663,6 +695,7 @@ const JobCard = ({ job, refreshJobs, isAppliedTab }) => {
                   className={styles.completeBtn}
                   onClick={fetchCustomerDetails}
                   loading={loadingCustomerDetails}
+                  // disabled={isProcessing}
                 >
                   Xem thông tin Chủ Nhà
                 </Button>
@@ -670,6 +703,7 @@ const JobCard = ({ job, refreshJobs, isAppliedTab }) => {
                   className={styles.cancelBtn}
                   onClick={() => handleJobAction("reject")}
                   loading={loading}
+                  // disabled={isProcessing}
                 >
                   Từ chối
                 </Button>
@@ -677,6 +711,7 @@ const JobCard = ({ job, refreshJobs, isAppliedTab }) => {
                   className={styles.completeBtn}
                   onClick={() => handleJobAction("accept")}
                   loading={loading}
+                  disabled={isProcessing}
                 >
                   Chấp nhận
                 </Button>
@@ -692,7 +727,11 @@ const JobCard = ({ job, refreshJobs, isAppliedTab }) => {
         open={customerDetailsVisible}
         onCancel={() => setCustomerDetailsVisible(false)}
         footer={[
-          <Button key="close" onClick={() => setCustomerDetailsVisible(false)}>
+          <Button
+            key="close"
+            onClick={() => setCustomerDetailsVisible(false)}
+            disabled={isProcessing}
+          >
             Đóng
           </Button>,
         ]}

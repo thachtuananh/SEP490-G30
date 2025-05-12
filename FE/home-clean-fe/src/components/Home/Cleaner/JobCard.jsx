@@ -1,3 +1,4 @@
+import { useState } from "react"; // Thêm useState
 import { useNavigate } from "react-router-dom";
 import { Card, Typography, message } from "antd";
 import { BASE_URL } from "../../../utils/config";
@@ -6,13 +7,18 @@ const { Title, Paragraph, Text } = Typography;
 
 function JobCard({ image, title, description, count, id }) {
   const navigate = useNavigate();
+  const [isDisabled, setIsDisabled] = useState(false); // Trạng thái để vô hiệu hóa click
 
   const handleCardClick = async () => {
+    if (isDisabled) return; // Ngăn click nếu đang bị vô hiệu hóa
+
+    setIsDisabled(true); // Vô hiệu hóa click
     try {
       const token = sessionStorage.getItem("token");
       const cleanerId = sessionStorage.getItem("cleanerId");
       if (!token) {
         message.warning("Bạn cần đăng nhập để xem chi tiết công việc.");
+        setIsDisabled(false); // Bật lại click nếu không có token
         return;
       }
 
@@ -40,7 +46,6 @@ function JobCard({ image, title, description, count, id }) {
       const data = await response.json();
 
       if (!response.ok) {
-        // Hiển thị message lỗi từ response nếu có
         if (data && data.message) {
           throw new Error(data.message);
         } else {
@@ -48,7 +53,6 @@ function JobCard({ image, title, description, count, id }) {
         }
       }
 
-      // Hiển thị message từ response nếu có
       if (data.message) {
         message.success(data.message);
       }
@@ -86,17 +90,24 @@ function JobCard({ image, title, description, count, id }) {
         error.message ||
           "Đã xảy ra lỗi khi lấy thông tin công việc. Vui lòng thử lại sau."
       );
+    } finally {
+      // Bật lại click sau 2 giây
+      setTimeout(() => {
+        setIsDisabled(false);
+      }, 2000);
     }
   };
 
   return (
     <Card
-      hoverable
+      hoverable={!isDisabled} // Tắt hover khi vô hiệu hóa
       style={{
-        height: "100%", // Ensure card takes full height of parent
+        height: "100%",
         background: "#f5f5f5",
         display: "flex",
         flexDirection: "column",
+        opacity: isDisabled ? 0.6 : 1, // Làm mờ thẻ khi vô hiệu hóa
+        cursor: isDisabled ? "not-allowed" : "pointer", // Đổi con trỏ chuột
       }}
       onClick={handleCardClick}
       cover={
@@ -106,7 +117,7 @@ function JobCard({ image, title, description, count, id }) {
             justifyContent: "center",
             alignItems: "center",
             padding: "16px 16px 0 16px",
-            height: "120px", // Fixed height for image section
+            height: "120px",
             overflow: "hidden",
           }}
         >
@@ -129,17 +140,16 @@ function JobCard({ image, title, description, count, id }) {
           display: "flex",
           flexDirection: "column",
           padding: "16px",
-          flex: 1, // Allow content to take remaining space
+          flex: 1,
         }}
       >
-        {/* Title Section */}
         <Title
           level={4}
           style={{
             margin: 0,
-            fontSize: "18px", // Consistent font size
-            lineHeight: "24px", // Fixed line height
-            height: "24px", // Single line height
+            fontSize: "18px",
+            lineHeight: "24px",
+            height: "24px",
             overflow: "hidden",
             textOverflow: "ellipsis",
             whiteSpace: "nowrap",
@@ -148,37 +158,33 @@ function JobCard({ image, title, description, count, id }) {
         >
           {title}
         </Title>
-
-        {/* Description Section */}
         <Paragraph
           style={{
             margin: "8px 0",
-            fontSize: "14px", // Consistent font size
-            lineHeight: "20px", // Fixed line height for exactly 2 lines
-            height: "40px", // Height for exactly 2 lines (2 * 20px)
+            fontSize: "14px",
+            lineHeight: "20px",
+            height: "40px",
             overflow: "hidden",
             textOverflow: "ellipsis",
             display: "-webkit-box",
             WebkitLineClamp: 2,
             WebkitBoxOrient: "vertical",
             textAlign: "center",
-            color: "#595959", // Subtle color for description
+            color: "#595959",
           }}
         >
           {description}
         </Paragraph>
-
-        {/* Count Section */}
         <div
           style={{
-            marginTop: "auto", // Push to bottom
+            marginTop: "auto",
             textAlign: "center",
           }}
         >
           <Text
             strong
             style={{
-              fontSize: "16px", // Consistent font size
+              fontSize: "16px",
               lineHeight: "24px",
               color: "#039855",
             }}

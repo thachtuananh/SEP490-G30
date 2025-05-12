@@ -475,7 +475,7 @@ function CleanersPage() {
         ) : filteredCleaners.length > 0 ? (
           <>
             {/* Top pagination for better UX */}
-            {filteredCleaners.length > pageSize && !isMobile && (
+            {/* {filteredCleaners.length > pageSize && !isMobile && (
               <Card
                 style={{ marginBottom: 16, borderRadius: 8 }}
                 bodyStyle={{ padding: "12px 24px" }}
@@ -499,7 +499,7 @@ function CleanersPage() {
                   </Col>
                 </Row>
               </Card>
-            )}
+            )} */}
 
             <List
               grid={{
@@ -538,26 +538,34 @@ function CleanersPage() {
                   gutter={[16, 16]}
                   wrap={isMobile}
                 >
-                  <Col xs={24} sm={8}>
+                  {/* <Col xs={24} sm={8}>
                     <Text>{paginationInfo()}</Text>
-                  </Col>
-                  <Col xs={24} sm={8} style={{ textAlign: "center" }}>
+                  </Col> */}
+                  <Col
+                    xs={24}
+                    sm={24}
+                    style={{
+                      textAlign: "center",
+                      display: "flex",
+                      justifyContent: "center",
+                    }}
+                  >
                     <ConfigProvider>
                       <Pagination
                         current={currentPage}
                         total={filteredCleaners.length}
                         pageSize={pageSize}
                         onChange={handlePageChange}
-                        showSizeChanger={!isMobile}
-                        pageSizeOptions={[4, 8, 12, 16]}
-                        onShowSizeChange={handlePageSizeChange}
-                        showQuickJumper={!isMobile}
-                        size={isMobile ? "small" : "default"}
-                        itemRender={itemRender}
+                        // showSizeChanger={!isMobile}
+                        // pageSizeOptions={[4, 8, 12, 16]}
+                        // onShowSizeChange={handlePageSizeChange}
+                        // showQuickJumper={!isMobile}
+                        // size={isMobile ? "small" : "default"}
+                        // itemRender={itemRender}
                       />
                     </ConfigProvider>
                   </Col>
-                  <Col
+                  {/* <Col
                     xs={24}
                     sm={8}
                     style={{ textAlign: isMobile ? "center" : "right" }}
@@ -580,7 +588,7 @@ function CleanersPage() {
                         Trang sau
                       </Button>
                     </Space>
-                  </Col>
+                  </Col> */}
                 </Row>
               </Card>
             )}

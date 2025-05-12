@@ -215,11 +215,11 @@ const OwnerDetails = () => {
               <div
                 style={{ display: "flex", alignItems: "center", gap: "8px" }}
               >
-                <Button icon={<ArrowLeftOutlined />} onClick={goBack}>
+                {/* <Button icon={<ArrowLeftOutlined />} onClick={goBack}>
                   {!isMobile && "Quay lại"}
-                </Button>
+                </Button> */}
                 <Title level={isMobile ? 4 : 3} style={{ margin: 0 }}>
-                  Chi tiết Owner
+                  Chi tiết chủ nhà
                 </Title>
               </div>
             </Col>
@@ -240,7 +240,7 @@ const OwnerDetails = () => {
                 <Title level={4} style={{ marginTop: 0 }}>
                   {ownerData.name}
                 </Title>
-                <Space size="large" wrap>
+                {/* <Space size="large" wrap>
                   <Badge
                     status={ownerData?.is_deleted ? "error" : "success"}
                     text={
@@ -249,7 +249,7 @@ const OwnerDetails = () => {
                         : "Đang hoạt động"
                     }
                   />
-                </Space>
+                </Space> */}
               </div>
             </div>
 

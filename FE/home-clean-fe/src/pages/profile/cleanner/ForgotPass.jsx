@@ -120,7 +120,7 @@ function ForgotPassword() {
                 className="login-button"
                 disabled={isLoading}
               >
-                {isLoading ? "Đang xử lý..." : "Gửi yêu cầu"}
+                {isLoading ? "Gửi yêu cầu" : "Gửi yêu cầu"}
               </button>
             </form>
 

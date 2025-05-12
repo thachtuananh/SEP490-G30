@@ -28,6 +28,8 @@ const CleanerTabs = ({
   navigate,
   handleDelete,
   refreshData,
+  handleRejectVerify,
+  handleAcceptVerify,
 }) => {
   const [isProfileModalVisible, setIsProfileModalVisible] = useState(false);
   const [isVerificationModalVisible, setIsVerificationModalVisible] =
@@ -141,6 +143,7 @@ const CleanerTabs = ({
 
       const token = sessionStorage.getItem("token");
       const cleanerId = cleanerData.id || cleanerData.cleanerId;
+      const accountStatus = !accountActive;
 
       const response = await fetch(
         `${BASE_URL}/admin/cleaners/${cleanerId}/update`,
@@ -157,6 +160,7 @@ const CleanerTabs = ({
             email: values.email,
             age: parseInt(values.age),
             experience: values.experience,
+            accountStatus: accountStatus,
           }),
         }
       );
@@ -240,7 +244,7 @@ const CleanerTabs = ({
     verificationForm.setFieldsValue({ accountStatus: !isActive });
   };
 
-  // Tab items configuration
+  // Tab items configuration - Only include job history tabs if identity is verified
   const tabItems = [
     {
       key: "basic",
@@ -250,6 +254,9 @@ const CleanerTabs = ({
           <Descriptions {...getDescriptionsLayout()}>
             <Descriptions.Item label="Họ và tên">
               {cleanerData?.name}
+            </Descriptions.Item>
+            <Descriptions.Item label="CMND/CCCD">
+              {cleanerData?.identity_number}
             </Descriptions.Item>
             <Descriptions.Item label="Số điện thoại">
               {cleanerData?.phone}
@@ -274,102 +281,121 @@ const CleanerTabs = ({
             }}
           >
             <Space>
-              {!cleanerData.is_deleted && (
-                <Button danger onClick={handleDelete}>
-                  Xoá người dùng
-                </Button>
+              {cleanerData.identity_verified && (
+                <>
+                  {/* <Button danger onClick={handleDelete}>
+                    Xoá người dùng
+                  </Button> */}
+                  <Button type="primary" onClick={showEditModalProfile}>
+                    Chỉnh sửa
+                  </Button>
+                </>
               )}
-              <Button type="primary" onClick={showEditModalProfile}>
-                Chỉnh sửa
-              </Button>
+              {!cleanerData.identity_verified && (
+                <>
+                  <Button danger onClick={handleRejectVerify}>
+                    Từ chối
+                  </Button>
+                  <Button type="primary" onClick={handleAcceptVerify}>
+                    Xác minh
+                  </Button>
+                </>
+              )}
             </Space>
           </div>
         </>
       ),
     },
-    {
-      key: "accountVerification",
-      label: "Thông tin xác minh",
-      children: (
-        <>
-          <Descriptions {...getDescriptionsLayout()}>
-            <Descriptions.Item label="CMND/CCCD">
-              {cleanerData?.identity_number}
-            </Descriptions.Item>
-            <Descriptions.Item label="Trạng thái xác minh">
-              {cleanerData?.identity_verified ? (
-                <Badge status="success" text="Đã xác minh" />
-              ) : (
-                <Badge status="error" text="Chưa xác minh" />
-              )}
-            </Descriptions.Item>
-            <Descriptions.Item label="Ngày tạo">
-              {cleanerData?.created_at &&
-                formatDateTime(cleanerData.created_at)}
-            </Descriptions.Item>
-            {/* <Descriptions.Item label="Cập nhật lần cuối">
-              {cleanerData?.updated_at &&
-                formatDateTime(cleanerData.updated_at)}
-            </Descriptions.Item> */}
-            <Descriptions.Item label="Trạng thái tài khoản">
-              <Badge
-                status={cleanerData?.is_deleted ? "error" : "success"}
-                text={
-                  cleanerData?.is_deleted ? "Không hoạt động" : "Đang hoạt động"
-                }
-              />
-            </Descriptions.Item>
-          </Descriptions>
-          <div
-            style={{
-              marginTop: 24,
-              display: "flex",
-              justifyContent: isMobile ? "center" : "flex-end",
-              flexWrap: "wrap",
-              gap: "8px",
-            }}
-          >
-            <Space>
-              {!cleanerData.is_deleted && (
-                <Button danger onClick={handleDelete}>
-                  Xoá người dùng
-                </Button>
-              )}
-              <Button type="primary" onClick={showEditModalVerification}>
-                Chỉnh sửa
-              </Button>
-            </Space>
-          </div>
-        </>
-      ),
-    },
-    {
-      key: "jobHistory",
-      label: "Lịch sử công việc",
-      children: (
-        <JobHistoryTable
-          jobData={jobHistory}
-          isMobile={isMobile}
-          isTablet={isTablet}
-          navigate={navigate}
-          title="Thống kê lịch sử công việc"
-        />
-      ),
-    },
-    {
-      key: "jobHistoryBooked",
-      label: "Lịch công việc được đặt",
-      children: (
-        <JobHistoryTable
-          jobData={jobHistoryBooked}
-          isMobile={isMobile}
-          isTablet={isTablet}
-          navigate={navigate}
-          title="Thống kê lịch đặt"
-        />
-      ),
-    },
+    // {
+    //   key: "accountVerification",
+    //   label: "Thông tin xác minh",
+    //   children: (
+    //     <>
+    //       <Descriptions {...getDescriptionsLayout()}>
+    //         <Descriptions.Item label="CMND/CCCD">
+    //           {cleanerData?.identity_number}
+    //         </Descriptions.Item>
+    //         <Descriptions.Item label="Trạng thái xác minh">
+    //           {cleanerData?.identity_verified ? (
+    //             <Badge status="success" text="Đã xác minh" />
+    //           ) : (
+    //             <Badge status="error" text="Chưa xác minh" />
+    //           )}
+    //         </Descriptions.Item>
+    //         <Descriptions.Item label="Ngày tạo">
+    //           {cleanerData?.created_at &&
+    //             formatDateTime(cleanerData.created_at)}
+    //         </Descriptions.Item>
+    //         <Descriptions.Item label="Trạng thái tài khoản">
+    //           <Badge
+    //             status={cleanerData?.is_deleted ? "error" : "success"}
+    //             text={
+    //               cleanerData?.is_deleted ? "Không hoạt động" : "Đang hoạt động"
+    //             }
+    //           />
+    //         </Descriptions.Item>
+    //       </Descriptions>
+    //       <div
+    //         style={{
+    //           marginTop: 24,
+    //           display: "flex",
+    //           justifyContent: isMobile ? "center" : "flex-end",
+    //           flexWrap: "wrap",
+    //           gap: "8px",
+    //         }}
+    //       >
+    //         <Space>
+    //           {!cleanerData.is_deleted && cleanerData.identity_verified && (
+    //             <Button danger onClick={handleDelete}>
+    //               Xoá người dùng
+    //             </Button>
+    //           )}
+    //           {!cleanerData.identity_verified && (
+    //             <Button danger onClick={handleRejectVerify}>
+    //               Từ chối
+    //             </Button>
+    //           )}
+    //           <Button type="primary" onClick={showEditModalVerification}>
+    //             Chỉnh sửa
+    //           </Button>
+    //         </Space>
+    //       </div>
+    //     </>
+    //   ),
+    // },
   ];
+
+  // Only add job history tabs if identity is verified
+  if (cleanerData?.identity_verified) {
+    tabItems.push(
+      {
+        key: "jobHistory",
+        label: "Lịch sử công việc",
+        children: (
+          <JobHistoryTable
+            jobData={jobHistory}
+            isMobile={isMobile}
+            isTablet={isTablet}
+            navigate={navigate}
+            title="Thống kê lịch sử công việc"
+          />
+        ),
+      },
+      {
+        key: "jobHistoryBooked",
+        label: "Lịch công việc được đặt",
+        children: (
+          <JobHistoryTable
+            jobData={jobHistoryBooked}
+            isMobile={isMobile}
+            isTablet={isTablet}
+            navigate={navigate}
+            title="Thống kê lịch đặt"
+          />
+        ),
+      }
+    );
+  }
 
   return (
     <>
@@ -484,6 +510,24 @@ const CleanerTabs = ({
           <Form.Item name="experience" label="Kinh nghiệm">
             <Input placeholder="Nhập kinh nghiệm" />
           </Form.Item>
+          <Form.Item label="Trạng thái tài khoản">
+            <Input.Group compact>
+              <Button
+                type={accountActive ? "primary" : "default"}
+                onClick={() => handleAccountStatusChange(true)}
+                style={{ width: "50%" }}
+              >
+                Kích hoạt
+              </Button>
+              <Button
+                type={!accountActive ? "primary" : "default"}
+                onClick={() => handleAccountStatusChange(false)}
+                style={{ width: "50%" }}
+              >
+                Vô hiệu hoá
+              </Button>
+            </Input.Group>
+          </Form.Item>
         </Form>
       </Modal>
 
@@ -545,14 +589,14 @@ const CleanerTabs = ({
                 onClick={() => handleAccountStatusChange(true)}
                 style={{ width: "50%" }}
               >
-                Đang hoạt động
+                Kích hoạt
               </Button>
               <Button
                 type={!accountActive ? "primary" : "default"}
                 onClick={() => handleAccountStatusChange(false)}
                 style={{ width: "50%" }}
               >
-                Không hoạt động
+                Vô hiệu hoá
               </Button>
             </Input.Group>
           </Form.Item>
