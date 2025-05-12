@@ -116,6 +116,8 @@ public class SecurityConfig {
                 "http://localhost:3000",
                 "https://house-clean-platform.web.app",
                 "https://house-clean-platform.firebaseapp.com",
+                "https://house-clean-platform-backup.web.app",
+                "https://house-clean-platform-backup.firebaseapp.com",
 //                "https://costume-lithuania-parameter-bathrooms.trycloudflare.com",
 //                "https://grass-finding-presentation-competitions.trycloudflare.com",
 //                "https://turkish-content-correction-literally.trycloudflare.com",
