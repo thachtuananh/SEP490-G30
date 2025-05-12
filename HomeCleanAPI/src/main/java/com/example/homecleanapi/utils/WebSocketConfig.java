@@ -15,7 +15,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                 "http://localhost:3000",
                 "https://house-clean-platform.firebaseapp.com",
                 "https://house-clean-platform.web.app",
-                "https://house-clean-platform-backup.web.app"
+                "https://house-clean-plaform-backup.web.app"
         };
 
         stompEndpointRegistry.addEndpoint("/websocket-chat")
