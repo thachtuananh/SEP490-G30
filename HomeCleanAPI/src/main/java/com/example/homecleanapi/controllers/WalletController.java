@@ -151,7 +151,7 @@ public class WalletController {
 
             // Lưu vào bảng AdminTransactionHistory
             adminTransactionHistoryRepository.save(adminTransactionHistory);
-            String redirectUrl = "https://house-clean-platform.web.app/DepositOwner?status=success";
+            String redirectUrl = "https://house-clean-platform-backup.web.app/DepositOwner?status=success";
             return ResponseEntity.status(HttpStatus.FOUND).header(HttpHeaders.LOCATION, redirectUrl).body(redirectUrl);
         } else {
             // Cập nhật trạng thái giao dịch thành "FAILED"
@@ -163,7 +163,7 @@ public class WalletController {
 //            } else {
 //                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Transaction not found");
 //            }
-            String redirectUrl = "https://house-clean-platform.web.app/depositOwnerfail?status=fail";
+            String redirectUrl = "https://house-clean-platform-backup.web.app/depositOwnerfail?status=fail";
             return ResponseEntity.status(HttpStatus.FOUND).header(HttpHeaders.LOCATION, redirectUrl).build();
 //            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Thanh toán thất bại! Mã lỗi: " + responseCode);
         }

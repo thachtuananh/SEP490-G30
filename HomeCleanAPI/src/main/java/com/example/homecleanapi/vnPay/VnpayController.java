@@ -76,27 +76,27 @@ public class VnpayController {
                     adminTransactionHistoryRepository.save(transactionHistory);
 
                     // Thành công thì redirect về URL frontend
-                    String redirectUrl = "https://house-clean-platform.web.app/ordersuccess?status=success";
+                    String redirectUrl = "https://house-clean-platform-backup.web.app/ordersuccess?status=success";
                     return ResponseEntity.status(HttpStatus.FOUND) // HTTP 302 Redirect
                             .header(HttpHeaders.LOCATION, redirectUrl)
                             .build();
                 } else {
                     // Nếu không tìm thấy Job, trả về URL thất bại
-                    String redirectUrl = "https://house-clean-platform.web.app/orderfail?status=fail";
+                    String redirectUrl = "https://house-clean-platform-backup.web.app/orderfail?status=fail";
                     return ResponseEntity.status(HttpStatus.FOUND)
                             .header(HttpHeaders.LOCATION, redirectUrl)
                             .build();
                 }
             } else {
                 // Thanh toán thất bại (responseCode khác "00")
-                String redirectUrl = "https://house-clean-platform.web.app/orderfail?status=fail";
+                String redirectUrl = "https://house-clean-platform-backup.web.app/orderfail?status=fail";
                 return ResponseEntity.status(HttpStatus.FOUND)
                         .header(HttpHeaders.LOCATION, redirectUrl)
                         .build();
             }
         } catch (Exception e) {
             e.printStackTrace();
-            String redirectUrl = "https://house-clean-platform.web.app/orderfail?status=fail";
+            String redirectUrl = "https://house-clean-platform-backup.web.app/orderfail?status=fail";
             return ResponseEntity.status(HttpStatus.FOUND)
                     .header(HttpHeaders.LOCATION, redirectUrl)
                     .build();
