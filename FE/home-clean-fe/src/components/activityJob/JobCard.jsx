@@ -532,12 +532,14 @@ const JobCard = ({ job, refreshJobs, isAppliedTab }) => {
           </h2>
           <div style={{ marginTop: "8px", color: "#6b7280", fontSize: "14px" }}>
             <div>Khách hàng: {job.customerName}</div>
-            {!["PENDING", "CANCELLED", "ACCEPTED"].includes(
+            {/* {!["PENDING", "CANCELLED", "ACCEPTED"].includes(
               displayStatus.toUpperCase()
             ) && (
               <div>Mã đơn hàng: {job.orderCode || "Không có thông tin"} </div>
-            )}
-            {!["PENDING", "CANCELLED"].includes(
+            )} */}
+            <div>Mã đơn hàng: {job.orderCode || "Không có thông tin"} </div>
+
+            {!["PENDING", "CANCELLED", "REJECTED"].includes(
               displayStatus.toUpperCase()
             ) && <div>SĐT: {job.customerPhone}</div>}
           </div>
