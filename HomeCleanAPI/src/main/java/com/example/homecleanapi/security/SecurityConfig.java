@@ -120,6 +120,7 @@ public class SecurityConfig {
                 "https://grass-finding-presentation-competitions.trycloudflare.com",
                 "https://turkish-content-correction-literally.trycloudflare.com",
                 "https://mail-considers-dis-exotic.trycloudflare.com",
+                "https://api.homeclean.site",
                 "https://sandbox.vnpayment.vn",
                 "http://localhost:6333"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "PATCH"));
