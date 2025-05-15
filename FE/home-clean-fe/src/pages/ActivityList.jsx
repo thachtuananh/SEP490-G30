@@ -114,8 +114,8 @@ export const ActivityList = () => {
   return (
     <div className={styles.actlist}>
       <div className={styles.container}>
-        <h2 className={styles.title}>Hoạt động gần đây</h2>
-        <p className={styles.subtitle}>Quản lý các hoạt động đăng bài</p>
+        <h2 className={styles.title}>Theo dõi dịch vụ</h2>
+        <p className={styles.subtitle}>Quản lý, theo dõi các dịch vụ</p>
 
         {/* Filter and Search Bar */}
         <Card className={styles.filterCard}>

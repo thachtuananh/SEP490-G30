@@ -15,7 +15,11 @@ import SockJS from "sockjs-client";
 import { Stomp } from "@stomp/stompjs";
 import ChatWindow from "../../Chat/ChatWindow";
 import ConversationList from "../../Chat/ConversationList";
-import { getUnreadNotificationCount } from "../../../services/NotificationService";
+import {
+  getUnreadNotificationCount,
+  markAllNotificationsAsRead,
+  getNotifications,
+} from "../../../services/NotificationService";
 import {
   getUnreadMessageCount,
   handleConversationSelect as serviceHandleConversationSelect,
@@ -146,8 +150,12 @@ function Navbar() {
     if (user) {
       try {
         setIsLoading(true);
+        if (role && userId) {
+          await markAllNotificationsAsRead(role, userId);
+        }
         const count = await getUnreadNotificationCount();
         setNotificationCount(count);
+        await getNotifications();
       } catch (error) {
         console.error("Failed to refresh notifications:", error);
       } finally {
@@ -192,7 +200,16 @@ function Navbar() {
     >
       <div
         className={styles.notification_icon_wrapper}
-        onClick={isMobile ? toggleNotification : undefined}
+        onClick={() => {
+          // On mobile, just toggle the notification popup
+          if (isMobile) {
+            toggleNotification();
+            refreshNotifications();
+            // } else {
+            //   // On desktop, refresh notifications when clicking the icon
+            //   refreshNotifications();
+          }
+        }}
       >
         <BellOutlined
           className={`${styles.notification_icon} ${
@@ -265,7 +282,20 @@ function Navbar() {
   const userProfile = (
     <Dropdown menu={userMenu} placement="bottomRight">
       <div style={{ display: "flex", alignItems: "center", cursor: "pointer" }}>
-        <Avatar icon={<UserOutlined />} style={{ marginRight: "8px" }} />
+        {sessionStorage.getItem("profile_image") ? (
+          <Avatar
+            src={
+              sessionStorage.getItem("profile_image").startsWith("data:")
+                ? sessionStorage.getItem("profile_image")
+                : `data:image/jpeg;base64,${sessionStorage.getItem(
+                    "profile_image"
+                  )}`
+            }
+            style={{ marginRight: "8px" }}
+          />
+        ) : (
+          <Avatar icon={<UserOutlined />} style={{ marginRight: "8px" }} />
+        )}
         <span>{getUserName()}</span>
       </div>
     </Dropdown>

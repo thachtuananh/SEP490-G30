@@ -7,7 +7,7 @@ import {
   LoadingOutlined,
 } from "@ant-design/icons";
 
-// Toast function cải tiến
+// Toast function
 const showToast = (message, type = "error") => {
   const existingToast = document.querySelector(".custom-toast");
   if (existingToast) {
@@ -28,6 +28,95 @@ const showToast = (message, type = "error") => {
   }, 100);
 };
 
+// Format message content to handle markdown-like formatting
+const formatMessageContent = (content) => {
+  if (!content) return "";
+
+  // Split by new lines and process each paragraph
+  const paragraphs = content.split("\n").filter((p) => p.trim() !== "");
+
+  if (paragraphs.length <= 1) return content;
+
+  // Track indentation level for nested lists
+  let currentIndentLevel = 0;
+
+  // Process paragraphs to identify structure
+  const processedContent = [];
+
+  for (let i = 0; i < paragraphs.length; i++) {
+    const paragraph = paragraphs[i];
+    const trimmed = paragraph.trim();
+
+    // Check if this is a header (for sections)
+    if (trimmed === trimmed.toUpperCase() && trimmed.length > 10) {
+      processedContent.push({
+        type: "header",
+        content: trimmed,
+        level: 1,
+      });
+      continue;
+    }
+
+    // Check if it's a list item
+    const listItemMatch = trimmed.match(/^(\s*)(\*|\-)\s+(.*)/);
+    if (listItemMatch) {
+      const indentLevel = listItemMatch[1].length;
+      let content = listItemMatch[3];
+
+      // Check for bold text using ** markers
+      content = content.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
+
+      processedContent.push({
+        type: "list-item",
+        content: content,
+        indentLevel: Math.floor(indentLevel / 4), // Assuming 4 spaces per indent level
+        isBold: content.includes("<strong>"),
+      });
+      continue;
+    }
+
+    // Regular paragraph
+    processedContent.push({
+      type: "paragraph",
+      content: trimmed,
+    });
+  }
+
+  // Render the processed content
+  return (
+    <div className="formatted-message">
+      {processedContent.map((item, index) => {
+        if (item.type === "header") {
+          return (
+            <h4 key={index} className="message-header">
+              {item.content}
+            </h4>
+          );
+        }
+
+        if (item.type === "list-item") {
+          return (
+            <div
+              key={index}
+              className={`list-item ${item.isBold ? "list-item-bold" : ""}`}
+              style={{ marginLeft: `${item.indentLevel * 16}px` }}
+            >
+              <span className="list-bullet">•</span>
+              <span dangerouslySetInnerHTML={{ __html: item.content }} />
+            </div>
+          );
+        }
+
+        return (
+          <p key={index} className="message-paragraph">
+            {item.content}
+          </p>
+        );
+      })}
+    </div>
+  );
+};
+
 function ChatWindow({
   onClose,
   listMessage,
@@ -40,7 +129,7 @@ function ChatWindow({
   const messageEndRef = useRef(null);
   const inputRef = useRef(null);
 
-  // Cải thiện các gợi ý
+  // Suggestions
   const suggestions = [
     "Giới thiệu về dịch vụ của HouseClean",
     "Làm thế nào để liên hệ với đội hỗ trợ?",
@@ -171,7 +260,9 @@ function ChatWindow({
               className={item.isUser ? "message-row user" : "message-row bot"}
             >
               <div className={item.isUser ? "message user" : "message bot"}>
-                {item.chatContent}
+                {item.isUser
+                  ? item.chatContent
+                  : formatMessageContent(item.chatContent)}
               </div>
             </div>
           ))}

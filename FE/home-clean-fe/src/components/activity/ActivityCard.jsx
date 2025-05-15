@@ -184,7 +184,7 @@ export const ActivityCard = ({ data, onDelete }) => {
         [jobId]: data.length,
       }));
     } catch (error) {
-      message.error("Không thể tải danh sách Cleaner");
+      message.error("Không thể tải danh sách người dọn dẹp");
       setCleanerList([]);
       setApplicationsCount((prev) => ({
         ...prev,
@@ -229,7 +229,7 @@ export const ActivityCard = ({ data, onDelete }) => {
       setSelectedCleaner(data);
       setIsCleanerDetailModalOpen(true); // Mở modal hiển thị chi tiết
     } catch (error) {
-      message.error("Không thể tải thông tin Cleaner");
+      message.error("Không thể tải thông tin người dọn dẹp");
       setSelectedCleaner(null);
     } finally {
       setIsProcessing(false); // Đặt lại trạng thái sau khi hoàn tất
@@ -243,7 +243,7 @@ export const ActivityCard = ({ data, onDelete }) => {
       const data = await fetchCleanerDetail(cleanerId);
       setSelectedCleaner(data);
     } catch (error) {
-      message.error("Không thể tải thông tin Cleaner");
+      message.error("Không thể tải thông tin người dọn dẹp");
       setSelectedCleaner(null);
     }
     setLoading(false);
@@ -418,7 +418,7 @@ export const ActivityCard = ({ data, onDelete }) => {
       fetchCleaners(jobId);
     } catch (error) {
       console.error("Lỗi khi từ chối cleaner:", error);
-      message.error("Lỗi khi từ chối cleaner");
+      message.error("Lỗi khi từ chối người dọn dẹp");
     }
   };
 
@@ -426,11 +426,11 @@ export const ActivityCard = ({ data, onDelete }) => {
   const handleStartJob = async (jobId) => {
     try {
       await startJob(jobId, customerId);
-      message.success("✅ Công việc đã bắt đầu!");
+      message.success("Công việc đã bắt đầu!");
       updateActivityStatus(jobId, "STARTED");
     } catch (error) {
-      console.error("❌ Lỗi khi bắt đầu công việc:", error);
-      message.error("❌ Không thể bắt đầu công việc.");
+      console.error("Lỗi khi bắt đầu công việc:", error);
+      message.error("Không thể bắt đầu công việc.");
     }
   };
 
@@ -791,7 +791,8 @@ export const ActivityCard = ({ data, onDelete }) => {
                 <div className={styles.actionButtons}>
                   {(activity.status === "OPEN" ||
                     activity.status === "BOOKED" ||
-                    activity.status === "IN_PROGRESS") && (
+                    activity.status === "IN_PROGRESS" ||
+                    activity.status === "ARRIVED") && (
                     <Button
                       danger
                       className={styles.cancelButton}
@@ -850,7 +851,7 @@ export const ActivityCard = ({ data, onDelete }) => {
                             className={styles.statusButton}
                             onClick={() => openModal(activity.jobId)}
                           >
-                            Xem thông tin người dọn dẹp
+                            Người dọn dẹp đã ứng tuyển
                           </Button>
                         </Badge>
                       </div>

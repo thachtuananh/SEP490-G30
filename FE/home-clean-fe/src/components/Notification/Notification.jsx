@@ -142,7 +142,7 @@ const Notification = () => {
             Thông báo
           </Title>
           <div style={{ display: "flex", gap: "8px" }}>
-            {hasUnreadNotifications && (
+            {/* {hasUnreadNotifications && (
               <CheckOutlined
                 onClick={handleMarkAllAsRead}
                 style={{
@@ -152,7 +152,7 @@ const Notification = () => {
                 }}
                 title="Đánh dấu tất cả đã đọc"
               />
-            )}
+            )} */}
             {notifications.length > 0 && (
               <DeleteOutlined
                 onClick={handleClearAllNotifications}

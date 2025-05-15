@@ -15,7 +15,11 @@ import SockJS from "sockjs-client";
 import { Stomp } from "@stomp/stompjs";
 import ChatWindow from "../../Chat/ChatWindow";
 import ConversationList from "../../Chat/ConversationList";
-import { getUnreadNotificationCount } from "../../../services/NotificationService";
+import {
+  getNotifications,
+  getUnreadNotificationCount,
+  markAllNotificationsAsRead,
+} from "../../../services/NotificationService";
 import {
   getUnreadMessageCount,
   handleConversationSelect as serviceHandleConversationSelect,
@@ -159,8 +163,12 @@ function Navbar() {
     if (cleaner) {
       try {
         setIsLoading(true);
+        if (role && userId) {
+          await markAllNotificationsAsRead("Cleaner", userId);
+        }
         const count = await getUnreadNotificationCount();
         setNotificationCount(count);
+        await getNotifications();
       } catch (error) {
         console.error("Failed to refresh notifications:", error);
       } finally {
@@ -208,7 +216,16 @@ function Navbar() {
     >
       <div
         className={styles.notification_icon_wrapper}
-        onClick={isMobile ? toggleNotification : undefined}
+        onClick={() => {
+          // On mobile, just toggle the notification popup
+          if (isMobile) {
+            toggleNotification();
+            refreshNotifications();
+            // } else {
+            //   // On desktop, refresh notifications when clicking the icon
+            //   refreshNotifications();
+          }
+        }}
       >
         <BellOutlined
           className={`${styles.notification_icon} ${
@@ -281,12 +298,12 @@ function Navbar() {
   const cleanerProfile = (
     <Dropdown menu={cleanerMenu} placement="bottomRight">
       <div style={{ display: "flex", alignItems: "center", cursor: "pointer" }}>
-        {localStorage.getItem("image") ? (
+        {sessionStorage.getItem("image") ? (
           <Avatar
             src={
-              localStorage.getItem("image").startsWith("data:")
+              sessionStorage.getItem("image").startsWith("data:")
                 ? sessionStorage.getItem("image")
-                : `data:image/jpeg;base64,${localStorage.getItem("image")}`
+                : `data:image/jpeg;base64,${sessionStorage.getItem("image")}`
             }
             style={{ marginRight: "8px" }}
           />
