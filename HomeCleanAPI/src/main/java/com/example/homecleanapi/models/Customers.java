@@ -27,4 +27,6 @@ public class Customers {
     @Column(name = "is_deleted")
     private boolean isDeleted;
     private String email;
+    @Column(name = "profile_image", columnDefinition = "BYTEA")
+    private byte[] profile_image;
 }

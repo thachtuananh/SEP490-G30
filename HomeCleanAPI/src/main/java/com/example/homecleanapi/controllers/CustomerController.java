@@ -46,7 +46,7 @@ public class CustomerController {
     }
 
     @PatchMapping(value = "/{customer_id}/profile",  produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Map<String, Object>> updateProfile(@RequestBody CustomerProfileRequest request, @PathVariable Long customer_id) {
+    public ResponseEntity<Map<String, Object>> updateProfile(@RequestBody CustomerUpdateProfile request, @PathVariable Long customer_id) {
 
         return customerService.updateProfile(customer_id, request);
     }

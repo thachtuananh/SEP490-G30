@@ -31,14 +31,16 @@ public class CustomerAuthService {
     private final EmailService emailService;
     private final CustomerWalletRepository customerWalletRepository;
     private final OtpVerificationRepository otpVerificationRepository;
+    private final AvatarService avatarService;
 
-    public CustomerAuthService(CustomerRepository customerRepository, PasswordEncoder passwordEncoder, JwtUtils jwtUtils, EmailService emailService, CustomerWalletRepository customerWalletRepository, OtpVerificationRepository otpVerificationRepository) {
+    public CustomerAuthService(CustomerRepository customerRepository, PasswordEncoder passwordEncoder, JwtUtils jwtUtils, EmailService emailService, CustomerWalletRepository customerWalletRepository, OtpVerificationRepository otpVerificationRepository, AvatarService avatarService) {
         this.customerRepository = customerRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtUtils = jwtUtils;
         this.emailService = emailService;
         this.customerWalletRepository = customerWalletRepository;
         this.otpVerificationRepository = otpVerificationRepository;
+        this.avatarService = avatarService;
     }
 
     public ResponseEntity<Map<String, Object>> customerRegister(CustomerRegisterRequest request) {
@@ -67,11 +69,11 @@ public class CustomerAuthService {
         }
 
         // Kiểm tra OTP đã xác minh
-        Optional<OtpVerification> otpOpt = otpVerificationRepository.findTopByPhoneOrderByCreatedAtDesc(request.getPhone());
-        if (otpOpt.isEmpty() || !otpOpt.get().getVerified()) {
-            response.put("message", "Số điện thoại chưa được xác minh bằng OTP!");
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
-        }
+//        Optional<OtpVerification> otpOpt = otpVerificationRepository.findTopByPhoneOrderByCreatedAtDesc(request.getPhone());
+//        if (otpOpt.isEmpty() || !otpOpt.get().getVerified()) {
+//            response.put("message", "Số điện thoại chưa được xác minh bằng OTP!");
+//            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+//        }
 
         // Tạo đối tượng customer mới
         Customers customer = new Customers();
@@ -79,6 +81,7 @@ public class CustomerAuthService {
         customer.setPassword_hash(passwordEncoder.encode(request.getPassword()));
         customer.setFull_name(request.getName());
         customer.setEmail(request.getEmail());
+        customer.setProfile_image(avatarService.generateIdenticon(request.getName()));
         customer.setCreated_at(ZonedDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh")).toLocalDate());
 
         // Lưu customer vào cơ sở dữ liệu
@@ -138,6 +141,7 @@ public class CustomerAuthService {
         response.put("phone", customer.getPhone());
         response.put("customerId", customer.getId());
         response.put("name", customer.getFull_name());
+        response.put("profile_image", customer.getProfile_image());
         response.put("role", "Customer");
 
         return ResponseEntity.ok(response);
