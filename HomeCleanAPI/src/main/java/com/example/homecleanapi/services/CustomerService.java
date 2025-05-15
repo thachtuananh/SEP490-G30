@@ -1,5 +1,6 @@
 package com.example.homecleanapi.services;
 
+import com.example.homecleanapi.dtos.CustomerUpdateProfile;
 import com.example.homecleanapi.repositories.CustomerRepository;
 import com.example.homecleanapi.dtos.CustomerAddressesDTO;
 import com.example.homecleanapi.dtos.CustomerProfileRequest;
@@ -18,10 +19,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.PathVariable;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -57,20 +56,18 @@ public class CustomerService {
     }
 
     // Cập nhật thông tin profile của khách hàng
-    public ResponseEntity<Map<String, Object>> updateProfile(Long customer_id, CustomerProfileRequest request) {
+    public ResponseEntity<Map<String, Object>> updateProfile(Long customer_id, CustomerUpdateProfile request) {
         Map<String, Object> response = new HashMap<>();
-
-        
-        if (request.getFullName() == null || request.getFullName().isEmpty()) {
-            response.put("message", "Tên đầy đủ không được để trống!");
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
-        }
-
 
         Customers customer = customerRepository.findById(customer_id).orElseThrow(() -> new RuntimeException("Customer not found"));
         if (customer == null) {
             response.put("message", "Khách hàng không tồn tại!");
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        }
+        
+        if (request.getFullName() == null || request.getFullName().isEmpty()) {
+            response.put("message", "Tên đầy đủ không được để trống!");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
 
         // Kiểm tra nếu email bị thay đổi
@@ -84,10 +81,21 @@ public class CustomerService {
             }
             customer.setEmail(newEmail);
         }
-
+        // Kiểm tra và xử lý ảnh đại diện nếu có
+        String base64 = Arrays.toString(request.getProfile_image().toCharArray());
+        if (base64 != null && !base64.isEmpty()) {
+            try {
+                byte[] decoded = Base64.getDecoder().decode(base64.getBytes(StandardCharsets.UTF_8));
+                customer.setProfile_image(decoded);
+            } catch (IllegalArgumentException e) {
+                response.put("message", "Ảnh không hợp lệ (base64 decode thất bại)!");
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+            }
+        }
+        customer.setProfile_image(request.getProfile_image().getBytes());
         customer.setFull_name(request.getFullName());
         customer.setEmail(request.getEmail());
-        customer.setPhone(request.getPhone());
+//        customer.setPhone(request.getPhone());
         customerRepository.save(customer);  
 
         response.put("message", "Cập nhật thông tin profile thành công!");
