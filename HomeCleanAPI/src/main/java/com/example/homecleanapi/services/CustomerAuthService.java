@@ -69,11 +69,11 @@ public class CustomerAuthService {
         }
 
         // Kiểm tra OTP đã xác minh
-        Optional<OtpVerification> otpOpt = otpVerificationRepository.findTopByPhoneOrderByCreatedAtDesc(request.getPhone());
-        if (otpOpt.isEmpty() || !otpOpt.get().getVerified()) {
-            response.put("message", "Số điện thoại chưa được xác minh bằng OTP!");
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
-        }
+//        Optional<OtpVerification> otpOpt = otpVerificationRepository.findTopByPhoneOrderByCreatedAtDesc(request.getPhone());
+//        if (otpOpt.isEmpty() || !otpOpt.get().getVerified()) {
+//            response.put("message", "Số điện thoại chưa được xác minh bằng OTP!");
+//            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+//        }
 
         // Tạo đối tượng customer mới
         Customers customer = new Customers();

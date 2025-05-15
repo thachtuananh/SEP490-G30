@@ -82,7 +82,7 @@ public class CustomerService {
             customer.setEmail(newEmail);
         }
         // Kiểm tra và xử lý ảnh đại diện nếu có
-        String base64 = Arrays.toString(request.getProfile_image().toCharArray());
+        String base64 = request.getProfile_image();
         if (base64 != null && !base64.isEmpty()) {
             try {
                 byte[] decoded = Base64.getDecoder().decode(base64.getBytes(StandardCharsets.UTF_8));
@@ -92,15 +92,15 @@ public class CustomerService {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
             }
         }
-        customer.setProfile_image(request.getProfile_image().getBytes());
+
         customer.setFull_name(request.getFullName());
         customer.setEmail(request.getEmail());
-//        customer.setPhone(request.getPhone());
         customerRepository.save(customer);  
 
         response.put("message", "Cập nhật thông tin profile thành công!");
         response.put("phone", customer.getPhone());
         response.put("name", customer.getFull_name());
+        response.put("profile_image", customer.getProfile_image());
         return ResponseEntity.ok(response);
     }
 
