@@ -27,11 +27,29 @@ export const PersonaInformation = () => {
   const [customerName, setName] = useState(user?.customerName || "");
   const [customerPhone, setPhone] = useState(user?.customerPhone || "");
   const [customerEmail, setEmail] = useState(user?.customerEmail || "");
+  const [customerImg, setImg] = useState(user?.customerImg || "");
+  const [profileImageBase64, setProfileImageBase64] = useState(""); // New state for base64 image
 
   // State for password change
   const [oldPassword, setOldPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+
+  // Convert image file to base64
+  const convertToBase64 = (file) => {
+    return new Promise((resolve, reject) => {
+      const fileReader = new FileReader();
+      fileReader.readAsDataURL(file);
+      fileReader.onload = () => {
+        // Remove the "data:image/jpeg;base64," part to get only the base64 string
+        const base64String = fileReader.result.split(",")[1];
+        resolve(base64String);
+      };
+      fileReader.onerror = (error) => {
+        reject(error);
+      };
+    });
+  };
 
   // Make sure data is updated when the context changes
   useEffect(() => {
@@ -39,6 +57,16 @@ export const PersonaInformation = () => {
       setName(user.customerName || "");
       setPhone(user.customerPhone || "");
       setEmail(user.customerEmail || "");
+      if (user.customerImg) {
+        setImg(`data:image/png;base64,${user.customerImg}`);
+      } else {
+        setImg(profileImg); // Ảnh mặc định nếu không có ảnh từ API
+      }
+    } else {
+      setName("");
+      setPhone("");
+      setEmail("");
+      setImg(profileImg);
     }
   }, [user]);
 
@@ -108,6 +136,13 @@ export const PersonaInformation = () => {
         throw new Error("User information not found");
       }
 
+      const requestBody = {
+        fullName: customerName,
+        email: customerEmail,
+      };
+      if (profileImageBase64) {
+        requestBody.profile_image = profileImageBase64;
+      }
       // API call to update profile
       const response = await fetch(
         `${BASE_URL}/customer/${customerId}/profile`,
@@ -118,11 +153,7 @@ export const PersonaInformation = () => {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify({
-            fullName: customerName,
-            phone: customerPhone,
-            email: customerEmail,
-          }),
+          body: JSON.stringify(requestBody),
         }
       );
 
@@ -135,8 +166,8 @@ export const PersonaInformation = () => {
           payload: {
             ...user,
             customerName: customerName,
-            customerPhone: customerPhone,
             customerEmail: customerEmail,
+            profile_image: profileImageBase64 || user?.profile_image,
           },
         });
         message.success("Thông tin cá nhân đã được cập nhật!");
@@ -276,6 +307,31 @@ export const PersonaInformation = () => {
     }
   };
 
+  const handleImageUpload = async (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      try {
+        // Display preview of the image
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setImg(reader.result);
+        };
+        reader.readAsDataURL(file);
+
+        // Convert image to base64 for API
+        const base64 = await convertToBase64(file);
+        setProfileImageBase64(base64);
+
+        message.success(
+          "Tải ảnh lên thành công. Hãy nhấn nút Lưu để cập nhật!"
+        );
+      } catch (error) {
+        message.error("Lỗi khi xử lý ảnh!");
+        console.error("Error processing image:", error);
+      }
+    }
+  };
+
   return (
     <div className="persona-container">
       <div className="persona-header">
@@ -287,10 +343,19 @@ export const PersonaInformation = () => {
 
       <div className="avatar-section">
         <b>Ảnh đại diện</b>
-        <img className="avatar-image" src={profileImg} alt="icon" />
-        {/* <b>
-          <u className="avatar-select">Chọn ảnh</u>
-        </b> */}
+        <img className="avatar-image" src={customerImg} alt="icon" />
+        <input
+          type="file"
+          id="avatar-upload"
+          accept="image/*"
+          onChange={handleImageUpload}
+          style={{ display: "none" }}
+        />
+        <label htmlFor="avatar-upload">
+          <b>
+            <u className="avatar-select">Chọn ảnh</u>
+          </b>
+        </label>
       </div>
 
       <div className="form-group">

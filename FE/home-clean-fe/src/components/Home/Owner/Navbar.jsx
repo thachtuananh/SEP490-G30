@@ -282,7 +282,20 @@ function Navbar() {
   const userProfile = (
     <Dropdown menu={userMenu} placement="bottomRight">
       <div style={{ display: "flex", alignItems: "center", cursor: "pointer" }}>
-        <Avatar icon={<UserOutlined />} style={{ marginRight: "8px" }} />
+        {sessionStorage.getItem("profile_image") ? (
+          <Avatar
+            src={
+              sessionStorage.getItem("profile_image").startsWith("data:")
+                ? sessionStorage.getItem("profile_image")
+                : `data:image/jpeg;base64,${sessionStorage.getItem(
+                    "profile_image"
+                  )}`
+            }
+            style={{ marginRight: "8px" }}
+          />
+        ) : (
+          <Avatar icon={<UserOutlined />} style={{ marginRight: "8px" }} />
+        )}
         <span>{getUserName()}</span>
       </div>
     </Dropdown>

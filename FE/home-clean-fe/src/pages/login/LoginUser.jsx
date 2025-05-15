@@ -63,17 +63,19 @@ function Login() {
       const result = await response.json();
       console.log("Result Login", result);
       if (response.ok) {
-        const { token, customerId, name, role, phone } = result;
+        const { token, customerId, name, role, phone, profile_image } = result;
 
         sessionStorage.setItem("name", name);
         sessionStorage.setItem("token", token);
         sessionStorage.setItem("customerId", customerId);
         sessionStorage.setItem("role", role);
         sessionStorage.setItem("phone", phone);
-
+        if (profile_image) {
+          sessionStorage.setItem("profile_image", profile_image);
+        }
         dispatch({
           type: "LOGIN_SUCCESS_CUSTOMER",
-          payload: { name, token, customerId, phone },
+          payload: { name, token, customerId, phone, role, profile_image },
         });
 
         message.success("Đăng nhập thành công!");

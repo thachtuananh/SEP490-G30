@@ -61,6 +61,7 @@ const AuthReducer = (state, action) => {
                 cleanerPhone: action.payload.phone, // Change phone to cleanerPhone
                 token: action.payload.token,
                 cleanerId: action.payload.cleanerId,
+                cleanerImage: action.payload.image,
             };
 
             sessionStorage.setItem("cleaner", JSON.stringify(cleanerLogin));
@@ -94,8 +95,8 @@ const AuthReducer = (state, action) => {
             };
 
         case "FETCH_PROFILE_SUCCESS_CUSTOMER":
-            const { name: customerName, phone: customerPhone,email:customerEmail } = action.payload;
-            const customerProfile = { customerName, customerPhone,customerEmail };
+            const { name: customerName, phone: customerPhone,email:customerEmail,profile_images:customerImg} = action.payload;
+            const customerProfile = { customerName, customerPhone,customerEmail,customerImg };
             sessionStorage.setItem("user", JSON.stringify(customerProfile));
             return { ...state, user: customerProfile };
 
@@ -129,7 +130,8 @@ const AuthReducer = (state, action) => {
             sessionStorage.removeItem("customerId");
             sessionStorage.removeItem("cleanerId");
             sessionStorage.removeItem("adminId");
-            localStorage.removeItem("image");
+            sessionStorage.removeItem("image");
+            sessionStorage.removeItem("profile_image");
             return {
                 ...state,
                 user: null,

@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { AuthContext } from "../../../context/AuthContext";
 import { Link } from "react-router-dom";
 import infoImg from "../../../assets/imgProfile/info.svg";
@@ -12,15 +12,27 @@ import "../owner/profile.css";
 
 const MenuInfomation = ({ selectedMenu, setSelectedMenu }) => {
   const { user } = useContext(AuthContext); // Lấy thông tin người dùng
+  const [customerImg, setImg] = useState(user?.customerImg || "");
 
   const handleClick = (menuName) => {
     setSelectedMenu(menuName);
   };
+  useEffect(() => {
+    if (user) {
+      if (user.customerImg) {
+        setImg(`data:image/png;base64,${user.customerImg}`);
+      } else {
+        setImg(profileImg); // Ảnh mặc định nếu không có ảnh từ API
+      }
+    } else {
+      setImg(profileImg);
+    }
+  }, [user]);
 
   return (
     <div className="menu-wrapper">
       <div className="menu-profile">
-        <img className="profile-avatar" src={profileImg} alt="icon" />
+        <img className="profile-avatar" src={customerImg} alt="icon" />
         <div className="profile-details">
           <p className="profile-name">
             <strong>{user?.customerName || "Người dùng"}</strong>

@@ -298,12 +298,12 @@ function Navbar() {
   const cleanerProfile = (
     <Dropdown menu={cleanerMenu} placement="bottomRight">
       <div style={{ display: "flex", alignItems: "center", cursor: "pointer" }}>
-        {localStorage.getItem("image") ? (
+        {sessionStorage.getItem("image") ? (
           <Avatar
             src={
-              localStorage.getItem("image").startsWith("data:")
+              sessionStorage.getItem("image").startsWith("data:")
                 ? sessionStorage.getItem("image")
-                : `data:image/jpeg;base64,${localStorage.getItem("image")}`
+                : `data:image/jpeg;base64,${sessionStorage.getItem("image")}`
             }
             style={{ marginRight: "8px" }}
           />
