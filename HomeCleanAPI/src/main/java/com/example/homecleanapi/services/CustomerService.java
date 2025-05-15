@@ -52,6 +52,7 @@ public class CustomerService {
         response.put("name", customer.getFull_name());
         response.put("email", customer.getEmail());
         response.put("created_at", customer.getCreated_at());
+        response.put("profile_images", customer.getProfile_image());
         return ResponseEntity.ok(response);
     }
 
