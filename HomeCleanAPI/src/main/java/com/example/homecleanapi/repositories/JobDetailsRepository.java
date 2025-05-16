@@ -11,5 +11,5 @@ import java.util.Optional;
 @Repository
 public interface JobDetailsRepository extends JpaRepository<JobDetails, Long>{
 
-    Optional<JobServiceDetail> findByJob_id(Long jobId);
+    JobServiceDetail findByJob_id(Long jobId);
 }
