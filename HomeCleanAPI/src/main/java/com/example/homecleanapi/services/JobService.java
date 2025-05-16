@@ -489,12 +489,12 @@ public class JobService {
         // Tính toán số tiền sẽ trả cho cleaner (85% tổng giá trị đơn hàng)
         double totalPrice = job.getTotalPrice();
         double cleanerPayment = totalPrice * 0.85;
-        List<JobServiceDetail> jobServiceDetails = jobDetailsRepository.findByJob_id(jobId);
-        String serviceNames = jobServiceDetails.size() == 1
-                ? jobServiceDetails.get(0).getService().getName()
-                : jobServiceDetails.stream()
-                .map(detail -> detail.getService().getName())
-                .collect(Collectors.joining(","));
+//        List<JobServiceDetail> jobServiceDetails = jobDetailsRepository.findByJob_id(jobId);
+//        String serviceNames = jobServiceDetails.size() == 1
+//                ? jobServiceDetails.get(0).getService().getName()
+//                : jobServiceDetails.stream()
+//                .map(detail -> detail.getService().getName())
+//                .collect(Collectors.joining(","));
 
         // Lấy ví của cleaner
         Optional<Wallet> walletOpt = walletRepository.findByCleanerId(cleaner.getId());
@@ -516,7 +516,7 @@ public class JobService {
         txn.setStatus("SUCCESS");
 
         transactionHistoryRepository.save(txn);
-        String message = "Chủ nhà " + job.getCustomer().getFull_name() + "đã xác nhận bạn hoàn thành công việc" + serviceNames+ " " + job.getScheduledTime() + "Vui lòng kiểm tra ví.";
+        String message = "Chủ nhà " + job.getCustomer().getFull_name() + "đã xác nhận bạn hoàn thành công việc" + "Vui lòng kiểm tra ví.";
         NotificationDTO customerNotification = new NotificationDTO();
         customerNotification.setUserId(cleaner.getId());
         customerNotification.setMessage(message);
