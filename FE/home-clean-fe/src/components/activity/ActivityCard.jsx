@@ -958,7 +958,22 @@ export const ActivityCard = ({ data, onDelete }) => {
         }}
         width={1050}
         footer={[
-          <Button type="primary">Đặt lại dịch vụ</Button>,
+          ...(activities.find(
+            (activity) => activity.cleanerId === selectedCleaner?.cleanerId
+          )?.status === "DONE"
+            ? [
+                <Button
+                  type="primary"
+                  key="reorder"
+                  onClick={() => {
+                    // Navigate to the cleaner page when clicked
+                    window.location.href = `/cleaner/${selectedCleaner?.cleanerId}`;
+                  }}
+                >
+                  Đặt lại dịch vụ
+                </Button>,
+              ]
+            : []),
           <Button key="back" onClick={() => setIsCleanerDetailModalOpen(false)}>
             Đóng
           </Button>,

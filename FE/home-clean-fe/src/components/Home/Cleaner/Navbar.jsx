@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useState, useContext, useEffect } from "react";
 import { AuthContext } from "../../../context/AuthContext";
 import houseCleanLogo from "../../../assets/HouseClean_logo.png";
@@ -29,6 +29,7 @@ import { URL_WEB_SOCKET } from "../../../utils/config";
 function Navbar() {
   const { cleaner, dispatch } = useContext(AuthContext);
   const navigate = useNavigate();
+  const location = useLocation(); // Add this to get current location
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isPopupNotification, setIsPopupNotification] = useState(false);
   const [notificationCount, setNotificationCount] = useState(0);
@@ -48,6 +49,10 @@ function Navbar() {
   const [messages, setMessages] = useState([]);
   const [selectedConversation, setSelectedConversation] = useState(null);
   //Kết thúc phần khai báo cho Chat
+
+  const isActive = (path) => {
+    return location.pathname === path;
+  };
 
   // Track screen size changes
   useEffect(() => {
@@ -573,7 +578,12 @@ function Navbar() {
           <ul className="menu">
             {/* <li><Link to="/homeclean" className="nav-link"></Link></li> */}
             <li>
-              <Link to="/homeclean/activityjob" className="nav-link">
+              <Link
+                to="/homeclean/activityjob"
+                className={`nav-link ${
+                  isActive("/homeclean/activityjob") ? "active-link" : ""
+                }`}
+              >
                 Quản lý công việc
               </Link>
             </li>
@@ -583,12 +593,22 @@ function Navbar() {
               </Link>
             </li> */}
             <li>
-              <Link to="/homeclean/contact" className="nav-link">
+              <Link
+                to="/homeclean/contact"
+                className={`nav-link ${
+                  isActive("/homeclean/contact") ? "active-link" : ""
+                }`}
+              >
                 Liên hệ
               </Link>
             </li>
             <li>
-              <Link to="/homeclean/cleaner-pricing" className="nav-link">
+              <Link
+                to="/homeclean/cleaner-pricing"
+                className={`nav-link ${
+                  isActive("/homeclean/cleaner-pricing") ? "active-link" : ""
+                }`}
+              >
                 Bảng giá dịch vụ
               </Link>
             </li>
