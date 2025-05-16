@@ -205,7 +205,9 @@
   overflow-y: auto;
   padding-top: 60px;
 }
-
+.notification_container {
+  width: 350px;
+}
 .mobile_notification_container {
   background-color: white;
   border-radius: 8px;
@@ -234,6 +236,9 @@
     margin-top: 10px;
     padding: 10px;
   }
+  .notification_container {
+    width: 300px;
+  }
 }
 
 @media (max-width: 480px) {
@@ -241,6 +246,9 @@
     /* width: 95%; */
     max-height: 70vh;
     padding: 10px;
+  }
+  .notification_container {
+    width: 250px;
   }
 }
 

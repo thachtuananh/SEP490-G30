@@ -129,7 +129,7 @@ const Notification = () => {
   const hasUnreadNotifications = notifications.some(isNotificationUnread);
 
   return (
-    <div className={styles.notification_container} style={{ width: "250px" }}>
+    <div className={styles.notification_container}>
       <div className={styles.notification_header}>
         <div
           style={{

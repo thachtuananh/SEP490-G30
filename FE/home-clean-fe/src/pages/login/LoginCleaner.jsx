@@ -60,16 +60,18 @@ function Login() {
       const result = await response.json();
       console.log(result);
       if (response.ok) {
-        const { name, token, cleanerId, role, phone } = result;
+        const { name, token, cleanerId, role, phone, image } = result;
         sessionStorage.setItem("name", name);
         sessionStorage.setItem("token", token);
         sessionStorage.setItem("cleanerId", cleanerId);
         sessionStorage.setItem("role", role);
         sessionStorage.setItem("phone", phone);
-
+        if (image) {
+          sessionStorage.setItem("image", image);
+        }
         dispatch({
           type: "LOGIN_SUCCESS_CLEANER",
-          payload: { name, token, cleanerId, phone, role },
+          payload: { name, token, cleanerId, phone, role, image },
         });
 
         message.success("Đăng nhập thành công!");

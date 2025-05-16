@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useState, useContext, useEffect } from "react";
 import { AuthContext } from "../../../context/AuthContext";
 import houseCleanLogo from "../../../assets/HouseClean_logo.png";
@@ -29,6 +29,7 @@ import { URL_WEB_SOCKET } from "../../../utils/config";
 function Navbar() {
   const { user, dispatch } = useContext(AuthContext);
   const navigate = useNavigate();
+  const location = useLocation(); // Add this to get current location
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isPopupNotification, setIsPopupNotification] = useState(false);
   const [notificationCount, setNotificationCount] = useState(0);
@@ -46,6 +47,11 @@ function Navbar() {
   const [stompClient, setStompClient] = useState(null);
   const [messages, setMessages] = useState([]);
   const [selectedConversation, setSelectedConversation] = useState(null);
+
+  // Function to check if a link is active
+  const isActive = (path) => {
+    return location.pathname === path;
+  };
 
   // Track screen size changes
   useEffect(() => {
@@ -555,27 +561,42 @@ function Navbar() {
         <div className={`nav-content ${isMenuOpen ? "active" : ""}`}>
           <ul className="menu">
             <li>
-              <Link to="/about" className="nav-link">
+              <Link
+                to="/about"
+                className={`nav-link ${
+                  isActive("/about") ? "active-link" : ""
+                }`}
+              >
                 Giới thiệu
               </Link>
             </li>
             <li>
-              <Link to="/activitylist" className="nav-link">
+              <Link
+                to="/activitylist"
+                className={`nav-link ${
+                  isActive("/activitylist") ? "active-link" : ""
+                }`}
+              >
                 Theo dõi dịch vụ
               </Link>
             </li>
             <li>
-              <Link to="/cleaner-section" className="nav-link">
+              <Link
+                to="/cleaner-section"
+                className={`nav-link ${
+                  isActive("/cleaner-section") ? "active-link" : ""
+                }`}
+              >
                 Danh sách Người dọn dẹp
               </Link>
             </li>
-            {/* <li>
-              <Link to="/" className="nav-link">
-                Tin tức
-              </Link>
-            </li> */}
             <li>
-              <Link to="/contact" className="nav-link">
+              <Link
+                to="/contact"
+                className={`nav-link ${
+                  isActive("/contact") ? "active-link" : ""
+                }`}
+              >
                 Liên hệ
               </Link>
             </li>
