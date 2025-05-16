@@ -488,7 +488,11 @@ public class JobService {
         // Tính toán số tiền sẽ trả cho cleaner (85% tổng giá trị đơn hàng)
         double totalPrice = job.getTotalPrice();
         double cleanerPayment = totalPrice * 0.85;
-
+        Optional<JobServiceDetail> jobServiceDetail = jobDetailsRepository.findByJob_id(jobId);
+        if (!jobServiceDetail.isPresent()) {
+            response.put("message", "Job detail not found");
+            return response;
+        }
         // Lấy ví của cleaner
         Optional<Wallet> walletOpt = walletRepository.findByCleanerId(cleaner.getId());
         if (!walletOpt.isPresent()) {
@@ -509,14 +513,14 @@ public class JobService {
         txn.setStatus("SUCCESS");
 
         transactionHistoryRepository.save(txn);
-        String message = "Chủ nhà đã xác nhận hoàn thành công việc của bạn";
+        String message = "Chủ nhà " + job.getCustomer().getFull_name() + "đã xác nhận bạn hoàn thành công việc" + jobServiceDetail.get().getService().getName() + job.getScheduledTime() + "Vui lòng kiểm tra ví.";
         NotificationDTO customerNotification = new NotificationDTO();
-        customerNotification.setUserId(job.getCustomer().getId());
+        customerNotification.setUserId(cleaner.getId());
         customerNotification.setMessage(message);
         customerNotification.setType("AUTO_MESSAGE");
         customerNotification.setTimestamp(LocalDate.now());
         customerNotification.setRead(false); // ✅ set read = false
-        notificationService.processNotification(customerNotification, "CLEANER", Math.toIntExact(cleaner.getId()));
+        notificationService.processNotification(customerNotification, "CLEANER", cleaner.getId());
         response.put("message", "Job status updated to DONE, and cleaner's wallet has been credited with 85% of the job value");
         return response;
     }
