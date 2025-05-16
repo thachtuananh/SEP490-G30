@@ -36,6 +36,13 @@ public class CleanerJobController {
         return ResponseEntity.ok(nearbyOpenJobs);
     }
 
+    @GetMapping(value = "/jobs-multiday/{cleanerId}")
+    public ResponseEntity<List<JobSummaryDTO>> getNearbyMultiDayJobs(@PathVariable Long cleanerId) {
+        List<JobSummaryDTO> nearbyMultiDayJobs = findCleanerService.getNearbyMultiDayJobs(cleanerId, 6);
+        return ResponseEntity.ok(nearbyMultiDayJobs);
+    }
+
+
 //    @GetMapping(value = "/jobs/{cleanerId}")
 //    public ResponseEntity<List<JobSummaryDTO>> getOpenJobs(@PathVariable Long cleanerId) {
 //        List<JobSummaryDTO> openJobs = cleanerJobService.getOpenJobs(cleanerId);
