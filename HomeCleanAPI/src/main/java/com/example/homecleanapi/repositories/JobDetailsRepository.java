@@ -6,10 +6,11 @@ import org.springframework.stereotype.Repository;
 
 import com.example.homecleanapi.models.JobDetails;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
 public interface JobDetailsRepository extends JpaRepository<JobDetails, Long>{
 
-    JobServiceDetail findByJob_id(Long jobId);
+    List<JobServiceDetail> findByJob_id(Long jobId);
 }
