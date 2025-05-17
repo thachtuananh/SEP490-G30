@@ -1751,7 +1751,7 @@ public class CleanerJobService {
 
 		// Lưu JobApplication vào cơ sở dữ liệu
 		jobApplicationRepository.save(jobApplication);
-		String message_customer = "Người dọn dẹp đã nhận được yêu cầu đặt việc. Xin vui lòng đợi người dọn dẹp xác nhận";
+		String message_customer = "Người dọn dẹp: " + cleaner.getName() + " đã nhận được yêu cầu đặt việc. Xin vui lòng đợi người dọn dẹp xác nhận";
 		NotificationDTO customerNotification = new NotificationDTO();
 		customerNotification.setUserId(job.getCustomer().getId());
 		customerNotification.setMessage(message_customer);
