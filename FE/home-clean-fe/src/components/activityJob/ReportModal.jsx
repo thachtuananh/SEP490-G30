@@ -108,8 +108,8 @@ export const ReportModal = ({ visible, jobId, onClose }) => {
       });
 
       message.success("Báo cáo đã được gửi thành công!");
-      setHasSubmittedReport(true);
       fetchReports(); // Refresh reports list
+      setHasSubmittedReport(true);
       setActiveTab("view");
       form.resetFields();
     } catch (error) {
