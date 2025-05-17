@@ -81,5 +81,8 @@ public interface JobRepository extends JpaRepository<Job, Long> {
 
     List<Job> findByJobGroupCode(String jobGroupCode);
 
+    List<Job> findAllByTxnRef(String txnRef);
+
+
 }
 
