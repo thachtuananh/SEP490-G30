@@ -1,5 +1,6 @@
 package com.example.homecleanapi.controllers;
 
+import com.example.homecleanapi.dtos.BookMultiJobRequest;
 import com.example.homecleanapi.models.CustomerAddresses;
 import com.example.homecleanapi.services.JobService;
 import com.example.homecleanapi.dtos.BookJobRequest;
@@ -15,8 +16,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 
 @RestController
 @Tag(name = "Customer Job API")
@@ -36,6 +39,19 @@ public class CustomerJobController {
 			@PathVariable Long customerId, HttpServletRequest requestIp) {
 		Map<String, Object> response = jobService.bookJob(customerId, request, requestIp);
 		return ResponseEntity.status(HttpStatus.CREATED).body(response);
+	}
+
+	// api tạo job gồm nhiều dịch uuj và nhiều thời điểm khác nhau
+	@PostMapping("/book-multi/{customerId}")
+	public ResponseEntity<?> bookMultiJob(@PathVariable Long customerId,@RequestBody BookMultiJobRequest request,HttpServletRequest requestIp) {
+		try {
+			Map<String, Object> response = jobService.bookMultiJob(customerId, request, requestIp);
+			return ResponseEntity.ok(response);
+		} catch (Exception e) {
+			return ResponseEntity
+					.status(HttpStatus.INTERNAL_SERVER_ERROR)
+					.body(Collections.singletonMap("error", e.getMessage()));
+		}
 	}
 
 	// Xem danh sách cleaner đã apply cho job
@@ -119,6 +135,19 @@ public class CustomerJobController {
         }
         return ResponseEntity.ok(bookedJobs);
     }
+
+	// xem chi tiết job
+	@GetMapping("/{jobIdOrGroupCode}")
+	public ResponseEntity<?> getJobDetail(@PathVariable String jobIdOrGroupCode) {
+		try {
+			Map<String, Object> jobDetail = jobService.getJobDetails(jobIdOrGroupCode);
+			return ResponseEntity.ok(jobDetail);
+		} catch (NoSuchElementException e) {
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Job not found");
+		} catch (Exception e) {
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error: " + e.getMessage());
+		}
+	}
 	
 	@GetMapping("/viewdetailcleaner/{cleanerId}")
 	public ResponseEntity<Map<String, Object>> getCleanerDetailnonedk(@PathVariable Long cleanerId) {

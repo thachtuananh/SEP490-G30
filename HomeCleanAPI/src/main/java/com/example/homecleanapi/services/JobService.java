@@ -2,7 +2,7 @@ package com.example.homecleanapi.services;
 
 
 
-import com.example.homecleanapi.dtos.NotificationDTO;
+import com.example.homecleanapi.dtos.*;
 import com.example.homecleanapi.models.Services;
 import com.example.homecleanapi.models.Wallet;
 import com.example.homecleanapi.repositories.WalletRepository;
@@ -10,13 +10,11 @@ import com.example.homecleanapi.repositories.JobApplicationRepository;
 import com.example.homecleanapi.repositories.JobRepository;
 import com.example.homecleanapi.repositories.CustomerRepository;
 import com.example.homecleanapi.models.Customers;
-import com.example.homecleanapi.dtos.JobDTO;
 import com.example.homecleanapi.repositories.ServiceRepository;
 import com.example.homecleanapi.models.Employee;
 import com.example.homecleanapi.repositories.CustomerRepo;
 import com.example.homecleanapi.vnPay.VnpayRequest;
 import com.example.homecleanapi.vnPay.VnpayService;
-import com.example.homecleanapi.dtos.BookJobRequest;
 import com.example.homecleanapi.dtos.BookJobRequest.ServiceRequest;
 import com.example.homecleanapi.enums.JobStatus;
 import com.example.homecleanapi.models.*;
@@ -288,7 +286,7 @@ public class JobService {
         customerNotification.setMessage("Công việc đã được tạo thành công");
         customerNotification.setType("AUTO_MESSAGE");
         customerNotification.setTimestamp(LocalDate.now());
-        customerNotification.setRead(false); // ✅ set read = false
+        customerNotification.setRead(false);
         notificationService.processNotification(customerNotification, "CUSTOMER", Math.toIntExact(customerId));
 
         response.put("message", "Đặt lịch thành công");
@@ -300,6 +298,178 @@ public class JobService {
         return response;
     }
 
+
+
+    // tạo job gồm nhiều dịch vụ + nhều thời điểm khác nhau
+    public Map<String, Object> bookMultiJob(@PathVariable Long customerId, @RequestBody BookMultiJobRequest request, HttpServletRequest requestIp) {
+        Map<String, Object> response = new HashMap<>();
+
+        Optional<Customers> customerOpt = customerRepo.findById(customerId);
+        if (!customerOpt.isPresent()) {
+            response.put("message", "Customer not found with customerId: " + customerId);
+            return response;
+        }
+        Customers customer = customerOpt.get();
+
+        Optional<CustomerAddresses> customerAddressOpt = customerAddressRepository.findById(request.getCustomerAddressId().intValue());
+        if (!customerAddressOpt.isPresent()) {
+            response.put("message", "Customer address not found");
+            return response;
+        }
+        CustomerAddresses customerAddress = customerAddressOpt.get();
+
+        String orderCode = customerId + LocalDate.now().format(DateTimeFormatter.ofPattern("ddMMyy")) +
+                UUID.randomUUID().toString().substring(0, 6).toUpperCase();
+        String jobGroupCode = "JG-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+
+        double grandTotalPrice = 0;
+        List<Job> allJobs = new ArrayList<>();
+        List<JobServiceDetail> allDetails = new ArrayList<>();
+
+        for (MultiJobRequest jobReq : request.getJobs()) {
+            LocalDateTime jobTime;
+            try {
+                jobTime = LocalDateTime.parse(jobReq.getJobTime(), DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+            } catch (Exception e) {
+                response.put("message", "Invalid job time format in one of the entries");
+                return response;
+            }
+
+            Job job = new Job();
+            job.setCustomer(customer);
+            job.setCustomerAddress(customerAddress);
+            job.setScheduledTime(jobTime);
+            job.setReminder(request.getReminder());
+            job.setBookingType("CREATE");
+            job.setPaymentMethod(request.getPaymentMethod());
+            job.setJobType(jobReq.getServices().size() > 1 ? "COMBO" : "SINGLE");
+            job.setOrderCode(orderCode);
+            job.setJobGroupCode(jobGroupCode);
+
+            double totalPrice = 0;
+            List<JobServiceDetail> jobDetails = new ArrayList<>();
+
+            for (ServiceRequest serviceRequest : jobReq.getServices()) {
+                Optional<Services> serviceOpt = serviceRepository.findById(serviceRequest.getServiceId());
+                Optional<ServiceDetail> detailOpt = serviceDetailRepository.findById(serviceRequest.getServiceDetailId());
+
+                if (!serviceOpt.isPresent() || !detailOpt.isPresent()) {
+                    response.put("message", "Service or ServiceDetail not found for job time: " + jobTime);
+                    return response;
+                }
+
+                Services service = serviceOpt.get();
+                ServiceDetail detail = detailOpt.get();
+                totalPrice += detail.getPrice();
+
+                JobServiceDetail jsd = new JobServiceDetail();
+                jsd.setJob(job);
+                jsd.setService(service);
+                jsd.setServiceDetail(detail);
+                jobDetails.add(jsd);
+            }
+
+            // Tính phụ phí
+            DayOfWeek day = jobTime.getDayOfWeek();
+            int hour = jobTime.getHour();
+            double priceIncrease = 0;
+            if (day == DayOfWeek.SATURDAY || day == DayOfWeek.SUNDAY) {
+                if (hour >= 18 && hour < 22) priceIncrease = 0.2;
+            } else {
+                if (hour >= 18 && hour < 22) priceIncrease = 0.1;
+            }
+            if (priceIncrease > 0) {
+                totalPrice += totalPrice * priceIncrease;
+            }
+
+            job.setTotalPrice(totalPrice);
+            grandTotalPrice += totalPrice;
+            allJobs.add(job);
+            allDetails.addAll(jobDetails);
+        }
+
+        // Xử lý thanh toán
+        if ("wallet".equalsIgnoreCase(request.getPaymentMethod())) {
+            Optional<CustomerWallet> walletOpt = customerWalletRepository.findByCustomerId(customerId);
+            if (!walletOpt.isPresent()) {
+                response.put("message", "Customer wallet not found");
+                return response;
+            }
+            CustomerWallet wallet = walletOpt.get();
+            if (wallet.getBalance() < grandTotalPrice) {
+                response.put("message", "Không đủ tiền trong ví");
+                return response;
+            }
+
+            wallet.setBalance(wallet.getBalance() - grandTotalPrice);
+            customerWalletRepository.save(wallet);
+
+            TransactionHistory tx = new TransactionHistory();
+            tx.setCustomer(customer);
+            tx.setAmount(grandTotalPrice);
+            tx.setTransactionType("BOOKING");
+            tx.setPaymentMethod("WALLET");
+            tx.setStatus("SUCCESS");
+            transactionHistoryRepository.save(tx);
+
+            for (Job job : allJobs) job.setStatus(JobStatus.OPEN);
+
+        } else if ("vnpay".equalsIgnoreCase(request.getPaymentMethod())) {
+            for (Job job : allJobs) job.setStatus(JobStatus.PAID);
+        } else {
+            response.put("message", "Phương thức thanh toán không hợp lệ");
+            return response;
+        }
+
+        // Save jobs and job details
+        jobRepository.saveAll(allJobs);
+        for (JobServiceDetail detail : allDetails) {
+            Job matchedJob = allJobs.stream()
+                    .filter(j -> j.getScheduledTime().equals(detail.getJob().getScheduledTime()))
+                    .findFirst().get();
+            detail.setJob(matchedJob);
+        }
+        jobServiceDetailRepository.saveAll(allDetails);
+
+        // Xử lý thanh toán VNPay
+        if ("vnpay".equalsIgnoreCase(request.getPaymentMethod())) {
+            try {
+                VnpayRequest vnpayRequest = new VnpayRequest();
+                long amount = (long) (grandTotalPrice);
+                vnpayRequest.setAmount(String.valueOf(amount));
+
+                String paymentUrl = vnpayService.createPayment(vnpayRequest, requestIp);
+                String txnRef = extractTxnRefFromUrl(paymentUrl);
+
+                for (Job job : allJobs) {
+                    job.setTxnRef(txnRef);
+                }
+                jobRepository.saveAll(allJobs); // Cập nhật txnRef
+
+                response.put("paymentUrl", paymentUrl);
+            } catch (Exception e) {
+                response.put("message", "Failed to create payment through VNPay: " + e.getMessage());
+                return response;
+            }
+        }
+
+        // Notification
+        NotificationDTO noti = new NotificationDTO();
+        noti.setUserId(Math.toIntExact(customerId));
+        noti.setMessage("Đặt nhiều lịch dọn dẹp thành công");
+        noti.setType("AUTO_MESSAGE");
+        noti.setTimestamp(LocalDate.now());
+        noti.setRead(false);
+        notificationService.processNotification(noti, "CUSTOMER", Math.toIntExact(customerId));
+
+        response.put("message", "Đặt lịch thành công");
+        response.put("orderCode", orderCode);
+        response.put("jobGroupCode", jobGroupCode);
+        response.put("totalJobs", allJobs.size());
+        response.put("totalPrice", grandTotalPrice);
+
+        return response;
+    }
 
 
 
@@ -536,92 +706,261 @@ public class JobService {
 
     // list tất cả job đã book
     public List<Map<String, Object>> getBookedJobsForCustomer(Long customerId) {
-        List<Map<String, Object>> bookedJobs = new ArrayList<Map<String,Object>>();
-
-        // Lấy tất cả các job mà customer đã đặt
+        List<Map<String, Object>> bookedJobs = new ArrayList<>();
         List<Job> jobs = jobRepository.findByCustomerId(customerId);
+        jobs.sort((job1, job2) -> {
+            int cmp = job2.getUpdatedAt().compareTo(job1.getUpdatedAt());
+            return (cmp != 0) ? cmp : job2.getScheduledTime().compareTo(job1.getScheduledTime());
+        });
 
-        // Sắp xếp các công việc theo scheduledTime giảm dần (công việc mới nhất sẽ được hiện đầu tiên)
-        jobs.sort((job1, job2) -> job2.getScheduledTime().compareTo(job1.getScheduledTime()));
+
+
+        Map<String, Map<String, Object>> jobGroupMap = new LinkedHashMap<>();
 
         for (Job job : jobs) {
-            Map<String, Object> jobInfo = new HashMap<>();
+            String groupKey = (job.getJobGroupCode() != null) ? job.getJobGroupCode() : "JOB-" + job.getId();
 
-            // Thêm các thông tin chi tiết của job vào jobInfo
-            jobInfo.put("jobId", job.getId());
-            jobInfo.put("orderCode", job.getOrderCode());  // Thêm order_code
-            jobInfo.put("scheduledTime", job.getScheduledTime());  // Thời gian
-            jobInfo.put("customerAddress", job.getCustomerAddress().getAddress());  // Địa chỉ
-            jobInfo.put("status", job.getStatus());  // Trạng thái
-            jobInfo.put("totalPrice", job.getTotalPrice());  // Giá
+            Map<String, Object> jobInfo = jobGroupMap.getOrDefault(groupKey, new HashMap<>());
 
-            // Thêm thông tin về customer đã đặt job
-            Customers customer = job.getCustomer();
-            if (customer != null) {
-                jobInfo.put("customerId", customer.getId());
-                jobInfo.put("customerName", customer.getFull_name());
-                jobInfo.put("customerPhone", customer.getPhone());
+            if (jobInfo.isEmpty()) {
+                jobInfo.put("jobId", (job.getJobGroupCode() != null) ? job.getJobGroupCode() : job.getId());
+                jobInfo.put("orderCode", job.getOrderCode());
+                jobInfo.put("scheduledTime", job.getScheduledTime());
+                jobInfo.put("status", job.getStatus());
+                jobInfo.put("totalPrice", 0.0);
+                jobInfo.put("services", new ArrayList<Map<String, Object>>());
+                jobInfo.put("subJobs", new ArrayList<Map<String, Object>>());
+
+
+                jobInfo.put("booking_type", job.getBookingType());
+
+                if (job.getCustomerAddress() != null) {
+                    jobInfo.put("customerAddress", job.getCustomerAddress().getAddress());
+                    jobInfo.put("customerAddressId", job.getCustomerAddress().getId());
+                    jobInfo.put("latitude", job.getCustomerAddress().getLatitude());
+                    jobInfo.put("longitude", job.getCustomerAddress().getLongitude());
+                }
+
+                if (job.getCustomer() != null) {
+                    jobInfo.put("customerId", job.getCustomer().getId());
+                    jobInfo.put("customerName", job.getCustomer().getFull_name());
+                    jobInfo.put("customerPhone", job.getCustomer().getPhone());
+                }
             }
 
-            // Thêm thông tin về địa chỉ của customer
-            CustomerAddresses customerAddress = job.getCustomerAddress();
-            if (customerAddress != null) {
-                jobInfo.put("customerAddressId", customerAddress.getId());
-                jobInfo.put("customerAddress", customerAddress.getAddress());
-                jobInfo.put("latitude", customerAddress.getLatitude());
-                jobInfo.put("longitude", customerAddress.getLongitude());
+            // Cộng tổng giá tiền
+            Double currentTotal = (Double) jobInfo.get("totalPrice");
+            jobInfo.put("totalPrice", currentTotal + job.getTotalPrice());
+
+            // Cập nhật thời gian sớm nhất
+            LocalDateTime currentTime = (LocalDateTime) jobInfo.get("scheduledTime");
+            if (job.getScheduledTime().isBefore(currentTime)) {
+                jobInfo.put("scheduledTime", job.getScheduledTime());
             }
 
-            // Lấy tất cả các JobServiceDetail cho job này
+            // Gộp dịch vụ vào list tổng
             List<JobServiceDetail> jobServiceDetails = jobServiceDetailRepository.findByJobId(job.getId());
-            if (jobServiceDetails != null && !jobServiceDetails.isEmpty()) {
-                List<Map<String, Object>> serviceList = new ArrayList<>();
+            List<Map<String, Object>> overallServiceList = (List<Map<String, Object>>) jobInfo.get("services");
+            List<Map<String, Object>> subJobServices = new ArrayList<>();
 
-                // Duyệt qua tất cả các dịch vụ trong bảng job_service_detail
-                for (JobServiceDetail jobServiceDetail : jobServiceDetails) {
-                    Services service = jobServiceDetail.getService();
-                    if (service != null) {
-                        Map<String, Object> serviceInfo = new HashMap<>();
-                        serviceInfo.put("serviceName", service.getName());
-                        serviceInfo.put("serviceDescription", service.getDescription());
+            for (JobServiceDetail jobServiceDetail : jobServiceDetails) {
+                Services service = jobServiceDetail.getService();
+                if (service != null) {
+                    Map<String, Object> serviceInfo = new HashMap<>();
+                    serviceInfo.put("serviceName", service.getName());
+                    serviceInfo.put("serviceDescription", service.getDescription());
 
-                        // Lấy các chi tiết dịch vụ
-                        ServiceDetail serviceDetail = jobServiceDetail.getServiceDetail();
-                        if (serviceDetail != null) {
-                            serviceInfo.put("serviceDetailId", serviceDetail.getId());
-                            serviceInfo.put("serviceDetailName", serviceDetail.getName());
-                            serviceInfo.put("serviceDetailPrice", serviceDetail.getPrice());
-                            serviceInfo.put("serviceDetailAdditionalPrice", serviceDetail.getAdditionalPrice());
-                            serviceInfo.put("serviceDetailAreaRange", serviceDetail.getAreaRange());
-                            serviceInfo.put("serviceDetailDescription", serviceDetail.getDescription());
-                            serviceInfo.put("serviceDetailDiscounts", serviceDetail.getDiscounts());
-                        }
-
-                        serviceList.add(serviceInfo);
+                    ServiceDetail serviceDetail = jobServiceDetail.getServiceDetail();
+                    if (serviceDetail != null) {
+                        serviceInfo.put("serviceDetailId", serviceDetail.getId());
+                        serviceInfo.put("serviceDetailName", serviceDetail.getName());
+                        serviceInfo.put("serviceDetailPrice", serviceDetail.getPrice());
+                        serviceInfo.put("serviceDetailAdditionalPrice", serviceDetail.getAdditionalPrice());
+                        serviceInfo.put("serviceDetailAreaRange", serviceDetail.getAreaRange());
+                        serviceInfo.put("serviceDetailDescription", serviceDetail.getDescription());
+                        serviceInfo.put("serviceDetailDiscounts", serviceDetail.getDiscounts());
                     }
-                }
 
-                // Thêm thông tin dịch vụ vào jobInfo
-                jobInfo.put("services", serviceList);
-            } else {
-                jobInfo.put("services", "No services found for this job");
+                    subJobServices.add(serviceInfo);
+                    overallServiceList.add(serviceInfo); // Optional: comment this if you don’t want duplicates
+                }
             }
 
-            // Lấy thông tin cleaner đã nhận công việc này (nếu có)
+            // Thêm sub-job vào mảng phụ bên trong
+            List<Map<String, Object>> subJobs = (List<Map<String, Object>>) jobInfo.get("subJobs");
+
+            Map<String, Object> subJobInfo = new HashMap<>();
+            subJobInfo.put("jobId", job.getId());
+            subJobInfo.put("scheduledTime", job.getScheduledTime());
+            subJobInfo.put("status", job.getStatus());
+            subJobInfo.put("totalPrice", job.getTotalPrice());
+            subJobInfo.put("services", subJobServices);
+
+            // Ghi nhận cleaner nếu có
             JobApplication jobApplication = jobApplicationRepository.findByJobIdAndStatus(job.getId(), "Accepted");
-            if (jobApplication != null) {
-                Employee cleaner = jobApplication.getCleaner();
-                if (cleaner != null) {
-                    jobInfo.put("cleanerId", cleaner.getId());
-                }
+            if (jobApplication != null && jobApplication.getCleaner() != null) {
+                subJobInfo.put("cleanerId", jobApplication.getCleaner().getId());
+                jobInfo.put("cleanerId", jobApplication.getCleaner().getId()); // Gán cho toàn nhóm
             }
 
-            bookedJobs.add(jobInfo);
+            subJobs.add(subJobInfo);
+            jobGroupMap.put(groupKey, jobInfo);
         }
 
-        return bookedJobs;
+        return new ArrayList<>(jobGroupMap.values());
     }
 
+
+
+
+    // xem detail job
+    public Map<String, Object> getJobDetails(String jobIdOrGroupCode) {
+        Map<String, Object> jobInfo = new HashMap<>();
+
+        // Nếu là số -> thử parse thành Long để tìm theo jobId
+        if (jobIdOrGroupCode.matches("\\d+")) {
+            Long jobId = Long.valueOf(jobIdOrGroupCode);
+            Optional<Job> jobOpt = jobRepository.findById(jobId);
+
+            if (jobOpt.isPresent()) {
+                Job job = jobOpt.get();
+
+                // Nếu không có job_group_code, là job đơn
+                if (job.getJobGroupCode() == null) {
+                    return buildJobDetail(job);
+                } else {
+                    // Là job con trong 1 nhóm → truy ra toàn bộ job cùng group
+                    jobIdOrGroupCode = job.getJobGroupCode(); // chuyển qua xử lý group code
+                }
+            }
+        }
+
+        // Đến đây chắc chắn là xử lý theo group code
+        List<Job> groupJobs = jobRepository.findByJobGroupCode(jobIdOrGroupCode);
+        if (groupJobs == null || groupJobs.isEmpty()) {
+            throw new NoSuchElementException("Job or Job Group not found");
+        }
+
+        Job firstJob = groupJobs.get(0); // dùng để lấy thông tin chung
+        jobInfo.put("jobId", jobIdOrGroupCode);
+        jobInfo.put("orderCode", firstJob.getOrderCode());
+        jobInfo.put("scheduledTime", firstJob.getScheduledTime());
+        jobInfo.put("status", firstJob.getStatus());
+        jobInfo.put("totalPrice", 0.0);
+        jobInfo.put("services", new ArrayList<>());
+        jobInfo.put("subJobs", new ArrayList<>());
+
+        if (firstJob.getCustomerAddress() != null) {
+            jobInfo.put("customerAddress", firstJob.getCustomerAddress().getAddress());
+            jobInfo.put("customerAddressId", firstJob.getCustomerAddress().getId());
+            jobInfo.put("latitude", firstJob.getCustomerAddress().getLatitude());
+            jobInfo.put("longitude", firstJob.getCustomerAddress().getLongitude());
+        }
+
+        if (firstJob.getCustomer() != null) {
+            jobInfo.put("customerId", firstJob.getCustomer().getId());
+            jobInfo.put("customerName", firstJob.getCustomer().getFull_name());
+            jobInfo.put("customerPhone", firstJob.getCustomer().getPhone());
+        }
+
+        Double totalPrice = 0.0;
+        List<Map<String, Object>> overallServices = (List<Map<String, Object>>) jobInfo.get("services");
+        List<Map<String, Object>> subJobs = (List<Map<String, Object>>) jobInfo.get("subJobs");
+
+        for (Job j : groupJobs) {
+            totalPrice += j.getTotalPrice();
+
+            List<Map<String, Object>> subServices = new ArrayList<>();
+            List<JobServiceDetail> jobServiceDetails = jobServiceDetailRepository.findByJobId(j.getId());
+            for (JobServiceDetail detail : jobServiceDetails) {
+                Map<String, Object> serviceMap = buildServiceInfo(detail);
+                subServices.add(serviceMap);
+                overallServices.add(serviceMap); // Optional
+            }
+
+            Map<String, Object> subJob = new HashMap<>();
+            subJob.put("jobId", j.getId());
+            subJob.put("scheduledTime", j.getScheduledTime());
+            subJob.put("status", j.getStatus());
+            subJob.put("totalPrice", j.getTotalPrice());
+            subJob.put("services", subServices);
+
+            JobApplication jobApp = jobApplicationRepository.findByJobIdAndStatus(j.getId(), "Accepted");
+            if (jobApp != null && jobApp.getCleaner() != null) {
+                subJob.put("cleanerId", jobApp.getCleaner().getId());
+                jobInfo.put("cleanerId", jobApp.getCleaner().getId());
+            }
+
+            subJobs.add(subJob);
+        }
+
+        jobInfo.put("totalPrice", totalPrice);
+        return jobInfo;
+    }
+
+
+
+
+    private Map<String, Object> buildJobDetail(Job job) {
+        Map<String, Object> jobInfo = new HashMap<>();
+        jobInfo.put("jobId", job.getId());
+        jobInfo.put("orderCode", job.getOrderCode());
+        jobInfo.put("scheduledTime", job.getScheduledTime());
+        jobInfo.put("status", job.getStatus());
+        jobInfo.put("totalPrice", job.getTotalPrice());
+
+        if (job.getCustomer() != null) {
+            jobInfo.put("customerId", job.getCustomer().getId());
+            jobInfo.put("customerName", job.getCustomer().getFull_name());
+            jobInfo.put("customerPhone", job.getCustomer().getPhone());
+        }
+
+        if (job.getCustomerAddress() != null) {
+            jobInfo.put("customerAddressId", job.getCustomerAddress().getId());
+            jobInfo.put("customerAddress", job.getCustomerAddress().getAddress());
+            jobInfo.put("latitude", job.getCustomerAddress().getLatitude());
+            jobInfo.put("longitude", job.getCustomerAddress().getLongitude());
+        }
+
+        List<JobServiceDetail> jobServiceDetails = jobServiceDetailRepository.findByJobId(job.getId());
+        List<Map<String, Object>> serviceList = new ArrayList<>();
+
+        for (JobServiceDetail detail : jobServiceDetails) {
+            serviceList.add(buildServiceInfo(detail));
+        }
+
+        jobInfo.put("services", serviceList);
+
+        JobApplication jobApp = jobApplicationRepository.findByJobIdAndStatus(job.getId(), "Accepted");
+        if (jobApp != null && jobApp.getCleaner() != null) {
+            jobInfo.put("cleanerId", jobApp.getCleaner().getId());
+        }
+
+        return jobInfo;
+    }
+
+    private Map<String, Object> buildServiceInfo(JobServiceDetail detail) {
+        Map<String, Object> serviceInfo = new HashMap<>();
+
+        Services service = detail.getService();
+        if (service != null) {
+            serviceInfo.put("serviceName", service.getName());
+            serviceInfo.put("serviceDescription", service.getDescription());
+        }
+
+        ServiceDetail sd = detail.getServiceDetail();
+        if (sd != null) {
+            serviceInfo.put("serviceDetailId", sd.getId());
+            serviceInfo.put("serviceDetailName", sd.getName());
+            serviceInfo.put("serviceDetailPrice", sd.getPrice());
+            serviceInfo.put("serviceDetailAdditionalPrice", sd.getAdditionalPrice());
+            serviceInfo.put("serviceDetailAreaRange", sd.getAreaRange());
+            serviceInfo.put("serviceDetailDescription", sd.getDescription());
+            serviceInfo.put("serviceDetailDiscounts", sd.getDiscounts());
+        }
+
+        return serviceInfo;
+    }
 
 
 

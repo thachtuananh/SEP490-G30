@@ -74,8 +74,20 @@ public class Job {
     @Column(name = "job_type")
     private String jobType;
 
+    @Column(name = "job_group_code")
+    private String jobGroupCode;
+
+
     // Getters and Setters
 
+
+    public String getJobGroupCode() {
+        return jobGroupCode;
+    }
+
+    public void setJobGroupCode(String jobGroupCode) {
+        this.jobGroupCode = jobGroupCode;
+    }
 
     public String getJobType() {
         return jobType;
