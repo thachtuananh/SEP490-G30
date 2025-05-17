@@ -1,5 +1,6 @@
 package com.example.homecleanapi.controllers;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
@@ -7,6 +8,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import com.example.homecleanapi.dtos.NotificationDTO;
+import com.example.homecleanapi.services.NotificationService;
 import com.example.homecleanapi.services.WalletService;
 import com.example.homecleanapi.models.AdminTransactionHistory;
 import com.example.homecleanapi.models.TransactionHistory;
@@ -42,6 +45,8 @@ public class WalletController {
     private TransactionHistoryRepository transactionHistoryRepository;
     @Autowired
     private AdminTransactionHistoryRepository adminTransactionHistoryRepository;
+    @Autowired
+    private NotificationService notificationService;
 
 
     @GetMapping("/{cleanerId}/wallet")
@@ -244,6 +249,14 @@ public class WalletController {
             if ("vnpay".equalsIgnoreCase(paymentMethod)) {
                 // Xử lý thanh toán qua VNPay
                 Map<String, Object> response = walletService.depositMoney(customerId, amount, request);
+                String message = "Bạn đã nạp tiền vào ví thành công";
+                NotificationDTO customerNotification = new NotificationDTO();
+                customerNotification.setUserId(Math.toIntExact(customerId));
+                customerNotification.setMessage(message);
+                customerNotification.setType("AUTO_MESSAGE");
+                customerNotification.setTimestamp(LocalDate.now());
+                customerNotification.setRead(false); // ✅ set read = false
+                notificationService.processNotification(customerNotification, "CUSTOMER", Math.toIntExact(customerId));
                 return ResponseEntity.ok(response);
 //                return ResponseEntity.ok(response);
             }else {

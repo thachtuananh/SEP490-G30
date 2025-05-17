@@ -21,7 +21,7 @@ import jakarta.servlet.http.HttpServletRequest;
 public class VnpayConfig {
 
     public static String vnp_PayUrl = "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
-    public static String vnp_ReturnUrl = "https://turkish-content-correction-literally.trycloudflare.com/api/vnpayment/return";       // trang phía client
+    public static String vnp_ReturnUrl = "https://api.homeclean.site/api/vnpayment/return";       // trang phía client
     //public static String vnp_ReturnUrl = "http://localhost:8080/api/cleaner/return";
     // #vnpay
     public static String vnp_TmnCode = "900XO632";

@@ -81,7 +81,7 @@ public class AdminCleanerService {
         if (request.getName() != null) cleaner.setName(request.getName());
         if (request.getPhone() != null) cleaner.setPhone(request.getPhone());
         if (request.getEmail() != null) cleaner.setEmail(request.getEmail());
-        if (request.getAddress() != null) cleaner.setAddress(request.getAddress());
+//        if (request.getAddress() != null) cleaner.setAddress(request.getAddress());
         if (request.getAge() != null) cleaner.setAge(request.getAge());
         if (request.getIdentityNumber() != null) cleaner.setIdentityNumber(request.getIdentityNumber());
         if (request.getExperience() != null) cleaner.setExperience(request.getExperience());
@@ -94,15 +94,15 @@ public class AdminCleanerService {
             cleaner.setPassword(passwordEncoder.encode(request.getPassword()));
         }
 
-        // Nếu có ảnh base64
-        if (request.getProfileImageBase64() != null && !request.getProfileImageBase64().isEmpty()) {
-            try {
-                byte[] imageBytes = Base64.getDecoder().decode(request.getProfileImageBase64());
-                cleaner.setProfile_image(imageBytes);
-            } catch (IllegalArgumentException e) {
-                return ResponseEntity.badRequest().body(Map.of("message", "Ảnh đại diện không hợp lệ (Base64)"));
-            }
-        }
+//        // Nếu có ảnh base64
+//        if (request.getProfileImageBase64() != null && !request.getProfileImageBase64().isEmpty()) {
+//            try {
+//                byte[] imageBytes = Base64.getDecoder().decode(request.getProfileImageBase64());
+//                cleaner.setProfile_image(imageBytes);
+//            } catch (IllegalArgumentException e) {
+//                return ResponseEntity.badRequest().body(Map.of("message", "Ảnh đại diện không hợp lệ (Base64)"));
+//            }
+//        }
 
         cleaner.setUpdated_at(LocalDateTime.now());
         cleanerRepository.save(cleaner);

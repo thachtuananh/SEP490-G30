@@ -300,11 +300,7 @@ public class JobService {
 
 
     // tạo job gồm nhiều dịch vụ + nhều thời điểm khác nhau
-    public Map<String, Object> bookMultiJob(
-            @PathVariable Long customerId,
-            @RequestBody BookMultiJobRequest request,
-            HttpServletRequest requestIp
-    ) {
+    public Map<String, Object> bookMultiJob(@PathVariable Long customerId, @RequestBody BookMultiJobRequest request, HttpServletRequest requestIp) {
         Map<String, Object> response = new HashMap<>();
 
         Optional<Customers> customerOpt = customerRepo.findById(customerId);
@@ -315,7 +311,6 @@ public class JobService {
         Customers customer = customerOpt.get();
 
         Optional<CustomerAddresses> customerAddressOpt = customerAddressRepository.findById(request.getCustomerAddressId().intValue());
-
         if (!customerAddressOpt.isPresent()) {
             response.put("message", "Customer address not found");
             return response;
@@ -425,15 +420,37 @@ public class JobService {
             return response;
         }
 
-        // Save jobs & details
+        // Save jobs and job details
         jobRepository.saveAll(allJobs);
         for (JobServiceDetail detail : allDetails) {
-            Job savedJob = allJobs.stream()
+            Job matchedJob = allJobs.stream()
                     .filter(j -> j.getScheduledTime().equals(detail.getJob().getScheduledTime()))
                     .findFirst().get();
-            detail.setJob(savedJob);
+            detail.setJob(matchedJob);
         }
         jobServiceDetailRepository.saveAll(allDetails);
+
+        // Xử lý thanh toán VNPay
+        if ("vnpay".equalsIgnoreCase(request.getPaymentMethod())) {
+            try {
+                VnpayRequest vnpayRequest = new VnpayRequest();
+                long amount = (long) (grandTotalPrice);
+                vnpayRequest.setAmount(String.valueOf(amount));
+
+                String paymentUrl = vnpayService.createPayment(vnpayRequest, requestIp);
+                String txnRef = extractTxnRefFromUrl(paymentUrl);
+
+                for (Job job : allJobs) {
+                    job.setTxnRef(txnRef);
+                }
+                jobRepository.saveAll(allJobs); // Cập nhật txnRef
+
+                response.put("paymentUrl", paymentUrl);
+            } catch (Exception e) {
+                response.put("message", "Failed to create payment through VNPay: " + e.getMessage());
+                return response;
+            }
+        }
 
         // Notification
         NotificationDTO noti = new NotificationDTO();
@@ -452,6 +469,7 @@ public class JobService {
 
         return response;
     }
+
 
 
 
@@ -640,7 +658,11 @@ public class JobService {
         // Tính toán số tiền sẽ trả cho cleaner (85% tổng giá trị đơn hàng)
         double totalPrice = job.getTotalPrice();
         double cleanerPayment = totalPrice * 0.85;
-
+        Optional<JobServiceDetail> jobServiceDetail = jobDetailsRepository.findByJob_id(jobId);
+        if (!jobServiceDetail.isPresent()) {
+            response.put("message", "Job detail not found");
+            return response;
+        }
         // Lấy ví của cleaner
         Optional<Wallet> walletOpt = walletRepository.findByCleanerId(cleaner.getId());
         if (!walletOpt.isPresent()) {
@@ -661,7 +683,14 @@ public class JobService {
         txn.setStatus("SUCCESS");
 
         transactionHistoryRepository.save(txn);
-
+        String message = "Chủ nhà " + job.getCustomer().getFull_name() + "đã xác nhận bạn hoàn thành công việc" + jobServiceDetail.get().getService().getName() + job.getScheduledTime() + "Vui lòng kiểm tra ví.";
+        NotificationDTO customerNotification = new NotificationDTO();
+        customerNotification.setUserId(cleaner.getId());
+        customerNotification.setMessage(message);
+        customerNotification.setType("AUTO_MESSAGE");
+        customerNotification.setTimestamp(LocalDate.now());
+        customerNotification.setRead(false); // ✅ set read = false
+        notificationService.processNotification(customerNotification, "CLEANER", cleaner.getId());
         response.put("message", "Job status updated to DONE, and cleaner's wallet has been credited with 85% of the job value");
         return response;
     }
