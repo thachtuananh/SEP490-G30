@@ -79,5 +79,7 @@ public interface JobRepository extends JpaRepository<Job, Long> {
     @Query("SELECT j FROM Job j WHERE j.id = :id")
     Optional<Job> findByIdWithLock(@Param("id") Long id);
 
+    List<Job> findByJobGroupCode(String jobGroupCode);
+
 }
 
