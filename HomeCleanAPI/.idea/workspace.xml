@@ -5,26 +5,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="6dd32c25-99a1-4da0-a769-374f6713cd9c" name="Changes" comment="Hot fix JWT author">
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/dtos/CustomerUpdateProfile.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/Gemini/GeminiConsultationController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/Gemini/GeminiConsultationController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/Gemini/GeminiService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/Gemini/GeminiService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/controllers/CustomerController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/controllers/CustomerController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/controllers/WalletController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/controllers/WalletController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/dtos/CleanerProfileRequest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/dtos/CleanerProfileRequest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/models/Customers.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/models/Customers.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/paymentForWallets/VnpayConfigWallet.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/paymentForWallets/VnpayConfigWallet.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/repositories/JobDetailsRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/repositories/JobDetailsRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/security/SecurityConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/security/SecurityConfig.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/services/AdminCleanerService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/services/AdminCleanerService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/services/CleanerJobService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/services/CleanerJobService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/services/CustomerAuthService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/services/CustomerAuthService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/services/CustomerService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/services/CustomerService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/services/JobService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/services/JobService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/services/ScheduleService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/services/ScheduleService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/services/WithdrawalRequestService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/services/WithdrawalRequestService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/utils/OpenAPIConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/utils/OpenAPIConfig.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/vnPay/VnpayConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/vnPay/VnpayConfig.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/repositories/JobRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/repositories/JobRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/vnPay/VnpayController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/vnPay/VnpayController.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -86,7 +69,7 @@
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.git.unshallow": "true",
     "Spring Boot.HomeCleanApiApplication.executor": "Run",
-    "git-widget-placeholder": "Merging manhtt/ver2-updateJob",
+    "git-widget-placeholder": "manhtt/ver2-updateJob",
     "kotlin-language-version-configured": "true",
     "last_opened_file_path": "D:/FPT",
     "node.js.detected.package.eslint": "true",
