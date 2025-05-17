@@ -106,7 +106,7 @@ const JobInfomation = ({
             currentTime,
             "minute"
           )} phút nữa. 
-                             Nhân công có thể không kịp nhận việc. Bạn có muốn tiếp tục?`,
+                             Người dọn dẹp có thể không kịp nhận việc. Bạn có muốn tiếp tục?`,
           okText: "Tiếp tục",
           cancelText: "Hủy",
           onOk: () => resolve(true),

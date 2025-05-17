@@ -9,6 +9,13 @@ import styles from "../../components/activity/FeedbackModal.module.css";
 
 const { TextArea } = Input;
 
+const customRateStyles = `
+  .ant-rate-star:not(.ant-rate-star-full) .ant-rate-star-first,
+  .ant-rate-star:not(.ant-rate-star-full) .ant-rate-star-second {
+    color: grey; /* Grey color for empty stars */
+  }
+`;
+
 export const FeedbackModal = ({ visible, jobId, cleanerId, onClose }) => {
   const [feedback, setFeedback] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -17,10 +24,13 @@ export const FeedbackModal = ({ visible, jobId, cleanerId, onClose }) => {
 
   // Fetch feedback when modal is opened
   useEffect(() => {
-    if (visible && jobId) {
+    if (visible && jobId && cleanerId) {
+      // Reset state completely when opening modal
+      setFeedback(null);
+      form.resetFields();
       loadFeedback();
     }
-  }, [visible, jobId]);
+  }, [visible, jobId, cleanerId]);
 
   // Load feedback data
   const loadFeedback = async () => {
@@ -44,6 +54,7 @@ export const FeedbackModal = ({ visible, jobId, cleanerId, onClose }) => {
     } catch (error) {
       console.error("Lỗi khi tải đánh giá:", error);
       setFeedback(null);
+      form.resetFields();
       setEditing(true); // Auto switch to form mode on error
     } finally {
       setLoading(false);
@@ -186,7 +197,7 @@ export const FeedbackModal = ({ visible, jobId, cleanerId, onClose }) => {
           label="Đánh giá"
           rules={[{ required: true, message: "Vui lòng chọn số sao đánh giá" }]}
         >
-          <Rate />
+          <Rate className={styles.greyRate} />
         </Form.Item>
 
         <Form.Item name="comment" label="Nhận xét">
@@ -218,6 +229,7 @@ export const FeedbackModal = ({ visible, jobId, cleanerId, onClose }) => {
       footer={null}
       width={500}
     >
+      <style>{customRateStyles}</style>
       <div className={styles.modalContent}>
         {loading ? (
           <div className={styles.loadingContainer}>Đang tải...</div>

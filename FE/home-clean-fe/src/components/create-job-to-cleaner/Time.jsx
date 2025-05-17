@@ -248,7 +248,7 @@ const Time = ({ onTimeChange }) => {
       <div className={styles.phoneSection}>
         <div className={styles.phoneInfo}>
           <Title level={5}>Số điện thoại</Title>
-          <Paragraph>Nhân công sẽ liên hệ với bạn khi đến nơi</Paragraph>
+          <Paragraph>Người dọn dẹp sẽ liên hệ với bạn khi đến nơi</Paragraph>
         </div>
         <div className={styles.phoneContainer}>
           <Col flex="auto">

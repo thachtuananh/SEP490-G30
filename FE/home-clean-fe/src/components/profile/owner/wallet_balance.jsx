@@ -119,7 +119,7 @@ export const WalletBalance = () => {
         message.error(data.message || "Không thể lấy dữ liệu ví");
       }
     } catch (error) {
-      message.error("Lỗi khi tải dữ liệu ví");
+      // message.error("Lỗi khi tải dữ liệu ví");
     } finally {
       setLoading(false);
     }
@@ -175,10 +175,10 @@ export const WalletBalance = () => {
       if (response.ok && result.status === "OK") {
         setWithdrawalHistory(result.data || []);
       } else {
-        message.info(result.message || "Không có dữ liệu lịch sử rút tiền");
+        // message.info(result.message || "Không có dữ liệu lịch sử rút tiền");
       }
     } catch (error) {
-      message.error("Lỗi khi tải lịch sử rút tiền");
+      // message.error("Lỗi khi tải lịch sử rút tiền");
     } finally {
       setWithdrawalHistoryLoading(false);
     }

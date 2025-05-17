@@ -36,7 +36,7 @@ const InfomationCleaner = () => {
             message.error("Không thể lấy thông tin người dùng.");
           }
         } catch (error) {
-          message.error("Lỗi máy chủ, vui lòng thử lại sau.");
+          // message.error("Lỗi máy chủ, vui lòng thử lại sau.");
         }
       }
     };

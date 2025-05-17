@@ -173,7 +173,7 @@ const AddLocationModal = ({ setIsShowAddLocationModal, onAddressAdded }) => {
         message.error("Không thể thêm địa chỉ mới.");
       }
     } catch (error) {
-      message.error("Lỗi máy chủ, vui lòng thử lại sau.");
+      // message.error("Lỗi máy chủ, vui lòng thử lại sau.");
     } finally {
       setLoading(false);
     }

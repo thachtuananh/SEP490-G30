@@ -128,18 +128,18 @@ const TransactionHistory = ({ visible, onClose }) => {
         return " ";
       },
     },
-    {
-      title: "Khách hàng ID",
-      dataIndex: "customerId",
-      key: "customerId",
-      render: (id) => id || "-",
-    },
-    {
-      title: "Người dọn dẹp ID",
-      dataIndex: "cleanerId",
-      key: "cleanerId",
-      render: (id) => id || "-",
-    },
+    // {
+    //   title: "Khách hàng ID",
+    //   dataIndex: "customerId",
+    //   key: "customerId",
+    //   render: (id) => id || "-",
+    // },
+    // {
+    //   title: "Người dọn dẹp ID",
+    //   dataIndex: "cleanerId",
+    //   key: "cleanerId",
+    //   render: (id) => id || "-",
+    // },
     {
       title: "Phương thức",
       dataIndex: "paymentMethod",

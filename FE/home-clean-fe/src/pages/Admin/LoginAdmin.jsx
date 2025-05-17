@@ -66,7 +66,7 @@ function LoginAdmin() {
         setErrorMessage(result.message || "Đăng nhập thất bại.");
       }
     } catch (error) {
-      setErrorMessage("Lỗi máy chủ, vui lòng thử lại sau.");
+      // setErrorMessage("Lỗi máy chủ, vui lòng thử lại sau.");
     } finally {
       setLoading(false);
     }
