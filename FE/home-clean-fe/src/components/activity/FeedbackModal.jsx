@@ -9,6 +9,14 @@ import styles from "./FeedbackModal.module.css";
 
 const { TextArea } = Input;
 
+// Add this to your CSS file or include it directly here
+const customRateStyles = `
+  .ant-rate-star:not(.ant-rate-star-full) .ant-rate-star-first,
+  .ant-rate-star:not(.ant-rate-star-full) .ant-rate-star-second {
+    color: grey; /* Grey color for empty stars */
+  }
+`;
+
 export const FeedbackModal = ({ visible, jobId, customerId, onClose }) => {
   const [feedback, setFeedback] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -17,10 +25,13 @@ export const FeedbackModal = ({ visible, jobId, customerId, onClose }) => {
 
   // Fetch feedback when modal is opened
   useEffect(() => {
-    if (visible && jobId) {
+    if (visible && jobId && customerId) {
+      // Reset state completely when opening modal
+      setFeedback(null);
+      form.resetFields();
       loadFeedback();
     }
-  }, [visible, jobId]);
+  }, [visible, jobId, customerId]);
 
   // Load feedback data
   const loadFeedback = async () => {
@@ -28,21 +39,28 @@ export const FeedbackModal = ({ visible, jobId, customerId, onClose }) => {
     try {
       const result = await fetchFeedback(customerId, jobId);
       if (result.status === "OK" && result.feedback) {
+        // We have valid feedback data
         setFeedback(result.feedback);
         form.setFieldsValue({
           rating: result.feedback.rating,
           comment: result.feedback.comment,
         });
-        setEditing(false); // Ensure we display feedback if it exists
+        setEditing(false); // Show the existing feedback display
       } else {
+        // No feedback data or other non-error result
+        // Ensure we completely reset and show the add review form
         setFeedback(null);
-        form.resetFields();
-        setEditing(true); // Auto switch to form mode if no feedback exists
+        form.resetFields(); // Clear any existing form data
+        setEditing(true); // Switch to form mode to add new feedback
       }
     } catch (error) {
       console.error("Lỗi khi tải đánh giá:", error);
+
+      // For all errors including 404 NOT_FOUND case
+      // Ensure we completely reset and show the add review form
       setFeedback(null);
-      setEditing(true); // Auto switch to form mode on error
+      form.resetFields(); // Very important to clear any existing form data
+      setEditing(true); // Switch to edit mode to add new feedback
     } finally {
       setLoading(false);
     }
@@ -175,17 +193,14 @@ export const FeedbackModal = ({ visible, jobId, customerId, onClose }) => {
         form={form}
         onFinish={handleSubmit}
         layout="vertical"
-        initialValues={{
-          rating: feedback?.rating || 0,
-          comment: feedback?.comment || "",
-        }}
+        // Don't use initialValues here as they won't update when form.resetFields() is called
       >
         <Form.Item
           name="rating"
           label="Đánh giá"
           rules={[{ required: true, message: "Vui lòng chọn số sao đánh giá" }]}
         >
-          <Rate />
+          <Rate className={styles.greyRate} />
         </Form.Item>
 
         <Form.Item name="comment" label="Nhận xét">
@@ -217,6 +232,7 @@ export const FeedbackModal = ({ visible, jobId, customerId, onClose }) => {
       footer={null}
       width={500}
     >
+      <style>{customRateStyles}</style>
       <div className={styles.modalContent}>
         {loading ? (
           <div className={styles.loadingContainer}>Đang tải...</div>

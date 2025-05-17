@@ -586,7 +586,10 @@ function RegisterCleaner() {
                 type="primary"
                 htmlType="submit"
                 className="login-button"
-                onClick={handleSubmit}
+                onClick={() => {
+                  setOtpCode("");
+                  handleSubmit();
+                }}
                 loading={isLoading}
                 style={{
                   width: "100%",
@@ -631,7 +634,7 @@ function RegisterCleaner() {
           <Button
             key="submit"
             type="primary"
-            loading={isLoading}
+            disabled={isLoading}
             onClick={handleVerifyOtp}
           >
             Xác nhận

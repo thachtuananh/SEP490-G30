@@ -3,7 +3,12 @@
   /* border: 1px solid black; */
   padding: 40px 40px 10px 40px;
 }
-
+.loading_container {
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  display: flex;
+}
 .header {
   display: flex;
 }

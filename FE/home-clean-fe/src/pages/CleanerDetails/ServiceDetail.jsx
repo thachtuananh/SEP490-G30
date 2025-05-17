@@ -341,13 +341,13 @@ const ServiceDetailsCombo = () => {
     );
   };
 
-  if (loading) {
-    return (
-      <div className={styles.loadingContainer}>
-        <Spin size="large" tip="Đang tải..." />
-      </div>
-    );
-  }
+  // if (loading) {
+  //   return (
+  //     <div className={styles.loadingContainer}>
+  //       <Spin size="large" tip="Đang tải..." />
+  //     </div>
+  //   );
+  // }
 
   return (
     <div className={styles.pageContainerCombo}>

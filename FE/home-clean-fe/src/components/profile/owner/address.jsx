@@ -95,7 +95,7 @@ export const Address = () => {
           message.error("Không thể lấy danh sách địa chỉ.");
         }
       } catch (error) {
-        message.error("Lỗi máy chủ, vui lòng thử lại sau.");
+        // message.error("Lỗi máy chủ, vui lòng thử lại sau.");
       }
     }
   };
@@ -340,7 +340,7 @@ export const Address = () => {
         message.error("Không thể thêm địa chỉ mới.");
       }
     } catch (error) {
-      message.error("Lỗi máy chủ, vui lòng thử lại sau.");
+      // message.error("Lỗi máy chủ, vui lòng thử lại sau.");
     } finally {
       setLoading(false);
     }
@@ -374,7 +374,7 @@ export const Address = () => {
             message.error("Không thể xóa địa chỉ.");
           }
         } catch (error) {
-          message.error("Lỗi máy chủ, vui lòng thử lại sau.");
+          // message.error("Lỗi máy chủ, vui lòng thử lại sau.");
         }
       },
     });
@@ -421,7 +421,7 @@ export const Address = () => {
         }
       })
       .catch((error) => {
-        message.error("Lỗi máy chủ, vui lòng thử lại sau.");
+        // message.error("Lỗi máy chủ, vui lòng thử lại sau.");
       })
       .finally(() => {
         setLoading(false);
@@ -459,7 +459,7 @@ export const Address = () => {
         message.error("Không thể đặt địa chỉ mặc định.");
       }
     } catch (error) {
-      message.error("Lỗi máy chủ, vui lòng thử lại sau.");
+      // message.error("Lỗi máy chủ, vui lòng thử lại sau.");
     }
   };
 

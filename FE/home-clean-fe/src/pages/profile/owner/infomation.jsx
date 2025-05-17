@@ -36,7 +36,7 @@ const Infomation = () => {
             );
           }
         } catch (error) {
-          message.error("Lỗi máy chủ, vui lòng thử lại sau.");
+          // message.error("Lỗi máy chủ, vui lòng thử lại sau.");
         }
       }
     };

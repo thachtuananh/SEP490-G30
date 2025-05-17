@@ -109,13 +109,13 @@ const Notification = () => {
   };
 
   // Handle notification click
-  const handleNotificationClick = async () => {
-    if (role === "Customer") {
-      navigate("/activitylist");
-    } else if (role === "Employee") {
-      navigate("/homeclean/activityjob");
-    }
-  };
+  // const handleNotificationClick = async () => {
+  //   if (role === "Customer") {
+  //     navigate("/activitylist");
+  //   } else if (role === "Employee") {
+  //     navigate("/homeclean/activityjob");
+  //   }
+  // };
 
   // Check if a notification is unread (considering both isRead and read properties)
   const isNotificationUnread = (notification) => {
@@ -203,7 +203,7 @@ const Notification = () => {
                 className={`${styles.notification_item} ${
                   isNotificationUnread(item) ? styles.unread : ""
                 }`}
-                onClick={handleNotificationClick}
+                // onClick={handleNotificationClick}
                 style={{ cursor: "pointer" }}
               >
                 <List.Item.Meta

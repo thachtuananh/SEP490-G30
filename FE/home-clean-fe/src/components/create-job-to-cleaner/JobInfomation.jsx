@@ -108,7 +108,7 @@ const JobInfomation = ({
             currentTime,
             "minute"
           )} phút nữa. 
-                             Nhân công có thể không kịp nhận việc. Bạn có muốn tiếp tục?`,
+                             Người dọn dẹp có thể không kịp nhận việc. Bạn có muốn tiếp tục?`,
           okText: "Tiếp tục",
           cancelText: "Hủy",
           onOk: () => resolve(true),
@@ -202,7 +202,7 @@ const JobInfomation = ({
         );
       } else {
         console.error("No cleanerId found in state:", state);
-        message.error("Không thể tìm thấy thông tin nhân công!");
+        message.error("Không thể tìm thấy thông tin người dọn dẹp!");
         return;
       }
 
@@ -354,8 +354,8 @@ const JobInfomation = ({
           )}
         </Paragraph>
         <Paragraph className={styles.infoRow}>
-          <Text>Tên nhân công</Text>
-          <Text>{state.cleanerName || "Chưa chọn nhân công"}</Text>
+          <Text>Tên người dọn dẹp</Text>
+          <Text>{state.cleanerName || "Chưa chọn người dọn dẹp"}</Text>
         </Paragraph>
 
         <Paragraph className={styles.infoRow}>
