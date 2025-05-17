@@ -136,6 +136,7 @@ public class CustomerJobController {
         return ResponseEntity.ok(bookedJobs);
     }
 
+	// xem chi tiết job
 	@GetMapping("/{jobIdOrGroupCode}")
 	public ResponseEntity<?> getJobDetail(@PathVariable String jobIdOrGroupCode) {
 		try {

@@ -280,13 +280,13 @@ public class JobService {
             }
         }
 
-//        NotificationDTO customerNotification = new NotificationDTO();
-//        customerNotification.setUserId(job.getCustomer().getId());
-//        customerNotification.setMessage("Công việc đã được tạo thành công");
-//        customerNotification.setType("AUTO_MESSAGE");
-//        customerNotification.setTimestamp(LocalDate.now());
-//        customerNotification.setRead(false);
-//        notificationService.processNotification(customerNotification, "CUSTOMER", Math.toIntExact(customerId));
+        NotificationDTO customerNotification = new NotificationDTO();
+        customerNotification.setUserId(job.getCustomer().getId());
+        customerNotification.setMessage("Công việc đã được tạo thành công");
+        customerNotification.setType("AUTO_MESSAGE");
+        customerNotification.setTimestamp(LocalDate.now());
+        customerNotification.setRead(false);
+        notificationService.processNotification(customerNotification, "CUSTOMER", Math.toIntExact(customerId));
 
         response.put("message", "Đặt lịch thành công");
         response.put("jobId", job.getId());
@@ -435,14 +435,14 @@ public class JobService {
         }
         jobServiceDetailRepository.saveAll(allDetails);
 
-//        // Notification
-//        NotificationDTO noti = new NotificationDTO();
-//        noti.setUserId(Math.toIntExact(customerId));
-//        noti.setMessage("Đặt nhiều lịch dọn dẹp thành công");
-//        noti.setType("AUTO_MESSAGE");
-//        noti.setTimestamp(LocalDate.now());
-//        noti.setRead(false);
-//        notificationService.processNotification(noti, "CUSTOMER", Math.toIntExact(customerId));
+        // Notification
+        NotificationDTO noti = new NotificationDTO();
+        noti.setUserId(Math.toIntExact(customerId));
+        noti.setMessage("Đặt nhiều lịch dọn dẹp thành công");
+        noti.setType("AUTO_MESSAGE");
+        noti.setTimestamp(LocalDate.now());
+        noti.setRead(false);
+        notificationService.processNotification(noti, "CUSTOMER", Math.toIntExact(customerId));
 
         response.put("message", "Đặt lịch thành công");
         response.put("orderCode", orderCode);
@@ -676,7 +676,12 @@ public class JobService {
     public List<Map<String, Object>> getBookedJobsForCustomer(Long customerId) {
         List<Map<String, Object>> bookedJobs = new ArrayList<>();
         List<Job> jobs = jobRepository.findByCustomerId(customerId);
-        jobs.sort((job1, job2) -> job2.getScheduledTime().compareTo(job1.getScheduledTime()));
+        jobs.sort((job1, job2) -> {
+            int cmp = job2.getUpdatedAt().compareTo(job1.getUpdatedAt());
+            return (cmp != 0) ? cmp : job2.getScheduledTime().compareTo(job1.getScheduledTime());
+        });
+
+
 
         Map<String, Map<String, Object>> jobGroupMap = new LinkedHashMap<>();
 
@@ -693,6 +698,9 @@ public class JobService {
                 jobInfo.put("totalPrice", 0.0);
                 jobInfo.put("services", new ArrayList<Map<String, Object>>());
                 jobInfo.put("subJobs", new ArrayList<Map<String, Object>>());
+
+
+                jobInfo.put("booking_type", job.getBookingType());
 
                 if (job.getCustomerAddress() != null) {
                     jobInfo.put("customerAddress", job.getCustomerAddress().getAddress());
@@ -718,7 +726,7 @@ public class JobService {
                 jobInfo.put("scheduledTime", job.getScheduledTime());
             }
 
-            // Gộp dịch vụ vào list tổng (nếu cần)
+            // Gộp dịch vụ vào list tổng
             List<JobServiceDetail> jobServiceDetails = jobServiceDetailRepository.findByJobId(job.getId());
             List<Map<String, Object>> overallServiceList = (List<Map<String, Object>>) jobInfo.get("services");
             List<Map<String, Object>> subJobServices = new ArrayList<>();
@@ -769,6 +777,7 @@ public class JobService {
 
         return new ArrayList<>(jobGroupMap.values());
     }
+
 
 
 
