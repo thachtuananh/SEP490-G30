@@ -284,17 +284,17 @@ export const ReportModal = ({ visible, jobId, onClose }) => {
   // Render Create Report Form
   const renderCreateReportForm = () => {
     // If user has already submitted a report, show a message
-    if (hasSubmittedReport) {
-      return (
-        <Alert
-          message="Không thể tạo báo cáo mới"
-          description="Bạn đã gửi báo cáo cho công việc này rồi. Mỗi công việc chỉ được phép gửi một báo cáo."
-          type="warning"
-          showIcon
-          style={{ marginBottom: 16 }}
-        />
-      );
-    }
+    // if (hasSubmittedReport) {
+    //   return (
+    //     <Alert
+    //       message="Không thể tạo báo cáo mới"
+    //       description="Bạn đã gửi báo cáo cho công việc này rồi. Mỗi công việc chỉ được phép gửi một báo cáo."
+    //       type="warning"
+    //       showIcon
+    //       style={{ marginBottom: 16 }}
+    //     />
+    //   );
+    // }
 
     return (
       <Form
