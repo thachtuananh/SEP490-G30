@@ -73,9 +73,8 @@ const initialServices = [
   {
     id: 8,
     image: iconDinhKy,
-    title: "Dọn dẹp nhà theo định kỳ",
-    description:
-      "Vệ sinh nhà cửa định kỳ theo tuần/tháng, duy trì không gian sạch sẽ",
+    title: "Dọn dẹp ký túc xá, nhà trọ",
+    description: "Vệ sinh nhà cửa, dọn dẹp khu vực sinh hoạt chung",
     count: "0 việc làm",
   },
 ];

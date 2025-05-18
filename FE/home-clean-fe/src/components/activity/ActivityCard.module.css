@@ -21,6 +21,17 @@
 } */
 
 /* Progress Bar Styles */
+.subJobItem {
+  background-color: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 0px 20px rgba(0, 0, 0, 0.19);
+  transition: transform 0.2s ease;
+  margin-bottom: 20px;
+}
+.subJobItem:last-child {
+  margin-bottom: 0;
+}
 .progressContainer {
   background-color: #f7f9fc;
   border-radius: 8px;

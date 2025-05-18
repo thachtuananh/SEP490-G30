@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Form, message } from "antd";
+import { Form, message, Button } from "antd";
 import { useNavigate } from "react-router-dom";
 import styles from "./JobUpload.module.css";
 import JobUploadCard from "./JobUploadCard";
@@ -40,6 +40,7 @@ const JobUpload = () => {
   const [selectedServices, setSelectedServices] = useState([]);
   const [allServices, setAllServices] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isScheduleMode, setIsScheduleMode] = useState(false);
 
   // Define special services with custom identifiers that won't conflict with API data
   const comboService = {
@@ -61,9 +62,8 @@ const JobUpload = () => {
     {
       serviceId: "periodic",
       displayId: 8, // For icon mapping purposes
-      serviceName: "Dọn dẹp nhà theo định kỳ",
-      description:
-        "Vệ sinh nhà cửa định kỳ theo tuần/tháng, duy trì không gian sạch sẽ",
+      serviceName: "Dọn dẹp ký túc xá, nhà trọ",
+      description: "Vệ sinh nhà cửa, dọn dẹp khu vực sinh hoạt chung",
     },
   ];
 
@@ -110,24 +110,39 @@ const JobUpload = () => {
       !displayOnlyServices.some((dos) => dos.serviceId === service.serviceId)
   );
 
-  const showServiceModal = () => {
+  const showServiceModal = (isSchedule = false) => {
+    setIsScheduleMode(isSchedule);
     setIsServiceModalVisible(true);
   };
 
   const handleServiceCancel = () => {
     setIsServiceModalVisible(false);
+    setIsScheduleMode(false);
   };
 
   const handleServiceOk = () => {
     if (selectedServices.length > 0) {
       setIsServiceModalVisible(false);
-      // Navigate to the service details page instead of showing modal
-      navigate("/service-details-combo", {
-        state: {
-          selectedServices,
-          allServices,
-        },
-      });
+
+      // Navigate to different routes based on mode
+      if (isScheduleMode) {
+        navigate("/service-details-schedule", {
+          state: {
+            selectedServices,
+            allServices,
+          },
+        });
+      } else {
+        navigate("/service-details-combo", {
+          state: {
+            selectedServices,
+            allServices,
+          },
+        });
+      }
+
+      // Reset schedule mode
+      setIsScheduleMode(false);
     } else {
       message.error("Vui lòng chọn ít nhất một dịch vụ!");
     }
@@ -141,6 +156,10 @@ const JobUpload = () => {
         return [...prev, serviceId];
       }
     });
+  };
+
+  const handleScheduleClick = () => {
+    showServiceModal(true);
   };
 
   return (
@@ -181,6 +200,16 @@ const JobUpload = () => {
               displayId={service.displayId}
             />
           ))}
+        </section>
+        <section className={styles.servicesGrid}>
+          <p>Bạn muốn đặt dịch vụ theo lịch trình hàng tuần, tháng? </p>
+          <Button
+            type="link"
+            onClick={handleScheduleClick}
+            className={styles.comboButton}
+          >
+            Đặt dịch vụ theo lịch trình
+          </Button>
         </section>
       </div>
 
