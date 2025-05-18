@@ -704,7 +704,7 @@ const JobCard = ({ job, refreshJobs, isAppliedTab }) => {
                 <Button
                   className={styles.cancelBtn}
                   onClick={() => handleJobAction("reject")}
-                  loading={loading}
+                  disabled={loading}
                   // disabled={isProcessing}
                 >
                   Từ chối
@@ -712,8 +712,8 @@ const JobCard = ({ job, refreshJobs, isAppliedTab }) => {
                 <Button
                   className={styles.completeBtn}
                   onClick={() => handleJobAction("accept")}
-                  loading={loading}
-                  disabled={isProcessing}
+                  disabled={loading}
+                  // disabled={isProcessing}
                 >
                   Chấp nhận
                 </Button>
@@ -732,7 +732,7 @@ const JobCard = ({ job, refreshJobs, isAppliedTab }) => {
           <Button
             key="close"
             onClick={() => setCustomerDetailsVisible(false)}
-            disabled={isProcessing}
+            // disabled={isProcessing}
           >
             Đóng
           </Button>,
