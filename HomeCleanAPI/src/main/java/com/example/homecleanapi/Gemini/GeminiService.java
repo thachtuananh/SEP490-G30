@@ -23,7 +23,10 @@ public class GeminiService {
     private final RestTemplate restTemplate = new RestTemplate();
 
     public String askGemini(String prompt) {
-        Map<String, Object> message = Map.of("parts", List.of(Map.of("text", prompt)), "role", "user");
+        Map<String, Object> message = Map.of(
+                "parts", List.of(Map.of("text", prompt)),
+                "role", "user"
+        );
         Map<String, Object> body = Map.of("contents", List.of(message));
 
         HttpHeaders headers = new HttpHeaders();
@@ -36,18 +39,9 @@ public class GeminiService {
             String responseBody = response.getBody();
 
             ObjectMapper mapper = new ObjectMapper();
-            JsonNode root;
+            JsonNode root = mapper.readTree(responseBody);
 
-            try {
-                root = mapper.readTree(responseBody);
-            } catch (Exception e) {
-                // Nếu không parse được JSON, trả về dưới dạng text thuần
-                ObjectNode fallback = mapper.createObjectNode();
-                fallback.put("text", responseBody);
-                fallback.put("raw", "Không phải JSON hợp lệ");
-                return mapper.writeValueAsString(fallback);
-            }
-
+            // Trích xuất nội dung văn bản từ phần "candidates[0].content.parts[0].text"
             JsonNode textNode = root.path("candidates")
                     .path(0)
                     .path("content")
@@ -55,16 +49,16 @@ public class GeminiService {
                     .path(0)
                     .path("text");
 
-            String text = textNode.isMissingNode() ? "Không có phản hồi từ Gemini." : textNode.asText();
+            if (textNode.isMissingNode()) {
+                return "Không có phản hồi từ chatbot.";
+            }
 
-            ObjectNode result = mapper.createObjectNode();
-            result.put("text", text);
-            result.set("raw", root);
-            return mapper.writeValueAsString(result);
+            return textNode.asText();
 
         } catch (Exception e) {
-            return "{\"error\": \"Gemini API lỗi: " + e.getMessage() + "\"}";
+            return "Chatbot API lỗi: " + e.getMessage();
         }
     }
+
 
 }

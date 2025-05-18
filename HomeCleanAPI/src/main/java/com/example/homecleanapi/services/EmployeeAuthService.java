@@ -1,15 +1,15 @@
 package com.example.homecleanapi.services;
 
-import com.example.homecleanapi.models.CustomerWallet;
-import com.example.homecleanapi.models.Employee;
-import com.example.homecleanapi.models.Wallet;
+import com.example.homecleanapi.models.*;
 import com.example.homecleanapi.repositories.EmployeeRepository;
 import com.example.homecleanapi.dtos.ChangePasswordRequest;
 import com.example.homecleanapi.dtos.CleanerRegisterRequest;
 import com.example.homecleanapi.dtos.ForgotPasswordRequest;
 import com.example.homecleanapi.dtos.LoginRequest;
+import com.example.homecleanapi.repositories.OtpVerificationCleanerRepository;
 import com.example.homecleanapi.repositories.WalletRepository;
 import com.example.homecleanapi.utils.JwtUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -28,14 +29,16 @@ public class EmployeeAuthService {
     private final AvatarService avatarService;
     private final EmailService emailService;
     private final WalletRepository walletRepository;
+    private final OtpVerificationCleanerRepository otpVerificationCleanerRepository;
 
-    public EmployeeAuthService(EmployeeRepository employeeRepository, PasswordEncoder passwordEncoder, JwtUtils jwtUtils, AvatarService avatarService, EmailService emailService, WalletRepository walletRepository) {
+    public EmployeeAuthService(EmployeeRepository employeeRepository, PasswordEncoder passwordEncoder, JwtUtils jwtUtils, AvatarService avatarService, EmailService emailService, WalletRepository walletRepository, OtpVerificationCleanerRepository otpVerificationCleanerRepository) {
         this.employeeRepository = employeeRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtUtils = jwtUtils;
         this.avatarService = avatarService;
         this.emailService = emailService;
         this.walletRepository = walletRepository;
+        this.otpVerificationCleanerRepository = otpVerificationCleanerRepository;
     }
 
     public ResponseEntity<Map<String, Object>> cleanerRegister(CleanerRegisterRequest request) {
@@ -54,6 +57,18 @@ public class EmployeeAuthService {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
         }
 
+        // Kiểm tra căn cước công dân đã tồn tại
+        if (employeeRepository.existsByIdentityNumber(request.getIdentity_number())) {
+            response.put("message", "Căn cước công dân đã tồn tại!");
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+        }
+
+        Optional<OtpVerificationCleaner> otpOpt = otpVerificationCleanerRepository.findTopByPhoneOrderByCreatedAtDesc(request.getPhone());
+        if (otpOpt.isEmpty() || !otpOpt.get().getVerified()) {
+            response.put("message", "Số điện thoại chưa được xác minh bằng OTP!");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+        }
+
         // Tạo mới đối tượng Employee và thiết lập các thông tin
         Employee employee = new Employee();
         employee.setPhone(request.getPhone());
@@ -63,7 +78,7 @@ public class EmployeeAuthService {
         employee.setAge(request.getAge());
         employee.setAddress(request.getAddress());
         employee.setExperience(request.getExperience());
-        employee.setIdentity_number(request.getIdentity_number());
+        employee.setIdentityNumber(request.getIdentity_number());
         employee.setProfile_image(avatarService.generateIdenticon(request.getName()));
 
         // Thiết lập các giá trị mặc định cho identity_verified và is_deleted
@@ -105,13 +120,13 @@ public class EmployeeAuthService {
 
         // kiểm tra tài khoản bị khóa
         if (employee.getIsDeleted()) {
-            response.put("message", "Tài khoản của bạn đã bị khóa");
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
+            response.put("message", "Tài khoản của bạn không tồn tại.");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         }
         // Kiểm tra nếu tài khoản bị khóa hoặc chưa xác thực
         if (!employee.getIs_verified() && !employee.getIsDeleted()) {
             response.put("message", "Tài khoản của bạn chưa xác thực");
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
 
         // Kiểm tra mật khẩu

@@ -1,5 +1,6 @@
 package com.example.homecleanapi.services;
 
+import com.example.homecleanapi.dtos.NotificationDTO;
 import com.example.homecleanapi.repositories.CleanerRepository;
 import com.example.homecleanapi.repositories.CustomerRepository;
 import com.example.homecleanapi.models.Wallet;
@@ -11,6 +12,7 @@ import com.example.homecleanapi.repositories.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
@@ -38,6 +40,8 @@ public class WithdrawalRequestService {
     private TransactionHistoryRepository transactionHistoryRepository;
     @Autowired
     private AdminTransactionHistoryRepository adminTransactionHistoryRepository;
+    @Autowired
+    private NotificationService notificationService;
 
 
     public Map<String, Object> createWithdrawalRequest(Long customerId, WithdrawalDTO request) {
@@ -113,7 +117,13 @@ public class WithdrawalRequestService {
 
         // Lưu vào bảng transaction_history
         transactionHistoryRepository.save(transactionHistory);
-
+        NotificationDTO notification = new NotificationDTO();
+        notification.setUserId(Math.toIntExact(customerId));
+        notification.setMessage("Yêu cầu rút tiền đã được tạo thành công, đang chờ quản trị viên chấp thuận");
+        notification.setType("AUTO_MESSAGE");
+        notification.setTimestamp(LocalDate.now());
+        notification.setRead(false); // ✅ set read = false
+        notificationService.processNotification(notification, "CUSTOMER", Math.toIntExact(customerId));
 
         response.put("message", "Yêu cầu rút tiền đã được tạo thành công, đang chờ quản trị viên chấp thuận");
         response.put("status", HttpStatus.CREATED);
@@ -255,6 +265,25 @@ public class WithdrawalRequestService {
 
             // Lưu vào bảng AdminTransactionHistory
             adminTransactionHistoryRepository.save(transactionHistory);
+            if (withdrawalRequest.getCleaner() != null) {
+                NotificationDTO notification = new NotificationDTO();
+                notification.setUserId(withdrawalRequest.getCustomer().getId());
+                notification.setMessage("Yêu cầu rút tiền đã được chấp nhận.");
+                notification.setType("AUTO_MESSAGE");
+                notification.setTimestamp(LocalDate.now());
+                notification.setRead(false); // ✅ set read = false
+                notificationService.processNotification(notification, "CUSTOMER", withdrawalRequest.getCustomer().getId());
+            }
+
+            if (withdrawalRequest.getCleaner() != null) {
+                NotificationDTO notification = new NotificationDTO();
+                notification.setUserId(withdrawalRequest.getCleaner().getId());
+                notification.setMessage("Yêu cầu rút tiền đã được chấp nhận.");
+                notification.setType("AUTO_MESSAGE");
+                notification.setTimestamp(LocalDate.now());
+                notification.setRead(false); // ✅ set read = false
+                notificationService.processNotification(notification, "CLEANER", withdrawalRequest.getCleaner().getId());
+            }
 
             response.put("message", "Yêu cầu rút tiền đã được chấp nhận và chuyển trạng thái thành WITHDREW");
             response.put("status", HttpStatus.OK);
@@ -273,6 +302,13 @@ public class WithdrawalRequestService {
                     CustomerWallet customerWallet = customerWalletOpt.get();
                     customerWallet.setBalance(customerWallet.getBalance() + withdrawalAmount); // Hoàn tiền lại
                     customerWalletRepository.save(customerWallet);
+                    NotificationDTO customerNotification = new NotificationDTO();
+                    customerNotification.setUserId(withdrawalRequest.getCustomer().getId());
+                    customerNotification.setMessage("Yêu cầu rút tiền đã bị từ chối.");
+                    customerNotification.setType("AUTO_MESSAGE");
+                    customerNotification.setTimestamp(LocalDate.now());
+                    customerNotification.setRead(false); // ✅ set read = false
+                    notificationService.processNotification(customerNotification, "CUSTOMER", withdrawalRequest.getCustomer().getId());
                 }
             } else if (withdrawalRequest.getCleaner() != null) {
                 // Hoàn tiền vào ví của cleaner
@@ -281,6 +317,13 @@ public class WithdrawalRequestService {
                     Wallet cleanerWallet = cleanerWalletOpt.get();
                     cleanerWallet.setBalance(cleanerWallet.getBalance() + withdrawalAmount); // Hoàn tiền lại
                     walletRepository.save(cleanerWallet);
+                    NotificationDTO cleanerNotification = new NotificationDTO();
+                    cleanerNotification.setUserId(withdrawalRequest.getCleaner().getId());
+                    cleanerNotification.setMessage("Yêu cầu rút tiền đã bị từ chối.");
+                    cleanerNotification.setType("AUTO_MESSAGE");
+                    cleanerNotification.setTimestamp(LocalDate.now());
+                    cleanerNotification.setRead(false); // ✅ set read = false
+                    notificationService.processNotification(cleanerNotification, "CLEANER", withdrawalRequest.getCleaner().getId());
                 }
             }
 

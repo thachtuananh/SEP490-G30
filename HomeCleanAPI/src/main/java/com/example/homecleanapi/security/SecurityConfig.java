@@ -117,7 +117,10 @@ public class SecurityConfig {
                 "https://house-clean-platform.web.app",
                 "https://house-clean-platform.firebaseapp.com",
                 "https://costume-lithuania-parameter-bathrooms.trycloudflare.com",
-                "https://pike-armor-ms-hampton.trycloudflare.com",
+                "https://grass-finding-presentation-competitions.trycloudflare.com",
+                "https://turkish-content-correction-literally.trycloudflare.com",
+                "https://mail-considers-dis-exotic.trycloudflare.com",
+                "https://api.homeclean.site",
                 "https://sandbox.vnpayment.vn",
                 "http://localhost:6333"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "PATCH"));
