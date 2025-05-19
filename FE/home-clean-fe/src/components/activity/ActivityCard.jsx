@@ -415,9 +415,27 @@ export const ActivityCard = ({ data, onDelete }) => {
     try {
       const result = await retryPayment(jobId);
       if (result && result.paymentUrl) {
-        message.info(
-          "Bạn sẽ được chuyển đến cổng thanh toán VNPay trong 3 giây. Vui lòng hoàn tất thanh toán!"
-        );
+        let countDown = 3;
+        const messageKey = "redirectCountdown";
+
+        message.info({
+          content: `Bạn sẽ được chuyển đến cổng thanh toán VNPay trong ${countDown} giây!`,
+          key: messageKey,
+          duration: 3.5,
+        });
+
+        const interval = setInterval(() => {
+          countDown -= 1;
+          message.info({
+            content: `Bạn sẽ được chuyển đến cổng thanh toán VNPay trong ${countDown} giây!`,
+            key: messageKey,
+            duration: 1.5,
+          });
+
+          if (countDown === 0) {
+            clearInterval(interval);
+          }
+        }, 1000);
         setTimeout(() => {
           window.location.href = result.paymentUrl;
         }, 3000);
@@ -603,7 +621,7 @@ export const ActivityCard = ({ data, onDelete }) => {
                     activity.subJobs.map((subJob, idx) => (
                       <div key={idx} className={styles.serviceDetails}>
                         <div className={styles.serviceTitle}>
-                          {subJob.services[0]?.serviceName} -
+                          {subJob.services[0]?.serviceName} -{" "}
                           {new Date(subJob.scheduledTime).toLocaleString(
                             "vi-VN",
                             {
@@ -689,7 +707,7 @@ export const ActivityCard = ({ data, onDelete }) => {
                       </Button>
                     </div>
                   )}
-                  {(activity.status === "OPEN" ||
+                  {/* {(activity.status === "OPEN" ||
                     activity.status === "BOOKED") &&
                     applicationsCount[activity.jobId] > 0 && (
                       <Badge
@@ -704,7 +722,7 @@ export const ActivityCard = ({ data, onDelete }) => {
                           Người dọn dẹp đã ứng tuyển
                         </Button>
                       </Badge>
-                    )}
+                    )} */}
                   {(activity.status === "DONE" ||
                     activity.status === "COMPLETED" ||
                     activity.status === "IN_PROGRESS") && (
@@ -850,8 +868,14 @@ export const ActivityCard = ({ data, onDelete }) => {
         handleViewCleanerDetail={handleViewCleanerDetail}
         handleCompleteJob={handleCompleteJob}
         handleRetryPayment={handleRetryPayment}
+        fetchCleanerApplications={fetchCleanerApplications}
+        fetchCleanerDetail={fetchCleanerDetail}
+        hireCleaner={hireCleaner}
+        startJob={startJob}
+        rejectCleaner={rejectCleaner}
         applicationsCount={applicationsCount}
         isProcessing={isProcessing}
+        customerId={customerId}
       />
 
       <FeedbackModal

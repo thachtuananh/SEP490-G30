@@ -194,14 +194,18 @@ const ServiceDetailsCombo = () => {
             const serviceData = servicesDetails.find(
               (s) => s.serviceId === serviceId
             );
-            let selectedDetail = serviceData?.serviceDetails?.find(
+            const selectedDetail = serviceData?.serviceDetails?.find(
               (detail) => detail.serviceDetailId === serviceSizes[serviceId]
             );
+            const serviceAll = allServices.find((s) => s.id === serviceId);
 
             return {
               serviceId,
-              serviceDetailId: selectedDetail?.serviceDetailId || null, // ✅ Thêm serviceDetailId vào
-              serviceName: serviceData?.serviceName || `Dịch vụ ${serviceId}`,
+              serviceDetailId: selectedDetail?.serviceDetailId || null,
+              serviceName:
+                serviceData?.serviceName ||
+                serviceAll?.title ||
+                `Dịch vụ ${serviceId}`,
               price: servicePrices[serviceId],
               selectedSize: selectedDetail
                 ? `${selectedDetail.minRoomSize}`

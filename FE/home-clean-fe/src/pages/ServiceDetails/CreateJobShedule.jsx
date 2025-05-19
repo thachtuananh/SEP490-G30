@@ -9,13 +9,13 @@ import styles from "../../assets/CSS/createjob/CreateJob.module.css";
 const { Title } = Typography;
 
 const CreateJobSchedule = () => {
-  const [schedules, setSchedules] = useState([]);
+  const [serviceSchedules, setServiceSchedules] = useState({}); // { serviceId: [{ jobTime, hour, minute, date, adjustment }], ... }
   const [paymentMethod, setPaymentMethod] = useState("VNPay");
   const [reminder, setReminder] = useState("");
   const [priceAdjustment, setPriceAdjustment] = useState(null);
 
-  const handleTimeChange = (newSchedules, adjustment) => {
-    setSchedules(newSchedules);
+  const handleTimeChange = (newServiceSchedules, adjustment) => {
+    setServiceSchedules(newServiceSchedules);
     setPriceAdjustment(adjustment);
   };
 
@@ -44,7 +44,7 @@ const CreateJobSchedule = () => {
           Thông tin công việc
         </Title>
         <JobInfomation
-          schedules={schedules}
+          serviceSchedules={serviceSchedules}
           paymentMethod={paymentMethod}
           reminder={reminder}
           priceAdjustment={priceAdjustment}

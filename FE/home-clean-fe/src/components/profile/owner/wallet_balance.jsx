@@ -100,7 +100,6 @@ export const WalletBalance = () => {
   const fetchWalletBalance = async () => {
     try {
       setLoading(true);
-
       const response = await fetch(
         `${BASE_URL}/cleaner/${customerId}/walletcustomer`,
         {
@@ -128,7 +127,6 @@ export const WalletBalance = () => {
   const fetchTransactionHistory = async () => {
     try {
       setHistoryLoading(true);
-
       const response = await fetch(
         `${BASE_URL}/cleaner/${customerId}/transaction-historycustomer`,
         {
@@ -156,10 +154,6 @@ export const WalletBalance = () => {
   const fetchWithdrawalHistory = async () => {
     try {
       setWithdrawalHistoryLoading(true);
-      const token = sessionStorage.getItem("token");
-      const customerId = sessionStorage.getItem("customerId");
-
-      // Updated API endpoint based on the curl command
       const response = await fetch(
         `${BASE_URL}/withdraw/customers/${customerId}/history`,
         {
@@ -204,7 +198,25 @@ export const WalletBalance = () => {
 
   const handleDepositSubmit = async () => {
     try {
+      if (
+        !depositAmount ||
+        isNaN(depositAmount) ||
+        depositAmount.toString().trim() === ""
+      ) {
+        message.error("Số tiền không được để trống hoặc chứa khoảng trắng!");
+        return;
+      }
+
       await form.validateFields();
+      if (depositAmount < 10000 || depositAmount > 50000000) {
+        message.error("Số tiền nạp phải từ 10,000 VNĐ đến 50,000,000 VNĐ!");
+        return;
+      }
+
+      if (depositLoading) {
+        return;
+      }
+
       setDepositLoading(true);
       const response = await fetch(
         `${BASE_URL}/cleaner/${customerId}/depositforcustomer`,
@@ -224,22 +236,44 @@ export const WalletBalance = () => {
 
       const data = await response.json();
       if (response.ok && data.paymentUrl) {
-        // Open the payment URL in a new window
-        window.open(data.paymentUrl, "_blank");
+        let countDown = 3;
+        const messageKey = "redirectCountdown";
+
+        message.info({
+          content: `Bạn sẽ được chuyển đến cổng thanh toán VNPay trong ${countDown} giây!`,
+          key: messageKey,
+          duration: 3.5,
+        });
+
+        const interval = setInterval(() => {
+          countDown -= 1;
+          message.info({
+            content: `Bạn sẽ được chuyển đến cổng thanh toán VNPay trong ${countDown} giây!`,
+            key: messageKey,
+            duration: 1.5,
+          });
+
+          if (countDown === 0) {
+            clearInterval(interval);
+          }
+        }, 1000);
+
+        setTimeout(() => {
+          window.open(data.paymentUrl, "_blank");
+        }, 3000);
+
         setDepositModalVisible(false);
         form.resetFields();
-        message.success("Đang chuyển hướng đến trang thanh toán");
       } else {
         message.error(data.message || "Không thể thực hiện nạp tiền");
       }
     } catch (error) {
-      message.error(`Lỗi khi nạp tiền: ${error.message}`);
+      message.error("Vui lòng kiểm tra lại số tiền nạp!");
     } finally {
       setDepositLoading(false);
     }
   };
 
-  // Withdrawal handlers
   const handleWithdrawalClick = () => {
     setWithdrawalModalVisible(true);
   };
@@ -252,19 +286,17 @@ export const WalletBalance = () => {
   const handleHistoryWithdrawlCancel = () => {
     setHistoryWithdrawlModalVisible(false);
   };
+
   const handleHistoryWithdrawlClick = () => {
     setHistoryWithdrawlModalVisible(true);
     fetchWithdrawalHistory();
   };
+
   const handleWithdrawalSubmit = async () => {
     try {
       const values = await withdrawalForm.validateFields();
       setWithdrawalLoading(true);
 
-      const token = sessionStorage.getItem("token");
-      const customerId = sessionStorage.getItem("customerId");
-
-      // Example API call for withdrawal (modify according to your actual API)
       const response = await fetch(
         `${BASE_URL}/withdraw/${customerId}/requestWithdrawal`,
         {
@@ -288,12 +320,11 @@ export const WalletBalance = () => {
         setWithdrawalModalVisible(false);
         withdrawalForm.resetFields();
         message.success("Yêu cầu rút tiền đã được gửi đi thành công");
-        fetchWalletBalance(); // Refresh wallet balance
+        fetchWalletBalance();
       } else {
         message.error(data.message || "Không thể thực hiện rút tiền");
       }
     } catch (error) {
-      // message.error(`Lỗi khi rút tiền: ${error.message}`);
       message.error(
         "Vui lòng kiểm tra lại thông tin tài khoản ngân hàng và số tiền rút."
       );
@@ -302,7 +333,6 @@ export const WalletBalance = () => {
     }
   };
 
-  // Helper function to translate transaction type to Vietnamese
   const translateTransactionType = (type) => {
     const translations = {
       DEPOSIT: "Nạp tiền",
@@ -313,11 +343,9 @@ export const WalletBalance = () => {
       BOOKING: "Thanh toán giao dịch",
       "WITHDRAWAL REJECTED": "Rút tiền bị từ chối",
     };
-
     return translations[type] || type;
   };
 
-  // Helper function to translate withdrawal status to Vietnamese
   const translateWithdrawalStatus = (status) => {
     const translations = {
       PENDING: "Đang xử lý",
@@ -325,11 +353,9 @@ export const WalletBalance = () => {
       REJECTED: "Từ chối",
       COMPLETED: "Hoàn thành",
     };
-
     return translations[status] || status;
   };
 
-  // Get status color for withdrawal history
   const getWithdrawalStatusColor = (status) => {
     switch (status) {
       case "APPROVED":
@@ -345,32 +371,19 @@ export const WalletBalance = () => {
     }
   };
 
-  // Transaction history columns for the table
   const historyColumns = [
-    // {
-    //   title: "Mã giao dịch",
-    //   dataIndex: "transactionId",
-    //   key: "transactionId",
-    // },
     {
       title: "Số tiền",
       dataIndex: "amount",
       key: "amount",
       render: (amount, record) => {
-        // Hiển thị màu đỏ cho transactionType là "Withdraw" hoặc "BOOKING", màu xanh cho các loại khác
         const color =
           record.transactionType === "Withdraw" ||
           record.transactionType === "BOOKING"
-            ? "#cf1322" // màu đỏ
-            : "#3f8600"; // màu xanh (giữ nguyên)
-
+            ? "#cf1322"
+            : "#3f8600";
         return (
-          <Text
-            style={{
-              color: color,
-              fontWeight: "bold",
-            }}
-          >
+          <Text style={{ color, fontWeight: "bold" }}>
             {amount.toLocaleString()} VNĐ
           </Text>
         );
@@ -382,17 +395,15 @@ export const WalletBalance = () => {
       key: "transactionType",
       render: (type) => {
         let color = "blue";
-
-        if (type === "DEPOSIT" || type === "DEPOSIT") {
+        if (type === "DEPOSIT") {
           color = "green";
-        } else if (type === "WITHDRAW" || type === "Withdraw") {
+        } else if (type === "Withdraw") {
           color = "orange";
-        } else if (type === "PAYMENT" || type === "PAYMENT") {
+        } else if (type === "PAYMENT") {
           color = "purple";
         } else if (type === "REFUND" || type === "Refund") {
           color = "cyan";
         }
-
         return <Tag color={color}>{translateTransactionType(type)}</Tag>;
       },
     },
@@ -409,7 +420,6 @@ export const WalletBalance = () => {
             month: "2-digit",
             year: "numeric",
           });
-
           return formattedDate;
         }
         return " ";
@@ -421,7 +431,6 @@ export const WalletBalance = () => {
       key: "paymentMethod",
       render: (method) => {
         let text = method;
-
         if (method === "Bank Transfer") {
           text = "Chuyển khoản";
         } else if (method === "Wallet" || method === "WALLET") {
@@ -429,7 +438,6 @@ export const WalletBalance = () => {
         } else if (method === "VNPay") {
           text = "VNPay";
         }
-
         return text;
       },
     },
@@ -440,7 +448,6 @@ export const WalletBalance = () => {
       render: (status) => {
         let color = "default";
         let text = status;
-
         if (status === "SUCCESS") {
           color = "success";
           text = "Thành công";
@@ -451,18 +458,12 @@ export const WalletBalance = () => {
           color = "error";
           text = "Thất bại";
         }
-
         return <Badge status={color} text={text} />;
       },
     },
   ];
 
   const withdrawalHistoryColumns = [
-    // {
-    //   title: "ID",
-    //   dataIndex: "id",
-    //   key: "id",
-    // },
     {
       title: "Số tiền",
       dataIndex: "amount",
@@ -512,7 +513,6 @@ export const WalletBalance = () => {
             month: "2-digit",
             year: "numeric",
           });
-
           return formattedDate;
         }
         return " ";
@@ -643,15 +643,8 @@ export const WalletBalance = () => {
             </Button>
           </Col>
         </Row>
-
-        {/* <div style={{ textAlign: "center" }}>
-          <Tag color="blue" style={{ padding: "4px 8px" }}>
-            Tài khoản tiêu chuẩn
-          </Tag>
-        </div> */}
       </Space>
 
-      {/* Deposit Modal */}
       <Modal
         title="Nạp tiền vào ví"
         open={depositModalVisible}
@@ -664,6 +657,7 @@ export const WalletBalance = () => {
             key="submit"
             type="primary"
             loading={depositLoading}
+            disabled={depositLoading}
             onClick={handleDepositSubmit}
             style={{ backgroundColor: "#52c41a", borderColor: "#52c41a" }}
           >
@@ -676,16 +670,24 @@ export const WalletBalance = () => {
             label="Số tiền muốn nạp (VNĐ)"
             name="amount"
             rules={[
-              { required: true, message: "Vui lòng nhập số tiền" },
+              { required: true, message: "Vui lòng nhập số tiền!" },
               {
                 type: "number",
                 min: 10000,
-                message: "Số tiền nạp tối thiểu là 10,000 VNĐ",
+                message: "Số tiền nạp tối thiểu là 10,000 VNĐ!",
               },
               {
                 type: "number",
                 max: 50000000,
-                message: "Số tiền nạp tối đa là 50,000,000 VNĐ",
+                message: "Số tiền nạp tối đa là 50,000,000 VNĐ!",
+              },
+              {
+                validator: (_, value) => {
+                  if (value && value.toString().trim() === "") {
+                    return Promise.reject("Số tiền không được để trống!");
+                  }
+                  return Promise.resolve();
+                },
               },
             ]}
           >
@@ -708,7 +710,6 @@ export const WalletBalance = () => {
         </Form>
       </Modal>
 
-      {/* Withdrawal Modal */}
       <Modal
         title="Rút tiền từ ví"
         open={withdrawalModalVisible}
@@ -813,7 +814,6 @@ export const WalletBalance = () => {
         </Form>
       </Modal>
 
-      {/* Transaction History Modal */}
       <Modal
         title="Lịch sử giao dịch"
         open={historyModalVisible}
@@ -835,7 +835,6 @@ export const WalletBalance = () => {
         />
       </Modal>
 
-      {/* Withdrawal History Modal */}
       <Modal
         title="Lịch sử rút tiền"
         open={historyWithdrawlModalVisible}
@@ -845,7 +844,7 @@ export const WalletBalance = () => {
             Đóng
           </Button>,
         ]}
-        width={"100%"}
+        width="100%"
       >
         <Table
           columns={withdrawalHistoryColumns}

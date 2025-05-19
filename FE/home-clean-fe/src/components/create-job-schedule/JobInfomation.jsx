@@ -9,7 +9,7 @@ import { createJobShedule } from "../../services/owner/OwnerAPI";
 const { Title, Text, Paragraph } = Typography;
 
 const JobInfomation = ({
-  schedules,
+  serviceSchedules,
   paymentMethod,
   reminder,
   priceAdjustment,
@@ -17,8 +17,7 @@ const JobInfomation = ({
   const location = useLocation();
   const navigate = useNavigate();
   const state = location.state || {};
-  const serviceId = state.serviceId;
-  const serviceDetailId = state.serviceDetailId;
+  const serviceDetails = state.serviceDetails || [];
   const customerAddressId = state.customerAddressId;
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -26,6 +25,8 @@ const JobInfomation = ({
   const [currentTime, setCurrentTime] = useState(dayjs());
   const [basePrice, setBasePrice] = useState(state.price || 0);
   const [adjustedPrice, setAdjustedPrice] = useState(state.price || 0);
+  const [serviceNames, setServiceNames] = useState({});
+  const [serviceDetailsMap, setServiceDetailsMap] = useState({});
 
   const { token, customerId } = useContext(AuthContext);
 
@@ -35,6 +36,21 @@ const JobInfomation = ({
     }, 60000);
     return () => clearInterval(timer);
   }, []);
+
+  useEffect(() => {
+    const nameMap = {};
+    const detailsMap = {};
+    if (serviceDetails && serviceDetails.length > 0) {
+      serviceDetails.forEach((service) => {
+        nameMap[service.serviceId] =
+          service.serviceName || `Dịch vụ ${service.serviceId}`;
+        // Tạo một map để dễ dàng truy cập serviceDetailId theo serviceId
+        detailsMap[service.serviceId] = service;
+      });
+      setServiceNames(nameMap);
+      setServiceDetailsMap(detailsMap);
+    }
+  }, [serviceDetails]);
 
   useEffect(() => {
     if (priceAdjustment && basePrice) {
@@ -59,42 +75,48 @@ const JobInfomation = ({
   }, [state.price]);
 
   const validateJobTimes = async () => {
-    if (!schedules || schedules.length === 0) {
-      message.error("Vui lòng chọn ít nhất một lịch trình làm việc!");
-      return false;
+    let hasSchedules = false;
+    for (const serviceId in serviceSchedules) {
+      if (serviceSchedules[serviceId].length > 0) {
+        hasSchedules = true;
+        for (const schedule of serviceSchedules[serviceId]) {
+          const selectedDateTime = dayjs(schedule.jobTime);
+          if (selectedDateTime.isBefore(currentTime)) {
+            Modal.warning({
+              title: "Thời gian không hợp lệ",
+              content: `Lịch trình ${selectedDateTime.format(
+                "DD/MM/YYYY HH:mm"
+              )} đã là quá khứ. Vui lòng cập nhật.`,
+              okText: "Đã hiểu",
+            });
+            return false;
+          }
+
+          if (selectedDateTime.diff(currentTime, "minute") < 30) {
+            const confirmed = await new Promise((resolve) => {
+              Modal.confirm({
+                title: "Thời gian quá gần",
+                content: `Lịch trình ${selectedDateTime.format(
+                  "DD/MM/YYYY HH:mm"
+                )} chỉ còn ${selectedDateTime.diff(
+                  currentTime,
+                  "minute"
+                )} phút nữa. Người dọn dẹp có thể không kịp nhận việc. Bạn có muốn tiếp tục?`,
+                okText: "Tiếp tục",
+                cancelText: "Hủy",
+                onOk: () => resolve(true),
+                onCancel: () => resolve(false),
+              });
+            });
+            if (!confirmed) return false;
+          }
+        }
+      }
     }
 
-    for (const schedule of schedules) {
-      const selectedDateTime = dayjs(schedule.jobTime);
-      if (selectedDateTime.isBefore(currentTime)) {
-        Modal.warning({
-          title: "Thời gian không hợp lệ",
-          content: `Lịch trình ${selectedDateTime.format(
-            "DD/MM/YYYY HH:mm"
-          )} đã là quá khứ. Vui lòng cập nhật.`,
-          okText: "Đã hiểu",
-        });
-        return false;
-      }
-
-      if (selectedDateTime.diff(currentTime, "minute") < 30) {
-        const confirmed = await new Promise((resolve) => {
-          Modal.confirm({
-            title: "Thời gian quá gần",
-            content: `Lịch trình ${selectedDateTime.format(
-              "DD/MM/YYYY HH:mm"
-            )} chỉ còn ${selectedDateTime.diff(
-              currentTime,
-              "minute"
-            )} phút nữa. Người dọn dẹp có thể không kịp nhận việc. Bạn có muốn tiếp tục?`,
-            okText: "Tiếp tục",
-            cancelText: "Hủy",
-            onOk: () => resolve(true),
-            onCancel: () => resolve(false),
-          });
-        });
-        if (!confirmed) return false;
-      }
+    if (!hasSchedules) {
+      message.error("Vui lòng chọn ít nhất một lịch trình làm việc!");
+      return false;
     }
     return true;
   };
@@ -125,40 +147,78 @@ const JobInfomation = ({
         return;
       }
 
-      const services = state.serviceDetails
-        ? state.serviceDetails.map((service) => ({
-            serviceId: service.serviceId,
-            serviceDetailId: service.serviceDetailId,
-          }))
-        : [{ serviceId, serviceDetailId }];
+      const jobs = [];
+      for (const serviceId in serviceSchedules) {
+        if (serviceSchedules[serviceId].length > 0) {
+          // Lấy serviceDetailId từ map đã tạo
+          const serviceDetail = serviceDetailsMap[serviceId];
+
+          serviceSchedules[serviceId].forEach((schedule) => {
+            jobs.push({
+              jobTime: schedule.jobTime,
+              services: [
+                {
+                  serviceId: Number(serviceId),
+                  // Đảm bảo serviceDetailId được truyền chính xác
+                  serviceDetailId: serviceDetail?.serviceDetailId
+                    ? Number(serviceDetail.serviceDetailId)
+                    : null,
+                  imageUrl: "http://example.com/room.jpg",
+                },
+              ],
+            });
+          });
+        }
+      }
+
+      // Log để debug trước khi gửi API
+      console.log("Job data being sent:", JSON.stringify(jobs, null, 2));
+      console.log("Service details map:", serviceDetailsMap);
 
       const jobData = {
-        customerAddressId,
+        customerAddressId: Number(customerAddressId),
         paymentMethod: paymentMethod === "wallet" ? "Wallet" : paymentMethod,
-        reminder,
-        jobs: schedules.map((schedule) => ({
-          jobTime: schedule.jobTime,
-          services,
-        })),
+        reminder: reminder || "",
+        jobs,
       };
-
-      console.log("Job data being sent:", jobData);
 
       const responseData = await createJobShedule(customerId, jobData);
 
       if (paymentMethod === "VNPay" && responseData.paymentUrl) {
         setIsRedirecting(true);
-        message.info(
-          "Bạn sẽ được chuyển đến cổng thanh toán VNPay trong 3 giây!",
-          3
-        );
+
+        // Tạo đếm ngược từ 3 xuống 0
+        let countDown = 3;
+        const messageKey = "redirectCountdown";
+
+        message.info({
+          content: `Bạn sẽ được chuyển đến cổng thanh toán VNPay trong ${countDown} giây!`,
+          key: messageKey,
+          duration: 3.5,
+        });
+
+        // Cập nhật đếm ngược mỗi giây
+        const interval = setInterval(() => {
+          countDown -= 1;
+          message.info({
+            content: `Bạn sẽ được chuyển đến cổng thanh toán VNPay trong ${countDown} giây!`,
+            key: messageKey,
+            duration: 1.5,
+          });
+
+          if (countDown === 0) {
+            clearInterval(interval);
+          }
+        }, 1000);
+
         setTimeout(() => {
           window.location.href = responseData.paymentUrl;
         }, 3000);
         return;
       }
 
-      if (responseData.status === "OPEN") {
+      // if (responseData.status === "OPEN") {
+      if (responseData.message === "Đặt lịch thành công") {
         message.success("Đăng việc thành công!");
         navigate("/");
       } else {
@@ -175,65 +235,73 @@ const JobInfomation = ({
   const isButtonDisabled = isSubmitting || isRedirecting || !termsAccepted;
   const isProcessing = isSubmitting || isRedirecting;
 
+  const getServiceName = (serviceId) => {
+    // Sử dụng tên đã lưu trong state nếu có
+    return serviceNames[serviceId] || `Dịch vụ ${serviceId}`;
+  };
+
   return (
     <div className={styles.jobInfoContainer}>
-      <Title level={5} className={styles.infoTitle}>
-        Lịch trình làm việc
-      </Title>
-      {schedules.length === 0 ? (
-        <Paragraph>Chưa có lịch trình nào được chọn.</Paragraph>
-      ) : (
-        <List
-          dataSource={schedules}
-          renderItem={(schedule) => (
-            <List.Item>
-              <Text>
-                {dayjs(schedule.date).format("DD/MM/YYYY")} -{" "}
-                {schedule.hour.toString().padStart(2, "0")}:
-                {schedule.minute.toString().padStart(2, "0")}
-              </Text>
-            </List.Item>
-          )}
-        />
-      )}
-
+      <div className={styles.scheduleSection}>
+        <Title level={5} className={styles.infoTitle}>
+          Lịch trình làm việc
+        </Title>
+        {Object.keys(serviceSchedules).every(
+          (serviceId) => serviceSchedules[serviceId].length === 0
+        ) ? (
+          <Paragraph className={styles.emptySchedule}>
+            Chưa có lịch trình nào được chọn.
+          </Paragraph>
+        ) : (
+          <div className={styles.scheduleContainer}>
+            {Object.keys(serviceSchedules).map(
+              (serviceId) =>
+                serviceSchedules[serviceId].length > 0 && (
+                  <div key={serviceId} className={styles.serviceScheduleCard}>
+                    <div className={styles.serviceNameHeader}>
+                      <Text strong>{getServiceName(serviceId)}</Text>
+                    </div>
+                    <List
+                      className={styles.scheduleList}
+                      itemLayout="horizontal"
+                      dataSource={serviceSchedules[serviceId]}
+                      renderItem={(schedule) => (
+                        <List.Item className={styles.scheduleItem}>
+                          <div className={styles.scheduleItemContent}>
+                            <div className={styles.scheduleDate}>
+                              {dayjs(schedule.date).format("DD/MM/YYYY")}
+                            </div>
+                            <div className={styles.scheduleTime}>
+                              {schedule.hour.toString().padStart(2, "0")}:
+                              {schedule.minute.toString().padStart(2, "0")}
+                            </div>
+                          </div>
+                        </List.Item>
+                      )}
+                    />
+                  </div>
+                )
+            )}
+          </div>
+        )}
+      </div>
       <Title level={5} className={styles.infoTitle}>
         Chi tiết
       </Title>
-      <Paragraph className={styles.infoRow}>
-        <Text>Loại dịch vụ</Text>
-        {state?.serviceName ? (
-          <Text>{state.serviceName}</Text>
-        ) : (
-          <Text className={styles.serviceTags}>
-            {state?.serviceDetails?.map((service, index) => (
-              <Text key={index} className={styles.serviceTag}>
-                {service.serviceName}
-              </Text>
-            ))}
-          </Text>
-        )}
-      </Paragraph>
       <Paragraph className={styles.infoRow}>
         <Text>Địa điểm</Text>
         <Text>{state.address}</Text>
       </Paragraph>
       <Paragraph className={styles.infoRow}>
         <Text>Khối lượng công việc</Text>
-        {state?.selectedSize ? (
-          <Text>
-            {state.selectedSize}m² - {state.maxSize}m²
-          </Text>
-        ) : (
-          <Text className={styles.serviceTags}>
-            {state?.serviceDetails?.map((service, index) => (
-              <Text key={index} className={styles.serviceTag}>
-                {service.serviceName} | {service.selectedSize}m² -{" "}
-                {service.maxSize}m²
-              </Text>
-            ))}
-          </Text>
-        )}
+        <Text className={styles.serviceTags}>
+          {serviceDetails.map((service, index) => (
+            <Text key={index} className={styles.serviceTag}>
+              {service.serviceName} | {service.selectedSize}m² -{" "}
+              {service.maxSize}m²
+            </Text>
+          ))}
+        </Text>
       </Paragraph>
       <Paragraph className={styles.infoRow}>
         <Text>Phương thức thanh toán</Text>

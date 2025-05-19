@@ -210,10 +210,27 @@ const JobInfomation = ({
       if (normalizedPaymentMethod === "VNPay" && responseData.paymentUrl) {
         setIsRedirecting(true);
 
-        message.info(
-          "Bạn sẽ được chuyển đến cổng thanh toán VNPay trong 3 giây. Vui lòng hoàn tất thanh toán!",
-          3
-        );
+        let countDown = 3;
+        const messageKey = "redirectCountdown";
+
+        message.info({
+          content: `Bạn sẽ được chuyển đến cổng thanh toán VNPay trong ${countDown} giây!`,
+          key: messageKey,
+          duration: 3.5,
+        });
+
+        const interval = setInterval(() => {
+          countDown -= 1;
+          message.info({
+            content: `Bạn sẽ được chuyển đến cổng thanh toán VNPay trong ${countDown} giây!`,
+            key: messageKey,
+            duration: 1.5,
+          });
+
+          if (countDown === 0) {
+            clearInterval(interval);
+          }
+        }, 1000);
 
         // Set timeout trước khi chuyển hướng
         setTimeout(() => {

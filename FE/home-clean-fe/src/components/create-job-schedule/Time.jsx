@@ -9,53 +9,116 @@ import {
   Col,
   Space,
   Input,
-  Divider,
-  InputNumber,
-  Alert,
   List,
+  Modal,
+  Select,
+  message,
 } from "antd";
-import {
-  EditOutlined,
-  ClockCircleOutlined,
-  DeleteOutlined,
-} from "@ant-design/icons";
+import { DeleteOutlined, ExclamationCircleOutlined } from "@ant-design/icons";
 import styles from "../../assets/CSS/createjob/Time.module.css";
 import dayjs from "dayjs";
 import { AuthContext } from "../../context/AuthContext";
+import { useLocation } from "react-router-dom";
+
 const { Title, Text, Paragraph } = Typography;
 
 const Time = ({ onTimeChange }) => {
   const { user } = useContext(AuthContext);
-  const [schedules, setSchedules] = useState([]); // Danh sách lịch trình
+  const location = useLocation();
+  const { selectedServices, serviceDetails } = location.state || {
+    selectedServices: [],
+    serviceDetails: [],
+  };
+  const [serviceSchedules, setServiceSchedules] = useState({}); // { serviceId: [{ jobTime, hour, minute, date, adjustment }], ... }
+  const [selectedServiceId, setSelectedServiceId] = useState(null);
   const [newDate, setNewDate] = useState(new Date());
   const [newTime, setNewTime] = useState(dayjs());
   const [currentTime, setCurrentTime] = useState(dayjs());
   const [priceAdjustment, setPriceAdjustment] = useState(null);
+  const [errorModalVisible, setErrorModalVisible] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+
+  // Lưu trữ tên dịch vụ để tránh gọi lại nhiều lần
+  const [serviceNames, setServiceNames] = useState({});
 
   useEffect(() => {
-    // Khởi tạo thời gian hiện tại
+    // Khởi tạo serviceNames từ serviceDetails
+    const nameMap = {};
+    if (serviceDetails && serviceDetails.length > 0) {
+      serviceDetails.forEach((service) => {
+        nameMap[service.serviceId] =
+          service.serviceName || `Dịch vụ ${service.serviceId}`;
+      });
+      setServiceNames(nameMap);
+    }
+  }, [serviceDetails]);
+
+  useEffect(() => {
+    // Initialize time
     const now = new Date();
     const currentDayjs = dayjs();
     setNewTime(currentDayjs);
     setCurrentTime(currentDayjs);
 
-    // Tính toán phụ phí ban đầu
-    const initialAdjustment = calculatePriceAdjustment(
-      now,
-      currentDayjs.hour()
-    );
-    setPriceAdjustment(initialAdjustment);
+    // Initialize serviceSchedules for each service
+    const initialSchedules = {};
+    selectedServices.forEach((serviceId) => {
+      initialSchedules[serviceId] = [];
+    });
+    setServiceSchedules(initialSchedules);
 
-    // Gửi dữ liệu ban đầu lên parent
-    onTimeChange(schedules, initialAdjustment);
+    // Update price adjustment
+    updatePriceAdjustment(initialSchedules);
 
-    // Cập nhật thời gian thực mỗi 30 giây
+    // Send initial data to parent
+    onTimeChange(initialSchedules, priceAdjustment);
+
+    // Update real-time clock
     const timer = setInterval(() => {
       setCurrentTime(dayjs());
     }, 30000);
 
     return () => clearInterval(timer);
-  }, [schedules]);
+  }, []);
+
+  useEffect(() => {
+    // Update price adjustment when schedules change
+    updatePriceAdjustment(serviceSchedules);
+  }, [serviceSchedules]);
+
+  const showErrorModal = (message) => {
+    setErrorMessage(message);
+    setErrorModalVisible(true);
+  };
+
+  const handleCloseErrorModal = () => {
+    setErrorModalVisible(false);
+  };
+
+  const updatePriceAdjustment = (schedules) => {
+    let highestAdjustment = null;
+
+    Object.keys(schedules).forEach((serviceId) => {
+      schedules[serviceId].forEach((schedule) => {
+        const scheduleDate = new Date(schedule.date);
+        const adjustment = calculatePriceAdjustment(
+          scheduleDate,
+          schedule.hour
+        );
+
+        if (
+          adjustment &&
+          (!highestAdjustment ||
+            adjustment.percentage > highestAdjustment.percentage)
+        ) {
+          highestAdjustment = adjustment;
+        }
+      });
+    });
+
+    setPriceAdjustment(highestAdjustment);
+    onTimeChange(schedules, highestAdjustment);
+  };
 
   const calculatePriceAdjustment = (date, hour) => {
     const day = date.getDay();
@@ -77,7 +140,10 @@ const Time = ({ onTimeChange }) => {
     const selectedDateObj = date.toDate();
     const now = new Date();
 
-    if (selectedDateObj < now.setHours(0, 0, 0, 0)) return;
+    if (selectedDateObj < now.setHours(0, 0, 0, 0)) {
+      showErrorModal("Không thể chọn ngày trong quá khứ!");
+      return;
+    }
 
     setNewDate(selectedDateObj);
   };
@@ -91,12 +157,20 @@ const Time = ({ onTimeChange }) => {
     ) {
       const defaultTime = currentTime.add(15, "minute");
       setNewTime(defaultTime);
+      showErrorModal(
+        "Thời gian đã chọn là trong quá khứ. Đã tự động điều chỉnh thành thời gian hiện tại + 15 phút."
+      );
     } else {
       setNewTime(time);
     }
   };
 
   const addSchedule = () => {
+    if (!selectedServiceId) {
+      showErrorModal("Vui lòng chọn dịch vụ trước khi thêm lịch!");
+      return;
+    }
+
     const selectedDateTime = dayjs(
       new Date(
         newDate.getFullYear(),
@@ -108,35 +182,60 @@ const Time = ({ onTimeChange }) => {
     );
 
     if (selectedDateTime.isBefore(currentTime)) {
+      showErrorModal("Không thể đặt lịch cho thời gian đã qua!");
       return;
     }
+
+    // Check for duplicate schedule
+    const isDuplicate = serviceSchedules[selectedServiceId].some((schedule) => {
+      const scheduleTime = dayjs(schedule.jobTime);
+      return (
+        scheduleTime.format("YYYY-MM-DD HH:mm") ===
+        selectedDateTime.format("YYYY-MM-DD HH:mm")
+      );
+    });
+
+    if (isDuplicate) {
+      showErrorModal(
+        "Bạn đã đặt lịch trình này cho dịch vụ! Vui lòng chọn thời gian khác."
+      );
+      return;
+    }
+
+    const adjustmentForThisSchedule = calculatePriceAdjustment(
+      newDate,
+      newTime.hour()
+    );
 
     const newSchedule = {
       jobTime: selectedDateTime.format("YYYY-MM-DDTHH:mm:ss"),
       hour: newTime.hour(),
       minute: newTime.minute(),
       date: newDate,
+      adjustment: adjustmentForThisSchedule,
     };
 
-    const newSchedules = [...schedules, newSchedule];
-    setSchedules(newSchedules);
+    const newServiceSchedules = {
+      ...serviceSchedules,
+      [selectedServiceId]: [
+        ...serviceSchedules[selectedServiceId],
+        newSchedule,
+      ],
+    };
 
-    // Tính toán phụ phí mới
-    const newAdjustment = calculatePriceAdjustment(newDate, newTime.hour());
-    setPriceAdjustment(newAdjustment);
-
-    // Gửi dữ liệu lên parent
-    onTimeChange(newSchedules, newAdjustment);
+    setServiceSchedules(newServiceSchedules);
 
     // Reset form
     setNewDate(new Date());
     setNewTime(dayjs());
   };
 
-  const removeSchedule = (index) => {
-    const newSchedules = schedules.filter((_, i) => i !== index);
-    setSchedules(newSchedules);
-    onTimeChange(newSchedules, priceAdjustment);
+  const removeSchedule = (serviceId, index) => {
+    const newSchedules = {
+      ...serviceSchedules,
+      [serviceId]: serviceSchedules[serviceId].filter((_, i) => i !== index),
+    };
+    setServiceSchedules(newSchedules);
   };
 
   const disabledDate = (current) => {
@@ -157,13 +256,51 @@ const Time = ({ onTimeChange }) => {
     return {};
   };
 
+  const getServiceName = (serviceId) => {
+    // Sử dụng tên đã lưu trong state nếu có
+    return serviceNames[serviceId] || `Dịch vụ ${serviceId}`;
+  };
+
   return (
     <div className={styles.container}>
+      <Modal
+        title={
+          <span>
+            <ExclamationCircleOutlined
+              style={{ color: "#ff4d4f", marginRight: "8px" }}
+            />
+            Thông báo
+          </span>
+        }
+        open={errorModalVisible}
+        onOk={handleCloseErrorModal}
+        onCancel={handleCloseErrorModal}
+        footer={[
+          <Button key="ok" type="primary" onClick={handleCloseErrorModal}>
+            Đã hiểu
+          </Button>,
+        ]}
+      >
+        <p>{errorMessage}</p>
+      </Modal>
+
       <Row gutter={[16, 16]} style={{ paddingBottom: "20px" }}>
         <Col xs={24} md={12}>
           <Title level={5}>Đặt dịch vụ theo lịch trình</Title>
-          <Paragraph>Chọn thời gian</Paragraph>
+          <Paragraph>Chọn dịch vụ và thời gian</Paragraph>
           <Space direction="vertical" size="middle" style={{ width: "100%" }}>
+            <Select
+              placeholder="Chọn dịch vụ"
+              style={{ width: "100%", maxWidth: "200px" }}
+              onChange={setSelectedServiceId}
+              value={selectedServiceId}
+            >
+              {selectedServices.map((serviceId) => (
+                <Select.Option key={serviceId} value={serviceId}>
+                  {getServiceName(serviceId)}
+                </Select.Option>
+              ))}
+            </Select>
             <DatePicker
               format="DD/MM/YYYY"
               onChange={handleDateChange}
@@ -191,7 +328,7 @@ const Time = ({ onTimeChange }) => {
             <Button
               type="primary"
               onClick={addSchedule}
-              disabled={!newDate || !newTime}
+              disabled={!newDate || !newTime || !selectedServiceId}
               style={{ width: "100%", maxWidth: "200px" }}
             >
               Thêm lịch trình
@@ -200,39 +337,38 @@ const Time = ({ onTimeChange }) => {
         </Col>
         <Col xs={24} md={12}>
           <Title level={5}>Danh sách lịch trình</Title>
-          {schedules.length === 0 ? (
+          {Object.keys(serviceSchedules).every(
+            (serviceId) => serviceSchedules[serviceId].length === 0
+          ) ? (
             <Paragraph>Chưa có lịch trình nào được thêm.</Paragraph>
           ) : (
-            <List
-              dataSource={schedules}
-              renderItem={(schedule, index) => (
-                <List.Item
-                  actions={[
-                    <Button
-                      type="link"
-                      icon={<DeleteOutlined />}
-                      onClick={() => removeSchedule(index)}
-                      danger
-                    />,
-                  ]}
-                >
-                  <Text>
-                    {dayjs(schedule.date).format("DD/MM/YYYY")} -{" "}
-                    {schedule.hour.toString().padStart(2, "0")}:
-                    {schedule.minute.toString().padStart(2, "0")}
-                  </Text>
-                </List.Item>
-              )}
-            />
+            Object.keys(serviceSchedules).map((serviceId) => (
+              <div key={serviceId}>
+                <Title level={5}>{getServiceName(serviceId)}</Title>
+                <List
+                  dataSource={serviceSchedules[serviceId]}
+                  renderItem={(schedule, index) => (
+                    <List.Item
+                      actions={[
+                        <Button
+                          type="link"
+                          icon={<DeleteOutlined />}
+                          onClick={() => removeSchedule(serviceId, index)}
+                          danger
+                        />,
+                      ]}
+                    >
+                      <Text>
+                        {dayjs(schedule.date).format("DD/MM/YYYY")} -{" "}
+                        {schedule.hour.toString().padStart(2, "0")}:
+                        {schedule.minute.toString().padStart(2, "0")}
+                      </Text>
+                    </List.Item>
+                  )}
+                />
+              </div>
+            ))
           )}
-          {/* {priceAdjustment && (
-            <Paragraph style={{ color: "#1890ff", marginTop: 16 }}>
-              <Text>Phụ phí: </Text>
-              <Text style={{ color: "red" }}>
-                +{priceAdjustment.percentage}% do {priceAdjustment.reason}
-              </Text>
-            </Paragraph>
-          )} */}
         </Col>
       </Row>
 
