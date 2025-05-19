@@ -212,7 +212,15 @@ const AddressSelectionModal = ({
         className={styles.addressBookModal}
       >
         {loading ? (
-          <div className={styles.loadingContainer}>
+          <div
+            className={styles.loadingContainer}
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              padding: "20px",
+            }}
+          >
             <Spin size="small" tip="Đang tải..." />
           </div>
         ) : (

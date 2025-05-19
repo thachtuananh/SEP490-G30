@@ -27,6 +27,7 @@ import ServiceDetails from "../pages/ServiceDetails/ServiceDetails";
 import CleanerDetails from "../pages/CleanerDetails/CleanerDetails";
 import CreateJob from "../pages/ServiceDetails/CreateJob";
 import CreateJobToCleaner from "../pages/ServiceDetails/CreateJobToCleaner";
+import CreateJobSchedule from "../pages/ServiceDetails/CreateJobShedule";
 import CleanerSection from "../pages/Home/Owner/CleanerSectionPage";
 import HouseCleanPricing from "../pages/HouseCleanPricingPage";
 
@@ -43,6 +44,7 @@ import ActivityJob from "../pages/ActivityJob";
 import JobListFilter from "../pages/JobListFilter";
 import ServiceDetailsCombo from "./../pages/ServiceDetails/ServiceDetailsCombo";
 import ServiceDetailsCleaner from "./../pages/CleanerDetails/ServiceDetail";
+import ServiceDetailsSchedule from "../pages/ServiceDetails/ServiceDetailsSchedule";
 import MainDashboard from "../pages/Admin/MainDashboard";
 
 import OwnerList from "../pages/Admin/ManageUser/Owner/OwnerList";
@@ -96,6 +98,7 @@ const Routers = () => {
       <Route path="/cleaner/:cleanerId" element={<CleanerDetails />} />
       <Route path="/createjob" element={<CreateJob />} />
       <Route path="/createjobtocleaner" element={<CreateJobToCleaner />} />
+      <Route path="/createjob-schedule" element={<CreateJobSchedule />} />
       <Route path="/homeclean/activityjob" element={<ActivityJob />} />
 
       <Route path="/ordersuccess" element={<OrderSuccess />} />
@@ -115,6 +118,10 @@ const Routers = () => {
       <Route
         path="/service-details-cleaner"
         element={<ServiceDetailsCleaner />}
+      />
+      <Route
+        path="/service-details-schedule"
+        element={<ServiceDetailsSchedule />}
       />
       <Route
         path="/homeclean/cleaner-pricing"

@@ -79,6 +79,28 @@ export async function createJob(customerId, jobData) {
     }
 }
 
+export async function createJobShedule(customerId, jobData) {
+    try {
+        const token = sessionStorage.getItem("token");
+
+        if (!token) {
+            throw new Error("No authentication token found");
+        }
+        const response = await fetch(`${BASE_URL}/customer/book-multi/${customerId}`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+            },
+            body: JSON.stringify(jobData),
+        });
+
+        return await response.json();
+    } catch (error) {
+        console.error('Error creating job:', error);
+        throw error;
+    }
+}
 // Create job
 export async function createJobToCleaner(customerId, cleanerId, jobData) {
     try {

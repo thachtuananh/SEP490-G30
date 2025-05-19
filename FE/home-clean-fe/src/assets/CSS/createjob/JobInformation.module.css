@@ -166,3 +166,71 @@
     padding: 12px;
   }
 }
+
+/* CSS styles mới cần thêm vào JobInformation.module.css */
+
+.scheduleSection {
+  margin-bottom: 24px;
+}
+
+.scheduleContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 12px;
+}
+
+.serviceScheduleCard {
+  border: 1px solid #e8e8e8;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  background-color: #fff;
+}
+
+.serviceNameHeader {
+  background-color: #f5f5f5;
+  padding: 12px 16px;
+  border-bottom: 1px solid #e8e8e8;
+  font-weight: 500;
+}
+
+.scheduleList {
+  padding: 0;
+}
+
+.scheduleItem {
+  padding: 12px 16px !important;
+  border-bottom: 1px solid #f0f0f0 !important;
+}
+
+.scheduleItem:last-child {
+  border-bottom: none !important;
+}
+
+.scheduleItemContent {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.scheduleDate {
+  font-weight: 500;
+  color: #333;
+}
+
+.scheduleTime {
+  color: #1890ff;
+  font-weight: 500;
+  background-color: #e6f7ff;
+  padding: 4px 10px;
+  border-radius: 16px;
+  font-size: 14px;
+}
+
+.emptySchedule {
+  color: #999;
+  font-style: italic;
+  padding: 12px 0;
+}

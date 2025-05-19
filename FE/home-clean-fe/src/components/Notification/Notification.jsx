@@ -204,7 +204,7 @@ const Notification = () => {
                   isNotificationUnread(item) ? styles.unread : ""
                 }`}
                 // onClick={handleNotificationClick}
-                style={{ cursor: "pointer" }}
+                // style={{ cursor: "pointer" }}
               >
                 <List.Item.Meta
                   title={

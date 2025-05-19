@@ -11,7 +11,7 @@ import {
   setDefaultAddress,
 } from "../../services/owner/OwnerAddressAPI";
 
-const ServiceDetailsCombo = () => {
+const ServiceDetailsSchedule = () => {
   const [form] = Form.useForm();
   const navigate = useNavigate();
   const location = useLocation();
@@ -187,25 +187,21 @@ const ServiceDetailsCombo = () => {
       }
 
       // Navigate to create job page with all necessary details
-      navigate("/createjob", {
+      navigate("/createjob-schedule", {
         state: {
           selectedServices,
           serviceDetails: selectedServices.map((serviceId) => {
             const serviceData = servicesDetails.find(
               (s) => s.serviceId === serviceId
             );
-            const selectedDetail = serviceData?.serviceDetails?.find(
+            let selectedDetail = serviceData?.serviceDetails?.find(
               (detail) => detail.serviceDetailId === serviceSizes[serviceId]
             );
-            const serviceAll = allServices.find((s) => s.id === serviceId);
 
             return {
               serviceId,
-              serviceDetailId: selectedDetail?.serviceDetailId || null,
-              serviceName:
-                serviceData?.serviceName ||
-                serviceAll?.title ||
-                `Dịch vụ ${serviceId}`,
+              serviceDetailId: selectedDetail?.serviceDetailId || null, // ✅ Thêm serviceDetailId vào
+              serviceName: serviceData?.serviceName || `Dịch vụ ${serviceId}`,
               price: servicePrices[serviceId],
               selectedSize: selectedDetail
                 ? `${selectedDetail.minRoomSize}`
@@ -524,4 +520,4 @@ const ServiceDetailsCombo = () => {
   );
 };
 
-export default ServiceDetailsCombo;
+export default ServiceDetailsSchedule;
