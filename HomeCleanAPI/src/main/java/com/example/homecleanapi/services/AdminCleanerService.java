@@ -1,11 +1,8 @@
 package com.example.homecleanapi.services;
 import com.example.homecleanapi.dtos.*;
-import com.example.homecleanapi.models.Employee;
-import com.example.homecleanapi.models.Job;
-import com.example.homecleanapi.models.JobApplication;
-import com.example.homecleanapi.repositories.CleanerRepository;
-import com.example.homecleanapi.repositories.JobApplicationRepository;
-import com.example.homecleanapi.repositories.JobRepository;
+import com.example.homecleanapi.models.*;
+import com.example.homecleanapi.repositories.*;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -22,12 +19,16 @@ public class AdminCleanerService {
     private final PasswordEncoder passwordEncoder;
     private final JobRepository jobRepository;
     private final JobApplicationRepository jobApplicationRepository;
+    private final EmployeeRepository employeeRepository;
+    private final WalletRepository walletRepository;
 
-    public AdminCleanerService(CleanerRepository cleanerRepository, PasswordEncoder passwordEncoder, JobRepository jobRepository, JobApplicationRepository jobApplicationRepository) {
+    public AdminCleanerService(CleanerRepository cleanerRepository, PasswordEncoder passwordEncoder, JobRepository jobRepository, JobApplicationRepository jobApplicationRepository, EmployeeRepository employeeRepository, WalletRepository walletRepository) {
         this.cleanerRepository = cleanerRepository;
         this.passwordEncoder = passwordEncoder;
         this.jobRepository = jobRepository;
         this.jobApplicationRepository = jobApplicationRepository;
+        this.employeeRepository = employeeRepository;
+        this.walletRepository = walletRepository;
     }
 
     public ResponseEntity<Map<String, Object>> addCleaner(CleanerRegisterRequest request) {
@@ -42,7 +43,7 @@ public class AdminCleanerService {
         cleaner.setPassword(passwordEncoder.encode(request.getPassword()));
         cleaner.setAge(request.getAge());
         cleaner.setAddress(request.getAddress());
-        cleaner.setIdentity_number(request.getIdentity_number());
+        cleaner.setIdentityNumber(request.getIdentity_number());
         cleaner.setIs_verified(false); // Mặc định chưa xác minh
         cleaner.setExperience(request.getExperience());
 
@@ -80,9 +81,9 @@ public class AdminCleanerService {
         if (request.getName() != null) cleaner.setName(request.getName());
         if (request.getPhone() != null) cleaner.setPhone(request.getPhone());
         if (request.getEmail() != null) cleaner.setEmail(request.getEmail());
-        if (request.getAddress() != null) cleaner.setAddress(request.getAddress());
+//        if (request.getAddress() != null) cleaner.setAddress(request.getAddress());
         if (request.getAge() != null) cleaner.setAge(request.getAge());
-        if (request.getIdentityNumber() != null) cleaner.setIdentity_number(request.getIdentityNumber());
+        if (request.getIdentityNumber() != null) cleaner.setIdentityNumber(request.getIdentityNumber());
         if (request.getExperience() != null) cleaner.setExperience(request.getExperience());
         if (request.getIsVerified() != null) cleaner.setIs_verified(request.getIsVerified());
 
@@ -93,15 +94,15 @@ public class AdminCleanerService {
             cleaner.setPassword(passwordEncoder.encode(request.getPassword()));
         }
 
-        // Nếu có ảnh base64
-        if (request.getProfileImageBase64() != null && !request.getProfileImageBase64().isEmpty()) {
-            try {
-                byte[] imageBytes = Base64.getDecoder().decode(request.getProfileImageBase64());
-                cleaner.setProfile_image(imageBytes);
-            } catch (IllegalArgumentException e) {
-                return ResponseEntity.badRequest().body(Map.of("message", "Ảnh đại diện không hợp lệ (Base64)"));
-            }
-        }
+//        // Nếu có ảnh base64
+//        if (request.getProfileImageBase64() != null && !request.getProfileImageBase64().isEmpty()) {
+//            try {
+//                byte[] imageBytes = Base64.getDecoder().decode(request.getProfileImageBase64());
+//                cleaner.setProfile_image(imageBytes);
+//            } catch (IllegalArgumentException e) {
+//                return ResponseEntity.badRequest().body(Map.of("message", "Ảnh đại diện không hợp lệ (Base64)"));
+//            }
+//        }
 
         cleaner.setUpdated_at(LocalDateTime.now());
         cleanerRepository.save(cleaner);
@@ -143,7 +144,7 @@ public class AdminCleanerService {
         result.put("password_hash", c.getPassword());
         result.put("age", c.getAge());
         result.put("address", c.getAddress());
-        result.put("identity_number", c.getIdentity_number());
+        result.put("identity_number", c.getIdentityNumber());
         result.put("identity_verified", c.getIs_verified());
         result.put("experience", c.getExperience());
 
@@ -292,7 +293,16 @@ public class AdminCleanerService {
         cleanerRepository.updateIdentityVerifiedAndDeletedStatus(cleanerId, status, isDeleted);
     }
 
+    public ResponseEntity<Map<String, Object>> deleteEmployeeWithAdminPermission(Integer employeeId) {
+        Employee employee = employeeRepository.findById(employeeId)
+                .orElseThrow(() -> new RuntimeException("Employee not found"));
+        Wallet employeeWallet = walletRepository.findWalletByCleaner_Id(employeeId);
 
+        walletRepository.delete(employeeWallet);
+        employeeRepository.delete(employee);
+
+        return ResponseEntity.ok(Collections.singletonMap("status", "Delete success"));
+    }
 
 
 

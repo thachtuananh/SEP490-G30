@@ -7,7 +7,10 @@ import java.util.Optional;
 
 import com.example.homecleanapi.models.CustomerAddresses;
 import com.example.homecleanapi.models.Job;
+import io.lettuce.core.dynamic.annotation.Param;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import com.example.homecleanapi.enums.JobStatus;
@@ -71,5 +74,15 @@ public interface JobRepository extends JpaRepository<Job, Long> {
 
 
     List<Job> findAllByStatusIn(List<JobStatus> statuses);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT j FROM Job j WHERE j.id = :id")
+    Optional<Job> findByIdWithLock(@Param("id") Long id);
+
+    List<Job> findByJobGroupCode(String jobGroupCode);
+
+    List<Job> findAllByTxnRef(String txnRef);
+
+
 }
 

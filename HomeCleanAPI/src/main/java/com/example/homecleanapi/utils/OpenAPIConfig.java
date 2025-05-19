@@ -20,7 +20,7 @@ public class OpenAPIConfig {
                         .description("API docs with JWT authentication"))
                 .servers(Collections.singletonList( // Đặt URL API mặc định là HTTPS
                         new io.swagger.v3.oas.models.servers.Server()
-                                .url("https://pike-armor-ms-hampton.trycloudflare.com")
+                                .url("https://bag-rocks-strings-admit.trycloudflare.com")
                                 .description("Cloudflare Tunnel")))
                 .addSecurityItem(new SecurityRequirement().addList("BearerAuth"))
                 .components(new io.swagger.v3.oas.models.Components()

@@ -22,7 +22,7 @@ public class VnpayConfigWallet {
 
     public static String vnp_PayUrl = "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
 
-    public static String vnp_ReturnUrlForwallet = "https://pike-armor-ms-hampton.trycloudflare.com/api/cleaner/return";
+    public static String vnp_ReturnUrlForwallet = "https://bag-rocks-strings-admit.trycloudflare.com/api/cleaner/return";
     // #vnpay
     public static String vnp_TmnCode = "900XO632";
     public static String secretKey = "VFH4K4F21GJQMFPLW7SMEVSG7Z0VPV6M";

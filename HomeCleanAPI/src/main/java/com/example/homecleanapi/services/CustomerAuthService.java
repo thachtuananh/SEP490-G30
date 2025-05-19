@@ -31,14 +31,16 @@ public class CustomerAuthService {
     private final EmailService emailService;
     private final CustomerWalletRepository customerWalletRepository;
     private final OtpVerificationRepository otpVerificationRepository;
+    private final AvatarService avatarService;
 
-    public CustomerAuthService(CustomerRepository customerRepository, PasswordEncoder passwordEncoder, JwtUtils jwtUtils, EmailService emailService, CustomerWalletRepository customerWalletRepository, OtpVerificationRepository otpVerificationRepository) {
+    public CustomerAuthService(CustomerRepository customerRepository, PasswordEncoder passwordEncoder, JwtUtils jwtUtils, EmailService emailService, CustomerWalletRepository customerWalletRepository, OtpVerificationRepository otpVerificationRepository, AvatarService avatarService) {
         this.customerRepository = customerRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtUtils = jwtUtils;
         this.emailService = emailService;
         this.customerWalletRepository = customerWalletRepository;
         this.otpVerificationRepository = otpVerificationRepository;
+        this.avatarService = avatarService;
     }
 
     public ResponseEntity<Map<String, Object>> customerRegister(CustomerRegisterRequest request) {
@@ -56,6 +58,16 @@ public class CustomerAuthService {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
         }
 
+        if (customerRepository.existsByEmail(request.getEmail())) {
+            response.put("message", "Email bạn sử dụng đã tồn tại!!!");
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+        }
+
+        if (customerRepository.existsByEmail(request.getEmail())) {
+            response.put("message", "Email của bạn đã được sử dụng.");
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+        }
+
         // Kiểm tra OTP đã xác minh
         Optional<OtpVerification> otpOpt = otpVerificationRepository.findTopByPhoneOrderByCreatedAtDesc(request.getPhone());
         if (otpOpt.isEmpty() || !otpOpt.get().getVerified()) {
@@ -69,6 +81,7 @@ public class CustomerAuthService {
         customer.setPassword_hash(passwordEncoder.encode(request.getPassword()));
         customer.setFull_name(request.getName());
         customer.setEmail(request.getEmail());
+        customer.setProfile_image(avatarService.generateIdenticon(request.getName()));
         customer.setCreated_at(ZonedDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh")).toLocalDate());
 
         // Lưu customer vào cơ sở dữ liệu
@@ -128,6 +141,7 @@ public class CustomerAuthService {
         response.put("phone", customer.getPhone());
         response.put("customerId", customer.getId());
         response.put("name", customer.getFull_name());
+        response.put("profile_image", customer.getProfile_image());
         response.put("role", "Customer");
 
         return ResponseEntity.ok(response);
