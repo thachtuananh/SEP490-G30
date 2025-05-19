@@ -55,20 +55,21 @@ public class CustomerJobController {
 	}
 
 	// Xem danh sách cleaner đã apply cho job
-	@GetMapping(value = "/applications/{customerId}/{jobId}")
+	@GetMapping(value = "/applications/{customerId}/{jobGroupCode}")
 	public ResponseEntity<List<Map<String, Object>>> getJobApplications(
-	    @PathVariable Long customerId, 
-	    @PathVariable Long jobId) {
-	    
-	    // Truyền customerId và jobId vào phương thức để xác thực
-	    List<Map<String, Object>> jobApplications = cleanerJobService.getApplicationsForJob(jobId, customerId);
-	    
-	    if (jobApplications.isEmpty()) {
-	        return ResponseEntity.status(404).body(List.of(Map.of("message", "No applications found")));
-	    }
-	    
-	    return ResponseEntity.ok(jobApplications);
+			@PathVariable Long customerId,
+			@PathVariable String jobGroupCode) {
+
+		List<Map<String, Object>> jobApplications = cleanerJobService.getApplicationsForJobGroup(jobGroupCode, customerId);
+
+		if (jobApplications.isEmpty()) {
+			return ResponseEntity.status(404).body(List.of(Map.of("message", "No applications found")));
+		}
+
+		return ResponseEntity.ok(jobApplications);
 	}
+
+
 
 
 

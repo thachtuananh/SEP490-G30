@@ -237,13 +237,6 @@ public class CleanerJobService {
 
 		Job job = jobOpt.get();
 
-//		List<JobServiceDetail> jobServiceDetails = jobDetailsRepository.findByJob_id(jobId);
-//		String serviceNames = jobServiceDetails.size() == 1
-//				? jobServiceDetails.get(0).getService().getName()
-//				: jobServiceDetails.stream()
-//				.map(detail -> detail.getService().getName())
-//				.collect(Collectors.joining(","));
-
 		// Kiểm tra trạng thái công việc
 		if (!job.getStatus().equals(JobStatus.OPEN)) {
 			response.put("message", "Job is no longer open or has been taken");
@@ -291,7 +284,6 @@ public class CleanerJobService {
 		customerNotification.setTimestamp(LocalDate.now());
 		customerNotification.setRead(false); // ✅ set read = false
 		notificationService.processNotification(customerNotification, "CUSTOMER", job.getCustomer().getId());
-
 		// Thêm thông báo thành công khi không có lỗi
 		response.put("message", "Cleaner has successfully applied for the job");
 		response.put("jobId", jobId);
@@ -300,6 +292,7 @@ public class CleanerJobService {
 
 		return response;
 	}
+
 
 
 
@@ -416,10 +409,9 @@ public class CleanerJobService {
 
 
 	// Get applications for job
-	public List<Map<String, Object>> getApplicationsForJob(Long jobId, Long customerId) {
+	public List<Map<String, Object>> getApplicationsForJobGroup(String jobGroupCode, Long customerId) {
 		Map<String, Object> response = new HashMap<>();
 
-		// Tìm customer theo customerId
 		Optional<Customers> customerOpt = customerRepo.findById(customerId);
 		if (!customerOpt.isPresent()) {
 			response.put("message", "Customer not found with customerId: " + customerId);
@@ -428,36 +420,44 @@ public class CleanerJobService {
 
 		Customers customer = customerOpt.get();
 
-		Job job = jobRepository.findById(jobId).orElse(null);
-		if (job == null) {
-			response.put("message", "Job not found");
+		List<Job> jobs = jobRepository.findByJobGroupCode(jobGroupCode);
+		if (jobs.isEmpty()) {
+			response.put("message", "No jobs found for jobGroupCode: " + jobGroupCode);
 			return List.of(response);
 		}
 
-		// Kiểm tra xem customer có phải là người đã tạo job này hay không
-		if (!job.getCustomer().getId().equals(customer.getId())) {
-			response.put("message", "You are not authorized to view applications for this job");
+		// Kiểm tra quyền của customer
+		if (!jobs.get(0).getCustomer().getId().equals(customer.getId())) {
+			response.put("message", "You are not authorized to view applications for this job group");
 			return List.of(response);
 		}
 
-		// Lấy danh sách các ứng viên có trạng thái "Pending"
-		List<JobApplication> jobApplications = jobApplicationRepository.findByJobAndStatus(job, "Pending");
-		if (jobApplications.isEmpty()) {
-			response.put("message", "No applications found for this job");
-			return List.of(response);
+		// Lấy tất cả các ứng viên Pending trong toàn bộ nhóm job
+		List<Map<String, Object>> applicationResponses = new ArrayList<>();
+
+		for (Job job : jobs) {
+			List<JobApplication> applications = jobApplicationRepository.findByJobAndStatus(job, "Pending");
+
+			for (JobApplication app : applications) {
+				Employee cleaner = app.getCleaner();
+				Map<String, Object> cleanerInfo = new HashMap<>();
+				cleanerInfo.put("cleanerId", cleaner.getId());
+				cleanerInfo.put("cleanerName", cleaner.getName());
+				cleanerInfo.put("profileImage", cleaner.getProfile_image());
+				cleanerInfo.put("phoneNumber", cleaner.getPhone());
+				cleanerInfo.put("jobId", job.getId());  // Gợi ý: thêm JobId để biết ứng viên apply cho job nào
+				applicationResponses.add(cleanerInfo);
+			}
 		}
 
-		// Chuyển các ứng viên thành thông tin cần thiết
-		return jobApplications.stream().map(application -> {
-			Employee cleaner = application.getCleaner();
-			Map<String, Object> cleanerInfo = new HashMap<>();
-			cleanerInfo.put("cleanerId", cleaner.getId());
-			cleanerInfo.put("cleanerName", cleaner.getName());
-			cleanerInfo.put("profileImage", cleaner.getProfile_image());
-			cleanerInfo.put("phoneNumber", cleaner.getPhone());  // Thêm số điện thoại của cleaner
-			return cleanerInfo;
-		}).collect(Collectors.toList());
+		if (applicationResponses.isEmpty()) {
+			return List.of(Map.of("message", "No applications found for any jobs in the group"));
+		}
+
+		return applicationResponses;
 	}
+
+
 
 
 	// accept hoặc reject cleaner

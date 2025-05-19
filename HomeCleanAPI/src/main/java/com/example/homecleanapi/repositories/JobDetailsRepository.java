@@ -10,7 +10,10 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface JobDetailsRepository extends JpaRepository<JobDetails, Long>{
+public interface JobDetailsRepository extends JpaRepository<JobServiceDetail, Long>{
 
-    List<JobServiceDetail> findByJob_id(Long jobId);
+    Optional<JobServiceDetail> findByJob_id(Long jobId);
+
+    //Optional<JobDetails> findByJob_id(Long jobId);
+
 }
