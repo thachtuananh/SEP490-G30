@@ -408,9 +408,10 @@ public class CleanerJobService {
 
 
 	// Get applications for job
-	public List<Map<String, Object>> getApplicationsForJobGroup(String jobGroupCode, Long customerId) {
+	public List<Map<String, Object>> getApplicationsForJob(Long jobId, Long customerId) {
 		Map<String, Object> response = new HashMap<>();
 
+		// Tìm customer theo customerId
 		Optional<Customers> customerOpt = customerRepo.findById(customerId);
 		if (!customerOpt.isPresent()) {
 			response.put("message", "Customer not found with customerId: " + customerId);
@@ -419,41 +420,35 @@ public class CleanerJobService {
 
 		Customers customer = customerOpt.get();
 
-		List<Job> jobs = jobRepository.findByJobGroupCode(jobGroupCode);
-		if (jobs.isEmpty()) {
-			response.put("message", "No jobs found for jobGroupCode: " + jobGroupCode);
+		Job job = jobRepository.findById(jobId).orElse(null);
+		if (job == null) {
+			response.put("message", "Job not found");
 			return List.of(response);
 		}
 
-		// Kiểm tra quyền của customer
-		if (!jobs.get(0).getCustomer().getId().equals(customer.getId())) {
-			response.put("message", "You are not authorized to view applications for this job group");
+		// Kiểm tra xem customer có phải là người đã tạo job này hay không
+		if (!job.getCustomer().getId().equals(customer.getId())) {
+			response.put("message", "You are not authorized to view applications for this job");
 			return List.of(response);
 		}
 
-		// Lấy tất cả các ứng viên Pending trong toàn bộ nhóm job
-		List<Map<String, Object>> applicationResponses = new ArrayList<>();
-
-		for (Job job : jobs) {
-			List<JobApplication> applications = jobApplicationRepository.findByJobAndStatus(job, "Pending");
-
-			for (JobApplication app : applications) {
-				Employee cleaner = app.getCleaner();
-				Map<String, Object> cleanerInfo = new HashMap<>();
-				cleanerInfo.put("cleanerId", cleaner.getId());
-				cleanerInfo.put("cleanerName", cleaner.getName());
-				cleanerInfo.put("profileImage", cleaner.getProfile_image());
-				cleanerInfo.put("phoneNumber", cleaner.getPhone());
-				cleanerInfo.put("jobId", job.getId());  // Gợi ý: thêm JobId để biết ứng viên apply cho job nào
-				applicationResponses.add(cleanerInfo);
-			}
+		// Lấy danh sách các ứng viên có trạng thái "Pending"
+		List<JobApplication> jobApplications = jobApplicationRepository.findByJobAndStatus(job, "Pending");
+		if (jobApplications.isEmpty()) {
+			response.put("message", "No applications found for this job");
+			return List.of(response);
 		}
 
-		if (applicationResponses.isEmpty()) {
-			return List.of(Map.of("message", "No applications found for any jobs in the group"));
-		}
-
-		return applicationResponses;
+		// Chuyển các ứng viên thành thông tin cần thiết
+		return jobApplications.stream().map(application -> {
+			Employee cleaner = application.getCleaner();
+			Map<String, Object> cleanerInfo = new HashMap<>();
+			cleanerInfo.put("cleanerId", cleaner.getId());
+			cleanerInfo.put("cleanerName", cleaner.getName());
+			cleanerInfo.put("profileImage", cleaner.getProfile_image());
+			cleanerInfo.put("phoneNumber", cleaner.getPhone());  // Thêm số điện thoại của cleaner
+			return cleanerInfo;
+		}).collect(Collectors.toList());
 	}
 
 
