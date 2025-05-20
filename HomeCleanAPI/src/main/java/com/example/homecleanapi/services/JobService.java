@@ -821,7 +821,7 @@ public class JobService {
                     jobInfo.put("status", "DONE");
                 } else {
                     // Có job đang chờ hoặc đang làm
-                    jobInfo.put("status", "IN_PROGRESS");
+                    jobInfo.put("status", "DOING");
                 }
             }
         }
