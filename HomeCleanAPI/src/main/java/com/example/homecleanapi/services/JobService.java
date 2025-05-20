@@ -795,27 +795,37 @@ public class JobService {
             jobGroupMap.put(groupKey, jobInfo);
         }
 
-        // ✅ Chỉ cập nhật status = IN_PROGRESS nếu jobGroupCode bắt đầu bằng "JG" và chưa DONE
+        // Chỉ cập nhật status = IN_PROGRESS nếu jobGroupCode bắt đầu bằng "JG" và chưa DONE
+        // Chỉ cập nhật status nếu jobGroupCode bắt đầu bằng "JG"
         for (Map.Entry<String, Map<String, Object>> entry : jobGroupMap.entrySet()) {
             String groupKey = entry.getKey();
             Map<String, Object> jobInfo = entry.getValue();
             List<Map<String, Object>> subJobs = (List<Map<String, Object>>) jobInfo.get("subJobs");
 
-            boolean allDone = subJobs.stream()
-                    .allMatch(subJob -> "DONE".equals(subJob.get("status")));
-
             boolean isMultiDayGroup = groupKey.startsWith("JG");
 
             if (isMultiDayGroup) {
-                if (!allDone) {
-                    jobInfo.put("status", "IN_PROGRESS");
-                } else {
+                long total = subJobs.size();
+                long doneCount = subJobs.stream().filter(subJob -> "DONE".equals(subJob.get("status"))).count();
+                long cancelledCount = subJobs.stream().filter(subJob ->
+                        "CANCELLED".equals(subJob.get("status")) || "AUTO_CANCELLED".equals(subJob.get("status"))
+                ).count();
+
+                if (cancelledCount == total) {
+                    // Tất cả job con bị huỷ
+                    boolean hasAutoCancelled = subJobs.stream()
+                            .anyMatch(subJob -> "AUTO_CANCELLED".equals(subJob.get("status")));
+                    jobInfo.put("status", hasAutoCancelled ? "AUTO_CANCELLED" : "CANCELLED");
+                } else if ((doneCount + cancelledCount) == total && doneCount > 0) {
+                    // Có ít nhất một DONE, các job còn lại bị huỷ
                     jobInfo.put("status", "DONE");
+                } else {
+                    // Có job đang chờ hoặc đang làm
+                    jobInfo.put("status", "IN_PROGRESS");
                 }
-            } else {
-                // Giữ nguyên status gốc của job đơn lẻ (đã được set từ job ban đầu)
             }
         }
+
 
         return new ArrayList<>(jobGroupMap.values());
     }
