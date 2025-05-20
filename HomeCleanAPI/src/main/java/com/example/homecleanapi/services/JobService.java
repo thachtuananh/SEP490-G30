@@ -710,8 +710,6 @@ public class JobService {
             return (cmp != 0) ? cmp : job2.getScheduledTime().compareTo(job1.getScheduledTime());
         });
 
-
-
         Map<String, Map<String, Object>> jobGroupMap = new LinkedHashMap<>();
 
         for (Job job : jobs) {
@@ -727,8 +725,6 @@ public class JobService {
                 jobInfo.put("totalPrice", 0.0);
                 jobInfo.put("services", new ArrayList<Map<String, Object>>());
                 jobInfo.put("subJobs", new ArrayList<Map<String, Object>>());
-
-
                 jobInfo.put("booking_type", job.getBookingType());
 
                 if (job.getCustomerAddress() != null) {
@@ -745,17 +741,14 @@ public class JobService {
                 }
             }
 
-            // Cộng tổng giá tiền
             Double currentTotal = (Double) jobInfo.get("totalPrice");
             jobInfo.put("totalPrice", currentTotal + job.getTotalPrice());
 
-            // Cập nhật thời gian sớm nhất
             LocalDateTime currentTime = (LocalDateTime) jobInfo.get("scheduledTime");
             if (job.getScheduledTime().isBefore(currentTime)) {
                 jobInfo.put("scheduledTime", job.getScheduledTime());
             }
 
-            // Gộp dịch vụ vào list tổng
             List<JobServiceDetail> jobServiceDetails = jobServiceDetailRepository.findByJobId(job.getId());
             List<Map<String, Object>> overallServiceList = (List<Map<String, Object>>) jobInfo.get("services");
             List<Map<String, Object>> subJobServices = new ArrayList<>();
@@ -779,11 +772,10 @@ public class JobService {
                     }
 
                     subJobServices.add(serviceInfo);
-                    overallServiceList.add(serviceInfo); // Optional: comment this if you don’t want duplicates
+                    overallServiceList.add(serviceInfo);
                 }
             }
 
-            // Thêm sub-job vào mảng phụ bên trong
             List<Map<String, Object>> subJobs = (List<Map<String, Object>>) jobInfo.get("subJobs");
 
             Map<String, Object> subJobInfo = new HashMap<>();
@@ -793,19 +785,52 @@ public class JobService {
             subJobInfo.put("totalPrice", job.getTotalPrice());
             subJobInfo.put("services", subJobServices);
 
-            // Ghi nhận cleaner nếu có
             JobApplication jobApplication = jobApplicationRepository.findByJobIdAndStatus(job.getId(), "Accepted");
             if (jobApplication != null && jobApplication.getCleaner() != null) {
                 subJobInfo.put("cleanerId", jobApplication.getCleaner().getId());
-                jobInfo.put("cleanerId", jobApplication.getCleaner().getId()); // Gán cho toàn nhóm
+                jobInfo.put("cleanerId", jobApplication.getCleaner().getId());
             }
 
             subJobs.add(subJobInfo);
             jobGroupMap.put(groupKey, jobInfo);
         }
 
+        // Chỉ cập nhật status = IN_PROGRESS nếu jobGroupCode bắt đầu bằng "JG" và chưa DONE
+        // Chỉ cập nhật status nếu jobGroupCode bắt đầu bằng "JG"
+        for (Map.Entry<String, Map<String, Object>> entry : jobGroupMap.entrySet()) {
+            String groupKey = entry.getKey();
+            Map<String, Object> jobInfo = entry.getValue();
+            List<Map<String, Object>> subJobs = (List<Map<String, Object>>) jobInfo.get("subJobs");
+
+            boolean isMultiDayGroup = groupKey.startsWith("JG");
+
+            if (isMultiDayGroup) {
+                long total = subJobs.size();
+                long doneCount = subJobs.stream().filter(subJob -> "DONE".equals(subJob.get("status"))).count();
+                long cancelledCount = subJobs.stream().filter(subJob ->
+                        "CANCELLED".equals(subJob.get("status")) || "AUTO_CANCELLED".equals(subJob.get("status"))
+                ).count();
+
+                if (cancelledCount == total) {
+                    // Tất cả job con bị huỷ
+                    boolean hasAutoCancelled = subJobs.stream()
+                            .anyMatch(subJob -> "AUTO_CANCELLED".equals(subJob.get("status")));
+                    jobInfo.put("status", hasAutoCancelled ? "AUTO_CANCELLED" : "CANCELLED");
+                } else if ((doneCount + cancelledCount) == total && doneCount > 0) {
+                    // Có ít nhất một DONE, các job còn lại bị huỷ
+                    jobInfo.put("status", "DONE");
+                } else {
+                    // Có job đang chờ hoặc đang làm
+                    jobInfo.put("status", "DOING");
+                }
+            }
+        }
+
+
         return new ArrayList<>(jobGroupMap.values());
     }
+
+
 
 
 
