@@ -282,7 +282,7 @@ public class CleanerJobService {
 		customerNotification.setMessage("[Mã công việc: "+ job.getOrderCode() + "] Người dọn dẹp: " + cleaner.getName() + " vừa ứng tuyển vào công việc ");
 		customerNotification.setType("AUTO_MESSAGE");
 		customerNotification.setTimestamp(LocalDate.now());
-		customerNotification.setRead(false); // ✅ set read = false
+		customerNotification.setRead(false);
 		notificationService.processNotification(customerNotification, "CUSTOMER", job.getCustomer().getId());
 		// Thêm thông báo thành công khi không có lỗi
 		response.put("message", "Cleaner has successfully applied for the job");
@@ -451,6 +451,7 @@ public class CleanerJobService {
 			return cleanerInfo;
 		}).collect(Collectors.toList());
 	}
+
 
 
 
