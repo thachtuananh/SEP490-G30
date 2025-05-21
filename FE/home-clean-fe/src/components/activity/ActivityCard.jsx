@@ -133,7 +133,7 @@ export const ActivityCard = ({ data, onDelete }) => {
     switch (status) {
       case "OPEN":
         return "Đang chờ người nhận";
-      case "PAIDVNPay":
+      case "PAID":
         return "Đang chờ thanh toán qua VNPay";
       case "PENDING_APPROVAL":
         return "Chờ phê duyệt";
