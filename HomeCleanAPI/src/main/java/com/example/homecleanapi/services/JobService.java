@@ -1067,7 +1067,7 @@ public class JobService {
 
         NotificationDTO customerNotification = new NotificationDTO();
         customerNotification.setUserId(job.getCustomer().getId());
-        customerNotification.setMessage("Bạn đã huỷ công việc thành công");
+        customerNotification.setMessage("Mã công việc [" + job.getOrderCode() + "] Bạn đã huỷ công việc thành công");
         customerNotification.setType("AUTO_MESSAGE");
         customerNotification.setTimestamp(LocalDate.now());
         customerNotification.setRead(false); // ✅ set read = false

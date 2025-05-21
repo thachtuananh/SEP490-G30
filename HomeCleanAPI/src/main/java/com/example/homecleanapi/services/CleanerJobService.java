@@ -707,7 +707,7 @@ public class CleanerJobService {
 		job.setStatus(JobStatus.COMPLETED);
 		jobRepository.save(job);
 
-		String message = "[Mã công việc: "+ job.getOrderCode() +"] Người dọn dẹp: " + cleaner.getName() + " đã hoàn thành công việc " + job.getScheduledTime() +" Xin vui lòng truy cập và xác nhận đã hoàn thành để thanh toán cho người dọn dẹp.";
+		String message = "[Mã công việc: "+ job.getOrderCode() +"] Người dọn dẹp: " + cleaner.getName() + " đã hoàn thành công việc. Xin vui lòng truy cập và xác nhận đã hoàn thành để thanh toán cho người dọn dẹp.";
 		NotificationDTO customerNotification = new NotificationDTO();
 		customerNotification.setUserId(job.getCustomer().getId());
 		customerNotification.setMessage(message);
