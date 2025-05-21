@@ -42,7 +42,11 @@ const ServiceSelectionModal = ({
   const filteredServices = allServices.filter(
     (service) =>
       service.serviceId !== 5 &&
-      !(service.serviceId === "combo" && service.displayId === 5)
+      !(
+        service.serviceId === "office" ||
+        service.serviceId === "periodic" ||
+        (service.serviceId === "combo" && service.displayId === 5)
+      )
   );
 
   return (

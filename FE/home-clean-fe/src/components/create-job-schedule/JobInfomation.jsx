@@ -1,5 +1,5 @@
 import React, { useContext, useState, useEffect } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { AuthContext } from "../../context/AuthContext";
 import { message, Typography, Modal, Checkbox, List } from "antd";
 import styles from "../../assets/CSS/createjob/JobInformation.module.css";
@@ -8,23 +8,23 @@ import { createJobShedule } from "../../services/owner/OwnerAPI";
 
 const { Title, Text, Paragraph } = Typography;
 
-const JobInfomation = ({
+const JobInformation = ({
   serviceSchedules,
   paymentMethod,
   reminder,
   priceAdjustment,
+  price,
+  address,
+  customerAddressId,
+  serviceDetails,
 }) => {
-  const location = useLocation();
   const navigate = useNavigate();
-  const state = location.state || {};
-  const serviceDetails = state.serviceDetails || [];
-  const customerAddressId = state.customerAddressId;
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isRedirecting, setIsRedirecting] = useState(false);
   const [currentTime, setCurrentTime] = useState(dayjs());
-  const [basePrice, setBasePrice] = useState(state.price || 0);
-  const [adjustedPrice, setAdjustedPrice] = useState(state.price || 0);
+  const [basePrice, setBasePrice] = useState(price || 0);
+  const [adjustedPrice, setAdjustedPrice] = useState(price || 0);
   const [serviceNames, setServiceNames] = useState({});
   const [serviceDetailsMap, setServiceDetailsMap] = useState({});
 
@@ -44,8 +44,7 @@ const JobInfomation = ({
       serviceDetails.forEach((service) => {
         nameMap[service.serviceId] =
           service.serviceName || `Dịch vụ ${service.serviceId}`;
-        // Tạo một map để dễ dàng truy cập serviceDetailId theo serviceId
-        detailsMap[service.serviceId] = service;
+        detailsMap[service.serviceDetailId] = service;
       });
       setServiceNames(nameMap);
       setServiceDetailsMap(detailsMap);
@@ -62,17 +61,16 @@ const JobInfomation = ({
   }, [priceAdjustment, basePrice]);
 
   useEffect(() => {
-    if (state.price) {
-      setBasePrice(state.price);
+    if (price) {
+      setBasePrice(price);
       if (priceAdjustment) {
-        const adjustmentAmount =
-          state.price * (priceAdjustment.percentage / 100);
-        setAdjustedPrice(state.price + adjustmentAmount);
+        const adjustmentAmount = price * (priceAdjustment.percentage / 100);
+        setAdjustedPrice(price + adjustmentAmount);
       } else {
-        setAdjustedPrice(state.price);
+        setAdjustedPrice(price);
       }
     }
-  }, [state.price]);
+  }, [price, priceAdjustment]);
 
   const validateJobTimes = async () => {
     let hasSchedules = false;
@@ -147,33 +145,31 @@ const JobInfomation = ({
         return;
       }
 
-      const jobs = [];
+      // Group schedules by jobTime to create jobs with multiple services
+      const jobMap = {};
       for (const serviceId in serviceSchedules) {
         if (serviceSchedules[serviceId].length > 0) {
-          // Lấy serviceDetailId từ map đã tạo
-          const serviceDetail = serviceDetailsMap[serviceId];
-
           serviceSchedules[serviceId].forEach((schedule) => {
-            jobs.push({
-              jobTime: schedule.jobTime,
-              services: [
-                {
-                  serviceId: Number(serviceId),
-                  // Đảm bảo serviceDetailId được truyền chính xác
-                  serviceDetailId: serviceDetail?.serviceDetailId
-                    ? Number(serviceDetail.serviceDetailId)
-                    : null,
-                  imageUrl: "http://example.com/room.jpg",
-                },
-              ],
+            const jobTime = dayjs(schedule.jobTime).format(
+              "YYYY-MM-DDTHH:mm:ss"
+            );
+            if (!jobMap[jobTime]) {
+              jobMap[jobTime] = [];
+            }
+            jobMap[jobTime].push({
+              serviceId: Number(serviceId),
+              serviceDetailId: Number(schedule.serviceDetailId),
+              imageUrl: "http://example.com/room.jpg",
             });
           });
         }
       }
 
-      // Log để debug trước khi gửi API
-      console.log("Job data being sent:", JSON.stringify(jobs, null, 2));
-      console.log("Service details map:", serviceDetailsMap);
+      // Convert jobMap to jobs array
+      const jobs = Object.keys(jobMap).map((jobTime) => ({
+        jobTime,
+        services: jobMap[jobTime],
+      }));
 
       const jobData = {
         customerAddressId: Number(customerAddressId),
@@ -186,8 +182,6 @@ const JobInfomation = ({
 
       if (paymentMethod === "VNPay" && responseData.paymentUrl) {
         setIsRedirecting(true);
-
-        // Tạo đếm ngược từ 3 xuống 0
         let countDown = 3;
         const messageKey = "redirectCountdown";
 
@@ -197,7 +191,6 @@ const JobInfomation = ({
           duration: 3.5,
         });
 
-        // Cập nhật đếm ngược mỗi giây
         const interval = setInterval(() => {
           countDown -= 1;
           message.info({
@@ -217,7 +210,6 @@ const JobInfomation = ({
         return;
       }
 
-      // if (responseData.status === "OPEN") {
       if (responseData.message === "Đặt lịch thành công") {
         message.success("Đăng việc thành công!");
         navigate("/");
@@ -236,9 +228,33 @@ const JobInfomation = ({
   const isProcessing = isSubmitting || isRedirecting;
 
   const getServiceName = (serviceId) => {
-    // Sử dụng tên đã lưu trong state nếu có
     return serviceNames[serviceId] || `Dịch vụ ${serviceId}`;
   };
+
+  // Filter serviceDetails based on serviceSchedules
+  const getScheduledServiceDetails = () => {
+    const scheduledDetails = new Set();
+    Object.keys(serviceSchedules).forEach((serviceId) => {
+      serviceSchedules[serviceId].forEach((schedule) => {
+        const detail = serviceDetails.find(
+          (d) => d.serviceDetailId === schedule.serviceDetailId
+        );
+        if (detail) {
+          scheduledDetails.add(
+            JSON.stringify({
+              serviceId: detail.serviceId,
+              serviceName: getServiceName(detail.serviceId),
+              minRoomSize: detail.minRoomSize,
+              maxSize: detail.maxSize,
+            })
+          );
+        }
+      });
+    });
+    return Array.from(scheduledDetails).map((item) => JSON.parse(item));
+  };
+
+  const scheduledServiceDetails = getScheduledServiceDetails();
 
   return (
     <div className={styles.jobInfoContainer}>
@@ -273,7 +289,23 @@ const JobInfomation = ({
                             </div>
                             <div className={styles.scheduleTime}>
                               {schedule.hour.toString().padStart(2, "0")}:
-                              {schedule.minute.toString().padStart(2, "0")}
+                              {schedule.minute.toString().padStart(2, "0")} |{" "}
+                              {
+                                serviceDetails.find(
+                                  (d) =>
+                                    d.serviceDetailId ===
+                                    schedule.serviceDetailId
+                                )?.minRoomSize
+                              }
+                              m² -{" "}
+                              {
+                                serviceDetails.find(
+                                  (d) =>
+                                    d.serviceDetailId ===
+                                    schedule.serviceDetailId
+                                )?.maxSize
+                              }
+                              m²
                             </div>
                           </div>
                         </List.Item>
@@ -290,17 +322,21 @@ const JobInfomation = ({
       </Title>
       <Paragraph className={styles.infoRow}>
         <Text>Địa điểm</Text>
-        <Text>{state.address}</Text>
+        <Text>{address || "Chưa chọn địa chỉ"}</Text>
       </Paragraph>
       <Paragraph className={styles.infoRow}>
         <Text>Khối lượng công việc</Text>
         <Text className={styles.serviceTags}>
-          {serviceDetails.map((service, index) => (
-            <Text key={index} className={styles.serviceTag}>
-              {service.serviceName} | {service.selectedSize}m² -{" "}
-              {service.maxSize}m²
-            </Text>
-          ))}
+          {scheduledServiceDetails.length > 0 ? (
+            scheduledServiceDetails.map((service, index) => (
+              <Text key={index} className={styles.serviceTag}>
+                {service.serviceName} | {service.minRoomSize}m² -{" "}
+                {service.maxSize}m²
+              </Text>
+            ))
+          ) : (
+            <Text>Chưa chọn dịch vụ</Text>
+          )}
         </Text>
       </Paragraph>
       <Paragraph className={styles.infoRow}>
@@ -314,36 +350,40 @@ const JobInfomation = ({
 
       <div className={styles.divider}></div>
 
-      <div className={styles.totalContainer}>
-        {priceAdjustment && basePrice !== adjustedPrice && (
+      {basePrice > 0 ? ( // Chỉ hiển thị giá nếu basePrice > 0
+        <div className={styles.totalContainer}>
+          {priceAdjustment && basePrice !== adjustedPrice && (
+            <div className={styles.priceColumn}>
+              <div className={styles.priceLabelValue}>
+                <Text className={styles.priceLabel}>Giá cơ bản</Text>
+                <Text className={styles.priceValue}>
+                  {basePrice.toLocaleString()} VNĐ
+                </Text>
+              </div>
+            </div>
+          )}
+          {priceAdjustment && (
+            <div className={styles.priceColumn}>
+              <div className={styles.priceLabelValue}>
+                <Text className={styles.priceLabel}>Phụ phí</Text>
+                <Text className={styles.priceValue} style={{ color: "red" }}>
+                  +{priceAdjustment.percentage}% do {priceAdjustment.reason}
+                </Text>
+              </div>
+            </div>
+          )}
           <div className={styles.priceColumn}>
             <div className={styles.priceLabelValue}>
-              <Text className={styles.priceLabel}>Giá cơ bản</Text>
+              <Text className={styles.priceLabel}>Tổng thanh toán</Text>
               <Text className={styles.priceValue}>
-                {basePrice.toLocaleString()} VNĐ
+                {Math.round(adjustedPrice).toLocaleString()} VNĐ
               </Text>
             </div>
-          </div>
-        )}
-        {priceAdjustment && (
-          <div className={styles.priceColumn}>
-            <div className={styles.priceLabelValue}>
-              <Text className={styles.priceLabel}>Phụ phí</Text>
-              <Text className={styles.priceValue} style={{ color: "red" }}>
-                +{priceAdjustment.percentage}% do {priceAdjustment.reason}
-              </Text>
-            </div>
-          </div>
-        )}
-        <div className={styles.priceColumn}>
-          <div className={styles.priceLabelValue}>
-            <Text className={styles.priceLabel}>Tổng thanh toán</Text>
-            <Text className={styles.priceValue}>
-              {Math.round(adjustedPrice).toLocaleString()} VNĐ
-            </Text>
           </div>
         </div>
-      </div>
+      ) : (
+        <Paragraph>Chưa có lịch trình nào để tính giá.</Paragraph>
+      )}
 
       <div style={{ margin: "16px 0px" }}>
         <Checkbox
@@ -388,4 +428,4 @@ const JobInfomation = ({
   );
 };
 
-export default JobInfomation;
+export default JobInformation;

@@ -257,7 +257,7 @@ const AddressSelectionModal = ({
                       <span className={styles.phoneNumber}>
                         {address.customer.phone || "Không có số điện thoại"}
                       </span>
-                      {address.isDefault && (
+                      {(address.isDefault || address.current) && (
                         <span className={styles.defaultTag}>Mặc định</span>
                       )}
                     </div>

@@ -126,7 +126,7 @@ const JobUpload = () => {
 
       // Navigate to different routes based on mode
       if (isScheduleMode) {
-        navigate("/service-details-schedule", {
+        navigate("/createjob-schedule", {
           state: {
             selectedServices,
             allServices,
