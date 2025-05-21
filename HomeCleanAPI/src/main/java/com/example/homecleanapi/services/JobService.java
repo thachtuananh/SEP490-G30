@@ -742,6 +742,13 @@ public class JobService {
                     jobInfo.put("customerName", job.getCustomer().getFull_name());
                     jobInfo.put("customerPhone", job.getCustomer().getPhone());
                 }
+
+                // ✅ Luôn gán cleanerId từ bảng Job, kể cả null
+                if (job.getCleaner() != null) {
+                    jobInfo.put("cleanerId", job.getCleaner().getId());
+                } else {
+                    jobInfo.put("cleanerId", null);
+                }
             }
 
             Double currentTotal = (Double) jobInfo.get("totalPrice");
@@ -788,18 +795,18 @@ public class JobService {
             subJobInfo.put("totalPrice", job.getTotalPrice());
             subJobInfo.put("services", subJobServices);
 
+            // Không gán cleanerId vào subJobInfo
+            // CŨ: Lấy cleaner từ jobApplication (giữ nguyên nếu cần fallback cho nhóm JOB-GROUP)
             JobApplication jobApplication = jobApplicationRepository.findByJobIdAndStatus(job.getId(), "Accepted");
             if (jobApplication != null && jobApplication.getCleaner() != null) {
-                subJobInfo.put("cleanerId", jobApplication.getCleaner().getId());
-                jobInfo.put("cleanerId", jobApplication.getCleaner().getId());
+                jobInfo.put("cleanerId", jobApplication.getCleaner().getId()); // Gán vào jobInfo (tổng)
             }
 
             subJobs.add(subJobInfo);
             jobGroupMap.put(groupKey, jobInfo);
         }
 
-        // Chỉ cập nhật status = IN_PROGRESS nếu jobGroupCode bắt đầu bằng "JG" và chưa DONE
-        // Chỉ cập nhật status nếu jobGroupCode bắt đầu bằng "JG"
+        // Cập nhật status cho job group nếu là nhiều ngày
         for (Map.Entry<String, Map<String, Object>> entry : jobGroupMap.entrySet()) {
             String groupKey = entry.getKey();
             Map<String, Object> jobInfo = entry.getValue();
@@ -815,23 +822,22 @@ public class JobService {
                 ).count();
 
                 if (cancelledCount == total) {
-                    // Tất cả job con bị huỷ
                     boolean hasAutoCancelled = subJobs.stream()
                             .anyMatch(subJob -> "AUTO_CANCELLED".equals(subJob.get("status")));
                     jobInfo.put("status", hasAutoCancelled ? "AUTO_CANCELLED" : "CANCELLED");
                 } else if ((doneCount + cancelledCount) == total && doneCount > 0) {
-                    // Có ít nhất một DONE, các job còn lại bị huỷ
                     jobInfo.put("status", "DONE");
                 } else {
-                    // Có job đang chờ hoặc đang làm
                     jobInfo.put("status", "DOING");
                 }
             }
         }
 
-
         return new ArrayList<>(jobGroupMap.values());
     }
+
+
+
 
 
 

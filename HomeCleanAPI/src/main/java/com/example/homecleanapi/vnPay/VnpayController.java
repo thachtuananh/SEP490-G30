@@ -59,7 +59,12 @@ public class VnpayController {
 
                 if (!jobs.isEmpty()) {
                     for (Job job : jobs) {
-                        job.setStatus(JobStatus.OPEN);
+                        // 🔧 Cập nhật theo booking_type
+                        if ("CREATE".equalsIgnoreCase(job.getBookingType())) {
+                            job.setStatus(JobStatus.OPEN);
+                        } else if ("BOOKED".equalsIgnoreCase(job.getBookingType())) {
+                            job.setStatus(JobStatus.BOOKED);
+                        }
                     }
                     jobRepository.saveAll(jobs);
 
