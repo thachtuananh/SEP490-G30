@@ -11,7 +11,7 @@ import {
 } from "antd";
 import { InfoCleanerCard } from "../activity/InfoCleanerCard";
 import { InfoCleanerCardDetail } from "../activity/InfoCleanerCardDetail";
-import { JobDetailModal } from "./JobDetailModal"; // Import JobDetailModal
+import { JobDetailModal } from "./JobDetailModal";
 import styles from "../activity/ActivityCard.module.css";
 import {
   FaRegCommentAlt,
@@ -61,7 +61,6 @@ export const ActivityCard = ({ data, onDelete }) => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [searchOrderCode, setSearchOrderCode] = useState("");
-  // Thêm state cho JobDetailModal
   const [isJobDetailModalOpen, setIsJobDetailModalOpen] = useState(false);
   const [jobDetail, setJobDetail] = useState(null);
   const [jobDetailLoading, setJobDetailLoading] = useState(false);
@@ -69,11 +68,9 @@ export const ActivityCard = ({ data, onDelete }) => {
   const customerName = sessionStorage.getItem("name");
   const customerPhone = sessionStorage.getItem("phone");
 
-  // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(4);
 
-  // Initialize activities from props
   useEffect(() => {
     if (data) {
       setActivities(data);
@@ -114,6 +111,8 @@ export const ActivityCard = ({ data, onDelete }) => {
         return "#f1ab0f";
       case "IN_PROGRESS":
         return "#e67e22";
+      case "DOING":
+        return "#e67e22";
       case "ARRIVED":
         return "#9b59b6";
       case "COMPLETED":
@@ -134,12 +133,14 @@ export const ActivityCard = ({ data, onDelete }) => {
     switch (status) {
       case "OPEN":
         return "Đang chờ người nhận";
-      case "PAID":
+      case "PAIDVNPay":
         return "Đang chờ thanh toán qua VNPay";
       case "PENDING_APPROVAL":
         return "Chờ phê duyệt";
       case "IN_PROGRESS":
         return "Người nhận việc đang tới";
+      case "DOING":
+        return "Đang thực hiện";
       case "ARRIVED":
         return "Người nhận việc đã tới";
       case "COMPLETED":
@@ -173,7 +174,6 @@ export const ActivityCard = ({ data, onDelete }) => {
     }
   };
 
-  // Hàm gọi API lấy chi tiết công việc
   const fetchJobDetail = async (jobId) => {
     setJobDetailLoading(true);
     try {
@@ -619,23 +619,31 @@ export const ActivityCard = ({ data, onDelete }) => {
                 <div className={styles.services}>
                   {activity.subJobs &&
                     activity.subJobs.map((subJob, idx) => (
-                      <div key={idx} className={styles.serviceDetails}>
-                        <div className={styles.serviceTitle}>
-                          {subJob.services[0]?.serviceName} -{" "}
-                          {new Date(subJob.scheduledTime).toLocaleString(
-                            "vi-VN",
-                            {
-                              day: "2-digit",
-                              month: "2-digit",
-                              year: "numeric",
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            }
-                          )}
-                        </div>
-                        <div className={styles.serviceArea}>
-                          {subJob.services[0]?.serviceDetailAreaRange}
-                        </div>
+                      <div key={idx}>
+                        {subJob.services &&
+                          subJob.services.map((service, serviceIdx) => (
+                            <div
+                              key={serviceIdx}
+                              className={styles.serviceDetails}
+                            >
+                              <div className={styles.serviceTitle}>
+                                {service.serviceName} -{" "}
+                                {new Date(subJob.scheduledTime).toLocaleString(
+                                  "vi-VN",
+                                  {
+                                    day: "2-digit",
+                                    month: "2-digit",
+                                    year: "numeric",
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                  }
+                                )}
+                              </div>
+                              <div className={styles.serviceArea}>
+                                {service.serviceDetailAreaRange}
+                              </div>
+                            </div>
+                          ))}
                       </div>
                     ))}
                 </div>
@@ -654,7 +662,6 @@ export const ActivityCard = ({ data, onDelete }) => {
               <div className={styles.divider}></div>
               <div className={styles.footer}>
                 <div className={styles.actionButtons}>
-                  {/* Thêm nút Xem chi tiết dịch vụ */}
                   <Button
                     type="default"
                     onClick={() => fetchJobDetail(activity.jobId)}
@@ -707,25 +714,10 @@ export const ActivityCard = ({ data, onDelete }) => {
                       </Button>
                     </div>
                   )}
-                  {/* {(activity.status === "OPEN" ||
-                    activity.status === "BOOKED") &&
-                    applicationsCount[activity.jobId] > 0 && (
-                      <Badge
-                        count={applicationsCount[activity.jobId]}
-                        size="small"
-                      >
-                        <Button
-                          type="primary"
-                          className={styles.statusButton}
-                          onClick={() => openModal(activity.jobId)}
-                        >
-                          Người dọn dẹp đã ứng tuyển
-                        </Button>
-                      </Badge>
-                    )} */}
                   {(activity.status === "DONE" ||
                     activity.status === "COMPLETED" ||
-                    activity.status === "IN_PROGRESS") && (
+                    activity.status === "IN_PROGRESS" ||
+                    activity.status === "BOOKED") && (
                     <Button
                       type="default"
                       onClick={() =>
@@ -852,7 +844,6 @@ export const ActivityCard = ({ data, onDelete }) => {
           />
         )}
       </Modal>
-      {/* Thêm JobDetailModal */}
       <JobDetailModal
         isOpen={isJobDetailModalOpen}
         onClose={() => {
@@ -877,7 +868,6 @@ export const ActivityCard = ({ data, onDelete }) => {
         isProcessing={isProcessing}
         customerId={customerId}
       />
-
       <FeedbackModal
         visible={isFeedbackModalOpen}
         jobId={selectedJobIdForFeedback}

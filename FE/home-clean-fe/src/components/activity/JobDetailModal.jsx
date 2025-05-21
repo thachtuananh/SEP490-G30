@@ -46,7 +46,6 @@ export const JobDetailModal = ({
   useEffect(() => {
     if (jobDetail) {
       setLocalJobDetail({ ...jobDetail });
-      // Fetch cleaner applications for each sub-job with OPEN or BOOKED status
       if (jobDetail.subJobs) {
         jobDetail.subJobs.forEach((subJob) => {
           if (subJob.status === "OPEN") {
@@ -54,7 +53,6 @@ export const JobDetailModal = ({
           }
         });
       } else if (jobDetail.status === "OPEN") {
-        // Fetch applications for single job if no subJobs
         fetchApplicationsForSubJob(jobDetail.jobId);
       }
     }
@@ -285,7 +283,7 @@ export const JobDetailModal = ({
   const handleRejectCleanerWithUpdate = async (jobId, cleanerId) => {
     try {
       await rejectCleaner(jobId, cleanerId, customerId);
-      message.success("Từ chối người siano dọn dẹp thành công!");
+      message.success("Từ chối người dọn dẹp thành công!");
       fetchApplicationsForSubJob(jobId);
     } catch (error) {
       console.error("Error rejecting cleaner:", error);
@@ -461,14 +459,24 @@ export const JobDetailModal = ({
           </div>
         </div>
         <div className={styles.services}>
-          <div className={styles.serviceDetails}>
-            <div className={styles.serviceTitle}>
-              {subJob.services[0]?.serviceName}
-            </div>
-            <div className={styles.serviceArea}>
-              {subJob.services[0]?.serviceDetailAreaRange}
-            </div>
-          </div>
+          {subJob.services &&
+            subJob.services.map((service, serviceIdx) => (
+              <div key={serviceIdx} className={styles.serviceDetails}>
+                <div className={styles.serviceTitle}>
+                  {service.serviceName} -{" "}
+                  {new Date(subJob.scheduledTime).toLocaleString("vi-VN", {
+                    day: "2-digit",
+                    month: "2-digit",
+                    year: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                </div>
+                <div className={styles.serviceArea}>
+                  {service.serviceDetailAreaRange}
+                </div>
+              </div>
+            ))}
         </div>
 
         <div className={styles.statusAndPrice}>
@@ -677,7 +685,16 @@ export const JobDetailModal = ({
         </div>
         <div className={styles.services}>
           <div className={styles.serviceDetails}>
-            <div className={styles.serviceTitle}>{service.serviceName}</div>
+            <div className={styles.serviceTitle}>
+              {service.serviceName} -{" "}
+              {new Date(jobDetail.scheduledTime).toLocaleString("vi-VN", {
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric",
+                hour: "2-digit",
+                minute: "2-digit",
+              })}
+            </div>
             <div className={styles.serviceArea}>
               {service.serviceDetailAreaRange}
             </div>
