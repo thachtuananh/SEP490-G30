@@ -3,7 +3,6 @@ import {
   Card,
   Button,
   DatePicker,
-  TimePicker,
   Typography,
   Row,
   Col,
@@ -32,6 +31,12 @@ import {
 
 const { Title, Text, Paragraph } = Typography;
 
+// Define available time slots (08:00 to 22:00, every 30 minutes)
+const timeSlots = [];
+for (let hour = 0; hour <= 23; hour++) {
+  timeSlots.push(`${hour.toString().padStart(2, "0")}:00`);
+  timeSlots.push(`${hour.toString().padStart(2, "0")}:30`);
+}
 const Time = ({
   onTimeChange,
   selectedServices,
@@ -56,7 +61,7 @@ const Time = ({
   const [isLocationModalVisible, setIsLocationModalVisible] = useState(false);
   const [addressLoading, setAddressLoading] = useState(false);
   const [open, setOpen] = useState(false);
-  const [totalPrice, setTotalPrice] = useState(0); // Thêm state để lưu totalPrice
+  const [totalPrice, setTotalPrice] = useState(0);
 
   useEffect(() => {
     // Initialize serviceNames from serviceDetails
@@ -121,6 +126,13 @@ const Time = ({
 
     fetchAddresses();
   }, [serviceDetails, customerId, form]);
+
+  // New useEffect to set default service
+  useEffect(() => {
+    if (selectedServices.length > 0 && !selectedServiceId) {
+      setSelectedServiceId(selectedServices[0]);
+    }
+  }, [selectedServices, selectedServiceId]);
 
   useEffect(() => {
     // Initialize time
@@ -238,12 +250,16 @@ const Time = ({
     setNewDate(selectedDateObj);
   };
 
-  const handleTimeChange = (time) => {
-    if (!time) return;
+  const handleTimeChange = (timeString) => {
+    if (!timeString) return;
+
+    // Parse timeString (e.g., "08:30") to dayjs object
+    const [hour, minute] = timeString.split(":").map(Number);
+    const selectedTime = dayjs().set("hour", hour).set("minute", minute);
 
     if (
       newDate.toDateString() === new Date().toDateString() &&
-      time.isBefore(currentTime)
+      selectedTime.isBefore(currentTime)
     ) {
       const defaultTime = currentTime.add(15, "minute");
       setNewTime(defaultTime);
@@ -251,7 +267,7 @@ const Time = ({
         "Thời gian đã chọn là trong quá khứ. Đã tự động điều chỉnh thành thời gian hiện tại + 15 phút."
       );
     } else {
-      setNewTime(time);
+      setNewTime(selectedTime);
     }
   };
 
@@ -284,33 +300,12 @@ const Time = ({
       return;
     }
 
-    // Check for duplicate schedule
-    const isDuplicate = serviceSchedules[selectedServiceId].some((schedule) => {
-      const scheduleTime = dayjs(schedule.jobTime);
-      return (
-        scheduleTime.format("YYYY-MM-DD HH:mm") ===
-        selectedDateTime.format("YYYY-MM-DD HH:mm")
-      );
-    });
-
-    if (isDuplicate) {
-      showErrorModal(
-        "Bạn đã đặt lịch trình này cho dịch vụ! Vui lòng chọn thời gian khác."
-      );
-      return;
-    }
-
-    const adjustmentForThisSchedule = calculatePriceAdjustment(
-      newDate,
-      newTime.hour()
-    );
-
     const newSchedule = {
       jobTime: selectedDateTime.format("YYYY-MM-DDTHH:mm:ss"),
       hour: newTime.hour(),
       minute: newTime.minute(),
-      date: newDate,
-      adjustment: adjustmentForThisSchedule,
+      date: newDate, // Ensure this is a Date object
+      adjustment: calculatePriceAdjustment(newDate, newTime.hour()),
       serviceDetailId: selectedServiceDetailId,
     };
 
@@ -324,13 +319,35 @@ const Time = ({
 
     setServiceSchedules(newServiceSchedules);
 
-    // Tính lại totalPrice sau khi thêm lịch trình
+    // Recalculate total price
     const newTotalPrice = calculateTotalPrice(newServiceSchedules);
 
-    // Gọi onTimeChange với totalPrice mới
+    // Recalculate price adjustment
+    let highestAdjustment = null;
+    Object.keys(newServiceSchedules).forEach((serviceId) => {
+      newServiceSchedules[serviceId].forEach((schedule) => {
+        const scheduleDate = new Date(schedule.date);
+        const adjustment = calculatePriceAdjustment(
+          scheduleDate,
+          schedule.hour
+        );
+        if (
+          adjustment &&
+          (!highestAdjustment ||
+            adjustment.percentage > highestAdjustment.percentage)
+        ) {
+          highestAdjustment = adjustment;
+        }
+      });
+    });
+
+    setPriceAdjustment(highestAdjustment);
+    setTotalPrice(newTotalPrice);
+
+    // Update parent with new schedules, price adjustment, and total price
     onTimeChange(
       newServiceSchedules,
-      priceAdjustment,
+      highestAdjustment,
       selectedAddress,
       newTotalPrice
     );
@@ -358,17 +375,8 @@ const Time = ({
   };
 
   const disabledTime = () => {
-    if (newDate.toDateString() === new Date().toDateString()) {
-      return {
-        disabledHours: () =>
-          Array.from({ length: currentTime.hour() }, (_, i) => i),
-        disabledMinutes: (selectedHour) =>
-          selectedHour === currentTime.hour()
-            ? Array.from({ length: currentTime.minute() }, (_, i) => i)
-            : [],
-      };
-    }
-    return {};
+    // Always return empty array to show all time slots
+    return [];
   };
 
   const getServiceName = (serviceId) => {
@@ -460,214 +468,221 @@ const Time = ({
   };
 
   return (
-    <div className={styles.container}>
-      <Modal
-        title={
-          <span>
-            <ExclamationCircleOutlined
-              style={{ color: "#ff4d4f", marginRight: "8px" }}
-            />
-            Thông báo
-          </span>
-        }
-        open={errorModalVisible}
-        onOk={handleCloseErrorModal}
-        onCancel={handleCloseErrorModal}
-        footer={[
-          <Button key="ok" type="primary" onClick={handleCloseErrorModal}>
-            Đã hiểu
-          </Button>,
-        ]}
-      >
-        <p>{errorMessage}</p>
-      </Modal>
-
-      <Row gutter={[16, 16]} style={{ paddingBottom: "20px" }}>
-        <Col xs={24} md={12}>
-          <Title level={5}>Đặt dịch vụ theo lịch trình</Title>
-          <Paragraph>Chọn địa chỉ, dịch vụ, diện tích và thời gian</Paragraph>
-          <Space direction="vertical" size="middle" style={{ width: "100%" }}>
-            <Form
-              form={form}
-              layout="vertical"
-              initialValues={{ location: selectedAddress?.address || "" }}
-            >
-              <Form.Item name="location">
-                <Card size="small" onClick={showLocationModal}>
-                  <Space
-                    align="center"
-                    style={{ width: "100%", justifyContent: "space-between" }}
+    <>
+      <div className={styles.container}>
+        <Form
+          form={form}
+          layout="vertical"
+          initialValues={{ location: selectedAddress?.address || "" }}
+        >
+          <Title level={5}>Chọn địa chỉ</Title>
+          <Form.Item name="location">
+            <Card size="small" onClick={showLocationModal}>
+              <Space
+                align="center"
+                style={{ width: "100%", justifyContent: "space-between" }}
+              >
+                <Space>
+                  <Text
+                    style={{
+                      color: selectedAddress ? "inherit" : "#bfbfbf",
+                    }}
                   >
-                    <Space>
-                      <Text
-                        style={{
-                          color: selectedAddress ? "inherit" : "#bfbfbf",
-                        }}
-                      >
-                        {selectedAddress?.fullAddress || "Chưa chọn địa chỉ"}
-                      </Text>
-                    </Space>
-                    <Button type="primary" onClick={showLocationModal}>
-                      {selectedAddress ? "Thay đổi" : "Chọn"}
-                    </Button>
-                  </Space>
-                </Card>
-              </Form.Item>
-              <AddressSelectionModal
-                isVisible={isLocationModalVisible}
-                onCancel={handleLocationCancel}
-                onSelect={handleLocationSelect}
-                addresses={addresses.map((addr) => ({
-                  ...addr,
-                  addressId: addr.id,
-                }))}
-                loading={addressLoading}
-                onSetDefaultAddress={handleSetDefaultAddress}
-                currentLocation={location.pathname}
+                    {selectedAddress?.fullAddress || "Chưa chọn địa chỉ"}
+                  </Text>
+                </Space>
+                <Button type="primary" onClick={showLocationModal}>
+                  {selectedAddress ? "Thay đổi" : "Chọn"}
+                </Button>
+              </Space>
+            </Card>
+          </Form.Item>
+          <AddressSelectionModal
+            isVisible={isLocationModalVisible}
+            onCancel={handleLocationCancel}
+            onSelect={handleLocationSelect}
+            addresses={addresses.map((addr) => ({
+              ...addr,
+              addressId: addr.id,
+            }))}
+            loading={addressLoading}
+            onSetDefaultAddress={handleSetDefaultAddress}
+            currentLocation={location.pathname}
+          />
+        </Form>
+      </div>
+      <div className={styles.container}>
+        <Modal
+          title={
+            <span>
+              <ExclamationCircleOutlined
+                style={{ color: "#ff4d4f", marginRight: "8px" }}
               />
-            </Form>
-            <Select
-              placeholder="Chọn dịch vụ"
-              style={{ width: "100%" }}
-              onChange={setSelectedServiceId}
-              value={selectedServiceId}
-            >
-              {selectedServices.map((serviceId) => (
-                <Select.Option key={serviceId} value={serviceId}>
-                  {getServiceName(serviceId)}
-                </Select.Option>
-              ))}
-            </Select>
-            <Select
-              placeholder="Chọn diện tích"
-              style={{ width: "100%" }}
-              onChange={setSelectedServiceDetailId}
-              value={selectedServiceDetailId}
-              disabled={!selectedServiceId}
-            >
-              {serviceDetails
-                .filter((detail) => detail.serviceId === selectedServiceId)
-                .map((detail) => (
-                  <Select.Option
-                    key={detail.serviceDetailId}
-                    value={detail.serviceDetailId}
-                  >
-                    {detail.minRoomSize}m² - {detail.maxSize}m²
+              Thông báo
+            </span>
+          }
+          open={errorModalVisible}
+          onOk={handleCloseErrorModal}
+          onCancel={handleCloseErrorModal}
+          footer={[
+            <Button key="ok" type="primary" onClick={handleCloseErrorModal}>
+              Đã hiểu
+            </Button>,
+          ]}
+        >
+          <p>{errorMessage}</p>
+        </Modal>
+
+        <Row gutter={[16, 16]} style={{ paddingBottom: "20px" }}>
+          <Col xs={24} md={12}>
+            <Title level={5}>Đặt dịch vụ theo lịch trình</Title>
+            <Paragraph>Chọn dịch vụ, diện tích và thời gian</Paragraph>
+            <Space direction="vertical" size="middle" style={{ width: "100%" }}>
+              <Title level={5}>Chọn dịch vụ</Title>
+              <Select
+                placeholder="Chọn dịch vụ"
+                style={{ width: "100%" }}
+                onChange={setSelectedServiceId}
+                value={selectedServiceId}
+                size="large"
+              >
+                {selectedServices.map((serviceId) => (
+                  <Select.Option key={serviceId} value={serviceId}>
+                    {getServiceName(serviceId)}
                   </Select.Option>
                 ))}
-            </Select>
-            <DatePicker
-              format="DD/MM/YYYY"
-              onChange={handleDateChange}
-              disabledDate={disabledDate}
-              placeholder="Chọn ngày"
-              className={styles.datePicker}
-              size="large"
-              value={dayjs(newDate)}
-              showNow={false}
-              style={{ width: "100%" }}
-            />
-            <TimePicker
-              format="HH:mm"
-              value={newTime}
-              onChange={handleTimeChange}
-              onSelect={handleTimeChange}
-              disabledTime={disabledTime}
-              size="large"
-              className={styles.timePicker}
-              hideDisabledOptions={true}
-              use12Hours={false}
-              allowClear={false}
-              showNow={false}
-              showTime={{ hideDisabledOptions: true }}
-              renderExtraFooter={() => null}
-              open={open}
-              onOpenChange={(open) => setOpen(open)}
-              style={{ width: "100%" }}
-            />
-            <Button
-              type="primary"
-              onClick={addSchedule}
-              disabled={
-                !newDate ||
-                !newTime ||
-                !selectedServiceId ||
-                !selectedServiceDetailId ||
-                !selectedAddress
-              }
-              style={{ width: "100%" }}
-            >
-              Thêm lịch trình
-            </Button>
-          </Space>
-        </Col>
-        <Col xs={24} md={12}>
-          <Title level={5}>Danh sách lịch trình</Title>
-          {Object.keys(serviceSchedules).every(
-            (serviceId) => serviceSchedules[serviceId].length === 0
-          ) ? (
-            <Paragraph>Chưa có lịch trình nào được thêm.</Paragraph>
-          ) : (
-            Object.keys(serviceSchedules).map((serviceId) => (
-              <div key={serviceId}>
-                <Title level={5}>{getServiceName(serviceId)}</Title>
-                <List
-                  dataSource={serviceSchedules[serviceId]}
-                  renderItem={(schedule, index) => (
-                    <List.Item
-                      actions={[
-                        <Button
-                          type="link"
-                          icon={<DeleteOutlined />}
-                          onClick={() => removeSchedule(serviceId, index)}
-                          danger
-                        />,
-                      ]}
+              </Select>
+              <Title level={5}>Chọn diện tích</Title>
+              <Select
+                placeholder="Chọn diện tích"
+                style={{ width: "100%" }}
+                onChange={setSelectedServiceDetailId}
+                value={selectedServiceDetailId}
+                disabled={!selectedServiceId}
+                size="large"
+              >
+                {serviceDetails
+                  .filter((detail) => detail.serviceId === selectedServiceId)
+                  .map((detail) => (
+                    <Select.Option
+                      key={detail.serviceDetailId}
+                      value={detail.serviceDetailId}
                     >
-                      <Text>
-                        {dayjs(schedule.date).format("DD/MM/YYYY")} -{" "}
-                        {schedule.hour.toString().padStart(2, "0")}:
-                        {schedule.minute.toString().padStart(2, "0")} |{" "}
-                        {
-                          serviceDetails.find(
-                            (d) =>
-                              d.serviceDetailId === schedule.serviceDetailId
-                          )?.minRoomSize
-                        }
-                        m² -{" "}
-                        {
-                          serviceDetails.find(
-                            (d) =>
-                              d.serviceDetailId === schedule.serviceDetailId
-                          )?.maxSize
-                        }
-                        m²
-                      </Text>
-                    </List.Item>
-                  )}
-                />
-              </div>
-            ))
-          )}
-        </Col>
-      </Row>
-
-      <div className={styles.phoneSection}>
-        <div className={styles.phoneInfo}>
-          <Title level={5}>Số điện thoại</Title>
-          <Paragraph>Người dọn dẹp sẽ liên hệ với bạn khi đến nơi</Paragraph>
-        </div>
-        <div className={styles.phoneContainer}>
-          <Col flex="auto">
-            <Input
-              style={{ width: "200px", color: "black" }}
-              value={user?.customerPhone}
-              disabled
-            />
+                      {detail.minRoomSize}m² - {detail.maxSize}m²
+                    </Select.Option>
+                  ))}
+              </Select>
+              <Title level={5}>Thời gian</Title>
+              <DatePicker
+                format="DD/MM/YYYY"
+                onChange={handleDateChange}
+                disabledDate={disabledDate}
+                placeholder="Chọn ngày"
+                className={styles.datePicker}
+                size="large"
+                value={dayjs(newDate)}
+                showNow={false}
+                style={{ width: "100%" }}
+              />
+              <Select
+                placeholder="Chọn khung giờ"
+                style={{ width: "100%" }}
+                onChange={handleTimeChange}
+                value={newTime ? newTime.format("HH:mm") : undefined}
+                size="large"
+                showSearch
+                optionFilterProp="children"
+              >
+                {timeSlots.map((slot) => (
+                  <Select.Option key={slot} value={slot}>
+                    {slot}
+                  </Select.Option>
+                ))}
+              </Select>
+              <Button
+                type="primary"
+                onClick={addSchedule}
+                disabled={
+                  !newDate ||
+                  !newTime ||
+                  !selectedServiceId ||
+                  !selectedServiceDetailId ||
+                  !selectedAddress
+                }
+                style={{ width: "100%" }}
+              >
+                Thêm lịch trình
+              </Button>
+            </Space>
           </Col>
+          <Col xs={24} md={12}>
+            <Title level={5}>Danh sách lịch trình</Title>
+            {Object.keys(serviceSchedules).every(
+              (serviceId) => serviceSchedules[serviceId].length === 0
+            ) ? (
+              <Paragraph>Chưa có lịch trình nào được thêm.</Paragraph>
+            ) : (
+              Object.keys(serviceSchedules).map((serviceId) => (
+                <div key={serviceId}>
+                  <Title level={5}>{getServiceName(serviceId)}</Title>
+                  <List
+                    dataSource={serviceSchedules[serviceId]}
+                    renderItem={(schedule, index) => (
+                      <List.Item
+                        actions={[
+                          <Button
+                            type="link"
+                            icon={<DeleteOutlined />}
+                            onClick={() => removeSchedule(serviceId, index)}
+                            danger
+                          />,
+                        ]}
+                      >
+                        <Text>
+                          {dayjs(schedule.date).format("DD/MM/YYYY")} -{" "}
+                          {schedule.hour.toString().padStart(2, "0")}:
+                          {schedule.minute.toString().padStart(2, "0")} |{" "}
+                          {
+                            serviceDetails.find(
+                              (d) =>
+                                d.serviceDetailId === schedule.serviceDetailId
+                            )?.minRoomSize
+                          }
+                          m² -{" "}
+                          {
+                            serviceDetails.find(
+                              (d) =>
+                                d.serviceDetailId === schedule.serviceDetailId
+                            )?.maxSize
+                          }
+                          m²
+                        </Text>
+                      </List.Item>
+                    )}
+                  />
+                </div>
+              ))
+            )}
+          </Col>
+        </Row>
+
+        <div className={styles.phoneSection}>
+          <div className={styles.phoneInfo}>
+            <Title level={5}>Số điện thoại</Title>
+            <Paragraph>Người dọn dẹp sẽ liên hệ với bạn khi đến nơi</Paragraph>
+          </div>
+          <div className={styles.phoneContainer}>
+            <Col flex="auto">
+              <Input
+                style={{ width: "200px", color: "black" }}
+                value={user?.customerPhone}
+                disabled
+              />
+            </Col>
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 };
 
