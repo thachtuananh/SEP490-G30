@@ -284,6 +284,7 @@ public class CleanerJobService {
 		customerNotification.setTimestamp(LocalDate.now());
 		customerNotification.setRead(false);
 		notificationService.processNotification(customerNotification, "CUSTOMER", job.getCustomer().getId());
+
 		// Thêm thông báo thành công khi không có lỗi
 		response.put("message", "Cleaner has successfully applied for the job");
 		response.put("jobId", jobId);
@@ -1165,7 +1166,7 @@ public class CleanerJobService {
 
 		jobsByService.put("combo", comboJobs.get(comboKey));
 
-		return jobsByService; // Trả về danh sách các công việc phân loại theo dịch vụ, bao gồm cả combo
+		return jobsByService;
 	}
 
 
