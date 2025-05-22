@@ -277,6 +277,14 @@ public class CleanerJobService {
 
 		jobApplicationRepository.save(jobApplication);
 
+		NotificationDTO customerNotification = new NotificationDTO();
+		customerNotification.setUserId(job.getCustomer().getId());
+		customerNotification.setMessage("[Mã công việc: "+ job.getOrderCode() + "] Người dọn dẹp: " + cleaner.getName() + " vừa ứng tuyển vào công việc ");
+		customerNotification.setType("AUTO_MESSAGE");
+		customerNotification.setTimestamp(LocalDate.now());
+		customerNotification.setRead(false);
+		notificationService.processNotification(customerNotification, "CUSTOMER", job.getCustomer().getId());
+
 		// Thêm thông báo thành công khi không có lỗi
 		response.put("message", "Cleaner has successfully applied for the job");
 		response.put("jobId", jobId);
@@ -286,13 +294,7 @@ public class CleanerJobService {
 		return response;
 	}
 
-//		NotificationDTO customerNotification = new NotificationDTO();
-//		customerNotification.setUserId(job.getCustomer().getId());
-//		customerNotification.setMessage("[Mã công việc: "+ job.getOrderCode() + "] Người dọn dẹp: " + cleaner.getName() + " vừa ứng tuyển vào công việc ");
-//		customerNotification.setType("AUTO_MESSAGE");
-//		customerNotification.setTimestamp(LocalDate.now());
-//		customerNotification.setRead(false);
-//		notificationService.processNotification(customerNotification, "CUSTOMER", job.getCustomer().getId());
+
 
 
 
