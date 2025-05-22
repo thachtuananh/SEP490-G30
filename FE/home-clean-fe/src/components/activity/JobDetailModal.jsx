@@ -9,7 +9,7 @@ import {
   FaFlag,
   FaRegCommentAlt,
 } from "react-icons/fa";
-import { MdCalendarToday, MdLocationOn, MdAccessTime } from "react-icons/md";
+import { MdCalendarToday, MdAccessTime, MdLocationOn } from "react-icons/md";
 import { InfoCleanerCard } from "../activity/InfoCleanerCard";
 import { InfoCleanerCardDetail } from "../activity/InfoCleanerCardDetail";
 
@@ -21,7 +21,6 @@ export const JobDetailModal = ({
   handleDeleteJob,
   openReportModal,
   openFeedbackModal,
-  openModal,
   handleViewCleanerDetail,
   handleCompleteJob,
   handleRetryPayment,
@@ -30,7 +29,6 @@ export const JobDetailModal = ({
   hireCleaner,
   startJob,
   rejectCleaner,
-  applicationsCount,
   isProcessing,
   customerId,
 }) => {
@@ -42,6 +40,12 @@ export const JobDetailModal = ({
   const [cleanerListLoading, setCleanerListLoading] = useState(false);
   const [isCleanerDetailModalOpen, setIsCleanerDetailModalOpen] =
     useState(false);
+
+  // Derive applicationsCount from cleanerList
+  const applicationsCount = Object.keys(cleanerList).reduce((acc, jobId) => {
+    acc[jobId] = cleanerList[jobId]?.length || 0;
+    return acc;
+  }, {});
 
   useEffect(() => {
     if (jobDetail) {
@@ -56,6 +60,7 @@ export const JobDetailModal = ({
         fetchApplicationsForSubJob(jobDetail.jobId);
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [jobDetail]);
 
   const fetchApplicationsForSubJob = async (jobId) => {
@@ -98,6 +103,7 @@ export const JobDetailModal = ({
     try {
       const data = await fetchCleanerDetail(cleanerId);
       setSelectedCleaner(data);
+      setIsCleanerDetailModalOpen(true);
     } catch (error) {
       message.error("Không thể tải thông tin người dọn dẹp");
       setSelectedCleaner(null);
