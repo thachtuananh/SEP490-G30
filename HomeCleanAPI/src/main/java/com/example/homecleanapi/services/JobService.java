@@ -373,14 +373,30 @@ public class JobService {
             DayOfWeek day = jobTime.getDayOfWeek();
             int hour = jobTime.getHour();
             double priceIncrease = 0;
-            if (day == DayOfWeek.SATURDAY || day == DayOfWeek.SUNDAY) {
-                if (hour >= 18 && hour < 22) priceIncrease = 0.2;
+
+            boolean isWeekend = (day == DayOfWeek.SATURDAY || day == DayOfWeek.SUNDAY);
+            boolean isPeakHour = (hour >= 18 && hour < 22);
+
+            if (!isWeekend) {
+                // Từ Thứ 2 đến Thứ 6
+                if (isPeakHour) {
+                    priceIncrease = 0.1;
+                }
             } else {
-                if (hour >= 18 && hour < 22) priceIncrease = 0.1;
+                // Thứ 7 & CN
+                if (isPeakHour) {
+                    priceIncrease = 0.2;
+                } else {
+                    priceIncrease = 0.1;
+                }
             }
+
             if (priceIncrease > 0) {
                 totalPrice += totalPrice * priceIncrease;
+                response.put("notice", "Giá đã bao gồm phụ phí " + (priceIncrease * 100) + "% do thời gian/Ngày");
             }
+
+
 
             job.setTotalPrice(totalPrice);
             grandTotalPrice += totalPrice;
@@ -461,6 +477,7 @@ public class JobService {
         noti.setTimestamp(LocalDate.now());
         noti.setRead(false);
         notificationService.processNotification(noti, "CUSTOMER", Math.toIntExact(customerId));
+
 
         response.put("message", "Đặt lịch thành công");
         response.put("orderCode", orderCode);
@@ -816,21 +833,27 @@ public class JobService {
 
             if (isMultiDayGroup) {
                 long total = subJobs.size();
-                long doneCount = subJobs.stream().filter(subJob -> "DONE".equals(subJob.get("status"))).count();
-                long cancelledCount = subJobs.stream().filter(subJob ->
-                        "CANCELLED".equals(subJob.get("status")) || "AUTO_CANCELLED".equals(subJob.get("status"))
-                ).count();
+
+                long cancelledCount = subJobs.stream().filter(subJob -> {
+                    String status = String.valueOf(subJob.get("status")).toUpperCase();
+                    return "CANCELLED".equals(status) || "AUTO_CANCELLED".equals(status);
+                }).count();
+
+                long doneCount = subJobs.stream().filter(subJob -> {
+                    String status = String.valueOf(subJob.get("status")).toUpperCase();
+                    return "DONE".equals(status);
+                }).count();
 
                 if (cancelledCount == total) {
-                    boolean hasAutoCancelled = subJobs.stream()
-                            .anyMatch(subJob -> "AUTO_CANCELLED".equals(subJob.get("status")));
-                    jobInfo.put("status", hasAutoCancelled ? "AUTO_CANCELLED" : "CANCELLED");
+                    jobInfo.put("status", "CANCELLED");
                 } else if ((doneCount + cancelledCount) == total && doneCount > 0) {
                     jobInfo.put("status", "DONE");
                 } else {
                     jobInfo.put("status", "DOING");
                 }
             }
+
+
         }
 
         return new ArrayList<>(jobGroupMap.values());
@@ -1076,6 +1099,8 @@ public class JobService {
         response.put("jobId", jobId);
         response.put("status", job.getStatus());
         return response;
+
+
     }
 
 
