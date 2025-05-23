@@ -703,7 +703,7 @@ public class JobService {
         txn.setStatus("SUCCESS");
 
         transactionHistoryRepository.save(txn);
-        String message = "Chủ nhà " + job.getCustomer().getFull_name() + " đã xác nhận bạn hoàn thành công việc" + jobServiceDetail.get().getService().getName() + " Vui lòng kiểm tra ví.";
+        String message = "Chủ nhà " + job.getCustomer().getFull_name() + " đã xác nhận bạn hoàn thành công việc Vui lòng kiểm tra ví.";
         NotificationDTO customerNotification = new NotificationDTO();
         customerNotification.setUserId(cleaner.getId());
         customerNotification.setMessage(message);
