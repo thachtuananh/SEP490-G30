@@ -703,7 +703,7 @@ public class JobService {
         txn.setStatus("SUCCESS");
 
         transactionHistoryRepository.save(txn);
-        String message = "Chủ nhà " + job.getCustomer().getFull_name() + "đã xác nhận bạn hoàn thành công việc" + "Vui lòng kiểm tra ví.";
+        String message = "Chủ nhà " + job.getCustomer().getFull_name() + " đã xác nhận bạn hoàn thành công việc" + jobServiceDetail.get().getService().getName() + " Vui lòng kiểm tra ví.";
         NotificationDTO customerNotification = new NotificationDTO();
         customerNotification.setUserId(cleaner.getId());
         customerNotification.setMessage(message);
@@ -1088,6 +1088,38 @@ public class JobService {
         job.setStatus(JobStatus.CANCELLED);
         jobRepository.save(job);
 
+
+        try {
+            Integer cleanerId = job.getCleaner() != null ? job.getCleaner().getId() : null;
+
+            if (cleanerId != null) {
+                String message = String.format("Mã công việc: [%s] Chủ nhà: %s đã huỷ công việc với bạn.",
+                        job.getOrderCode(), job.getCustomer().getFull_name());
+                NotificationDTO notification = createNotification(cleanerId, message);
+                notificationService.processNotification(notification, "CLEANER", cleanerId);
+            } else {
+                System.out.println("❗ Không có cleaner nào được gán trực tiếp cho công việc này.");
+
+                List<JobApplication> jobApplications = jobApplicationRepository.findJobApplicationById(jobId);
+                if (jobApplications != null && !jobApplications.isEmpty()) {
+                    for (JobApplication application : jobApplications) {
+                        Integer appliedCleanerId = application.getCleaner().getId();
+                        String message = String.format("Mã công việc: [%s] Chủ nhà: %s đã huỷ công việc mà bạn đã ứng tuyển.",
+                                job.getOrderCode(), job.getCustomer().getFull_name());
+                        NotificationDTO notification = createNotification(appliedCleanerId, message);
+                        notificationService.processNotification(notification, "CLEANER", appliedCleanerId);
+                    }
+                } else {
+                    System.out.println("❗ Không có ứng viên nào đã apply công việc này.");
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+
+
+
         NotificationDTO customerNotification = new NotificationDTO();
         customerNotification.setUserId(job.getCustomer().getId());
         customerNotification.setMessage("Mã công việc [" + job.getOrderCode() + "] Bạn đã huỷ công việc thành công");
@@ -1108,7 +1140,16 @@ public class JobService {
 
 
     // LU
-
+    // Helper method
+    private NotificationDTO createNotification(Integer userId, String message) {
+        NotificationDTO notification = new NotificationDTO();
+        notification.setUserId(userId);
+        notification.setMessage(message);
+        notification.setType("AUTO_MESSAGE");
+        notification.setTimestamp(LocalDate.now());
+        notification.setRead(false);
+        return notification;
+    }
 
     
 
