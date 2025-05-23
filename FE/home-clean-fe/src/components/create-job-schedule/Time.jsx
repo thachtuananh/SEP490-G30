@@ -8,7 +8,6 @@ import {
   Col,
   Space,
   Input,
-  List,
   Modal,
   Select,
   message,
@@ -31,12 +30,13 @@ import {
 
 const { Title, Text, Paragraph } = Typography;
 
-// Define available time slots (08:00 to 22:00, every 30 minutes)
-const timeSlots = [];
+// Define available time slots (00:00 to 23:30, every 30 minutes)
+const allTimeSlots = [];
 for (let hour = 0; hour <= 23; hour++) {
-  timeSlots.push(`${hour.toString().padStart(2, "0")}:00`);
-  timeSlots.push(`${hour.toString().padStart(2, "0")}:30`);
+  allTimeSlots.push(`${hour.toString().padStart(2, "0")}:00`);
+  allTimeSlots.push(`${hour.toString().padStart(2, "0")}:30`);
 }
+
 const Time = ({
   onTimeChange,
   selectedServices,
@@ -50,9 +50,8 @@ const Time = ({
   const [selectedServiceId, setSelectedServiceId] = useState(null);
   const [selectedServiceDetailId, setSelectedServiceDetailId] = useState(null);
   const [newDate, setNewDate] = useState(new Date());
-  const [newTime, setNewTime] = useState(dayjs());
+  const [newTime, setNewTime] = useState(null);
   const [currentTime, setCurrentTime] = useState(dayjs());
-  const [priceAdjustment, setPriceAdjustment] = useState(null);
   const [errorModalVisible, setErrorModalVisible] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [serviceNames, setServiceNames] = useState({});
@@ -60,8 +59,9 @@ const Time = ({
   const [selectedAddress, setSelectedAddress] = useState(null);
   const [isLocationModalVisible, setIsLocationModalVisible] = useState(false);
   const [addressLoading, setAddressLoading] = useState(false);
-  const [open, setOpen] = useState(false);
   const [totalPrice, setTotalPrice] = useState(0);
+  const [highestAdjustment, setHighestAdjustment] = useState(null);
+  const [availableTimeSlots, setAvailableTimeSlots] = useState(allTimeSlots);
 
   useEffect(() => {
     // Initialize serviceNames from serviceDetails
@@ -80,7 +80,6 @@ const Time = ({
       try {
         setAddressLoading(true);
         const addressesData = await fetchCustomerAddresses(customerId);
-        console.log("Fetched addresses:", addressesData);
         setAddresses(addressesData);
 
         const defaultAddress =
@@ -95,10 +94,6 @@ const Time = ({
           form.setFieldsValue({ location: defaultAddress.address });
           if (!defaultAddress.current && addressesData.length > 0) {
             try {
-              console.log(
-                "Setting initial default address with id:",
-                defaultAddress.id
-              );
               await setDefaultAddress(customerId, defaultAddress.id);
               setAddresses(
                 addressesData.map((addr) => ({
@@ -127,7 +122,6 @@ const Time = ({
     fetchAddresses();
   }, [serviceDetails, customerId, form]);
 
-  // New useEffect to set default service
   useEffect(() => {
     if (selectedServices.length > 0 && !selectedServiceId) {
       setSelectedServiceId(selectedServices[0]);
@@ -135,20 +129,15 @@ const Time = ({
   }, [selectedServices, selectedServiceId]);
 
   useEffect(() => {
-    // Initialize time
-    const now = new Date();
     const currentDayjs = dayjs();
-    setNewTime(currentDayjs);
     setCurrentTime(currentDayjs);
 
-    // Initialize serviceSchedules for each service
     const initialSchedules = {};
     selectedServices.forEach((serviceId) => {
       initialSchedules[serviceId] = [];
     });
     setServiceSchedules(initialSchedules);
 
-    // Update real-time clock
     const timer = setInterval(() => {
       setCurrentTime(dayjs());
     }, 30000);
@@ -157,20 +146,37 @@ const Time = ({
   }, [selectedServices]);
 
   useEffect(() => {
-    // Update price adjustment and totalPrice when schedules change
-    updatePriceAdjustment(serviceSchedules);
-    calculateTotalPrice(serviceSchedules);
-  }, [serviceSchedules]);
+    // Update available time slots based on selected date and current time
+    const updateTimeSlots = () => {
+      const isToday = newDate.toDateString() === new Date().toDateString();
+      if (isToday) {
+        const cutoffTime = currentTime.add(30, "minute");
+        const filteredSlots = allTimeSlots.filter((slot) => {
+          const [hour, minute] = slot.split(":").map(Number);
+          const slotTime = dayjs().set("hour", hour).set("minute", minute);
+          return slotTime.isAfter(cutoffTime) || slotTime.isSame(cutoffTime);
+        });
+        setAvailableTimeSlots(filteredSlots);
+      } else {
+        setAvailableTimeSlots(allTimeSlots);
+      }
+    };
+
+    updateTimeSlots();
+  }, [newDate, currentTime]);
 
   useEffect(() => {
-    // Update parent when selectedAddress changes
+    // Calculate total price and update highest adjustment
+    const newTotalPrice = calculateTotalPrice(serviceSchedules);
+    updateHighestAdjustment(serviceSchedules);
+    // Update parent whenever serviceSchedules, selectedAddress, or totalPrice changes
     onTimeChange(
       serviceSchedules,
-      priceAdjustment,
+      highestAdjustment,
       selectedAddress,
-      totalPrice
+      newTotalPrice
     );
-  }, [selectedAddress, totalPrice]);
+  }, [serviceSchedules, selectedAddress]);
 
   const showErrorModal = (message) => {
     setErrorMessage(message);
@@ -179,47 +185,6 @@ const Time = ({
 
   const handleCloseErrorModal = () => {
     setErrorModalVisible(false);
-  };
-
-  const calculateTotalPrice = (schedules) => {
-    let price = 0;
-    Object.keys(schedules).forEach((serviceId) => {
-      schedules[serviceId].forEach((schedule) => {
-        const detail = serviceDetails.find(
-          (d) => d.serviceDetailId === schedule.serviceDetailId
-        );
-        if (detail) {
-          price += detail.price;
-        }
-      });
-    });
-    setTotalPrice(price);
-    return price;
-  };
-
-  const updatePriceAdjustment = (schedules) => {
-    let highestAdjustment = null;
-
-    Object.keys(schedules).forEach((serviceId) => {
-      schedules[serviceId].forEach((schedule) => {
-        const scheduleDate = new Date(schedule.date);
-        const adjustment = calculatePriceAdjustment(
-          scheduleDate,
-          schedule.hour
-        );
-
-        if (
-          adjustment &&
-          (!highestAdjustment ||
-            adjustment.percentage > highestAdjustment.percentage)
-        ) {
-          highestAdjustment = adjustment;
-        }
-      });
-    });
-
-    setPriceAdjustment(highestAdjustment);
-    onTimeChange(schedules, highestAdjustment, selectedAddress, totalPrice);
   };
 
   const calculatePriceAdjustment = (date, hour) => {
@@ -237,6 +202,43 @@ const Time = ({
     return null;
   };
 
+  const calculateTotalPrice = (schedules) => {
+    let total = 0;
+    Object.keys(schedules).forEach((serviceId) => {
+      schedules[serviceId].forEach((schedule) => {
+        const detail = serviceDetails.find(
+          (d) => d.serviceDetailId === schedule.serviceDetailId
+        );
+        if (detail) {
+          let schedulePrice = detail.price;
+          if (schedule.adjustment) {
+            schedulePrice +=
+              schedulePrice * (schedule.adjustment.percentage / 100);
+          }
+          total += schedulePrice;
+        }
+      });
+    });
+    setTotalPrice(total);
+    return total;
+  };
+
+  const updateHighestAdjustment = (schedules) => {
+    let highest = null;
+    Object.keys(schedules).forEach((serviceId) => {
+      schedules[serviceId].forEach((schedule) => {
+        const adjustment = schedule.adjustment;
+        if (
+          adjustment &&
+          (!highest || adjustment.percentage > highest.percentage)
+        ) {
+          highest = adjustment;
+        }
+      });
+    });
+    setHighestAdjustment(highest);
+  };
+
   const handleDateChange = (date) => {
     if (!date) return;
     const selectedDateObj = date.toDate();
@@ -248,23 +250,23 @@ const Time = ({
     }
 
     setNewDate(selectedDateObj);
+    setNewTime(null); // Reset time when date changes
   };
 
   const handleTimeChange = (timeString) => {
     if (!timeString) return;
 
-    // Parse timeString (e.g., "08:30") to dayjs object
     const [hour, minute] = timeString.split(":").map(Number);
     const selectedTime = dayjs().set("hour", hour).set("minute", minute);
 
     if (
       newDate.toDateString() === new Date().toDateString() &&
-      selectedTime.isBefore(currentTime)
+      selectedTime.isBefore(currentTime.add(30, "minute"))
     ) {
-      const defaultTime = currentTime.add(15, "minute");
+      const defaultTime = currentTime.add(30, "minute");
       setNewTime(defaultTime);
       showErrorModal(
-        "Thời gian đã chọn là trong quá khứ. Đã tự động điều chỉnh thành thời gian hiện tại + 15 phút."
+        "Thời gian đã chọn quá gần hoặc trong quá khứ. Đã tự động điều chỉnh thành thời gian hiện tại + 30 phút."
       );
     } else {
       setNewTime(selectedTime);
@@ -284,6 +286,10 @@ const Time = ({
       showErrorModal("Vui lòng chọn địa chỉ trước khi thêm lịch!");
       return;
     }
+    if (!newTime) {
+      showErrorModal("Vui lòng chọn khung giờ!");
+      return;
+    }
 
     const selectedDateTime = dayjs(
       new Date(
@@ -295,8 +301,8 @@ const Time = ({
       )
     );
 
-    if (selectedDateTime.isBefore(currentTime)) {
-      showErrorModal("Không thể đặt lịch cho thời gian đã qua!");
+    if (selectedDateTime.isBefore(currentTime.add(30, "minute"))) {
+      showErrorModal("Không thể đặt lịch cho thời gian đã qua hoặc quá gần!");
       return;
     }
 
@@ -304,7 +310,7 @@ const Time = ({
       jobTime: selectedDateTime.format("YYYY-MM-DDTHH:mm:ss"),
       hour: newTime.hour(),
       minute: newTime.minute(),
-      date: newDate, // Ensure this is a Date object
+      date: newDate,
       adjustment: calculatePriceAdjustment(newDate, newTime.hour()),
       serviceDetailId: selectedServiceDetailId,
     };
@@ -319,32 +325,11 @@ const Time = ({
 
     setServiceSchedules(newServiceSchedules);
 
-    // Recalculate total price
+    // Recalculate total price and highest adjustment
     const newTotalPrice = calculateTotalPrice(newServiceSchedules);
+    updateHighestAdjustment(newServiceSchedules);
 
-    // Recalculate price adjustment
-    let highestAdjustment = null;
-    Object.keys(newServiceSchedules).forEach((serviceId) => {
-      newServiceSchedules[serviceId].forEach((schedule) => {
-        const scheduleDate = new Date(schedule.date);
-        const adjustment = calculatePriceAdjustment(
-          scheduleDate,
-          schedule.hour
-        );
-        if (
-          adjustment &&
-          (!highestAdjustment ||
-            adjustment.percentage > highestAdjustment.percentage)
-        ) {
-          highestAdjustment = adjustment;
-        }
-      });
-    });
-
-    setPriceAdjustment(highestAdjustment);
-    setTotalPrice(newTotalPrice);
-
-    // Update parent with new schedules, price adjustment, and total price
+    // Update parent
     onTimeChange(
       newServiceSchedules,
       highestAdjustment,
@@ -354,7 +339,7 @@ const Time = ({
 
     // Reset form
     setNewDate(new Date());
-    setNewTime(dayjs());
+    setNewTime(null);
     setSelectedServiceDetailId(null);
   };
 
@@ -365,18 +350,21 @@ const Time = ({
     };
     setServiceSchedules(newSchedules);
 
-    // Tính lại totalPrice sau khi xóa lịch trình
+    // Recalculate total price and highest adjustment
     const newTotalPrice = calculateTotalPrice(newSchedules);
-    onTimeChange(newSchedules, priceAdjustment, selectedAddress, newTotalPrice);
+    updateHighestAdjustment(newSchedules);
+
+    // Update parent
+    onTimeChange(
+      newSchedules,
+      highestAdjustment,
+      selectedAddress,
+      newTotalPrice
+    );
   };
 
   const disabledDate = (current) => {
     return current && current < dayjs().startOf("day");
-  };
-
-  const disabledTime = () => {
-    // Always return empty array to show all time slots
-    return [];
   };
 
   const getServiceName = (serviceId) => {
@@ -407,7 +395,6 @@ const Time = ({
       setAddressLoading(true);
       await setDefaultAddress(customerId, addressId);
 
-      // Update addresses state locally
       setAddresses((prevAddresses) =>
         prevAddresses.map((addr) => ({
           ...addr,
@@ -415,7 +402,6 @@ const Time = ({
         }))
       );
 
-      // Update selectedAddress if needed
       const updatedDefaultAddress = addresses.find(
         (addr) => addr.id === addressId
       );
@@ -436,7 +422,6 @@ const Time = ({
       }
     } catch (error) {
       console.error("Error setting default address:", error);
-      // Fallback: Update local state
       setAddresses((prevAddresses) =>
         prevAddresses.map((addr) => ({
           ...addr,
@@ -483,6 +468,7 @@ const Time = ({
                 style={{ width: "100%", justifyContent: "space-between" }}
               >
                 <Space>
+                  <EnvironmentOutlined style={{ color: "#1890ff" }} />
                   <Text
                     style={{
                       color: selectedAddress ? "inherit" : "#bfbfbf",
@@ -593,7 +579,7 @@ const Time = ({
                 showSearch
                 optionFilterProp="children"
               >
-                {timeSlots.map((slot) => (
+                {availableTimeSlots.map((slot) => (
                   <Select.Option key={slot} value={slot}>
                     {slot}
                   </Select.Option>
@@ -620,48 +606,105 @@ const Time = ({
             {Object.keys(serviceSchedules).every(
               (serviceId) => serviceSchedules[serviceId].length === 0
             ) ? (
-              <Paragraph>Chưa có lịch trình nào được thêm.</Paragraph>
+              <Paragraph className={styles.emptyState}>
+                Chưa có lịch trình nào được thêm.
+              </Paragraph>
             ) : (
-              Object.keys(serviceSchedules).map((serviceId) => (
-                <div key={serviceId}>
-                  <Title level={5}>{getServiceName(serviceId)}</Title>
-                  <List
-                    dataSource={serviceSchedules[serviceId]}
-                    renderItem={(schedule, index) => (
-                      <List.Item
-                        actions={[
-                          <Button
-                            type="link"
-                            icon={<DeleteOutlined />}
-                            onClick={() => removeSchedule(serviceId, index)}
-                            danger
-                          />,
-                        ]}
-                      >
-                        <Text>
-                          {dayjs(schedule.date).format("DD/MM/YYYY")} -{" "}
-                          {schedule.hour.toString().padStart(2, "0")}:
-                          {schedule.minute.toString().padStart(2, "0")} |{" "}
-                          {
-                            serviceDetails.find(
-                              (d) =>
-                                d.serviceDetailId === schedule.serviceDetailId
-                            )?.minRoomSize
-                          }
-                          m² -{" "}
-                          {
-                            serviceDetails.find(
-                              (d) =>
-                                d.serviceDetailId === schedule.serviceDetailId
-                            )?.maxSize
-                          }
-                          m²
-                        </Text>
-                      </List.Item>
-                    )}
-                  />
-                </div>
-              ))
+              <>
+                {Object.keys(serviceSchedules)
+                  .filter((serviceId) => serviceSchedules[serviceId].length > 0)
+                  .map((serviceId) => (
+                    <div key={serviceId} className={styles.serviceSection}>
+                      <Title level={5} className={styles.serviceTitle}>
+                        {getServiceName(serviceId)}
+                      </Title>
+                      {serviceSchedules[serviceId].map((schedule, index) => {
+                        const detail = serviceDetails.find(
+                          (d) => d.serviceDetailId === schedule.serviceDetailId
+                        );
+                        const basePrice = detail?.price || 0;
+                        const adjustedPrice = schedule.adjustment
+                          ? basePrice +
+                            basePrice * (schedule.adjustment.percentage / 100)
+                          : basePrice;
+                        return (
+                          <Card
+                            key={index}
+                            className={styles.scheduleCard}
+                            style={{ marginBottom: "10px" }}
+                            actions={[
+                              <Button
+                                type="text"
+                                icon={<DeleteOutlined />}
+                                onClick={() => removeSchedule(serviceId, index)}
+                                className={styles.deleteButton}
+                                aria-label={`Xóa lịch trình ${dayjs(
+                                  schedule.date
+                                ).format("DD/MM/YYYY")} - ${schedule.hour
+                                  .toString()
+                                  .padStart(2, "0")}:${schedule.minute
+                                  .toString()
+                                  .padStart(2, "0")} cho ${getServiceName(
+                                  serviceId
+                                )}`}
+                              >
+                                Xóa
+                              </Button>,
+                            ]}
+                          >
+                            <div className={styles.scheduleContent}>
+                              <Space
+                                direction="vertical"
+                                size="small"
+                                style={{ width: "100%" }}
+                              >
+                                <Text strong className={styles.scheduleDate}>
+                                  {dayjs(schedule.date).format("DD/MM/YYYY")} -{" "}
+                                  {schedule.hour.toString().padStart(2, "0")}:
+                                  {schedule.minute.toString().padStart(2, "0")}
+                                </Text>
+                                <Text>
+                                  Diện tích: {detail?.minRoomSize}m² -{" "}
+                                  {detail?.maxSize}m²
+                                </Text>
+                                <div className={styles.priceInfo}>
+                                  <div className={styles.priceRow}>
+                                    <Text strong>
+                                      Giá cơ bản:{" "}
+                                      <Text>
+                                        {basePrice.toLocaleString()} VNĐ
+                                      </Text>
+                                    </Text>
+                                  </div>
+                                  {schedule.adjustment && (
+                                    <div className={styles.priceRow}>
+                                      <Text strong>
+                                        Phụ phí:{" "}
+                                        <Text style={{ color: "#ff4d4f" }}>
+                                          +{schedule.adjustment.percentage}% do{" "}
+                                          {schedule.adjustment.reason}
+                                        </Text>
+                                      </Text>
+                                    </div>
+                                  )}
+                                  <div className={styles.priceRow}>
+                                    <Text strong>
+                                      Tổng:{" "}
+                                      {Math.round(
+                                        adjustedPrice
+                                      ).toLocaleString()}{" "}
+                                      VNĐ
+                                    </Text>
+                                  </div>
+                                </div>
+                              </Space>
+                            </div>
+                          </Card>
+                        );
+                      })}
+                    </div>
+                  ))}
+              </>
             )}
           </Col>
         </Row>

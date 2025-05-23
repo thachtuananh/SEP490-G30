@@ -13,7 +13,7 @@ const JobInformation = ({
   paymentMethod,
   reminder,
   priceAdjustment,
-  price,
+  price: propPrice,
   address,
   customerAddressId,
   serviceDetails,
@@ -23,10 +23,7 @@ const JobInformation = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isRedirecting, setIsRedirecting] = useState(false);
   const [currentTime, setCurrentTime] = useState(dayjs());
-  const [basePrice, setBasePrice] = useState(price || 0);
-  const [adjustedPrice, setAdjustedPrice] = useState(price || 0);
   const [serviceNames, setServiceNames] = useState({});
-  const [serviceDetailsMap, setServiceDetailsMap] = useState({});
 
   const { token, customerId } = useContext(AuthContext);
 
@@ -39,38 +36,36 @@ const JobInformation = ({
 
   useEffect(() => {
     const nameMap = {};
-    const detailsMap = {};
     if (serviceDetails && serviceDetails.length > 0) {
       serviceDetails.forEach((service) => {
         nameMap[service.serviceId] =
           service.serviceName || `Dịch vụ ${service.serviceId}`;
-        detailsMap[service.serviceDetailId] = service;
       });
       setServiceNames(nameMap);
-      setServiceDetailsMap(detailsMap);
     }
   }, [serviceDetails]);
 
-  useEffect(() => {
-    if (priceAdjustment && basePrice) {
-      const adjustmentAmount = basePrice * (priceAdjustment.percentage / 100);
-      setAdjustedPrice(basePrice + adjustmentAmount);
-    } else {
-      setAdjustedPrice(basePrice);
-    }
-  }, [priceAdjustment, basePrice]);
+  const calculateTotalPrice = () => {
+    let total = 0;
+    Object.keys(serviceSchedules).forEach((serviceId) => {
+      serviceSchedules[serviceId].forEach((schedule) => {
+        const detail = serviceDetails.find(
+          (d) => d.serviceDetailId === schedule.serviceDetailId
+        );
+        if (detail) {
+          let schedulePrice = detail.price;
+          if (schedule.adjustment) {
+            schedulePrice +=
+              schedulePrice * (schedule.adjustment.percentage / 100);
+          }
+          total += schedulePrice;
+        }
+      });
+    });
+    return total;
+  };
 
-  useEffect(() => {
-    if (price) {
-      setBasePrice(price);
-      if (priceAdjustment) {
-        const adjustmentAmount = price * (priceAdjustment.percentage / 100);
-        setAdjustedPrice(price + adjustmentAmount);
-      } else {
-        setAdjustedPrice(price);
-      }
-    }
-  }, [price, priceAdjustment]);
+  const totalPrice = calculateTotalPrice();
 
   const validateJobTimes = async () => {
     let hasSchedules = false;
@@ -145,7 +140,6 @@ const JobInformation = ({
         return;
       }
 
-      // Group schedules by jobTime to create jobs with multiple services
       const jobMap = {};
       for (const serviceId in serviceSchedules) {
         if (serviceSchedules[serviceId].length > 0) {
@@ -165,7 +159,6 @@ const JobInformation = ({
         }
       }
 
-      // Convert jobMap to jobs array
       const jobs = Object.keys(jobMap).map((jobTime) => ({
         jobTime,
         services: jobMap[jobTime],
@@ -231,7 +224,6 @@ const JobInformation = ({
     return serviceNames[serviceId] || `Dịch vụ ${serviceId}`;
   };
 
-  // Filter serviceDetails based on serviceSchedules
   const getScheduledServiceDetails = () => {
     const scheduledDetails = new Set();
     Object.keys(serviceSchedules).forEach((serviceId) => {
@@ -350,33 +342,13 @@ const JobInformation = ({
 
       <div className={styles.divider}></div>
 
-      {basePrice > 0 ? ( // Chỉ hiển thị giá nếu basePrice > 0
+      {totalPrice > 0 ? (
         <div className={styles.totalContainer}>
-          {priceAdjustment && basePrice !== adjustedPrice && (
-            <div className={styles.priceColumn}>
-              <div className={styles.priceLabelValue}>
-                <Text className={styles.priceLabel}>Giá cơ bản</Text>
-                <Text className={styles.priceValue}>
-                  {basePrice.toLocaleString()} VNĐ
-                </Text>
-              </div>
-            </div>
-          )}
-          {priceAdjustment && (
-            <div className={styles.priceColumn}>
-              <div className={styles.priceLabelValue}>
-                <Text className={styles.priceLabel}>Phụ phí</Text>
-                <Text className={styles.priceValue} style={{ color: "red" }}>
-                  +{priceAdjustment.percentage}% do {priceAdjustment.reason}
-                </Text>
-              </div>
-            </div>
-          )}
           <div className={styles.priceColumn}>
             <div className={styles.priceLabelValue}>
               <Text className={styles.priceLabel}>Tổng thanh toán</Text>
               <Text className={styles.priceValue}>
-                {Math.round(adjustedPrice).toLocaleString()} VNĐ
+                {Math.round(totalPrice).toLocaleString()} VNĐ
               </Text>
             </div>
           </div>

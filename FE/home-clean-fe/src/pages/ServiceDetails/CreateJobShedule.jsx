@@ -31,7 +31,7 @@ const CreateJobSchedule = () => {
   const [serviceDetails, setServiceDetails] = useState([]);
   const [selectedServiceIds, setSelectedServiceIds] = useState([]);
   const [selectedAddress, setSelectedAddress] = useState(null);
-  const [totalPrice, setTotalPrice] = useState(0); // Khởi tạo totalPrice = 0
+  const [totalPrice, setTotalPrice] = useState(0);
 
   useEffect(() => {
     const initializeData = async () => {
@@ -44,7 +44,6 @@ const CreateJobSchedule = () => {
       try {
         setLoading(true);
 
-        // Get services from query params or location state
         const params = new URLSearchParams(location.search);
         const serviceIdsFromParams =
           params
@@ -65,11 +64,9 @@ const CreateJobSchedule = () => {
 
         setSelectedServiceIds(serviceIds);
 
-        // Fetch details for each service
         const detailsPromises = serviceIds.map((id) => fetchServiceDetails(id));
         const detailsResults = await Promise.all(detailsPromises);
 
-        // Process service details
         const processedDetails = [];
         detailsResults.forEach((result) => {
           if (result && result.serviceId && result.serviceDetails) {
@@ -88,7 +85,6 @@ const CreateJobSchedule = () => {
 
         setServiceDetails(processedDetails);
 
-        // Initialize empty schedules for each service
         const initialSchedules = {};
         serviceIds.forEach((id) => {
           initialSchedules[id] = [];
@@ -114,7 +110,7 @@ const CreateJobSchedule = () => {
     setServiceSchedules(newServiceSchedules);
     setPriceAdjustment(adjustment);
     setSelectedAddress(address);
-    setTotalPrice(newTotalPrice); // Cập nhật totalPrice từ Time.jsx
+    setTotalPrice(newTotalPrice);
   };
 
   const handlePaymentMethodChange = (method) => {
