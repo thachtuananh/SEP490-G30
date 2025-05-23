@@ -104,7 +104,7 @@ public class ScheduleService {
 //                    );
                     NotificationDTO notification = new NotificationDTO();
                     notification.setUserId(job.getCustomer().getId());
-                    notification.setMessage("Công việc bị hủy vì không có người nhận đúng hạn. Tiền sẽ được hoàn vào ví của bạn.");
+                    notification.setMessage("Mã công việc: ["+ job.getOrderCode() +"] Công việc bị hủy vì không có người nhận đúng hạn. Tiền sẽ được hoàn vào ví của bạn.");
                     notification.setType("AUTO_MESSAGE");
                     notification.setTimestamp(LocalDate.now(zoneId));
                     notification.setRead(false); // ✅ set read = false
@@ -131,8 +131,8 @@ public class ScheduleService {
 //                                false,
 //                        );
                         NotificationDTO cleanerNotification = new NotificationDTO();
-                        cleanerNotification.setUserId(job.getCustomer().getId());
-                        cleanerNotification.setMessage("Công việc của bạn đã bị hủy do chủ nhà chưa xác nhận thuê");
+                        cleanerNotification.setUserId(job.getCleaner().getId());
+                        cleanerNotification.setMessage("Mã công việc: ["+ job.getOrderCode() +"] Công việc của bạn đã bị hủy do chủ nhà chưa xác nhận thuê");
                         cleanerNotification.setType("AUTO_MESSAGE");
                         cleanerNotification.setTimestamp(LocalDate.now(zoneId));
                         cleanerNotification.setRead(false); // ✅ set read = false
@@ -238,7 +238,7 @@ public class ScheduleService {
 //                    );
                     NotificationDTO notification = new NotificationDTO();
                     notification.setUserId(cleanerIdInt);
-                    notification.setMessage("Công việc của bạn đã được hoàn thành. Tiền công đã được gửi vào ví của bạn.");
+                    notification.setMessage("Mã công việc: ["+ job.getOrderCode() +"] Công việc của bạn đã được hoàn thành. Tiền công đã được gửi vào ví của bạn.");
                     notification.setType("AUTO_MESSAGE");
                     notification.setTimestamp(LocalDate.now(zoneId));
                     notification.setRead(false); // ✅ set read = false
@@ -323,7 +323,7 @@ public class ScheduleService {
 //                    );
                     NotificationDTO customerNotification = new NotificationDTO();
                     customerNotification.setUserId(job.getCustomer().getId());
-                    customerNotification.setMessage("Đơn hàng của bạn đã bị hủy do chưa thanh toán");
+                    customerNotification.setMessage("Mã công việc: ["+ job.getOrderCode() +"] Đơn hàng của bạn đã bị hủy do chưa thanh toán");
                     customerNotification.setType("AUTO_MESSAGE");
                     customerNotification.setTimestamp(LocalDate.now(zoneId));
                     customerNotification.setRead(false); // ✅ set read = false
@@ -339,8 +339,8 @@ public class ScheduleService {
 //                                LocalDate.now(zoneId)
 //                        );
                         NotificationDTO cleanerNotification = new NotificationDTO();
-                        cleanerNotification.setUserId(job.getCustomer().getId());
-                        cleanerNotification.setMessage("Công việc của bạn đã bị hủy do chủ nhà chưa thanh toán");
+                        cleanerNotification.setUserId(job.getCleaner().getId());
+                        cleanerNotification.setMessage("Mã công việc: ["+ job.getOrderCode() +"] Công việc của bạn đã bị hủy do chủ nhà chưa thanh toán");
                         cleanerNotification.setType("AUTO_MESSAGE");
                         cleanerNotification.setTimestamp(LocalDate.now(zoneId));
                         cleanerNotification.setRead(false); // ✅ set read = false
