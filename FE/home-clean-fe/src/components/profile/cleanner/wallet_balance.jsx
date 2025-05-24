@@ -427,7 +427,7 @@ export const WalletBalance = () => {
         if (method === "Bank Transfer") {
           text = "Chuyển khoản";
         } else if (method === "Wallet" || method === "WALLET") {
-          text = "Ví";
+          text = "Ví điện tử";
         } else if (method === "VNPay") {
           text = "VNPay";
         }
@@ -829,7 +829,7 @@ export const WalletBalance = () => {
           dataSource={transactionHistory}
           rowKey="transactionId"
           loading={historyLoading}
-          pagination={{ pageSize: 5 }}
+          pagination={{ pageSize: 5, showSizeChanger: false }}
           scroll={{ x: "max-content" }}
         />
       </Modal>
@@ -851,7 +851,7 @@ export const WalletBalance = () => {
           dataSource={withdrawalHistory}
           rowKey="id"
           loading={withdrawalHistoryLoading}
-          pagination={{ pageSize: 5 }}
+          pagination={{ pageSize: 5, showSizeChanger: false }}
           scroll={{ x: "max-content" }}
         />
       </Modal>
