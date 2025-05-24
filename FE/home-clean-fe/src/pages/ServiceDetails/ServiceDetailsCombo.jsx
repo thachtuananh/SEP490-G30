@@ -157,6 +157,10 @@ const ServiceDetailsCombo = () => {
     }
   };
 
+  const handleAddressAdded = async () => {
+    await loadCustomerAddresses(); // Fetch addresses again
+  };
+
   // Find service details based on ID
   const getServiceDetails = (serviceId) => {
     return allServices.find((service) => service.id === serviceId);
@@ -519,6 +523,7 @@ const ServiceDetailsCombo = () => {
         loading={addressLoading}
         onSetDefaultAddress={handleSetDefaultAddress}
         currentLocation={location.pathname}
+        onAddressAdded={handleAddressAdded}
       />
     </div>
   );
