@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Modal, Rate, Input, Button, Empty, message, Form } from "antd";
 import {
   fetchFeedback,
@@ -22,15 +22,38 @@ export const FeedbackModal = ({ visible, jobId, cleanerId, onClose }) => {
   const [form] = Form.useForm();
   const [editing, setEditing] = useState(false);
 
+  // Anti-spam states
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [lastSubmitTime, setLastSubmitTime] = useState(0);
+  const submitTimeoutRef = useRef(null);
+
+  // Minimum time between submissions (in milliseconds)
+  const MIN_SUBMIT_INTERVAL = 2000; // 2 seconds
+
   // Fetch feedback when modal is opened
   useEffect(() => {
     if (visible && jobId && cleanerId) {
       // Reset state completely when opening modal
       setFeedback(null);
       form.resetFields();
+      // Reset anti-spam states
+      setIsSubmitting(false);
+      setLastSubmitTime(0);
+      if (submitTimeoutRef.current) {
+        clearTimeout(submitTimeoutRef.current);
+      }
       loadFeedback();
     }
   }, [visible, jobId, cleanerId]);
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (submitTimeoutRef.current) {
+        clearTimeout(submitTimeoutRef.current);
+      }
+    };
+  }, []);
 
   // Load feedback data
   const loadFeedback = async () => {
@@ -61,9 +84,39 @@ export const FeedbackModal = ({ visible, jobId, cleanerId, onClose }) => {
     }
   };
 
-  // Handle form submission
+  // Anti-spam validation
+  const canSubmit = () => {
+    const now = Date.now();
+    const timeSinceLastSubmit = now - lastSubmitTime;
+
+    if (isSubmitting) {
+      return false;
+    }
+
+    if (lastSubmitTime > 0 && timeSinceLastSubmit < MIN_SUBMIT_INTERVAL) {
+      return false;
+    }
+
+    return true;
+  };
+
+  // Handle form submission with anti-spam protection
   const handleSubmit = async (values) => {
+    // Check if submission is allowed
+    if (!canSubmit()) {
+      const timeRemaining = Math.ceil(
+        (MIN_SUBMIT_INTERVAL - (Date.now() - lastSubmitTime)) / 1000
+      );
+      message.warning(
+        `Vui lòng đợi ${timeRemaining} giây trước khi thực hiện lại`
+      );
+      return;
+    }
+
+    setIsSubmitting(true);
     setLoading(true);
+    setLastSubmitTime(Date.now());
+
     try {
       const feedbackData = {
         rating: values.rating,
@@ -115,7 +168,7 @@ export const FeedbackModal = ({ visible, jobId, cleanerId, onClose }) => {
       setEditing(false);
 
       // Re-fetch feedback data to ensure we have the latest data from server
-      loadFeedback();
+      await loadFeedback();
     } catch (error) {
       console.error("Lỗi khi lưu đánh giá:", error);
       message.error(
@@ -123,6 +176,11 @@ export const FeedbackModal = ({ visible, jobId, cleanerId, onClose }) => {
       );
     } finally {
       setLoading(false);
+
+      // Reset isSubmitting after a delay to prevent rapid successive calls
+      submitTimeoutRef.current = setTimeout(() => {
+        setIsSubmitting(false);
+      }, MIN_SUBMIT_INTERVAL);
     }
   };
 
@@ -147,7 +205,6 @@ export const FeedbackModal = ({ visible, jobId, cleanerId, onClose }) => {
       });
     } else {
       // If no feedback exists and user cancels, close modal
-      // Or optionally stay in editing mode: setEditing(true);
       onClose();
     }
   };
@@ -180,6 +237,30 @@ export const FeedbackModal = ({ visible, jobId, cleanerId, onClose }) => {
     );
   };
 
+  // Calculate if submit button should be disabled
+  const isSubmitDisabled = () => {
+    return loading || isSubmitting || !canSubmit();
+  };
+
+  // Get submit button text with countdown if needed
+  const getSubmitButtonText = () => {
+    if (isSubmitting || loading) {
+      return feedback ? "Cập nhật" : "Gủi đánh giá";
+    }
+
+    const now = Date.now();
+    const timeSinceLastSubmit = now - lastSubmitTime;
+
+    if (lastSubmitTime > 0 && timeSinceLastSubmit < MIN_SUBMIT_INTERVAL) {
+      const timeRemaining = Math.ceil(
+        (MIN_SUBMIT_INTERVAL - timeSinceLastSubmit) / 1000
+      );
+      return `Đợi ${timeRemaining}s`;
+    }
+
+    return feedback ? "Cập nhật" : "Gửi đánh giá";
+  };
+
   // Render feedback form
   const renderFeedbackForm = () => {
     return (
@@ -210,11 +291,20 @@ export const FeedbackModal = ({ visible, jobId, cleanerId, onClose }) => {
         </Form.Item>
 
         <div className={styles.formButtons}>
-          <Button onClick={cancelEditing} style={{ marginRight: 8 }}>
+          <Button
+            onClick={cancelEditing}
+            style={{ marginRight: 8 }}
+            disabled={isSubmitting}
+          >
             Hủy
           </Button>
-          <Button type="primary" htmlType="submit" loading={loading}>
-            {feedback ? "Cập nhật" : "Gửi đánh giá"}
+          <Button
+            type="primary"
+            htmlType="submit"
+            loading={loading}
+            disabled={isSubmitDisabled()}
+          >
+            {getSubmitButtonText()}
           </Button>
         </div>
       </Form>
@@ -228,6 +318,9 @@ export const FeedbackModal = ({ visible, jobId, cleanerId, onClose }) => {
       onCancel={onClose}
       footer={null}
       width={500}
+      // Prevent closing modal while submitting
+      closable={!isSubmitting}
+      maskClosable={!isSubmitting}
     >
       <style>{customRateStyles}</style>
       <div className={styles.modalContent}>

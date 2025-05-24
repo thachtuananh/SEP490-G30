@@ -250,7 +250,7 @@ const JobHistoryTable = ({
           <Button
             type="link"
             onClick={() => fetchJobDetails(record.jobId)}
-            loading={loading}
+            // loading={loading}
           >
             Chi tiết
           </Button>
@@ -324,7 +324,7 @@ const JobHistoryTable = ({
                   ? "Tiền mặt"
                   : record.paymentMethod === "vnpay"
                   ? "VNPay"
-                  : record.paymentMethod === "wallet"
+                  : record.paymentMethod === "Wallet"
                   ? "Ví điện tử"
                   : record.paymentMethod}
               </Descriptions.Item>
@@ -421,7 +421,7 @@ const JobHistoryTable = ({
                 ? "Tiền mặt"
                 : jobDetails.paymentMethod === "vnpay"
                 ? "VNPay"
-                : jobDetails.paymentMethod === "wallet"
+                : jobDetails.paymentMethod === "Wallet"
                 ? "Ví điện tử"
                 : jobDetails.paymentMethod}
             </Descriptions.Item>
