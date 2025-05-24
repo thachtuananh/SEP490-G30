@@ -237,12 +237,6 @@ public class CleanerJobService {
 
 		Job job = jobOpt.get();
 
-		Optional<JobServiceDetail> jobServiceDetail = jobDetailsRepository.findByJob_id(jobId);
-		if (!jobServiceDetail.isPresent()) {
-			response.put("message", "Job detail not found");
-			return response;
-		}
-
 		// Kiểm tra trạng thái công việc
 		if (!job.getStatus().equals(JobStatus.OPEN)) {
 			response.put("message", "Job is no longer open or has been taken");
@@ -285,10 +279,10 @@ public class CleanerJobService {
 
 		NotificationDTO customerNotification = new NotificationDTO();
 		customerNotification.setUserId(job.getCustomer().getId());
-		customerNotification.setMessage("[Mã công việc: "+ job.getOrderCode() + "] Người dọn dẹp: " + cleaner.getName() + " vừa ứng tuyển vào công việc " + jobServiceDetail.get().getService().getName() + job.getScheduledTime());
+		customerNotification.setMessage("[Mã công việc: "+ job.getOrderCode() + "] Người dọn dẹp: " + cleaner.getName() + " vừa ứng tuyển vào công việc ");
 		customerNotification.setType("AUTO_MESSAGE");
 		customerNotification.setTimestamp(LocalDate.now());
-		customerNotification.setRead(false); // ✅ set read = false
+		customerNotification.setRead(false);
 		notificationService.processNotification(customerNotification, "CUSTOMER", job.getCustomer().getId());
 
 		// Thêm thông báo thành công khi không có lỗi
@@ -299,6 +293,7 @@ public class CleanerJobService {
 
 		return response;
 	}
+
 
 
 
@@ -456,6 +451,9 @@ public class CleanerJobService {
 			return cleanerInfo;
 		}).collect(Collectors.toList());
 	}
+
+
+
 
 
 	// accept hoặc reject cleaner
@@ -1175,7 +1173,7 @@ public class CleanerJobService {
 
 		jobsByService.put("combo", comboJobs.get(comboKey));
 
-		return jobsByService; // Trả về danh sách các công việc phân loại theo dịch vụ, bao gồm cả combo
+		return jobsByService;
 	}
 
 

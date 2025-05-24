@@ -11,10 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 public class FindCleanerService {
@@ -172,6 +169,94 @@ public class FindCleanerService {
 
         return nativeQuery.getResultList();
     }
+
+
+
+
+//    *******************************************************************
+
+    // lấy job lịch dài
+    public List<JobSummaryDTO> getNearbyMultiDayJobs(Long cleanerId, int limit) {
+        // Lấy thông tin địa chỉ hiện tại của cleaner
+        EmployeeLocations cleanerAddress = employeeAddressRepository.findByEmployee_IdAndIs_currentTrue(cleanerId);
+        if (cleanerAddress == null) {
+            throw new RuntimeException("Cleaner address not found.");
+        }
+
+        double cleanerLatitude = cleanerAddress.getLatitude();
+        double cleanerLongitude = cleanerAddress.getLongitude();
+
+        double[] radiusLevels = {15000, 30000, 60000};
+        Map<String, JobSummaryDTO> jobSummaryMap = new LinkedHashMap<>();
+
+        for (double radius : radiusLevels) {
+            List<Object[]> results = executeNearbyMultiDayJobQuery(cleanerId, cleanerLatitude, cleanerLongitude, radius, limit);
+
+            for (Object[] row : results) {
+                String jobGroupCode = (String) row[0];
+
+                if (!jobSummaryMap.containsKey(jobGroupCode)) {
+                    JobSummaryDTO dto = new JobSummaryDTO();
+                    dto.setJobGroupCode(jobGroupCode); // Bạn cần có trường này trong DTO
+                    dto.setServiceName((String) row[1]);
+                    dto.setPrice((Double) row[2]);
+                    dto.setScheduledTime(((Timestamp) row[3]).toLocalDateTime());
+                    dto.setDistance((Double) row[4]);
+
+                    jobSummaryMap.put(jobGroupCode, dto);
+                }
+            }
+
+            if (jobSummaryMap.size() >= limit) {
+                break;
+            }
+        }
+
+        return new ArrayList<>(jobSummaryMap.values());
+    }
+
+
+    private List<Object[]> executeNearbyMultiDayJobQuery(Long cleanerId, double latitude, double longitude, double radiusInMeters, int limit) {
+        String query = "SELECT j.job_group_code, " +
+                "       string_agg(DISTINCT s.name, ', ') AS service_name, " +
+                "       CAST(SUM(j.total_price) AS DOUBLE PRECISION) AS total_price, " +
+                "       MIN(j.scheduled_time) AS first_scheduled_time, " +
+                "       CAST(MIN(ST_Distance(" +
+                "           ST_Transform(ca.geom, 3857), " +
+                "           ST_Transform(ST_SetSRID(ST_MakePoint(:longitude, :latitude), 4326), 3857)" +
+                "       )) / 1000 AS DOUBLE PRECISION) AS distance_km " +
+                "FROM jobs j " +
+                "JOIN customer_addresses ca ON j.customer_address_id = ca.id " +
+                "JOIN job_service_detail jsd ON jsd.job_id = j.id " +
+                "JOIN services s ON s.id = jsd.service_id " +
+                "WHERE j.status = 'OPEN' " +
+                "AND j.job_group_code IS NOT NULL " +
+                "AND ST_DWithin(" +
+                "        ST_Transform(ca.geom, 3857), " +
+                "        ST_Transform(ST_SetSRID(ST_MakePoint(:longitude, :latitude), 4326), 3857), " +
+                "        :radius) " +
+                "AND j.job_group_code NOT IN ( " +
+                "    SELECT DISTINCT j2.job_group_code " +
+                "    FROM jobs j2 " +
+                "    JOIN job_application ja ON ja.job_id = j2.id " +
+                "    WHERE ja.cleaner_id = :cleanerId " +
+                ") " +
+                // Nếu bạn có trường type hoặc duration để lọc job nhiều ngày, thêm điều kiện tại đây:
+                // "AND j.type = 'MULTI_DAY' " +
+                "GROUP BY j.job_group_code " +
+                "ORDER BY distance_km ASC " +
+                "LIMIT :limit";
+
+        Query nativeQuery = entityManager.createNativeQuery(query)
+                .setParameter("latitude", latitude)
+                .setParameter("longitude", longitude)
+                .setParameter("radius", radiusInMeters)
+                .setParameter("limit", limit)
+                .setParameter("cleanerId", cleanerId);
+
+        return nativeQuery.getResultList();
+    }
+
 
 
 

@@ -1,6 +1,7 @@
 package com.example.homecleanapi.vnPay;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -54,19 +55,28 @@ public class VnpayController {
                                                 @RequestParam("vnp_TxnRef") String txnRef) {
         try {
             if ("00".equals(responseCode)) {
-                Optional<Job> jobOpt = jobRepository.findByTxnRef(txnRef);
+                List<Job> jobs = jobRepository.findAllByTxnRef(txnRef);
 
-                if (jobOpt.isPresent()) {
-                    Job job = jobOpt.get();
-                    job.setStatus(JobStatus.OPEN);
-                    jobRepository.save(job);
+                if (!jobs.isEmpty()) {
+                    for (Job job : jobs) {
+                        // 🔧 Cập nhật theo booking_type
+                        if ("CREATE".equalsIgnoreCase(job.getBookingType())) {
+                            job.setStatus(JobStatus.OPEN);
+                        } else if ("BOOKED".equalsIgnoreCase(job.getBookingType())) {
+                            job.setStatus(JobStatus.BOOKED);
+                        }
+                    }
+                    jobRepository.saveAll(jobs);
+
+                    // Tính tổng tiền từ tất cả các Job
+                    double totalAmount = jobs.stream().mapToDouble(Job::getTotalPrice).sum();
 
                     // Lưu thông tin vào AdminTransactionHistory sau khi thanh toán thành công
                     AdminTransactionHistory transactionHistory = new AdminTransactionHistory();
-                    transactionHistory.setCustomer(job.getCustomer());
-                    transactionHistory.setCleaner(job.getCleaner());
+                    transactionHistory.setCustomer(jobs.get(0).getCustomer());
+                    transactionHistory.setCleaner(jobs.get(0).getCleaner());
                     transactionHistory.setTransactionType("BOOKED");
-                    transactionHistory.setAmount(job.getTotalPrice());
+                    transactionHistory.setAmount(totalAmount);
                     transactionHistory.setTransactionDate(LocalDateTime.now());
                     transactionHistory.setPaymentMethod("VNPay");
                     transactionHistory.setStatus("SUCCESS");
@@ -77,11 +87,11 @@ public class VnpayController {
 
                     // Thành công thì redirect về URL frontend
                     String redirectUrl = "https://house-clean-platform.web.app/ordersuccess?status=success";
-                    return ResponseEntity.status(HttpStatus.FOUND) // HTTP 302 Redirect
+                    return ResponseEntity.status(HttpStatus.FOUND)
                             .header(HttpHeaders.LOCATION, redirectUrl)
                             .build();
                 } else {
-                    // Nếu không tìm thấy Job, trả về URL thất bại
+                    // Không tìm thấy Job nào
                     String redirectUrl = "https://house-clean-platform.web.app/orderfail?status=fail";
                     return ResponseEntity.status(HttpStatus.FOUND)
                             .header(HttpHeaders.LOCATION, redirectUrl)
@@ -102,6 +112,7 @@ public class VnpayController {
                     .build();
         }
     }
+
 
 
 
