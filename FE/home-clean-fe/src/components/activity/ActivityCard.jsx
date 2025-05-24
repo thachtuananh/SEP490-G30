@@ -639,21 +639,42 @@ export const ActivityCard = ({ data, onDelete }) => {
                                   }
                                 )}
                               </div>
-                              <div className={styles.serviceArea}>
-                                {service.serviceDetailAreaRange}
+                              <div
+                                style={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: "10px",
+                                }}
+                              >
+                                <div
+                                  className={styles.statusBadge}
+                                  style={{
+                                    backgroundColor: getStatusColor(
+                                      subJob.status
+                                    ),
+                                  }}
+                                >
+                                  {getStatusText(subJob.status)}
+                                </div>
+                                <div className={styles.serviceArea}>
+                                  {service.serviceDetailAreaRange}
+                                </div>
                               </div>
                             </div>
                           ))}
                       </div>
                     ))}
                 </div>
-                <div className={styles.statusAndPrice}>
-                  <div
+                <div
+                  className={styles.statusAndPrice}
+                  style={{ justifyContent: "end" }}
+                >
+                  {/* <div
                     className={styles.statusBadge}
                     style={{ backgroundColor: getStatusColor(activity.status) }}
                   >
                     {getStatusText(activity.status)}
-                  </div>
+                  </div> */}
                   <div className={styles.price}>
                     <b>{activity.totalPrice.toLocaleString("vi-VN")} VNĐ</b>
                   </div>
@@ -672,7 +693,8 @@ export const ActivityCard = ({ data, onDelete }) => {
                   {(activity.status === "OPEN" ||
                     activity.status === "BOOKED" ||
                     activity.status === "IN_PROGRESS" ||
-                    activity.status === "ARRIVED") && (
+                    activity.status === "ARRIVED" ||
+                    activity.status === "DOING") && (
                     <Button
                       danger
                       className={styles.cancelButton}

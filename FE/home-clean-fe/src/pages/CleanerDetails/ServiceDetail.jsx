@@ -269,7 +269,9 @@ const ServiceDetailsCombo = () => {
     }
     setIsServiceModalVisible(false);
   };
-
+  const handleAddressAdded = async () => {
+    await loadCustomerAddresses(); // Fetch addresses again
+  };
   // Handle location modal
   const showLocationModal = async () => {
     // Reload addresses when opening the modal
@@ -519,6 +521,7 @@ const ServiceDetailsCombo = () => {
         loading={addressLoading}
         onSetDefaultAddress={handleSetDefaultAddress}
         currentLocation={location.pathname}
+        onAddressAdded={handleAddressAdded}
       />
     </div>
   );
