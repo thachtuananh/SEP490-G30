@@ -133,7 +133,7 @@ export const ActivityCard = ({ data, onDelete }) => {
       case "OPEN":
         return "Đang chờ người nhận";
       case "PAID":
-        return "Đang chờ thanh toán qua VNPay";
+        return "Đang chờ thanh toán hoàn tất";
       case "PENDING_APPROVAL":
         return "Chờ phê duyệt";
       case "IN_PROGRESS":
@@ -880,14 +880,24 @@ export const ActivityCard = ({ data, onDelete }) => {
                     </Button>
                   )}
                   {activity.status === "PAID" && (
-                    <Button
-                      type="primary"
-                      className={styles.statusButton}
-                      onClick={() => handleRetryPayment(activity.jobId)}
-                      disabled={isProcessing}
-                    >
-                      Thanh toán lại
-                    </Button>
+                    <>
+                      <Button
+                        type="primary"
+                        className={styles.statusButton}
+                        onClick={() => handleRetryPayment(activity.jobId)}
+                        disabled={isProcessing}
+                      >
+                        Thanh toán qua VNPay
+                      </Button>
+                      <Button
+                        type="primary"
+                        className={styles.statusButton}
+                        onClick={() => handleRetryPayment(activity.jobId)}
+                        disabled={isProcessing}
+                      >
+                        Thanh toán qua Ví
+                      </Button>
+                    </>
                   )}
                 </div>
               </div>

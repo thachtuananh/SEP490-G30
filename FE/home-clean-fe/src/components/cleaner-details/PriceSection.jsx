@@ -11,6 +11,7 @@ import donDepNhaMoi from "../../assets/icon-home/nha-moi.svg";
 import donDepVanPhong from "../../assets/icon-home/don-van-phong.svg";
 import donDepTheoKy from "../../assets/icon-home/don-dinh-ky.svg";
 import { BASE_URL } from "../../utils/config";
+
 // Icon mapping outside of the component
 const iconMap = {
   1: donPhongKhach,
@@ -35,8 +36,6 @@ function truncateDescription(description) {
 }
 
 const PriceSection = ({ cleanerId, cleanerName, phoneNumber }) => {
-  const [isServiceModalVisible, setIsServiceModalVisible] = useState(false);
-  const [selectedServices, setSelectedServices] = useState([]);
   const [allServices, setAllServices] = useState([]);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -64,7 +63,6 @@ const PriceSection = ({ cleanerId, cleanerName, phoneNumber }) => {
         setLoading(false);
       } catch (error) {
         console.error("Error fetching services:", error);
-        // Add error handling here if needed
         setLoading(false);
       }
     };
@@ -72,39 +70,16 @@ const PriceSection = ({ cleanerId, cleanerName, phoneNumber }) => {
     fetchServices();
   }, []);
 
-  const showServiceModal = () => {
-    setIsServiceModalVisible(true);
-  };
-
-  const handleServiceCancel = () => {
-    setIsServiceModalVisible(false);
-  };
-
-  const handleServiceOk = () => {
-    if (selectedServices.length === 0) {
-      return;
-    }
-
+  const handleHireClick = () => {
+    // Navigate directly to /service-details-cleaner with state
     navigate("/service-details-cleaner", {
       state: {
-        selectedServices,
+        selectedServices: [], // Empty since no modal selection
         cleanerId,
         cleanerName,
         phoneNumber,
         allServices,
       },
-    });
-
-    setIsServiceModalVisible(false);
-  };
-
-  const onServiceChange = (serviceId) => {
-    setSelectedServices((prev) => {
-      if (prev.includes(serviceId)) {
-        return prev.filter((id) => id !== serviceId);
-      } else {
-        return [...prev, serviceId];
-      }
     });
   };
 
@@ -115,20 +90,10 @@ const PriceSection = ({ cleanerId, cleanerName, phoneNumber }) => {
           <ChatIcon />
           <span>Chat ngay</span>
         </button> */}
-        <button className={styles.hireButton} onClick={showServiceModal}>
+        <button className={styles.hireButton} onClick={handleHireClick}>
           Thuê ngay
         </button>
       </div>
-
-      <ServiceSelectionModal
-        isVisible={isServiceModalVisible}
-        onCancel={handleServiceCancel}
-        onOk={handleServiceOk}
-        selectedServices={selectedServices}
-        onServiceChange={onServiceChange}
-        allServices={allServices}
-        loading={loading}
-      />
     </section>
   );
 };

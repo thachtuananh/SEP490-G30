@@ -540,10 +540,17 @@ const ServiceDetailsCombo = () => {
 
           <div>
             {/* <div className={styles.serviceHeaderText}>Dịch vụ chọn</div> */}
-            <div style={{ display: "flex", gap: "16px", marginBottom: 16 }}>
+            <div
+              style={{
+                display: "flex",
+                gap: "16px",
+                marginBottom: 16,
+                width: "100%",
+              }}
+            >
               <Form.Item name="service" noStyle>
                 <Select
-                  style={{ width: 300 }}
+                  style={{ width: "45%" }}
                   placeholder="Chọn dịch vụ"
                   onChange={handleServiceSelect}
                   allowClear
@@ -558,7 +565,7 @@ const ServiceDetailsCombo = () => {
               </Form.Item>
               <Form.Item name="area" noStyle>
                 <Select
-                  style={{ width: 150 }}
+                  style={{ width: "45%" }}
                   placeholder="Chọn diện tích"
                   onChange={setSelectedServiceDetailId}
                   value={selectedServiceDetailId}
@@ -578,7 +585,12 @@ const ServiceDetailsCombo = () => {
                     : null}
                 </Select>
               </Form.Item>
-              <Button type="primary" onClick={handleAddService}>
+              <Button
+                style={{ width: "10%" }}
+                type="primary"
+                onClick={handleAddService}
+                disabled={!selectedServiceDetails?.serviceDetails?.length}
+              >
                 Thêm
               </Button>
             </div>

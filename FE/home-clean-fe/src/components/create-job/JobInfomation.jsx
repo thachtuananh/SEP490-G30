@@ -84,21 +84,16 @@ const JobInfomation = ({
       return false;
     }
 
-    if (selectedDateTime.diff(currentTime, "minute") < 30) {
-      return new Promise((resolve) => {
-        Modal.confirm({
-          title: "Thời gian quá gần",
-          content: `Thời gian bạn chọn chỉ còn ${selectedDateTime.diff(
-            currentTime,
-            "minute"
-          )} phút nữa. 
-                             Người dọn dẹp có thể không kịp nhận việc. Bạn có muốn tiếp tục?`,
-          okText: "Tiếp tục",
-          cancelText: "Hủy",
-          onOk: () => resolve(true),
-          onCancel: () => resolve(false),
-        });
+    if (selectedDateTime.diff(currentTime, "minute") <= 30) {
+      Modal.warning({
+        title: "Thời gian quá gần",
+        content: `Thời gian bạn chọn chỉ còn ${selectedDateTime.diff(
+          currentTime,
+          "minute"
+        )} phút nữa. Vui lòng chọn thời gian cách hiện tại hơn 30 phút.`,
+        okText: "Đã hiểu",
       });
+      return false;
     }
 
     return true;
@@ -235,9 +230,9 @@ const JobInfomation = ({
   return (
     <>
       <div className={styles.jobInfoContainer}>
-        <Title level={5} className={styles.infoTitle}>
+        {/* <Title level={5} className={styles.infoTitle}>
           Thời gian làm việc
-        </Title>
+        </Title> */}
         <Paragraph className={styles.infoRow}>
           <Text>Ngày làm việc</Text>
           <Text>
@@ -263,7 +258,7 @@ const JobInfomation = ({
         <Title level={5} className={styles.infoTitle}>
           Chi tiết
         </Title>
-        <Paragraph className={styles.infoRow}>
+        {/* <Paragraph className={styles.infoRow}>
           <Text>Loại dịch vụ</Text>
           {state?.serviceName ? (
             <Text>{state.serviceName}</Text>
@@ -276,7 +271,7 @@ const JobInfomation = ({
               ))}
             </Text>
           )}
-        </Paragraph>
+        </Paragraph> */}
         <Paragraph className={styles.infoRow}>
           <Text>Địa điểm</Text>
           <Text>{state.address}</Text>
@@ -306,14 +301,7 @@ const JobInfomation = ({
             {!paymentMethod && "Chưa chọn"}
           </Text>
         </Paragraph>
-        {priceAdjustment && (
-          <Paragraph className={styles.infoRow} style={{ color: "#1890ff" }}>
-            <Text>Phụ phí</Text>
-            <Text style={{ color: "red" }}>
-              +{priceAdjustment.percentage}% do {priceAdjustment.reason}
-            </Text>
-          </Paragraph>
-        )}
+
         <div className={styles.divider}></div>
         <div className={styles.totalContainer}>
           {priceAdjustment && basePrice !== adjustedPrice && (

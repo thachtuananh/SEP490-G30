@@ -215,7 +215,7 @@ const Time = ({
 
   const handleDateTimeChange = (date) => {
     if (!date) {
-      setNewDateTime(dayjs().add(15, "minute").second(0));
+      setNewDateTime(dayjs().add(30, "minute").second(0));
       return;
     }
 

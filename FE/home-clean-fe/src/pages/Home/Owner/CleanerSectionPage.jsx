@@ -271,7 +271,7 @@ function CleanersPage() {
     setCurrentPage(page);
     window.scrollTo({
       top: 0,
-      behavior: "smooth",
+      // behavior: "smooth",
     });
   };
 

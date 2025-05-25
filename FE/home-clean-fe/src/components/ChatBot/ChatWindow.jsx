@@ -211,10 +211,10 @@ function ChatWindow({
     }, 100);
   };
 
-  useEffect(() => {
-    // Cuộn xuống tin nhắn mới nhất
-    messageEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [listMessage, isTyping]);
+  // useEffect(() => {
+  //   // Cuộn xuống tin nhắn mới nhất
+  //   messageEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  // }, [listMessage, isTyping]);
 
   // Focus vào input khi component được mount
   useEffect(() => {

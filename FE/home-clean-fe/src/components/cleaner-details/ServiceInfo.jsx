@@ -34,21 +34,13 @@ export const ServiceInfo = ({
             >
               {cleanerName}
             </Title>
-            {/* {isVerified ? (
-              <CheckCircleFilled
-                style={{ color: "#52c41a", fontSize: 20 }}
-                title="Đã xác thực"
-              />
-            ) : (
-              <CloseCircleFilled
-                style={{ color: "#ff4d4f", fontSize: 20 }}
-                title="Chưa xác thực"
-              />
-            )} */}
           </Space>
 
           <div style={{ marginTop: "8px", marginBottom: "8px" }}>
-            {averageRating && <StarRating rating={averageRating} />}
+            {/* Fix: Render StarRating if averageRating is defined (not null/undefined) */}
+            {averageRating !== null && averageRating !== undefined && (
+              <StarRating rating={averageRating} />
+            )}
           </div>
         </div>
 

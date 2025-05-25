@@ -1,16 +1,15 @@
-.service-slider {
+/* .service-slider {
   overflow-x: auto;
   white-space: nowrap;
   scroll-behavior: smooth;
   padding-bottom: 10px;
-}
+} */
 
-.service-list {
+/* .service-list {
   display: flex;
   gap: 16px;
-  /* Khoảng cách giữa các thẻ */
   animation: scrollLeft 10s linear infinite;
-}
+} */
 
 @keyframes scrollLeft {
   0% {
@@ -23,6 +22,6 @@
 }
 
 .service-list:hover {
-  animation-play-state: paused;
+  /* animation-play-state: paused; */
   /* Dừng khi hover */
 }
