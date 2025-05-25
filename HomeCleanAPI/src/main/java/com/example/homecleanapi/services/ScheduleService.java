@@ -17,6 +17,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -36,8 +37,10 @@ public class ScheduleService {
     private final TransactionHistoryRepository transactionHistoryRepository;
     private final WalletRepository walletRepository;
     private final WorkHistoryRepository workHistoryRepository;
+    private final JobDetailsRepository jobDetailsRepository;
+    private final ProfitRepository profitRepository;
 
-    public ScheduleService(JobRepository jobRepository, NotificationService notificationService, JobApplicationRepository jobApplicationRepository, CustomerWalletRepository customerWalletRepository, TransactionHistoryRepository transactionHistoryRepository, WalletRepository walletRepository, WorkHistoryRepository workHistoryRepository) {
+    public ScheduleService(JobRepository jobRepository, NotificationService notificationService, JobApplicationRepository jobApplicationRepository, CustomerWalletRepository customerWalletRepository, TransactionHistoryRepository transactionHistoryRepository, WalletRepository walletRepository, WorkHistoryRepository workHistoryRepository, JobDetailsRepository jobDetailsRepository, ProfitRepository profitRepository) {
         this.jobRepository = jobRepository;
         this.notificationService = notificationService;
         this.jobApplicationRepository = jobApplicationRepository;
@@ -45,6 +48,8 @@ public class ScheduleService {
         this.transactionHistoryRepository = transactionHistoryRepository;
         this.walletRepository = walletRepository;
         this.workHistoryRepository = workHistoryRepository;
+        this.jobDetailsRepository = jobDetailsRepository;
+        this.profitRepository = profitRepository;
     }
 
     @Scheduled(cron = "0 * * * * *")
@@ -223,6 +228,24 @@ public class ScheduleService {
                         transactionHistories.add(transactionHistory);
                         transactionHistoryRepository.saveAll(transactionHistories);
                         System.out.println("Cộng " + cleanerAmount + " vào ví cleaner " + cleanerId);
+                    }
+
+                    Optional<JobServiceDetail> jobServiceDetail = jobDetailsRepository.findByJob_id(job.getId());
+                    if (jobServiceDetail.isPresent()) {
+                        Profit profit = new Profit();
+                        profit.setTransactionCode(job.getOrderCode());
+                        profit.setServiceType(jobServiceDetail.get().getService().getName());
+                        profit.setExecutionDate(LocalDate.now(zoneId));
+                        profit.setCustomerName(job.getCustomer().getFull_name());
+                        profit.setCleanerName(cleaner.getName());
+                        profit.setAmount(totalPrice);
+                        BigDecimal profitAmount = BigDecimal.valueOf(totalPrice).multiply(BigDecimal.valueOf(0.15));
+                        profit.setProfitReceived(profitAmount);
+
+                        profitRepository.save(profit);
+                        System.out.println("Đã lưu thông tin lợi nhuận vào bảng profit cho job " + job.getId());
+                    } else {
+                        System.out.println("Không tìm thấy jobServiceDetail cho job " + job.getId());
                     }
 
                     Integer cleanerIdInt = Math.toIntExact(cleanerId);  // Chuyển Long sang Integer
