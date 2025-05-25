@@ -27,6 +27,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.PathVariable;
 
+import java.math.BigDecimal;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -77,6 +78,8 @@ public class JobService {
     private WorkHistoryRepository workHistoryRepository;
     @Autowired
     private NotificationService notificationService;
+    @Autowired
+    private ProfitRepository profitRepository;
 
     public List<JobDTO> getAllJobs() {
         List<Job> jobs = jobRepository.findAll();  // Lấy tất cả các job
@@ -700,6 +703,22 @@ public class JobService {
         txn.setStatus("SUCCESS");
 
         transactionHistoryRepository.save(txn);
+
+        // lưu vào bảng profit
+        Profit profit = new Profit();
+        profit.setTransactionCode(job.getOrderCode());
+        profit.setServiceType(jobServiceDetail.get().getService().getName());
+        profit.setExecutionDate(LocalDate.now());
+        profit.setCustomerName(job.getCustomer().getFull_name());
+        profit.setCleanerName(cleaner.getName());
+        profit.setAmount(totalPrice);
+        BigDecimal profitAmount = BigDecimal.valueOf(totalPrice).multiply(BigDecimal.valueOf(0.15));
+        profit.setProfitReceived(profitAmount);
+
+        profitRepository.save(profit);
+
+        response.put("message", "Cập nhật job sang DONE thành công");
+
         String message = "Chủ nhà " + job.getCustomer().getFull_name() + " đã xác nhận bạn hoàn thành công việc" + jobServiceDetail.get().getService().getName() + " Vui lòng kiểm tra ví.";
         NotificationDTO customerNotification = new NotificationDTO();
         customerNotification.setUserId(cleaner.getId());
@@ -1107,7 +1126,7 @@ public class JobService {
                         notificationService.processNotification(notification, "CLEANER", appliedCleanerId);
                     }
                 } else {
-                    System.out.println("❗ Không có ứng viên nào đã apply công việc này.");
+                    System.out.println("Không có ứng viên nào đã apply công việc này.");
                 }
             }
         } catch (Exception e) {
