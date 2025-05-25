@@ -25,7 +25,7 @@ import {
 import { AuthContext } from "../../context/AuthContext";
 import "../../assets/CSS/work/WorkDetailsDescription.module.css";
 import { BASE_URL } from "../../utils/config";
-import { sendNotification } from "../../services/NotificationService"; // Import the sendNotification function
+import { sendNotification } from "../../services/NotificationService";
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -37,7 +37,7 @@ const WorkDetailsDescription = () => {
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
-  const [isSubmitting, setIsSubmitting] = useState(false); // New state to track submission status
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Track window resize for responsive behavior
   useEffect(() => {
@@ -46,7 +46,6 @@ const WorkDetailsDescription = () => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // Determine layout based on screen width
   const isMobile = windowWidth < 768;
 
   useEffect(() => {
@@ -76,13 +75,12 @@ const WorkDetailsDescription = () => {
       return;
     }
 
-    // Prevent multiple submissions
     if (isSubmitting) {
       return;
     }
 
     try {
-      setIsSubmitting(true); // Set submitting state to true
+      setIsSubmitting(true);
 
       const response = await fetch(`${BASE_URL}/cleaner/apply-job/${jobId}`, {
         method: "POST",
@@ -99,14 +97,6 @@ const WorkDetailsDescription = () => {
       const data = await response.json();
 
       message.success("Ứng tuyển thành công");
-      // sendNotification(
-      //   job.customerId,
-      //   `Người dọn dẹp ${sessionStorage.getItem("name")} đã nhận dịch vụ: ${
-      //     job.services[0]?.serviceName || "Dọn dẹp"
-      //   }`,
-      //   "NHẬN VIỆC",
-      //   "Customer"
-      // );
       navigate("/homeclean");
       setIsModalOpen(false);
     } catch (error) {
@@ -114,14 +104,12 @@ const WorkDetailsDescription = () => {
         "Bạn đang ứng tuyển hoặc đã có lịch làm việc trong một công việc cách công việc này nhỏ hơn 2 giờ"
       );
     } finally {
-      // Reset submitting state after a short delay to prevent rapid re-submissions
       setTimeout(() => {
         setIsSubmitting(false);
-      }, 2000); // 2 second cooldown
+      }, 2000);
     }
   };
 
-  // Reset isSubmitting state when modal is closed
   useEffect(() => {
     if (!isModalOpen) {
       setIsSubmitting(false);
@@ -162,17 +150,35 @@ const WorkDetailsDescription = () => {
       .padStart(2, "0")}`;
   };
 
-  // Xử lý hiển thị tên dịch vụ, lấy từ service đầu tiên nếu có
   const serviceName =
     job.services && job.services.length > 0
       ? job.services[0].serviceName
       : job.serviceName;
 
-  // Xử lý hiển thị mô tả dịch vụ, lấy từ service đầu tiên nếu có
   const serviceDescription =
     job.services && job.services.length > 0
       ? job.services[0].serviceDescription
       : job.serviceDescription || "Không có mô tả";
+
+  // Hàm nhóm và đếm các dịch vụ theo serviceDetailId
+  const groupServicesByDetailId = (services) => {
+    const serviceMap = new Map();
+    services.forEach((service) => {
+      const key = service.serviceDetailId;
+      if (serviceMap.has(key)) {
+        serviceMap.get(key).count += 1;
+      } else {
+        serviceMap.set(key, { ...service, count: 1 });
+      }
+    });
+    return Array.from(serviceMap.values());
+  };
+
+  // Nhóm các dịch vụ
+  const groupedServices =
+    job.services && job.services.length > 0
+      ? groupServicesByDetailId(job.services)
+      : job.serviceDetails || [];
 
   return (
     <Row
@@ -196,15 +202,16 @@ const WorkDetailsDescription = () => {
           >
             <div style={{ display: "flex", flexWrap: "wrap" }}>
               {job.services && job.services.length > 0 ? (
-                job.services.map((service, index) => (
+                groupedServices.map((service, index) => (
                   <React.Fragment key={index}>
                     <Title
                       level={4}
                       style={{ margin: isMobile ? "0 0 8px 0" : 0 }}
                     >
-                      {service.serviceName}
+                      {service.serviceName}{" "}
+                      {service.count > 1 && `x${service.count}`}
                     </Title>
-                    {index < job.services.length - 1 && (
+                    {index < groupedServices.length - 1 && (
                       <Title
                         level={4}
                         style={{ margin: isMobile ? "0 0 8px 0" : "0 5px" }}
@@ -220,13 +227,6 @@ const WorkDetailsDescription = () => {
                 </Title>
               )}
             </div>
-
-            {/* <Tag
-              color={job.status === "OPEN" ? "green" : "default"}
-              style={{ marginTop: isMobile ? 8 : 0 }}
-            >
-              {job.status === "OPEN" ? "Đang mở" : "Đã đóng"}
-            </Tag> */}
           </div>
 
           <Descriptions
@@ -311,16 +311,14 @@ const WorkDetailsDescription = () => {
               margin: "0",
             }}
           >
-            {(job.services && job.services.length > 0
-              ? job.services
-              : job.serviceDetails || []
-            ).map((item, index) => (
+            {groupedServices.map((item, index) => (
               <li key={index} style={{ border: "none", paddingBottom: "8px" }}>
                 <Typography.Text style={{ marginRight: "5px" }}>
                   {item.serviceDetailName || item.name}
                 </Typography.Text>
                 <Typography.Text>
-                  {item.areaRange && `(${item.areaRange})`}
+                  {item.areaRange && `(${item.areaRange})`} (
+                  {item.count > 1 && `x${item.count}`})
                 </Typography.Text>
               </li>
             ))}
@@ -334,12 +332,12 @@ const WorkDetailsDescription = () => {
               margin: "0",
             }}
           >
-            {(job.services && job.services.length > 0
-              ? job.services
-              : job.serviceDetails || []
-            ).map((item, index) => (
+            {groupedServices.map((item, index) => (
               <li key={index} style={{ border: "none", paddingBottom: "8px" }}>
-                <Typography.Text>{item.serviceDescription}</Typography.Text>
+                <Typography.Text>
+                  {item.serviceDescription} (
+                  {item.count > 1 && `x${item.count}`})
+                </Typography.Text>
               </li>
             ))}
           </ul>
@@ -358,13 +356,6 @@ const WorkDetailsDescription = () => {
               </Typography.Text>
             </li>
           </ul>
-
-          {/* <Title level={5}>Ưu đãi</Title>
-          <Paragraph>
-            {job.services && job.services.length > 0 && job.services[0].discounts
-              ? job.services[0].discounts
-              : "Không có ưu đãi"}
-          </Paragraph> */}
 
           <Title level={5}>Khách hàng</Title>
           <Space direction="vertical" size="small" style={{ width: "100%" }}>
@@ -385,27 +376,8 @@ const WorkDetailsDescription = () => {
               >
                 Tên khách hàng:
               </div>
-              <div
-                style={{
-                  fontSize: "16px",
-                }}
-              >
-                {job.customerName}
-              </div>
+              <div style={{ fontSize: "16px" }}>{job.customerName}</div>
             </div>
-            {/* <div style={{
-              display: 'flex',
-              flexDirection: isMobile ? 'column' : 'row'
-            }}>
-              <div style={{
-                width: isMobile ? '100%' : '150px',
-                flexShrink: 0,
-                marginBottom: isMobile ? 4 : 0
-              }}>
-                Số điện thoại:
-              </div>
-              <div>{job.customerPhone}</div>
-            </div> */}
           </Space>
         </Card>
       </Col>
@@ -425,8 +397,8 @@ const WorkDetailsDescription = () => {
             type="primary"
             onClick={handleApplyJob}
             style={{ background: "#52c41a", borderColor: "#52c41a" }}
-            disabled={isSubmitting} // Disable button while submitting
-            loading={isSubmitting} // Show loading state while submitting
+            disabled={isSubmitting}
+            loading={isSubmitting}
           >
             {isSubmitting ? "Xác nhận" : "Xác nhận"}
           </Button>,

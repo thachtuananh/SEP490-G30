@@ -897,7 +897,9 @@ export const ActivityCard = ({ data, onDelete }) => {
 
                   {(activity.status === "DONE" ||
                     activity.status === "COMPLETED" ||
-                    activity.status === "IN_PROGRESS") && (
+                    activity.status === "IN_PROGRESS" ||
+                    activity.status === "ARRIVED" ||
+                    activity.status === "BOOKED") && (
                     <Button
                       type="default"
                       onClick={() =>
