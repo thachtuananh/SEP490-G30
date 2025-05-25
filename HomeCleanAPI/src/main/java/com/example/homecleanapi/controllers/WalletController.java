@@ -250,8 +250,10 @@ public class WalletController {
 
             if ("vnpay".equalsIgnoreCase(paymentMethod)) {
                 // Xử lý thanh toán qua VNPay
+                DecimalFormat formatter = new DecimalFormat("#,###.##");
+                String formattedAmount = formatter.format(amount);
                 Map<String, Object> response = walletService.depositMoney(customerId, amount, request);
-                String message = "Bạn đã nạp: " +  amount + " VND vào ví thành công";
+                String message = "Bạn đã nạp: " + formattedAmount  + " VND vào ví thành công";
                 NotificationDTO customerNotification = new NotificationDTO();
                 customerNotification.setUserId(Math.toIntExact(customerId));
                 customerNotification.setMessage(message);
