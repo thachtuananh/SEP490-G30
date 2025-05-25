@@ -239,8 +239,9 @@ public class ScheduleService {
                         profit.setCustomerName(job.getCustomer().getFull_name());
                         profit.setCleanerName(cleaner.getName());
                         profit.setAmount(totalPrice);
-                        BigDecimal profitAmount = BigDecimal.valueOf(totalPrice).multiply(BigDecimal.valueOf(0.15));
+                        double profitAmount = totalPrice * 0.15;
                         profit.setProfitReceived(profitAmount);
+
 
                         profitRepository.save(profit);
                         System.out.println("Đã lưu thông tin lợi nhuận vào bảng profit cho job " + job.getId());
