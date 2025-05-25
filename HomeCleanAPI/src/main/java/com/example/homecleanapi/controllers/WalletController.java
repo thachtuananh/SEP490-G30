@@ -241,8 +241,6 @@ public class WalletController {
 
             // Lấy số tiền từ request và đảm bảo chuyển đổi đúng
             double amount = 0.0;
-            String formatted = String.format("%.0f", amount); // Làm tròn không có số thập phân
-            System.out.println(formatted); // 10000000
 
             if (depositRequest.get("amount") instanceof String) {
                 amount = Double.parseDouble((String) depositRequest.get("amount"));
@@ -253,7 +251,7 @@ public class WalletController {
             if ("vnpay".equalsIgnoreCase(paymentMethod)) {
                 // Xử lý thanh toán qua VNPay
                 Map<String, Object> response = walletService.depositMoney(customerId, amount, request);
-                String message = "Bạn đã nạp: " +  formatted + " VND vào ví thành công";
+                String message = "Bạn đã nạp: " +  amount + " VND vào ví thành công";
                 NotificationDTO customerNotification = new NotificationDTO();
                 customerNotification.setUserId(Math.toIntExact(customerId));
                 customerNotification.setMessage(message);
