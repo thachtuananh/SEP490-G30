@@ -232,3 +232,32 @@ export async function retryPayment(jobId) {
     throw error;
   }
 }
+
+export async function retryPaymentWallet(jobId) {
+    try {
+        const token = sessionStorage.getItem("token");
+        const customerId = sessionStorage.getItem("customerId");
+        if (!token) {
+            throw new Error("No authentication token found");
+        }
+
+        const response = await fetch(`${BASE_URL}/vnpayment/wallet-payment/${jobId}/${customerId}`, {
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${token}`,
+                "Accept": "application/json",
+            },
+        });
+
+        if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Failed to retry payment');
+    }
+    
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error retrying payment:', error);
+    throw error;
+  }
+}

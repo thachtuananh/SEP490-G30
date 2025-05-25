@@ -4,7 +4,7 @@ import { AuthContextProvider } from "./context/AuthContext";
 import { WebSocketProvider } from "./context/WebSocketContext";
 import CleanerWebSocket from "./context/CleanerWebSocket";
 import ChatWidget from "./components/ChatBot/ChatWidget";
-
+import { ScrollToTop } from "./routers/ScrollToTop";
 function App() {
   const cleaner = JSON.parse(sessionStorage.getItem("cleaner"));
 
@@ -12,6 +12,7 @@ function App() {
     <AuthContextProvider>
       <WebSocketProvider>
         <Router>
+          <ScrollToTop />
           {cleaner && <CleanerWebSocket />}
           <Layout />
           <ChatWidget />

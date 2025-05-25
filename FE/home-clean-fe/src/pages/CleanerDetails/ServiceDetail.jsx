@@ -1,28 +1,35 @@
 import React, { useState, useContext, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Form, Radio, Button, message, Spin } from "antd";
+import { Form, Select, Button, message, Spin, Table, InputNumber } from "antd";
 import styles from "../../components/combo-service/JobUpload.module.css";
-import ServiceSelectionModal from "../../components/combo-service/ServiceSelectionModal";
-import AddressSelectionModal from "../../components/combo-service/AddressSelectionModal"; // Import the new component
+import AddressSelectionModal from "../../components/combo-service/AddressSelectionModal";
 import { AuthContext } from "../../context/AuthContext";
 import { fetchServiceDetails, createJob } from "../../services/owner/OwnerAPI";
 import {
   fetchCustomerAddresses,
   setDefaultAddress,
 } from "../../services/owner/OwnerAddressAPI";
+import { BASE_URL } from "../../utils/config";
+
+const { Option } = Select;
 
 const ServiceDetailsCombo = () => {
   const [form] = Form.useForm();
   const navigate = useNavigate();
   const location = useLocation();
-  const { selectedServices: initialSelectedServices, allServices } =
-    location.state || { selectedServices: [], allServices: [] };
+  const { selectedServices: initialSelectedServices } = location.state || {
+    selectedServices: [],
+  };
   const { token, customerId } = useContext(AuthContext);
 
+  const [allServices, setAllServices] = useState([]);
   const [selectedServices, setSelectedServices] = useState(
-    initialSelectedServices || []
+    initialSelectedServices.map((id) => ({
+      serviceId: id,
+      quantity: 1,
+      serviceDetailId: null,
+    })) || []
   );
-  const [isServiceModalVisible, setIsServiceModalVisible] = useState(false);
   const [isLocationModalVisible, setIsLocationModalVisible] = useState(false);
   const [loading, setLoading] = useState(false);
   const [addressLoading, setAddressLoading] = useState(false);
@@ -31,25 +38,53 @@ const ServiceDetailsCombo = () => {
   const [selectedAddress, setSelectedAddress] = useState(null);
   const [servicePrices, setServicePrices] = useState({});
   const [serviceSizes, setServiceSizes] = useState({});
+  const [selectedServiceId, setSelectedServiceId] = useState(null);
+  const [selectedServiceDetailId, setSelectedServiceDetailId] = useState(null);
   const cleanerId = location.state?.cleanerId;
   const cleanerName = location.state?.cleanerName;
-  // Function to fetch customer addresses
+
+  useEffect(() => {
+    const fetchServices = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch(`${BASE_URL}/services/all`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        console.log("Fetched services:", data);
+        // Filter out duplicate service IDs
+        const uniqueServices = data.filter(
+          (service, index, self) =>
+            index === self.findIndex((s) => s.serviceId === service.serviceId)
+        );
+        setAllServices(uniqueServices);
+      } catch (error) {
+        console.error("Error fetching services:", error);
+        message.error("Không thể tải dịch vụ. Vui lòng thử lại sau.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchServices();
+  }, [token]);
+
   const loadCustomerAddresses = async () => {
     try {
       if (customerId) {
         const rawAddressesData = await fetchCustomerAddresses(customerId);
-
-        // Map the API response fields to the expected format
         const addressesData = rawAddressesData.map((addr) => ({
           addressId: addr.id,
           customer: addr.customer,
           address: addr.address,
           isDefault: addr.current,
         }));
-
         setCustomerAddresses(addressesData);
-
-        // Set default address if no address is selected yet
         if (!selectedAddress) {
           const defaultAddress =
             addressesData.find((addr) => addr.isDefault) || addressesData[0];
@@ -58,7 +93,6 @@ const ServiceDetailsCombo = () => {
             form.setFieldsValue({ location: defaultAddress.address });
           }
         }
-
         return addressesData;
       }
     } catch (error) {
@@ -68,52 +102,43 @@ const ServiceDetailsCombo = () => {
     return [];
   };
 
-  // Fetch service details and customer addresses
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        // Fetch customer addresses
         await loadCustomerAddresses();
-
-        // Fetch service details for selected services
-        const detailsPromises = selectedServices.map((serviceId) =>
-          fetchServiceDetails(serviceId)
+        const detailsPromises = selectedServices.map((item) =>
+          fetchServiceDetails(item.serviceId)
         );
         const detailsResults = await Promise.all(detailsPromises);
-
         setServicesDetails(detailsResults);
 
-        // Initialize service prices and sizes based on API response
         const prices = {};
         const sizes = {};
-
         detailsResults.forEach((serviceData, index) => {
-          const serviceId = selectedServices[index];
-
-          // Check if service has details
+          const serviceId = selectedServices[index].serviceId;
+          const selectedDetailId = selectedServices[index].serviceDetailId;
           if (
             serviceData &&
             serviceData.serviceDetails &&
             serviceData.serviceDetails.length > 0
           ) {
-            // Default to the first size option (smallest range)
-            const defaultDetail = serviceData.serviceDetails[0];
-            prices[serviceId] = defaultDetail.price;
-            sizes[serviceId] = defaultDetail.serviceDetailId;
-
-            // Set the default form value to the serviceDetailId instead of "small/medium/large"
+            const detail = selectedDetailId
+              ? serviceData.serviceDetails.find(
+                  (d) => d.serviceDetailId === selectedDetailId
+                )
+              : serviceData.serviceDetails[0];
+            prices[serviceId] = detail.price;
+            sizes[serviceId] = detail.serviceDetailId;
             form.setFieldsValue({
-              [`area_${serviceId}`]: defaultDetail.serviceDetailId,
+              [`area_${serviceId}_${index}`]: detail.serviceDetailId,
             });
           } else {
-            // Fallback if no details
-            prices[serviceId] = serviceData?.basePrice || 170000;
-            sizes[serviceId] = "default";
-            form.setFieldsValue({ [`area_${serviceId}`]: "default" });
+            prices[serviceId] = serviceData?.basePrice || 120000;
+            sizes[serviceId] = null;
+            form.setFieldsValue({ [`area_${serviceId}_${index}`]: null });
           }
         });
-
         setServicePrices(prices);
         setServiceSizes(sizes);
       } catch (error) {
@@ -123,94 +148,179 @@ const ServiceDetailsCombo = () => {
         setLoading(false);
       }
     };
-
     fetchData();
   }, [customerId, selectedServices]);
 
-  // Update service price when size changes
-  const handleSizeChange = (serviceId, serviceDetailId) => {
-    // Find the service in the details
+  const handleSizeChange = (serviceId, serviceDetailId, index) => {
     const serviceData = servicesDetails.find((s) => s.serviceId === serviceId);
-
     if (
       serviceData &&
       serviceData.serviceDetails &&
       serviceData.serviceDetails.length > 0
     ) {
-      // Find the specific service detail by its ID
       const selectedDetail = serviceData.serviceDetails.find(
         (detail) => detail.serviceDetailId === serviceDetailId
       );
-
       if (selectedDetail) {
-        // Set the price from the selected detail
         setServicePrices({
           ...servicePrices,
           [serviceId]: selectedDetail.price,
         });
-
-        // Store the serviceDetailId instead of size name
         setServiceSizes({
           ...serviceSizes,
           [serviceId]: serviceDetailId,
         });
+        if (index !== undefined) {
+          setSelectedServices((prev) => {
+            const updated = [...prev];
+            updated[index] = { ...updated[index], serviceDetailId };
+            return updated;
+          });
+        }
       }
     }
   };
 
-  // Find service details based on ID
-  const getServiceDetails = (serviceId) => {
-    return allServices.find((service) => service.id === serviceId);
+  const handleQuantityChange = (index, value) => {
+    setSelectedServices((prev) => {
+      const updated = [...prev];
+      updated[index] = { ...updated[index], quantity: value };
+      return updated;
+    });
   };
 
-  const onServiceChange = (serviceId) => {
+  const handleDuplicateService = (index) => {
     setSelectedServices((prev) => {
-      if (prev.includes(serviceId)) {
-        return prev.filter((id) => id !== serviceId);
+      const serviceToDuplicate = prev[index];
+      const existingServiceIndex = prev.findIndex(
+        (item) =>
+          item.serviceId === serviceToDuplicate.serviceId &&
+          item.serviceDetailId === serviceToDuplicate.serviceDetailId
+      );
+
+      if (existingServiceIndex !== -1) {
+        // If service with same serviceId and serviceDetailId exists, increment quantity
+        const updated = [...prev];
+        updated[existingServiceIndex] = {
+          ...updated[existingServiceIndex],
+          quantity: updated[existingServiceIndex].quantity + 1,
+        };
+        return updated;
       } else {
-        return [...prev, serviceId];
+        // If no matching service, duplicate as a new entry
+        return [...prev, { ...serviceToDuplicate, quantity: 1 }];
       }
     });
+  };
+
+  const handleRemoveService = (index) => {
+    setSelectedServices((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const handleServiceSelect = (serviceId) => {
+    console.log("Selected serviceId:", serviceId);
+    setSelectedServiceId(serviceId);
+    setSelectedServiceDetailId(null);
+    if (serviceId) {
+      const serviceData = allServices.find((s) => s.serviceId === serviceId);
+      if (serviceData?.serviceDetails?.length > 0) {
+        const defaultDetail = serviceData.serviceDetails[0];
+        setSelectedServiceDetailId(defaultDetail.serviceDetailId);
+        setServicePrices((prev) => ({
+          ...prev,
+          [serviceId]: defaultDetail.price,
+        }));
+      } else {
+        setServicePrices((prev) => ({
+          ...prev,
+          [serviceId]: serviceData?.basePrice || 120000,
+        }));
+      }
+    }
+  };
+
+  const handleAddService = () => {
+    if (!selectedServiceId) {
+      message.error("Vui lòng chọn một dịch vụ!");
+      return;
+    }
+    setSelectedServices((prev) => {
+      const existingServiceIndex = prev.findIndex(
+        (item) =>
+          item.serviceId === selectedServiceId &&
+          item.serviceDetailId === selectedServiceDetailId
+      );
+      if (existingServiceIndex !== -1) {
+        // Increment quantity if service exists
+        const updated = [...prev];
+        updated[existingServiceIndex] = {
+          ...updated[existingServiceIndex],
+          quantity: updated[existingServiceIndex].quantity + 1,
+        };
+
+        return updated;
+      } else {
+        // Add new service
+        const newService = {
+          serviceId: selectedServiceId,
+          serviceDetailId: selectedServiceDetailId,
+          quantity: 1,
+        };
+        return [...prev, newService];
+      }
+    });
+    setSelectedServiceId(null);
+    setSelectedServiceDetailId(null);
+    form.setFieldsValue({ service: null, area: null });
+  };
+
+  const handleAddressAdded = async () => {
+    await loadCustomerAddresses();
+  };
+
+  const getServiceDetails = (serviceId) => {
+    return allServices.find((service) => service.serviceId === serviceId);
   };
 
   const handleSubmit = async () => {
     try {
       await form.validateFields();
-
       if (!selectedAddress) {
         message.error("Vui lòng chọn địa chỉ!");
         return;
       }
-
       if (selectedServices.length === 0) {
         message.error("Vui lòng chọn ít nhất một dịch vụ!");
         return;
       }
-
-      // Navigate to create job page with all necessary details
       navigate("/createjobtocleaner", {
         state: {
           cleanerId: cleanerId,
           cleanerName: cleanerName,
-          phoneNumber: location.state?.phoneNumber,
-          selectedServices,
-          serviceDetails: selectedServices.map((serviceId) => {
+          selectedServices: selectedServices.map((item) => item.serviceId),
+          serviceDetails: selectedServices.map((item, index) => {
             const serviceData = servicesDetails.find(
-              (s) => s.serviceId === serviceId
+              (s) => s.serviceId === item.serviceId
             );
-            let selectedDetail = serviceData?.serviceDetails?.find(
-              (detail) => detail.serviceDetailId === serviceSizes[serviceId]
+            const selectedDetail = serviceData?.serviceDetails?.find(
+              (detail) => detail.serviceDetailId === item.serviceDetailId
             );
-
+            const serviceAll = allServices.find(
+              (s) => s.serviceId === item.serviceId
+            );
             return {
-              serviceId,
-              serviceDetailId: selectedDetail?.serviceDetailId || null, // ✅ Thêm serviceDetailId vào
-              serviceName: serviceData?.serviceName || `Dịch vụ ${serviceId}`,
-              price: servicePrices[serviceId],
+              serviceId: item.serviceId,
+              serviceDetailId: item.serviceDetailId || null,
+              serviceName:
+                serviceData?.serviceName ||
+                serviceAll?.serviceName ||
+                `Dịch vụ ${item.serviceId}`,
+              price: servicePrices[item.serviceId] * item.quantity,
               selectedSize: selectedDetail
                 ? `${selectedDetail.minRoomSize}`
                 : "0",
               maxSize: selectedDetail ? `${selectedDetail.maxRoomSize}` : "20",
+              quantity: item.quantity,
             };
           }),
           address: selectedAddress.address,
@@ -223,58 +333,11 @@ const ServiceDetailsCombo = () => {
     }
   };
 
-  // Helper functions for size display
-  const getSelectedSizeText = (size) => {
-    switch (size) {
-      case "small":
-        return "0";
-      case "medium":
-        return "20";
-      case "large":
-        return "40";
-      default:
-        return "0";
-    }
-  };
-
-  const getMaxSizeText = (size) => {
-    switch (size) {
-      case "small":
-        return "20";
-      case "medium":
-        return "40";
-      case "large":
-        return "60";
-      default:
-        return "20";
-    }
-  };
-
   const handleGoBack = () => {
     navigate("/");
   };
 
-  const showServiceModal = () => {
-    setIsServiceModalVisible(true);
-  };
-
-  const handleServiceCancel = () => {
-    setIsServiceModalVisible(false);
-  };
-
-  const handleServiceOk = () => {
-    if (selectedServices.length === 0) {
-      message.error("Vui lòng chọn ít nhất một dịch vụ!");
-      return;
-    }
-    setIsServiceModalVisible(false);
-  };
-  const handleAddressAdded = async () => {
-    await loadCustomerAddresses(); // Fetch addresses again
-  };
-  // Handle location modal
   const showLocationModal = async () => {
-    // Reload addresses when opening the modal
     setAddressLoading(true);
     setIsLocationModalVisible(true);
     await loadCustomerAddresses();
@@ -291,7 +354,6 @@ const ServiceDetailsCombo = () => {
     setIsLocationModalVisible(false);
   };
 
-  // Handle setting default address
   const handleSetDefaultAddress = async (addressId) => {
     try {
       if (!addressId) {
@@ -299,34 +361,24 @@ const ServiceDetailsCombo = () => {
         message.error("Địa chỉ không hợp lệ");
         return;
       }
-
       setAddressLoading(true);
       await setDefaultAddress(customerId, addressId);
-
-      // Thay vì gọi lại API, chỉ cập nhật trạng thái địa chỉ cục bộ
-      setCustomerAddresses((prevAddresses) => {
-        return prevAddresses.map((addr) => ({
+      setCustomerAddresses((prevAddresses) =>
+        prevAddresses.map((addr) => ({
           ...addr,
           isDefault: addr.addressId === addressId,
-        }));
-      });
-
-      // Cập nhật địa chỉ được chọn nếu cần
+        }))
+      );
       const updatedDefaultAddress = customerAddresses.find(
         (addr) => addr.addressId === addressId
       );
       if (updatedDefaultAddress) {
-        // Nếu đây không phải địa chỉ đang được chọn, cập nhật nó
         if (!selectedAddress || selectedAddress.addressId !== addressId) {
-          const updatedAddress = {
-            ...updatedDefaultAddress,
-            isDefault: true,
-          };
+          const updatedAddress = { ...updatedDefaultAddress, isDefault: true };
           setSelectedAddress(updatedAddress);
           form.setFieldsValue({ location: updatedAddress.address });
         }
       }
-
       message.success("Đã đặt địa chỉ mặc định mới");
     } catch (error) {
       console.error("Error setting default address:", error);
@@ -337,24 +389,108 @@ const ServiceDetailsCombo = () => {
   };
 
   const calculateTotalPrice = () => {
-    return Object.values(servicePrices).reduce(
-      (total, price) => total + price,
-      0
-    );
+    return selectedServices.reduce((total, item) => {
+      const price = servicePrices[item.serviceId] || 0;
+      return total + price * item.quantity;
+    }, 0);
   };
 
-  // if (loading) {
-  //   return (
-  //     <div className={styles.loadingContainer}>
-  //       <Spin size="large" tip="Đang tải..." />
-  //     </div>
-  //   );
-  // }
+  const columns = [
+    {
+      title: "STT",
+      render: (_, __, index) => index + 1,
+      width: "5%",
+    },
+    {
+      title: "Tên dịch vụ",
+      render: (_, record) => {
+        const service = getServiceDetails(record.serviceId);
+        const serviceData = servicesDetails.find(
+          (s) => s.serviceId === record.serviceId
+        );
+        return (
+          service?.serviceName ||
+          serviceData?.serviceName ||
+          `Dịch vụ ${record.serviceId}`
+        );
+      },
+    },
+    {
+      title: "Diện tích",
+      render: (_, record, index) => {
+        const serviceData = servicesDetails.find(
+          (s) => s.serviceId === record.serviceId
+        );
+        return (
+          <Form.Item name={`area_${record.serviceId}_${index}`} noStyle>
+            <Select
+              style={{ width: 150 }}
+              onChange={(value) =>
+                handleSizeChange(record.serviceId, value, index)
+              }
+              value={record.serviceDetailId}
+              disabled={!serviceData?.serviceDetails?.length}
+            >
+              {serviceData &&
+              serviceData.serviceDetails &&
+              serviceData.serviceDetails.length > 0
+                ? serviceData.serviceDetails.map((detail) => (
+                    <Option
+                      key={detail.serviceDetailId}
+                      value={detail.serviceDetailId}
+                    >
+                      {`${detail.minRoomSize} - ${detail.maxRoomSize} m²`}
+                    </Option>
+                  ))
+                : null}
+            </Select>
+          </Form.Item>
+        );
+      },
+    },
+    {
+      title: "Số lượng",
+      render: (_, __, index) => (
+        <InputNumber
+          min={1}
+          value={selectedServices[index].quantity}
+          onChange={(value) => handleQuantityChange(index, value)}
+        />
+      ),
+    },
+    {
+      title: "Số tiền",
+      render: (_, record) =>
+        (servicePrices[record.serviceId] * record.quantity).toLocaleString() +
+        " đ",
+    },
+    {
+      title: "Thao tác",
+      render: (_, __, index) => (
+        <div>
+          <Button
+            type="link"
+            onClick={() => handleDuplicateService(index)}
+            style={{ marginRight: 8 }}
+          >
+            Thêm
+          </Button>
+          <Button type="link" danger onClick={() => handleRemoveService(index)}>
+            Xóa
+          </Button>
+        </div>
+      ),
+    },
+  ];
+
+  const selectedServiceDetails = allServices.find(
+    (s) => s.serviceId === selectedServiceId
+  );
 
   return (
     <div className={styles.pageContainerCombo}>
       <div className={styles.headerContainer}>
-        <h1 className={styles.header}>Điền thông tin dịch vụ</h1>
+        <h1 className={styles.header}>Lựa chọn dịch vụ</h1>
       </div>
 
       <div className={styles.serviceDetailsContainer}>
@@ -363,7 +499,7 @@ const ServiceDetailsCombo = () => {
           layout="vertical"
           initialValues={{ location: selectedAddress?.address || "" }}
         >
-          <Form.Item
+          {/* <Form.Item
             name="location"
             label="Chọn địa chỉ"
             rules={[{ required: true, message: "Vui lòng chọn địa chỉ!" }]}
@@ -404,87 +540,76 @@ const ServiceDetailsCombo = () => {
                 </div>
               </Button>
             </div>
-          </Form.Item>
+          </Form.Item> */}
 
           <div>
-            <div className={styles.serviceHeaderText}>Dịch vụ chọn</div>
-
-            {selectedServices.map((serviceId) => {
-              const service = getServiceDetails(serviceId);
-              const serviceData = servicesDetails.find(
-                (s) => s.serviceId === serviceId
-              );
-
-              return (
-                <div key={serviceId} className={styles.selectedServiceItem}>
-                  <div className={styles.selectedServiceHeader}>
-                    <span>
-                      {service?.title ||
-                        serviceData?.serviceName ||
-                        `Dịch vụ ${serviceId}`}
-                    </span>
-                    <Button
-                      type="text"
-                      danger
-                      icon={<span>🗑️</span>}
-                      onClick={() => onServiceChange(serviceId)}
-                    />
-                  </div>
-                  <div className={styles.serviceAreaSelection}>
-                    <div>Diện tích</div>
-                    <Form.Item name={`area_${serviceId}`} noStyle>
-                      {serviceData &&
-                      serviceData.serviceDetails &&
-                      serviceData.serviceDetails.length > 0 ? (
-                        <Radio.Group
-                          onChange={(e) =>
-                            handleSizeChange(serviceId, e.target.value)
-                          }
-                          defaultValue={
-                            serviceData.serviceDetails[0].serviceDetailId
-                          }
+            {/* <div className={styles.serviceHeaderText}>Dịch vụ chọn</div> */}
+            <div
+              style={{
+                display: "flex",
+                gap: "16px",
+                marginBottom: 16,
+                width: "100%",
+              }}
+            >
+              <Form.Item name="service" noStyle>
+                <Select
+                  style={{ width: "45%" }}
+                  placeholder="Chọn dịch vụ"
+                  onChange={handleServiceSelect}
+                  allowClear
+                  value={selectedServiceId}
+                >
+                  {allServices.map((service) => (
+                    <Option key={service.serviceId} value={service.serviceId}>
+                      {service.serviceName || `Dịch vụ ${service.serviceId}`}
+                    </Option>
+                  ))}
+                </Select>
+              </Form.Item>
+              <Form.Item name="area" noStyle>
+                <Select
+                  style={{ width: "45%" }}
+                  placeholder="Chọn diện tích"
+                  onChange={setSelectedServiceDetailId}
+                  value={selectedServiceDetailId}
+                  disabled={!selectedServiceDetails?.serviceDetails?.length}
+                >
+                  {selectedServiceDetails &&
+                  selectedServiceDetails.serviceDetails &&
+                  selectedServiceDetails.serviceDetails.length > 0
+                    ? selectedServiceDetails.serviceDetails.map((detail) => (
+                        <Option
+                          key={detail.serviceDetailId}
+                          value={detail.serviceDetailId}
                         >
-                          {serviceData.serviceDetails.map((detail) => (
-                            <Radio.Button
-                              key={detail.serviceDetailId}
-                              value={detail.serviceDetailId}
-                            >
-                              {`${detail.minRoomSize}m² - ${detail.maxRoomSize}m²`}
-                            </Radio.Button>
-                          ))}
-                        </Radio.Group>
-                      ) : (
-                        <Radio.Group defaultValue="default">
-                          <Radio.Button value="default">
-                            {"< 20m²"}
-                          </Radio.Button>
-                        </Radio.Group>
-                      )}
-                    </Form.Item>
-                    <div className={styles.servicePrice}>
-                      Giá dịch vụ
-                      <div className={styles.servicePriceValue}>
-                        {servicePrices[serviceId]?.toLocaleString()} đ
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-
-            <div className={styles.addMoreService}>
-              <Button type="dashed" onClick={showServiceModal} block>
-                Thêm dịch vụ +
+                          {`${detail.minRoomSize} - ${detail.maxRoomSize} m²`}
+                        </Option>
+                      ))
+                    : null}
+                </Select>
+              </Form.Item>
+              <Button
+                style={{ width: "10%" }}
+                type="primary"
+                onClick={handleAddService}
+                disabled={!selectedServiceDetails?.serviceDetails?.length}
+              >
+                Thêm
               </Button>
             </div>
-
+            <Table
+              columns={columns}
+              dataSource={selectedServices}
+              rowKey={(record, index) => `${record.serviceId}_${index}`}
+              pagination={false}
+            />
             <div className={styles.totalPrice}>
               <div>Tổng giá</div>
               <div className={styles.totalPriceValue}>
                 {calculateTotalPrice().toLocaleString()} đ
               </div>
             </div>
-            {/* <div className={styles.priceNote}>Giá đã bao gồm VAT</div> */}
           </div>
 
           <div className={styles.actionButtons}>
@@ -502,17 +627,6 @@ const ServiceDetailsCombo = () => {
         </Form>
       </div>
 
-      {/* Service Selection Modal */}
-      <ServiceSelectionModal
-        isVisible={isServiceModalVisible}
-        onCancel={handleServiceCancel}
-        onOk={handleServiceOk}
-        selectedServices={selectedServices}
-        onServiceChange={onServiceChange}
-        allServices={allServices}
-      />
-
-      {/* Address Selection Modal */}
       <AddressSelectionModal
         isVisible={isLocationModalVisible}
         onCancel={handleLocationCancel}
