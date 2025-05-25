@@ -712,8 +712,9 @@ public class JobService {
         profit.setCustomerName(job.getCustomer().getFull_name());
         profit.setCleanerName(cleaner.getName());
         profit.setAmount(totalPrice);
-        BigDecimal profitAmount = BigDecimal.valueOf(totalPrice).multiply(BigDecimal.valueOf(0.15));
+        double profitAmount = totalPrice * 0.15;
         profit.setProfitReceived(profitAmount);
+
 
         profitRepository.save(profit);
 
@@ -874,6 +875,93 @@ public class JobService {
 
         return new ArrayList<>(jobGroupMap.values());
     }
+
+//    public List<Map<String, Object>> getBookedJobsForCustomer(Long customerId) {
+//        List<Map<String, Object>> bookedJobs = new ArrayList<Map<String,Object>>();
+//
+//        // Lấy tất cả các job mà customer đã đặt
+//        List<Job> jobs = jobRepository.findByCustomerId(customerId);
+//
+//        // Sắp xếp các công việc theo scheduledTime giảm dần (công việc mới nhất sẽ được hiện đầu tiên)
+//        jobs.sort((job1, job2) -> job2.getScheduledTime().compareTo(job1.getScheduledTime()));
+//
+//        for (Job job : jobs) {
+//            Map<String, Object> jobInfo = new HashMap<>();
+//
+//            // Thêm các thông tin chi tiết của job vào jobInfo
+//            jobInfo.put("jobId", job.getId());
+//            jobInfo.put("orderCode", job.getOrderCode());  // Thêm order_code
+//            jobInfo.put("scheduledTime", job.getScheduledTime());  // Thời gian
+//            jobInfo.put("customerAddress", job.getCustomerAddress().getAddress());  // Địa chỉ
+//            jobInfo.put("status", job.getStatus());  // Trạng thái
+//            jobInfo.put("totalPrice", job.getTotalPrice());  // Giá
+//
+//            // Thêm thông tin về customer đã đặt job
+//            Customers customer = job.getCustomer();
+//            if (customer != null) {
+//                jobInfo.put("customerId", customer.getId());
+//                jobInfo.put("customerName", customer.getFull_name());
+//                jobInfo.put("customerPhone", customer.getPhone());
+//            }
+//
+//            // Thêm thông tin về địa chỉ của customer
+//            CustomerAddresses customerAddress = job.getCustomerAddress();
+//            if (customerAddress != null) {
+//                jobInfo.put("customerAddressId", customerAddress.getId());
+//                jobInfo.put("customerAddress", customerAddress.getAddress());
+//                jobInfo.put("latitude", customerAddress.getLatitude());
+//                jobInfo.put("longitude", customerAddress.getLongitude());
+//            }
+//
+//            // Lấy tất cả các JobServiceDetail cho job này
+//            List<JobServiceDetail> jobServiceDetails = jobServiceDetailRepository.findByJobId(job.getId());
+//            if (jobServiceDetails != null && !jobServiceDetails.isEmpty()) {
+//                List<Map<String, Object>> serviceList = new ArrayList<>();
+//
+//                // Duyệt qua tất cả các dịch vụ trong bảng job_service_detail
+//                for (JobServiceDetail jobServiceDetail : jobServiceDetails) {
+//                    Services service = jobServiceDetail.getService();
+//                    if (service != null) {
+//                        Map<String, Object> serviceInfo = new HashMap<>();
+//                        serviceInfo.put("serviceName", service.getName());
+//                        serviceInfo.put("serviceDescription", service.getDescription());
+//
+//                        // Lấy các chi tiết dịch vụ
+//                        ServiceDetail serviceDetail = jobServiceDetail.getServiceDetail();
+//                        if (serviceDetail != null) {
+//                            serviceInfo.put("serviceDetailId", serviceDetail.getId());
+//                            serviceInfo.put("serviceDetailName", serviceDetail.getName());
+//                            serviceInfo.put("serviceDetailPrice", serviceDetail.getPrice());
+//                            serviceInfo.put("serviceDetailAdditionalPrice", serviceDetail.getAdditionalPrice());
+//                            serviceInfo.put("serviceDetailAreaRange", serviceDetail.getAreaRange());
+//                            serviceInfo.put("serviceDetailDescription", serviceDetail.getDescription());
+//                            serviceInfo.put("serviceDetailDiscounts", serviceDetail.getDiscounts());
+//                        }
+//
+//                        serviceList.add(serviceInfo);
+//                    }
+//                }
+//
+//                // Thêm thông tin dịch vụ vào jobInfo
+//                jobInfo.put("services", serviceList);
+//            } else {
+//                jobInfo.put("services", "No services found for this job");
+//            }
+//
+//            // Lấy thông tin cleaner đã nhận công việc này (nếu có)
+//            JobApplication jobApplication = jobApplicationRepository.findByJobIdAndStatus(job.getId(), "Accepted");
+//            if (jobApplication != null) {
+//                Employee cleaner = jobApplication.getCleaner();
+//                if (cleaner != null) {
+//                    jobInfo.put("cleanerId", cleaner.getId());
+//                }
+//            }
+//
+//            bookedJobs.add(jobInfo);
+//        }
+//
+//        return bookedJobs;
+//    }
 
 
 

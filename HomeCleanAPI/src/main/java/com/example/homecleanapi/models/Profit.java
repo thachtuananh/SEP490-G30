@@ -27,11 +27,11 @@ public class Profit {
     @Column(name = "cleaner_name")
     private String cleanerName;
 
-    @Column(name = "amount", precision = 10, scale = 2)
+    @Column(name = "amount")
     private Double amount;
 
-    @Column(name = "profit_received", precision = 10, scale = 2)
-    private BigDecimal profitReceived;
+    @Column(name = "profit_received")
+    private Double profitReceived;
 
     // Getters and Setters
     public Long getId() {
@@ -90,11 +90,11 @@ public class Profit {
         this.amount = amount;
     }
 
-    public BigDecimal getProfitReceived() {
+    public Double getProfitReceived() {
         return profitReceived;
     }
 
-    public void setProfitReceived(BigDecimal profitReceived) {
+    public void setProfitReceived(Double profitReceived) {
         this.profitReceived = profitReceived;
     }
 }
