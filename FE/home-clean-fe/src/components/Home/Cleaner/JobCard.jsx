@@ -30,10 +30,10 @@ function JobCard({ image, title, description, count, id }) {
         isCombo = true;
       }
 
-      message.loading({
-        content: "Đang tải thông tin công việc...",
-        key: "jobLoading",
-      });
+      // message.loading({
+      //   content: "Đang tải thông tin công việc...",
+      //   key: "jobLoading",
+      // });
 
       const response = await fetch(url, {
         method: "GET",
@@ -49,7 +49,7 @@ function JobCard({ image, title, description, count, id }) {
         if (data && data.message) {
           throw new Error(data.message);
         } else {
-          throw new Error("Không thể lấy thông tin công việc");
+          throw new Error("Không tìm thấy công việc nào");
         }
       }
 

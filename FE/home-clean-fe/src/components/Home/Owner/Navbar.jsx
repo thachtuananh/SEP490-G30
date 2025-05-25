@@ -29,7 +29,7 @@ import { URL_WEB_SOCKET } from "../../../utils/config";
 function Navbar() {
   const { user, dispatch } = useContext(AuthContext);
   const navigate = useNavigate();
-  const location = useLocation(); // Add this to get current location
+  const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isPopupNotification, setIsPopupNotification] = useState(false);
   const [notificationCount, setNotificationCount] = useState(0);
@@ -47,13 +47,12 @@ function Navbar() {
   const [stompClient, setStompClient] = useState(null);
   const [messages, setMessages] = useState([]);
   const [selectedConversation, setSelectedConversation] = useState(null);
+  const [notifications, setNotifications] = useState([]);
 
-  // Function to check if a link is active
   const isActive = (path) => {
     return location.pathname === path;
   };
 
-  // Track screen size changes
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth <= 768);
@@ -63,7 +62,6 @@ function Navbar() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // Fetch notification count when component mounts and when user changes
   useEffect(() => {
     const fetchNotificationCount = async () => {
       if (user) {
@@ -85,14 +83,10 @@ function Navbar() {
     };
 
     fetchNotificationCount();
-
-    // Set up polling to refresh notification count every minute
     const intervalId = setInterval(fetchNotificationCount, 60000);
-
     return () => clearInterval(intervalId);
   }, [user]);
 
-  // Fetch message count when component mounts and when user changes
   useEffect(() => {
     const fetchMessageCount = async () => {
       if (user) {
@@ -111,14 +105,10 @@ function Navbar() {
     };
 
     fetchMessageCount();
-
-    // Set up polling to refresh message count every minute
     const intervalId = setInterval(fetchMessageCount, 60000);
-
     return () => clearInterval(intervalId);
   }, [user]);
 
-  // Close the menu when notification popup is opened on mobile
   useEffect(() => {
     if (isPopupNotification && isMobile && isMenuOpen) {
       setIsMenuOpen(false);
@@ -126,7 +116,6 @@ function Navbar() {
   }, [isPopupNotification, isMobile, isMenuOpen]);
 
   const toggleMenu = () => {
-    // Close notification popup when opening menu on mobile
     if (isMobile && isPopupNotification) {
       setIsPopupNotification(false);
     }
@@ -141,27 +130,22 @@ function Navbar() {
 
   const toggleNotification = () => {
     setIsPopupNotification(!isPopupNotification);
-    // Reset notification count when opening the notification panel
     if (!isPopupNotification) {
       setNotificationCount(0);
     }
-    // Close menu when toggling notification on mobile
     if (isMobile && isMenuOpen) {
       setIsMenuOpen(false);
     }
   };
 
-  // Refresh notifications manually
   const refreshNotifications = async () => {
     if (user) {
       try {
         setIsLoading(true);
-        if (role && userId) {
-          await markAllNotificationsAsRead(role, userId);
-        }
+        const updatedNotifications = await getNotifications();
+        setNotifications(updatedNotifications || []);
         const count = await getUnreadNotificationCount();
         setNotificationCount(count);
-        await getNotifications();
       } catch (error) {
         console.error("Failed to refresh notifications:", error);
       } finally {
@@ -170,7 +154,6 @@ function Navbar() {
     }
   };
 
-  // Lấy tên user từ sessionStorage nếu chưa có trong context
   const getUserName = () => {
     if (user && user.customerName) {
       return user.customerName;
@@ -179,7 +162,6 @@ function Navbar() {
     return storedName ? storedName : "";
   };
 
-  // Dropdown menu cho user
   const userMenu = {
     items: [
       {
@@ -196,7 +178,6 @@ function Navbar() {
     ],
   };
 
-  // Notification icon với animation khi có thông báo mới
   const notificationIcon = (
     <Badge
       count={notificationCount}
@@ -207,13 +188,9 @@ function Navbar() {
       <div
         className={styles.notification_icon_wrapper}
         onClick={() => {
-          // On mobile, just toggle the notification popup
           if (isMobile) {
             toggleNotification();
             refreshNotifications();
-            // } else {
-            //   // On desktop, refresh notifications when clicking the icon
-            //   refreshNotifications();
           }
         }}
       >
@@ -222,13 +199,11 @@ function Navbar() {
             notificationCount > 0 ? styles.notification_active : ""
           }`}
           style={{ fontSize: "20px" }}
-          // spin={isLoading}
         />
       </div>
     </Badge>
   );
 
-  // Mobile notification content
   const mobileNotificationContent =
     isPopupNotification && isMobile && user ? (
       <div
@@ -243,15 +218,14 @@ function Navbar() {
             onClose={() => setIsPopupNotification(false)}
             onViewAll={() => {
               setIsPopupNotification(false);
-              // Navigate to full notification page if you have one
-              // navigate("/notifications");
             }}
+            notifications={notifications}
+            setNotifications={setNotifications}
           />
         </div>
       </div>
     ) : null;
 
-  // Notification popover component (for desktop)
   const notificationPopover = isMobile ? (
     user ? (
       notificationIcon
@@ -263,18 +237,35 @@ function Navbar() {
           onClose={() => setIsPopupNotification(false)}
           onViewAll={() => {
             setIsPopupNotification(false);
-            // Navigate to full notification page if you have one
-            // navigate("/notifications");
           }}
+          notifications={notifications}
+          setNotifications={setNotifications}
         />
       }
       trigger="click"
       open={isPopupNotification}
-      onOpenChange={(visible) => {
+      onOpenChange={async (visible) => {
         setIsPopupNotification(visible);
         if (visible) {
-          // Refresh notification count when opening the popover
-          refreshNotifications();
+          await refreshNotifications();
+        } else {
+          try {
+            if (role && userId) {
+              await markAllNotificationsAsRead(role, userId);
+              setNotificationCount(0);
+              setNotifications(
+                notifications.map((notification) => ({
+                  ...notification,
+                  isRead: true,
+                  read: true,
+                }))
+              );
+            }
+          } catch (error) {
+            // message.error(
+            //   "Không thể đánh dấu thông báo đã đọc. Vui lòng thử lại!"
+            // );
+          }
         }
       }}
       placement="bottomRight"
@@ -284,7 +275,6 @@ function Navbar() {
     </Popover>
   ) : null;
 
-  // User profile component
   const userProfile = (
     <Dropdown menu={userMenu} placement="bottomRight">
       <div style={{ display: "flex", alignItems: "center", cursor: "pointer" }}>
@@ -307,7 +297,6 @@ function Navbar() {
     </Dropdown>
   );
 
-  // Login and Register buttons
   const authButtons = (
     <div style={{ display: "flex", gap: "10px" }}>
       <Link to="/login/user" className="login-btn" style={{ width: "110px" }}>
@@ -331,13 +320,11 @@ function Navbar() {
 
   const toggleMessage = () => {
     setIsPopupMessage(!isPopupMessage);
-    // Close menu when toggling message on mobile
     if (isMobile && isMenuOpen) {
       setIsMenuOpen(false);
     }
   };
 
-  // Message icon with loading and count
   const messageIcon = (
     <Badge
       count={messageCount}
@@ -360,7 +347,6 @@ function Navbar() {
     </Badge>
   );
 
-  // WebSocket connection for real-time message updates
   useEffect(() => {
     if (!role || !userId) {
       console.error("Missing role or userId in URL!");
@@ -377,11 +363,7 @@ function Navbar() {
       const queueName = `/queue/messages-${userId}`;
       client.subscribe(queueName, (message) => {
         const msg = JSON.parse(message.body);
-
-        // Update messages
         setMessages((prev) => [...prev, msg]);
-
-        // Increment message count for new unread message
         setMessageCount((prevCount) => prevCount + 1);
       });
     });
@@ -393,7 +375,6 @@ function Navbar() {
     };
   }, [role, userId]);
 
-  // Refresh messages manually
   const refreshMessages = async () => {
     if (user) {
       try {
@@ -414,7 +395,6 @@ function Navbar() {
       setSelectedConversation,
       setMessages
     );
-    // Reset message count when a conversation is selected
     setMessageCount(0);
   };
 
@@ -438,9 +418,7 @@ function Navbar() {
       ]);
     }
   };
-  // Kết thúc xử lý Chat
 
-  // Message popover component (for desktop)
   const messagePopover = isMobile ? (
     user ? (
       messageIcon
@@ -480,7 +458,6 @@ function Navbar() {
       onOpenChange={(visible) => {
         setIsPopupMessage(visible);
         if (visible) {
-          // Refresh message count when opening the popover
           refreshMessages();
         }
       }}
@@ -494,7 +471,6 @@ function Navbar() {
     </Popover>
   ) : null;
 
-  // Mobile message content
   const mobileMessageContent =
     isPopupMessage && isMobile && user ? (
       <div
@@ -600,8 +576,6 @@ function Navbar() {
                 Liên hệ
               </Link>
             </li>
-
-            {/* Only show these elements on mobile */}
             <li className="mobile-login">
               {isMobile && (
                 <>
@@ -618,7 +592,6 @@ function Navbar() {
           </ul>
         </div>
 
-        {/* Only show these elements on desktop */}
         <div className="desktop-login">
           {!isMobile && (
             <>
@@ -641,8 +614,6 @@ function Navbar() {
           )}
         </div>
       </nav>
-
-      {/* Render mobile notification panel outside navbar structure */}
       {mobileNotificationContent}
       {mobileMessageContent}
     </div>

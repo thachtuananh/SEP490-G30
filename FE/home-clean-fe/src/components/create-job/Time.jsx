@@ -3,66 +3,167 @@ import {
   Card,
   Button,
   DatePicker,
-  TimePicker,
   Typography,
   Row,
   Col,
   Space,
   Input,
   Divider,
-  InputNumber,
-  Alert,
+  Form,
+  message,
 } from "antd";
-import { EditOutlined, ClockCircleOutlined } from "@ant-design/icons";
+import {
+  EditOutlined,
+  ClockCircleOutlined,
+  EnvironmentOutlined,
+} from "@ant-design/icons";
 import styles from "../../assets/CSS/createjob/Time.module.css";
 import dayjs from "dayjs";
 import { AuthContext } from "../../context/AuthContext";
+import { useLocation } from "react-router-dom";
+import AddressSelectionModal from "../../components/combo-service/AddressSelectionModal";
+import {
+  fetchCustomerAddresses,
+  setDefaultAddress,
+} from "../../services/owner/OwnerAddressAPI";
+
 const { Title, Text, Paragraph } = Typography;
 
 const Time = ({ onTimeChange }) => {
-  const { user } = useContext(AuthContext); // Lấy thông tin người dùng từ context
-  const [selectedDate, setSelectedDate] = useState(new Date());
-  const [selectedTime, setSelectedTime] = useState(dayjs());
+  const location = useLocation();
+  const [form] = Form.useForm();
+  const { user } = useContext(AuthContext);
+  const [selectedDateTime, setSelectedDateTime] = useState(() => {
+    // Khởi tạo với thời gian hiện tại + 15 phút
+    return dayjs().add(15, "minute");
+  });
   const [currentTime, setCurrentTime] = useState(dayjs());
   const [priceAdjustment, setPriceAdjustment] = useState(null);
-  const [open, setOpen] = useState(false);
+  const [selectedAddress, setSelectedAddress] = useState(null);
+  const [isLocationModalVisible, setIsLocationModalVisible] = useState(false);
+  const [addresses, setAddresses] = useState([]);
+  const [addressLoading, setAddressLoading] = useState(false);
+  const customerId = sessionStorage.getItem("customerId") || user?.customerId;
+
+  // Reusable function to fetch addresses
+  const refetchAddresses = async () => {
+    if (!customerId) {
+      message.error("Không có ID khách hàng để tải địa chỉ!");
+      return;
+    }
+    try {
+      setAddressLoading(true);
+      const addressesData = await fetchCustomerAddresses(customerId);
+      setAddresses(addressesData);
+
+      const defaultAddress =
+        addressesData.find((addr) => addr.current) || addressesData[0];
+
+      if (defaultAddress) {
+        const updatedAddress = {
+          ...defaultAddress,
+          fullAddress: defaultAddress.address,
+        };
+        setSelectedAddress(updatedAddress);
+        form.setFieldsValue({ location: defaultAddress.address });
+        if (!defaultAddress.current && addressesData.length > 0) {
+          try {
+            await setDefaultAddress(customerId, defaultAddress.id);
+            setAddresses(
+              addressesData.map((addr) => ({
+                ...addr,
+                current: addr.id === defaultAddress.id,
+              }))
+            );
+          } catch (error) {
+            console.error("Error setting initial default address:", error);
+            message.warning(
+              "Không thể đặt địa chỉ mặc định, vui lòng chọn thủ công!"
+            );
+          }
+        }
+      } else {
+        message.warning("Vui lòng thêm địa chỉ trước khi đặt dịch vụ!");
+      }
+    } catch (error) {
+      console.error("Error fetching addresses:", error);
+      message.error("Không thể tải danh sách địa chỉ!");
+    } finally {
+      setAddressLoading(false);
+    }
+  };
+
+  // Fetch addresses on component mount
   useEffect(() => {
-    // Khởi tạo thời gian ban đầu
-    const now = new Date();
-    const currentDayjs = dayjs();
+    refetchAddresses();
+  }, [customerId]);
 
-    // Use current time directly without adding 30 minutes
-    setSelectedTime(currentDayjs);
-    setCurrentTime(currentDayjs);
+  // Initialize time and update current time
+  useEffect(() => {
+    const now = dayjs();
+    const initialDateTime = now.add(30, "minute");
 
-    // Check for price adjustment rules
+    setCurrentTime(now);
+    setSelectedDateTime(initialDateTime);
+
     const initialAdjustment = calculatePriceAdjustment(
-      now,
-      currentDayjs.hour()
+      initialDateTime.toDate(),
+      initialDateTime.hour()
     );
     setPriceAdjustment(initialAdjustment);
 
-    // Pass current time to parent component with price adjustment
-    onTimeChange(
-      selectedDate,
-      currentDayjs.hour(),
-      currentDayjs.minute(),
-      initialAdjustment
-    );
+    // Gọi onTimeChange với thời gian khởi tạo
+    if (onTimeChange) {
+      onTimeChange(
+        initialDateTime.toDate(),
+        initialDateTime.hour(),
+        initialDateTime.minute(),
+        initialAdjustment
+      );
+    }
 
-    // Thiết lập interval để cập nhật thời gian thực mỗi 30 giây
+    // Cập nhật thời gian hiện tại mỗi 30 giây
     const timer = setInterval(() => {
-      const updatedTime = dayjs();
-      setCurrentTime(updatedTime);
+      setCurrentTime(dayjs());
     }, 30000);
 
-    // Dọn dẹp interval khi component unmount
     return () => clearInterval(timer);
   }, []);
 
+  // Cập nhật priceAdjustment khi selectedDateTime thay đổi
+  useEffect(() => {
+    if (selectedDateTime) {
+      const adjustment = calculatePriceAdjustment(
+        selectedDateTime.toDate(),
+        selectedDateTime.hour()
+      );
+      setPriceAdjustment(adjustment);
+    }
+  }, [selectedDateTime]);
+
+  const handleSetDefaultAddress = async (addressId) => {
+    try {
+      if (!addressId) {
+        console.error("Invalid address ID:", addressId);
+        message.error("Địa chỉ không hợp lệ");
+        return;
+      }
+
+      setAddressLoading(true);
+      await setDefaultAddress(customerId, addressId);
+      await refetchAddresses();
+      message.success("Đã đặt địa chỉ mặc định mới");
+    } catch (error) {
+      console.error("Error setting default address:", error);
+      message.error("Không thể cập nhật địa chỉ mặc định!");
+    } finally {
+      setAddressLoading(false);
+    }
+  };
+
   const calculatePriceAdjustment = (date, hour) => {
-    const day = date.getDay(); // 0 = Sunday, 6 = Saturday
-    const isWeekend = day === 0 || day === 6; // Sunday or Saturday
+    const day = date.getDay();
+    const isWeekend = day === 0 || day === 6;
     const isEveningHour = hour >= 18 && hour < 22;
 
     if (isWeekend && isEveningHour) {
@@ -76,191 +177,228 @@ const Time = ({ onTimeChange }) => {
     return null;
   };
 
-  const handleDateChange = (date) => {
+  const handleDateTimeChange = (dateTime) => {
+    if (!dateTime) return;
+
+    const now = dayjs();
+    let finalDateTime = dateTime;
+
+    // Kiểm tra nếu thời gian được chọn là quá khứ
+    if (dateTime.isBefore(now)) {
+      finalDateTime = now.add(30, "minute");
+      message.warning(
+        "Không thể chọn thời gian trong quá khứ. Đã tự động chọn thời gian hiện tại + 15 phút."
+      );
+    }
+    // Nếu chọn ngày hôm nay nhưng giờ quá gần hiện tại (< 15 phút)
+    else if (dateTime.isSame(now, "day") && dateTime.diff(now, "minute") < 30) {
+      finalDateTime = now.add(30, "minute");
+      message.warning(
+        "Thời gian chọn quá gần hiện tại. Đã tự động điều chỉnh thành hiện tại + 15 phút."
+      );
+    }
+
+    setSelectedDateTime(finalDateTime);
+
+    const adjustment = calculatePriceAdjustment(
+      finalDateTime.toDate(),
+      finalDateTime.hour()
+    );
+
+    // Gọi callback để thông báo thay đổi
+    if (onTimeChange) {
+      onTimeChange(
+        finalDateTime.toDate(),
+        finalDateTime.hour(),
+        finalDateTime.minute(),
+        adjustment
+      );
+    }
+  };
+
+  // Hàm xử lý khi chọn ngày (không cần nhấn OK)
+  const handleDateSelect = (date) => {
     if (!date) return;
 
-    const selectedDateObj = date.toDate();
-    const now = new Date();
-
-    if (selectedDateObj < now.setHours(0, 0, 0, 0)) return;
-
-    setSelectedDate(selectedDateObj);
-
-    // Calculate price adjustment based on new date and time
-    const newAdjustment = calculatePriceAdjustment(
-      selectedDateObj,
-      selectedTime.hour()
-    );
-    setPriceAdjustment(newAdjustment);
-
-    // Nếu chọn ngày hôm nay, kiểm tra thời gian
-    if (selectedDateObj.toDateString() === new Date().toDateString()) {
-      if (selectedTime.isBefore(currentTime)) {
-        // Thêm 30 phút vào thời gian hiện tại làm mặc định
-        const defaultTime = currentTime.add(30, "minute");
-        setSelectedTime(defaultTime);
-        onTimeChange(
-          selectedDateObj,
-          defaultTime.hour(),
-          defaultTime.minute(),
-          newAdjustment
-        );
-      } else {
-        onTimeChange(
-          selectedDateObj,
-          selectedTime.hour(),
-          selectedTime.minute(),
-          newAdjustment
-        );
-      }
-    } else {
-      onTimeChange(
-        selectedDateObj,
-        selectedTime.hour(),
-        selectedTime.minute(),
-        newAdjustment
-      );
-    }
+    // Giữ nguyên giờ và phút hiện tại, chỉ thay đổi ngày
+    const newDateTime = selectedDateTime
+      .year(date.year())
+      .month(date.month())
+      .date(date.date());
+    handleDateTimeChange(newDateTime);
   };
 
-  const handleTimeChange = (time) => {
+  // Hàm xử lý khi chọn giờ (không cần nhấn OK)
+  const handleTimeSelect = (time) => {
     if (!time) return;
 
-    // Kiểm tra nếu ngày đã chọn là hôm nay và thời gian đã chọn < thời gian hiện tại
-    if (
-      selectedDate.toDateString() === new Date().toDateString() &&
-      time.isBefore(currentTime)
-    ) {
-      // Thêm 15 phút vào thời gian hiện tại làm mặc định
-      const defaultTime = currentTime.add(15, "minute");
-      setSelectedTime(defaultTime);
-
-      // Calculate price adjustment with new time
-      const newAdjustment = calculatePriceAdjustment(
-        selectedDate,
-        defaultTime.hour()
-      );
-      setPriceAdjustment(newAdjustment);
-
-      onTimeChange(
-        selectedDate,
-        defaultTime.hour(),
-        defaultTime.minute(),
-        newAdjustment
-      );
-    } else {
-      setSelectedTime(time);
-
-      // Calculate price adjustment with new time
-      const newAdjustment = calculatePriceAdjustment(selectedDate, time.hour());
-      setPriceAdjustment(newAdjustment);
-
-      onTimeChange(selectedDate, time.hour(), time.minute(), newAdjustment);
-    }
-
-    // Đóng popup sau khi đã chọn giá trị
-    setOpen(false);
+    // Giữ nguyên ngày hiện tại, chỉ thay đổi giờ và phút
+    const newDateTime = selectedDateTime
+      .hour(time.hour())
+      .minute(time.minute())
+      .second(0)
+      .millisecond(0);
+    handleDateTimeChange(newDateTime);
   };
 
-  // Tùy chỉnh rendering ngày để vô hiệu hóa các ngày trong quá khứ
+  // Hàm xử lý khi panel thời gian thay đổi (để bắt các thay đổi ngay lập tức)
+  const handlePanelChange = (value) => {
+    if (value) {
+      handleDateTimeChange(value);
+    }
+  };
+
   const disabledDate = (current) => {
+    // Chỉ disable những ngày trước hôm nay
     return current && current < dayjs().startOf("day");
   };
 
-  // Vô hiệu hóa các tùy chọn thời gian trong quá khứ nếu ngày đã chọn là hôm nay
-  const disabledTime = () => {
-    if (selectedDate.toDateString() === new Date().toDateString()) {
-      return {
-        disabledHours: () =>
-          Array.from({ length: currentTime.hour() }, (_, i) => i),
-        disabledMinutes: (selectedHour) =>
-          selectedHour === currentTime.hour()
-            ? Array.from({ length: currentTime.minute() }, (_, i) => i)
-            : [],
-      };
+  const disabledTime = (date) => {
+    if (!date) return {};
+
+    const now = dayjs();
+    const isToday = date.isSame(now, "day");
+
+    if (!isToday) {
+      return {}; // Không disable giờ nào cho các ngày khác hôm nay
     }
-    return {};
+
+    // Với ngày hôm nay, disable những giờ và phút đã qua + buffer 15 phút
+    const minTime = now.add(30, "minute");
+
+    return {
+      disabledHours: () => {
+        const hours = [];
+        for (let i = 0; i < minTime.hour(); i++) {
+          hours.push(i);
+        }
+        return hours;
+      },
+      disabledMinutes: (selectedHour) => {
+        if (selectedHour < minTime.hour()) {
+          return Array.from({ length: 60 }, (_, i) => i); // Disable tất cả phút
+        } else if (selectedHour === minTime.hour()) {
+          const minutes = [];
+          for (let i = 0; i < minTime.minute(); i++) {
+            minutes.push(i);
+          }
+          return minutes;
+        }
+        return []; // Không disable phút nào cho các giờ sau
+      },
+    };
+  };
+
+  const showLocationModal = () => setIsLocationModalVisible(true);
+  const handleLocationCancel = () => setIsLocationModalVisible(false);
+  const handleLocationSelect = (address) => {
+    setSelectedAddress({
+      ...address,
+      fullAddress: address.address,
+    });
+    form.setFieldsValue({ location: address.address });
+    setIsLocationModalVisible(false);
+    refetchAddresses();
   };
 
   return (
-    <div className={styles.container}>
-      <Title level={5}>Thời gian làm việc</Title>
-      <div className={styles.selectedDate}>
-        <Paragraph>Chọn thời gian</Paragraph>
-        <DatePicker
-          format="DD/MM/YYYY"
-          onChange={handleDateChange}
-          disabledDate={disabledDate}
-          placeholder="Chọn ngày"
-          className={styles.datePicker}
-          size="large"
-          value={dayjs(selectedDate)}
-          showNow={false}
-          style={{ width: "200px" }}
-        />
+    <>
+      <div className={styles.container}>
+        <Form
+          form={form}
+          layout="vertical"
+          initialValues={{ location: selectedAddress?.address || "" }}
+        >
+          <Title level={5}>Chọn địa chỉ</Title>
+          <Form.Item name="location">
+            <Card size="small" onClick={showLocationModal}>
+              <Space
+                align="center"
+                style={{ width: "100%", justifyContent: "space-between" }}
+              >
+                <Space>
+                  <EnvironmentOutlined style={{ color: "#1890ff" }} />
+                  <Text
+                    style={{
+                      color: selectedAddress ? "inherit" : "#bfbfbf",
+                    }}
+                  >
+                    {selectedAddress?.fullAddress || "Chưa chọn địa chỉ"}
+                  </Text>
+                </Space>
+                <Button type="primary" onClick={showLocationModal}>
+                  {selectedAddress ? "Thay đổi" : "Chọn"}
+                </Button>
+              </Space>
+            </Card>
+          </Form.Item>
+          <div className={styles.phoneSection}>
+            <div className={styles.phoneInfo}>
+              <Title level={5}>Số điện thoại</Title>
+              <Paragraph>
+                Người dọn dẹp sẽ liên hệ với bạn khi đến nơi
+              </Paragraph>
+            </div>
+            <div className={styles.phoneContainer}>
+              <Col flex="auto">
+                <Input
+                  style={{ width: "200px", color: "black" }}
+                  value={user?.customerPhone}
+                  disabled
+                />
+              </Col>
+            </div>
+          </div>
+          <AddressSelectionModal
+            isVisible={isLocationModalVisible}
+            onCancel={handleLocationCancel}
+            onSelect={handleLocationSelect}
+            addresses={addresses.map((addr) => ({
+              ...addr,
+              addressId: addr.id,
+            }))}
+            loading={addressLoading}
+            onSetDefaultAddress={handleSetDefaultAddress}
+            currentLocation={location.pathname}
+          />
+        </Form>
       </div>
-
-      <div className={styles.timeSelection}>
-        <div className={styles.timeHeader}>
-          <Title level={5}>Chọn giờ làm việc</Title>
-          <Paragraph>Giờ mà Người dọn dẹp sẽ đến</Paragraph>
-          {priceAdjustment && (
-            <Paragraph className={styles.infoRow} style={{ color: "#1890ff" }}>
-              <Text>Phụ phí: </Text>
-              <Text style={{ color: "red" }}>
-                +{priceAdjustment.percentage}% do {priceAdjustment.reason}
-              </Text>
-            </Paragraph>
-          )}
-        </div>
-        <div className={styles.timeInputGroup}>
-          <TimePicker
-            format="HH:mm"
-            value={selectedTime}
-            onChange={handleTimeChange}
-            onSelect={handleTimeChange} // Thêm onSelect để chọn giá trị ngay khi click
+      <div className={styles.container}>
+        <Title level={5}>Thời gian làm việc</Title>
+        <div className={styles.selectedDate}>
+          <Paragraph>Chọn ngày và giờ</Paragraph>
+          <DatePicker
+            format="DD/MM/YYYY HH:mm"
+            showTime={{
+              format: "HH:mm",
+              hideDisabledOptions: true,
+            }}
+            onChange={handleDateTimeChange}
+            onSelect={handleDateSelect}
+            onOk={handleDateTimeChange}
+            onPanelChange={handlePanelChange}
+            disabledDate={disabledDate}
             disabledTime={disabledTime}
+            placeholder="Chọn ngày và giờ"
+            className={styles.datePicker}
             size="large"
-            className={styles.timePicker}
-            hideDisabledOptions={true}
-            use12Hours={false}
-            allowClear={false}
+            value={selectedDateTime}
             showNow={false}
-            popupStyle={{ paddingRight: 8 }}
-            renderExtraFooter={() => null} // Ẩn phần footer
-            showTime={{ hideDisabledOptions: true }}
-            open={open} // Thêm state để kiểm soát việc hiển thị popup
-            onOpenChange={(open) => setOpen(open)} // Xử lý đóng popup sau khi chọn
             style={{ width: "200px" }}
+            allowClear={false}
           />
         </div>
 
-        {/* {priceAdjustment && (
-          <Alert
-            message={`Phụ phí: +${priceAdjustment.percentage}% do ${priceAdjustment.reason}`}
-            type="info"
-            showIcon
-            style={{ marginTop: 16 }}
-          />
-        )} */}
+        {priceAdjustment && (
+          <Paragraph className={styles.infoRow} style={{ color: "#1890ff" }}>
+            <Text>Phụ phí: </Text>
+            <Text style={{ color: "red" }}>
+              +{priceAdjustment.percentage}% do {priceAdjustment.reason}
+            </Text>
+          </Paragraph>
+        )}
       </div>
-
-      <div className={styles.phoneSection}>
-        <div className={styles.phoneInfo}>
-          <Title level={5}>Số điện thoại</Title>
-          <Paragraph>Người dọn dẹp sẽ liên hệ với bạn khi đến nơi</Paragraph>
-        </div>
-        <div className={styles.phoneContainer}>
-          <Col flex="auto">
-            <Input
-              style={{ width: "200px", color: "black" }}
-              value={user?.customerPhone}
-              disabled
-            />
-          </Col>
-        </div>
-      </div>
-    </div>
+    </>
   );
 };
 

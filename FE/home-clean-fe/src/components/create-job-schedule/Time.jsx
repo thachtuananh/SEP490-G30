@@ -30,13 +30,6 @@ import {
 
 const { Title, Text, Paragraph } = Typography;
 
-// Define available time slots (00:00 to 23:30, every 30 minutes)
-const allTimeSlots = [];
-for (let hour = 0; hour <= 23; hour++) {
-  allTimeSlots.push(`${hour.toString().padStart(2, "0")}:00`);
-  allTimeSlots.push(`${hour.toString().padStart(2, "0")}:30`);
-}
-
 const Time = ({
   onTimeChange,
   selectedServices,
@@ -49,8 +42,9 @@ const Time = ({
   const [serviceSchedules, setServiceSchedules] = useState({});
   const [selectedServiceId, setSelectedServiceId] = useState(null);
   const [selectedServiceDetailId, setSelectedServiceDetailId] = useState(null);
-  const [newDate, setNewDate] = useState(new Date());
-  const [newTime, setNewTime] = useState(null);
+  const [newDateTime, setNewDateTime] = useState(
+    dayjs().add(30, "minute").second(0)
+  );
   const [currentTime, setCurrentTime] = useState(dayjs());
   const [errorModalVisible, setErrorModalVisible] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
@@ -61,7 +55,7 @@ const Time = ({
   const [addressLoading, setAddressLoading] = useState(false);
   const [totalPrice, setTotalPrice] = useState(0);
   const [highestAdjustment, setHighestAdjustment] = useState(null);
-  const [availableTimeSlots, setAvailableTimeSlots] = useState(allTimeSlots);
+  const [pickerOpen, setPickerOpen] = useState(false);
 
   useEffect(() => {
     // Initialize serviceNames from serviceDetails
@@ -146,26 +140,6 @@ const Time = ({
   }, [selectedServices]);
 
   useEffect(() => {
-    // Update available time slots based on selected date and current time
-    const updateTimeSlots = () => {
-      const isToday = newDate.toDateString() === new Date().toDateString();
-      if (isToday) {
-        const cutoffTime = currentTime.add(30, "minute");
-        const filteredSlots = allTimeSlots.filter((slot) => {
-          const [hour, minute] = slot.split(":").map(Number);
-          const slotTime = dayjs().set("hour", hour).set("minute", minute);
-          return slotTime.isAfter(cutoffTime) || slotTime.isSame(cutoffTime);
-        });
-        setAvailableTimeSlots(filteredSlots);
-      } else {
-        setAvailableTimeSlots(allTimeSlots);
-      }
-    };
-
-    updateTimeSlots();
-  }, [newDate, currentTime]);
-
-  useEffect(() => {
     // Calculate total price and update highest adjustment
     const newTotalPrice = calculateTotalPrice(serviceSchedules);
     updateHighestAdjustment(serviceSchedules);
@@ -239,37 +213,37 @@ const Time = ({
     setHighestAdjustment(highest);
   };
 
-  const handleDateChange = (date) => {
-    if (!date) return;
-    const selectedDateObj = date.toDate();
-    const now = new Date();
-
-    if (selectedDateObj < now.setHours(0, 0, 0, 0)) {
-      showErrorModal("Không thể chọn ngày trong quá khứ!");
+  const handleDateTimeChange = (date) => {
+    if (!date) {
+      setNewDateTime(dayjs().add(15, "minute").second(0));
       return;
     }
 
-    setNewDate(selectedDateObj);
-    setNewTime(null); // Reset time when date changes
-  };
+    const selectedDateTime = date;
+    const now = dayjs().startOf("day");
 
-  const handleTimeChange = (timeString) => {
-    if (!timeString) return;
+    if (selectedDateTime.isBefore(now)) {
+      showErrorModal("Không thể chọn ngày trong quá khứ!");
+      setNewDateTime(dayjs().add(15, "minute").second(0));
+      return;
+    }
 
-    const [hour, minute] = timeString.split(":").map(Number);
-    const selectedTime = dayjs().set("hour", hour).set("minute", minute);
-
-    if (
-      newDate.toDateString() === new Date().toDateString() &&
-      selectedTime.isBefore(currentTime.add(30, "minute"))
-    ) {
-      const defaultTime = currentTime.add(30, "minute");
-      setNewTime(defaultTime);
+    const isToday = selectedDateTime.isSame(dayjs(), "day");
+    if (isToday && selectedDateTime.isBefore(currentTime.add(15, "minute"))) {
+      const defaultTime = currentTime.add(30, "minute").second(0);
+      setNewDateTime(defaultTime);
       showErrorModal(
-        "Thời gian đã chọn quá gần hoặc trong quá khứ. Đã tự động điều chỉnh thành thời gian hiện tại + 30 phút."
+        "Thời gian đã chọn quá gần hoặc trong quá khứ. Đã tự động điều chỉnh thành thời gian hiện tại + 15 phút."
       );
     } else {
-      setNewTime(selectedTime);
+      setNewDateTime(selectedDateTime.second(0));
+    }
+  };
+
+  const handlePickerOpenChange = (open) => {
+    setPickerOpen(open);
+    if (!open && !newDateTime) {
+      setNewDateTime(dayjs().add(30, "minute").second(0));
     }
   };
 
@@ -286,32 +260,25 @@ const Time = ({
       showErrorModal("Vui lòng chọn địa chỉ trước khi thêm lịch!");
       return;
     }
-    if (!newTime) {
-      showErrorModal("Vui lòng chọn khung giờ!");
+    if (!newDateTime) {
+      showErrorModal("Vui lòng chọn ngày và giờ!");
       return;
     }
 
-    const selectedDateTime = dayjs(
-      new Date(
-        newDate.getFullYear(),
-        newDate.getMonth(),
-        newDate.getDate(),
-        newTime.hour(),
-        newTime.minute()
-      )
-    );
-
-    if (selectedDateTime.isBefore(currentTime.add(30, "minute"))) {
+    if (newDateTime.isBefore(currentTime.add(30, "minute"))) {
       showErrorModal("Không thể đặt lịch cho thời gian đã qua hoặc quá gần!");
       return;
     }
 
     const newSchedule = {
-      jobTime: selectedDateTime.format("YYYY-MM-DDTHH:mm:ss"),
-      hour: newTime.hour(),
-      minute: newTime.minute(),
-      date: newDate,
-      adjustment: calculatePriceAdjustment(newDate, newTime.hour()),
+      jobTime: newDateTime.format("YYYY-MM-DDTHH:mm:ss"),
+      hour: newDateTime.hour(),
+      minute: newDateTime.minute(),
+      date: newDateTime.toDate(),
+      adjustment: calculatePriceAdjustment(
+        newDateTime.toDate(),
+        newDateTime.hour()
+      ),
       serviceDetailId: selectedServiceDetailId,
     };
 
@@ -338,8 +305,7 @@ const Time = ({
     );
 
     // Reset form
-    setNewDate(new Date());
-    setNewTime(null);
+    setNewDateTime(dayjs().add(30, "minute").second(0));
     setSelectedServiceDetailId(null);
   };
 
@@ -365,6 +331,30 @@ const Time = ({
 
   const disabledDate = (current) => {
     return current && current < dayjs().startOf("day");
+  };
+
+  const disabledTime = (current) => {
+    if (!current || !current.isSame(dayjs(), "day")) {
+      return {
+        disabledHours: () => [],
+        disabledMinutes: () => [],
+        disabledSeconds: () => [],
+      };
+    }
+    const cutoffTime = currentTime.add(30, "minute");
+    const disabledHours = Array.from(
+      { length: cutoffTime.hour() },
+      (_, i) => i
+    );
+    const disabledMinutes =
+      current.hour() === cutoffTime.hour()
+        ? Array.from({ length: cutoffTime.minute() }, (_, i) => i)
+        : [];
+    return {
+      disabledHours: () => disabledHours,
+      disabledMinutes: () => disabledMinutes,
+      disabledSeconds: () => [],
+    };
   };
 
   const getServiceName = (serviceId) => {
@@ -558,39 +548,31 @@ const Time = ({
                     </Select.Option>
                   ))}
               </Select>
-              <Title level={5}>Thời gian</Title>
+              <Title level={5}>Ngày và giờ</Title>
               <DatePicker
-                format="DD/MM/YYYY"
-                onChange={handleDateChange}
+                format="DD/MM/YYYY HH:mm"
+                showTime={{
+                  format: "HH:mm",
+                  hideDisabledOptions: true,
+                }}
+                onChange={handleDateTimeChange}
+                onOpenChange={handlePickerOpenChange}
                 disabledDate={disabledDate}
-                placeholder="Chọn ngày"
+                disabledTime={disabledTime}
+                placeholder="Chọn ngày và giờ"
                 className={styles.datePicker}
                 size="large"
-                value={dayjs(newDate)}
+                value={newDateTime}
                 showNow={false}
                 style={{ width: "100%" }}
+                allowClear={true}
+                needConfirm={false}
               />
-              <Select
-                placeholder="Chọn khung giờ"
-                style={{ width: "100%" }}
-                onChange={handleTimeChange}
-                value={newTime ? newTime.format("HH:mm") : undefined}
-                size="large"
-                showSearch
-                optionFilterProp="children"
-              >
-                {availableTimeSlots.map((slot) => (
-                  <Select.Option key={slot} value={slot}>
-                    {slot}
-                  </Select.Option>
-                ))}
-              </Select>
               <Button
                 type="primary"
                 onClick={addSchedule}
                 disabled={
-                  !newDate ||
-                  !newTime ||
+                  !newDateTime ||
                   !selectedServiceId ||
                   !selectedServiceDetailId ||
                   !selectedAddress

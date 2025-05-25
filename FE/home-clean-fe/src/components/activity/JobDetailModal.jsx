@@ -599,7 +599,7 @@ export const JobDetailModal = ({
     );
   };
 
-  const renderService = (service, index, jobDetail) => {
+  const renderService = (services, index, jobDetail) => {
     const progressStep = getProgressStep(jobDetail.status);
     const cleaners = cleanerList[jobDetail.jobId] || [];
 
@@ -692,7 +692,7 @@ export const JobDetailModal = ({
         <div className={styles.services}>
           <div className={styles.serviceDetails}>
             <div className={styles.serviceTitle}>
-              {service.serviceName} -{" "}
+              {services.serviceName} -{" "}
               {new Date(jobDetail.scheduledTime).toLocaleString("vi-VN", {
                 day: "2-digit",
                 month: "2-digit",
@@ -701,8 +701,9 @@ export const JobDetailModal = ({
                 minute: "2-digit",
               })}
             </div>
+
             <div className={styles.serviceArea}>
-              {service.serviceDetailAreaRange}
+              {services.serviceDetailAreaRange}
             </div>
           </div>
         </div>
