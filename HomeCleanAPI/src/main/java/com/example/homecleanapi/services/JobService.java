@@ -748,6 +748,11 @@ public class JobService {
         // Tính toán số tiền sẽ trả cho cleaner (85% tổng giá trị đơn hàng)
         double totalPrice = job.getTotalPrice();
         double cleanerPayment = totalPrice * 0.85;
+        Optional<JobServiceDetail> jobServiceDetail = jobDetailsRepository.findByJob_id(jobId);
+        if (jobServiceDetail.isEmpty()) {
+            response.put("message", "Cleaner payment is incorrect");
+            return response;
+        }
 //        List<JobServiceDetail> jobServiceDetails = jobDetailsRepository.findByJob_id(jobId);
 //        String serviceNames = jobServiceDetails.size() == 1
 //                ? jobServiceDetails.get(0).getService().getName()
@@ -757,7 +762,7 @@ public class JobService {
 
         // Lấy ví của cleaner
         Optional<Wallet> walletOpt = walletRepository.findByCleanerId(cleaner.getId());
-        if (!walletOpt.isPresent()) {
+        if (walletOpt.isEmpty()) {
             response.put("message", "Cleaner wallet not found");
             return response;
         }
@@ -792,7 +797,7 @@ public class JobService {
 
         response.put("message", "Cập nhật job sang DONE thành công");
 
-        String message = "Chủ nhà " + job.getCustomer().getFull_name() + " đã xác nhận bạn hoàn thành công việc" + jobServiceDetail.get().getService().getName() + " Vui lòng kiểm tra ví.";
+        String message = "Mã công việc [" + job.getOrderCode() + "] Chủ nhà " + job.getCustomer().getFull_name() + " đã xác nhận bạn hoàn thành công việc. Vui lòng kiểm tra ví.";
         NotificationDTO customerNotification = new NotificationDTO();
         customerNotification.setUserId(cleaner.getId());
         customerNotification.setMessage(message);
