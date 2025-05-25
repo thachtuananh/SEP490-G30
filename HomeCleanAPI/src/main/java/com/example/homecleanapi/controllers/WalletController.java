@@ -1,5 +1,6 @@
 package com.example.homecleanapi.controllers;
 
+import java.math.BigInteger;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Comparator;
@@ -240,6 +241,7 @@ public class WalletController {
 
             // Lấy số tiền từ request và đảm bảo chuyển đổi đúng
             double amount = 0.0;
+            BigInteger int_amount = (BigInteger) depositRequest.get("amount");
             if (depositRequest.get("amount") instanceof String) {
                 amount = Double.parseDouble((String) depositRequest.get("amount"));
             } else if (depositRequest.get("amount") instanceof Double) {
@@ -249,7 +251,7 @@ public class WalletController {
             if ("vnpay".equalsIgnoreCase(paymentMethod)) {
                 // Xử lý thanh toán qua VNPay
                 Map<String, Object> response = walletService.depositMoney(customerId, amount, request);
-                String message = "Bạn đã nạp: " + amount + "VND vào ví thành công";
+                String message = "Bạn đã nạp: " +  int_amount + " VND vào ví thành công";
                 NotificationDTO customerNotification = new NotificationDTO();
                 customerNotification.setUserId(Math.toIntExact(customerId));
                 customerNotification.setMessage(message);
