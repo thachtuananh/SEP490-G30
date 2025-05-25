@@ -118,13 +118,31 @@ public class VnpayController {
 
     @PostMapping(value = "/retry-payment/{jobId}")
     public ResponseEntity<Map<String, Object>> retryPayment(@PathVariable Long jobId, HttpServletRequest requestIp) {
-        Map<String, Object> response = jobService.retryPayment(jobId, requestIp); // Gọi service xử lý thanh toán lại
+        Map<String, Object> response = jobService.retryPayment(jobId, requestIp);
 
         if (response.containsKey("message") && response.get("message").equals("Job not found")) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response); // Trả về lỗi nếu job không tồn tại
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         }
 
-        return ResponseEntity.ok(response); // Trả về kết quả thành công
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/wallet-payment/{jobId}/{customerId}")
+    public ResponseEntity<Map<String, Object>> payWithWallet(
+            @PathVariable Long jobId,
+            @PathVariable Long customerId) {
+
+        Map<String, Object> response = jobService.payJobByWallet(jobId, customerId);
+
+        if (response.containsKey("message") && response.get("message").equals("Job not found")) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        }
+
+        if (response.containsKey("message") && response.get("message").toString().contains("Insufficient")) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
+
+        return ResponseEntity.ok(response);
     }
 
 

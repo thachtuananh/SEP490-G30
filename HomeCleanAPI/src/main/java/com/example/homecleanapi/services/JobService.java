@@ -283,13 +283,13 @@ public class JobService {
             }
         }
 
-        NotificationDTO customerNotification = new NotificationDTO();
-        customerNotification.setUserId(job.getCustomer().getId());
-        customerNotification.setMessage("Công việc đã được tạo thành công");
-        customerNotification.setType("AUTO_MESSAGE");
-        customerNotification.setTimestamp(LocalDate.now());
-        customerNotification.setRead(false);
-        notificationService.processNotification(customerNotification, "CUSTOMER", Math.toIntExact(customerId));
+//        NotificationDTO customerNotification = new NotificationDTO();
+//        customerNotification.setUserId(job.getCustomer().getId());
+//        customerNotification.setMessage("Công việc đã được tạo thành công");
+//        customerNotification.setType("AUTO_MESSAGE");
+//        customerNotification.setTimestamp(LocalDate.now());
+//        customerNotification.setRead(false);
+//        notificationService.processNotification(customerNotification, "CUSTOMER", Math.toIntExact(customerId));
 
         response.put("message", "Đặt lịch thành công");
         response.put("jobId", job.getId());
@@ -495,6 +495,7 @@ public class JobService {
 
 
 
+    // thanh toán lại job bằng vnpay
     public Map<String, Object> retryPayment(Long jobId, HttpServletRequest requestIp) {
         Map<String, Object> response = new HashMap<>();
 
@@ -558,6 +559,74 @@ public class JobService {
     }
 
 
+
+
+    // thanh toán lại job bằng ví
+    public Map<String, Object> payJobByWallet(Long jobId, Long customerId) {
+        Map<String, Object> response = new HashMap<>();
+
+        Optional<Job> jobOpt = jobRepository.findById(jobId);
+        if (!jobOpt.isPresent()) {
+            response.put("message", "Job not found");
+            return response;
+        }
+
+        Job job = jobOpt.get();
+
+        // Chỉ thanh toán lại nếu job chưa thanh toán
+        if (job.getStatus() != JobStatus.PAID) {
+            response.put("message", "Job has already been paid or completed");
+            return response;
+        }
+
+        Optional<CustomerWallet> walletOpt = customerWalletRepository.findByCustomerId(customerId);
+        if (!walletOpt.isPresent()) {
+            response.put("message", "Customer wallet not found");
+            return response;
+        }
+
+        CustomerWallet wallet = walletOpt.get();
+        double totalPrice = job.getTotalPrice();
+
+        if (wallet.getBalance() < totalPrice) {
+            response.put("message", "Số dư trong ví không đủ");
+            return response;
+        }
+
+        // Trừ tiền trong ví
+        wallet.setBalance(wallet.getBalance() - totalPrice);
+        customerWalletRepository.save(wallet);
+
+        // Cập nhật trạng thái job theo bookingType
+        String bookingType = job.getBookingType();
+        if ("CREATE".equalsIgnoreCase(bookingType)) {
+            job.setStatus(JobStatus.OPEN);
+        } else if ("BOOKED".equalsIgnoreCase(bookingType)) {
+            job.setStatus(JobStatus.BOOKED);
+        } else {
+            response.put("message", "Invalid booking type for job");
+            return response;
+        }
+
+        job.setPaymentMethod("WALLET");
+        jobRepository.save(job);
+
+        // Ghi lịch sử giao dịch
+        TransactionHistory transaction = new TransactionHistory();
+        transaction.setCustomer(job.getCustomer());
+        transaction.setAmount(totalPrice);
+        transaction.setTransactionType("BOOKING");
+        transaction.setPaymentMethod("WALLET");
+        transaction.setStatus("SUCCESS");
+        transactionHistoryRepository.save(transaction);
+
+        response.put("message", "Thanh toán bằng ví thành công");
+        response.put("jobId", jobId);
+        response.put("orderCode", job.getOrderCode());
+        response.put("status", job.getStatus());
+
+        return response;
+    }
 
 
 
