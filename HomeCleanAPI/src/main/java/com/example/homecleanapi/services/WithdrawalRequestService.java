@@ -406,6 +406,8 @@ public class WithdrawalRequestService {
         // Lấy tất cả yêu cầu rút tiền của customer
         List<WithdrawalRequest> withdrawalRequests = withdrawalRequestRepository.findByCustomerId(customerId);
 
+        withdrawalRequests.sort((w1, w2) -> w2.getCreatedAt().compareTo(w1.getCreatedAt()));
+
         if (withdrawalRequests.isEmpty()) {
             response.put("message", "No withdrawal requests found");
             response.put("status", HttpStatus.NOT_FOUND);
@@ -416,6 +418,7 @@ public class WithdrawalRequestService {
 
         return response;
     }
+
 
     public Map<String, Object> getWithdrawalRequestsForCleaner(Long cleanerId) {
         Map<String, Object> response = new HashMap<>();
@@ -430,6 +433,8 @@ public class WithdrawalRequestService {
         // Lấy tất cả yêu cầu rút tiền của cleaner
         List<WithdrawalRequest> withdrawalRequests = withdrawalRequestRepository.findByCleanerId(cleanerId);
 
+        withdrawalRequests.sort((w1, w2) -> w2.getCreatedAt().compareTo(w1.getCreatedAt()));
+
         if (withdrawalRequests.isEmpty()) {
             response.put("message", "No withdrawal requests found");
             response.put("status", HttpStatus.NOT_FOUND);
@@ -440,6 +445,7 @@ public class WithdrawalRequestService {
 
         return response;
     }
+
 
 
 
