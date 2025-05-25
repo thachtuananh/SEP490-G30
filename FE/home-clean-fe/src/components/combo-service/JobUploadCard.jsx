@@ -8,7 +8,8 @@ const JobUploadCard = ({
   icon,
   title,
   description,
-  onComboSelect,
+  onComboSelect, // Keep for other potential uses
+  onComboNavigate, // New prop for direct navigation
   isDisabled = false,
   displayId, // Add this prop to handle combo service
 }) => {
@@ -44,8 +45,8 @@ const JobUploadCard = ({
       return;
     }
     // Check for either numeric ID 5 or string ID "combo" with displayId 5
-    if (id === "combo" && displayId === 5 && onComboSelect) {
-      onComboSelect();
+    if (id === "combo" && displayId === 5 && onComboNavigate) {
+      onComboNavigate(); // Call the navigation handler
     }
   };
 

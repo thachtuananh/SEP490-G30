@@ -11,7 +11,6 @@ import {
 } from "antd";
 import { InfoCleanerCard } from "../activity/InfoCleanerCard";
 import { InfoCleanerCardDetail } from "../activity/InfoCleanerCardDetail";
-import { JobDetailModal } from "./JobDetailModal";
 import styles from "../activity/ActivityCard.module.css";
 import {
   FaRegCommentAlt,
@@ -39,7 +38,6 @@ import { createConversation } from "../../services/ChatService";
 import { sendNotification } from "../../services/NotificationService";
 import { ReportModal } from "../../components/activity/ReportModal";
 import { sendSms } from "../../services/SMSService";
-import { BASE_URL } from "../../utils/config";
 
 export const ActivityCard = ({ data, onDelete }) => {
   const [activities, setActivities] = useState([]);
@@ -61,16 +59,15 @@ export const ActivityCard = ({ data, onDelete }) => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [searchOrderCode, setSearchOrderCode] = useState("");
-  const [isJobDetailModalOpen, setIsJobDetailModalOpen] = useState(false);
-  const [jobDetail, setJobDetail] = useState(null);
-  const [jobDetailLoading, setJobDetailLoading] = useState(false);
 
   const customerName = sessionStorage.getItem("name");
   const customerPhone = sessionStorage.getItem("phone");
 
+  // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(4);
 
+  // Initialize activities from props
   useEffect(() => {
     if (data) {
       setActivities(data);
@@ -85,10 +82,12 @@ export const ActivityCard = ({ data, onDelete }) => {
   const applyFilters = (data, status, orderCode) => {
     let result = [...data];
 
+    // Filter by status
     if (status !== "ALL") {
       result = result.filter((activity) => activity.status === status);
     }
 
+    // Filter by orderCode
     if (orderCode && orderCode.trim() !== "") {
       result = result.filter(
         (activity) =>
@@ -98,6 +97,7 @@ export const ActivityCard = ({ data, onDelete }) => {
     }
 
     setFilteredActivities(result);
+    // Reset to first page when filters change
     setCurrentPage(1);
   };
 
@@ -111,13 +111,12 @@ export const ActivityCard = ({ data, onDelete }) => {
         return "#f1ab0f";
       case "IN_PROGRESS":
         return "#e67e22";
-      case "DOING":
-        return "#e67e22";
       case "ARRIVED":
         return "#9b59b6";
       case "COMPLETED":
         return "#2ecc71";
       case "CANCELLED":
+        return "#e74c3c";
       case "AUTO_CANCELLED":
         return "#e74c3c";
       case "DONE":
@@ -139,8 +138,6 @@ export const ActivityCard = ({ data, onDelete }) => {
         return "Chờ phê duyệt";
       case "IN_PROGRESS":
         return "Người nhận việc đang tới";
-      case "DOING":
-        return "Đang thực hiện";
       case "ARRIVED":
         return "Người nhận việc đã tới";
       case "COMPLETED":
@@ -158,6 +155,7 @@ export const ActivityCard = ({ data, onDelete }) => {
     }
   };
 
+  // Get current progress step based on status
   const getProgressStep = (status) => {
     switch (status) {
       case "OPEN":
@@ -167,6 +165,7 @@ export const ActivityCard = ({ data, onDelete }) => {
       case "ARRIVED":
         return 3;
       case "COMPLETED":
+        return 4;
       case "DONE":
         return 4;
       default:
@@ -174,29 +173,7 @@ export const ActivityCard = ({ data, onDelete }) => {
     }
   };
 
-  const fetchJobDetail = async (jobId) => {
-    setJobDetailLoading(true);
-    try {
-      const response = await fetch(`${BASE_URL}/customer/${jobId}`, {
-        method: "GET",
-        headers: {
-          Accept: "application/json",
-        },
-      });
-      if (!response.ok) {
-        throw new Error("Không thể lấy chi tiết công việc");
-      }
-      const data = await response.json();
-      setJobDetail(data);
-      setIsJobDetailModalOpen(true);
-    } catch (error) {
-      console.error("Lỗi khi lấy chi tiết công việc:", error);
-      message.error("Không thể lấy chi tiết công việc");
-    } finally {
-      setJobDetailLoading(false);
-    }
-  };
-
+  // Fetch cleaner applications
   const fetchCleaners = async (jobId) => {
     setLoading(true);
     try {
@@ -217,6 +194,7 @@ export const ActivityCard = ({ data, onDelete }) => {
     setLoading(false);
   };
 
+  // Fetch application counts for all OPEN jobs on component mount
   useEffect(() => {
     if (activities && activities.length > 0) {
       activities.forEach(async (activity) => {
@@ -243,20 +221,22 @@ export const ActivityCard = ({ data, onDelete }) => {
   }, [activities, customerId]);
 
   const handleViewCleanerDetail = async (cleanerId) => {
-    if (isProcessing) return;
+    if (isProcessing) return; // Ngăn chặn click liên tục
     setIsProcessing(true);
+
     try {
       const data = await fetchCleanerDetail(cleanerId);
       setSelectedCleaner(data);
-      setIsCleanerDetailModalOpen(true);
+      setIsCleanerDetailModalOpen(true); // Mở modal hiển thị chi tiết
     } catch (error) {
       message.error("Không thể tải thông tin người dọn dẹp");
       setSelectedCleaner(null);
     } finally {
-      setIsProcessing(false);
+      setIsProcessing(false); // Đặt lại trạng thái sau khi hoàn tất
     }
   };
 
+  // Fetch cleaner details
   const handleFetchCleanerDetail = async (cleanerId) => {
     setLoading(true);
     try {
@@ -269,32 +249,38 @@ export const ActivityCard = ({ data, onDelete }) => {
     setLoading(false);
   };
 
+  // Open cleaner modal
   const openModal = (jobId) => {
     setIsModalOpen(true);
     fetchCleaners(jobId);
     setSelectedJobId(jobId);
   };
 
+  // Open feedback modal
   const openFeedbackModal = (jobId) => {
     setSelectedJobIdForFeedback(jobId);
     setIsFeedbackModalOpen(true);
   };
 
+  // Open report modal
   const openReportModal = (jobId) => {
     setSelectedJobIdForReport(jobId);
     setIsReportModalOpen(true);
   };
 
+  // Close feedback modal
   const closeFeedbackModal = () => {
     setIsFeedbackModalOpen(false);
     setSelectedJobIdForFeedback(null);
   };
 
+  //close report modal
   const closeReportModal = () => {
     setIsReportModalOpen(false);
     setSelectedJobIdForReport(null);
   };
 
+  // Update activity status locally
   const updateActivityStatus = (jobId, newStatus) => {
     setActivities((prevActivities) =>
       prevActivities.map((activity) =>
@@ -303,23 +289,33 @@ export const ActivityCard = ({ data, onDelete }) => {
     );
   };
 
+  // Handle hire cleaner
   const handleHireCleaner = async (jobId, cleanerId, customerId) => {
     if (!jobId) {
       console.error("Không tìm thấy jobId!");
       return;
     }
-    if (isProcessing) return;
+    if (isProcessing) return; // Ngăn chặn click liên tục
     setIsProcessing(true);
     try {
+      // First, hire the cleaner
       await hireCleaner(jobId, cleanerId, customerId);
+
+      // Then create a conversation
+      // await createConversation(customerId, cleanerId);
+
+      // Find the specific activity/job data using jobId
       const jobData = activities.find((activity) => activity.jobId === jobId);
+
+      // Find the cleaner in the cleanerList to get the phone number
       const selectedCleanerData = cleanerList.find(
         (cleaner) => cleaner.cleanerId === cleanerId
       );
-      const cleanerPhone = selectedCleanerData?.phoneNumber;
+      const cleanerPhone = selectedCleanerData?.phoneNumber; // Fallback to default if not found
 
       message.success("Thuê cleaner thành công!");
 
+      // Create SMS message using the specific job data
       let serviceInfoText = "";
       if (jobData.services) {
         if (Array.isArray(jobData.services)) {
@@ -338,6 +334,7 @@ export const ActivityCard = ({ data, onDelete }) => {
         serviceInfoText = "Không xác định";
       }
 
+      // Format date for the specific job
       const formattedDate = new Date(jobData.scheduledTime).toLocaleString(
         "vi-VN",
         {
@@ -353,7 +350,14 @@ export const ActivityCard = ({ data, onDelete }) => {
       }. SĐT chủ nhà: ${customerPhone}. Tạm tính: ${jobData.totalPrice.toLocaleString()} VNĐ.`;
 
       Promise.all([
-        // sendNotification(cleanerId, ...),
+        // sendNotification(
+        //   cleanerId,
+        //   `Chúc mừng, Chủ nhà ${sessionStorage.getItem(
+        //     "name"
+        //   )} đã chấp nhận công việc`,
+        //   "BOOKED",
+        //   "Cleaner"
+        // ),
         // sendSms(cleanerPhone, smsMessageHire),
       ]);
 
@@ -363,21 +367,31 @@ export const ActivityCard = ({ data, onDelete }) => {
       console.error("Lỗi khi thuê cleaner:", error);
       message.error("Lỗi khi thuê cleaner");
     } finally {
-      setIsProcessing(false);
+      setIsProcessing(false); // Đặt lại trạng thái sau khi hoàn tất
     }
   };
 
+  // Handle reject cleaner
   const handleRejectCleaner = async (jobId, cleanerId, customerId) => {
     try {
       await rejectCleaner(jobId, cleanerId, customerId);
+      console.log("Từ chối cleaner thành công!", {
+        jobId,
+        cleanerId,
+        customerId,
+      });
+      // Find the specific activity/job data using jobId
       const jobData = activities.find((activity) => activity.jobId === jobId);
+
+      // Find the cleaner in the cleanerList to get the phone number
       const selectedCleanerData = cleanerList.find(
         (cleaner) => cleaner.cleanerId === cleanerId
       );
-      const cleanerPhone = selectedCleanerData?.phoneNumber;
+      const cleanerPhone = selectedCleanerData?.phoneNumber; // Fallback to default if not found
 
       message.success("Từ chối cleaner thành công!");
 
+      // Format date for the specific job
       const formattedDate = new Date(jobData.scheduledTime).toLocaleString(
         "vi-VN",
         {
@@ -390,9 +404,17 @@ export const ActivityCard = ({ data, onDelete }) => {
       );
       const smsMessageReject = `[HouseClean] Lịch dọn tại ${jobData.customerAddress}, lúc ${formattedDate} đã bị huỷ bởi ${customerName}`;
       Promise.all([
-        // sendNotification(cleanerId, ...),
+        // sendNotification(
+        //   cleanerId,
+        //   `Rất tiếc, chủ nhà ${sessionStorage.getItem(
+        //     "name"
+        //   )} từ chối công việc`,
+        //   "BOOKED",
+        //   "Cleaner"
+        // ),
         // sendSms(cleanerPhone, smsMessageReject),
       ]);
+      // Refresh cleaner list
       fetchCleaners(jobId);
     } catch (error) {
       console.error("Lỗi khi từ chối cleaner:", error);
@@ -400,6 +422,7 @@ export const ActivityCard = ({ data, onDelete }) => {
     }
   };
 
+  // Start a job
   const handleStartJob = async (jobId) => {
     try {
       await startJob(jobId, customerId);
@@ -411,31 +434,15 @@ export const ActivityCard = ({ data, onDelete }) => {
     }
   };
 
+  // Thêm hàm handleRetryPayment vào component ActivityCard
   const handleRetryPayment = async (jobId) => {
     try {
       const result = await retryPayment(jobId);
+      // Kiểm tra kết quả từ API và hiển thị thông báo thành công
       if (result && result.paymentUrl) {
-        let countDown = 3;
-        const messageKey = "redirectCountdown";
-
-        message.info({
-          content: `Bạn sẽ được chuyển đến cổng thanh toán VNPay trong ${countDown} giây!`,
-          key: messageKey,
-          duration: 3.5,
-        });
-
-        const interval = setInterval(() => {
-          countDown -= 1;
-          message.info({
-            content: `Bạn sẽ được chuyển đến cổng thanh toán VNPay trong ${countDown} giây!`,
-            key: messageKey,
-            duration: 1.5,
-          });
-
-          if (countDown === 0) {
-            clearInterval(interval);
-          }
-        }, 1000);
+        message.info(
+          "Bạn sẽ được chuyển đến cổng thanh toán VNPay trong 3 giây. Vui lòng hoàn tất thanh toán!"
+        );
         setTimeout(() => {
           window.location.href = result.paymentUrl;
         }, 3000);
@@ -448,6 +455,7 @@ export const ActivityCard = ({ data, onDelete }) => {
     }
   };
 
+  // Complete a job
   const handleCompleteJob = async (jobId) => {
     if (isProcessing) return;
     setIsProcessing(true);
@@ -459,10 +467,11 @@ export const ActivityCard = ({ data, onDelete }) => {
       console.error("Lỗi khi hoàn thành công việc:", error);
       message.error("Không thể hoàn thành công việc.");
     } finally {
-      setIsProcessing(false);
+      setIsProcessing(false); // Đặt lại trạng thái sau khi hoàn tất
     }
   };
 
+  // Handle delete job posting with local state update
   const handleDeleteJob = (jobId) => {
     Modal.confirm({
       title: "Xác nhận huỷ việc",
@@ -471,15 +480,26 @@ export const ActivityCard = ({ data, onDelete }) => {
       cancelText: "Huỷ bỏ",
       onOk: async () => {
         try {
+          // Use the deleteJobPosting function imported at the top
           await deleteJobPosting(jobId, customerId);
+
+          // Remove deleted job from local state
           setActivities((prevActivities) =>
             prevActivities.filter((activity) => activity.jobId !== jobId)
           );
+
           message.success("Huỷ việc thành công");
+
+          // Send notification if needed (assuming you have the cleaner ID)
           const activity = activities.find((a) => a.jobId === jobId);
           if (activity && activity.cleanerId) {
             Promise.all([
-              // sendNotification(activity.cleanerId, ...),
+              // sendNotification(
+              //   activity.cleanerId,
+              //   `Chủ nhà ${sessionStorage.getItem("name")} đã huỷ công việc`,
+              //   "CANCELLED",
+              //   "Cleaner"
+              // ),
             ]);
           }
         } catch (error) {
@@ -528,7 +548,18 @@ export const ActivityCard = ({ data, onDelete }) => {
         <>
           <Button
             type="primary"
-            style={{ marginRight: 8 }}
+            style={{
+              marginRight: 8,
+              padding: "8px 16px",
+              fontSize: "14px",
+              width: "auto",
+              minWidth: "80px",
+              "@media (maxWidth: 768px)": {
+                padding: "6px 12px",
+                fontSize: "12px",
+                minWidth: "60px",
+              },
+            }}
             onClick={() =>
               handleHireCleaner(selectedJobId, record.cleanerId, customerId)
             }
@@ -538,10 +569,21 @@ export const ActivityCard = ({ data, onDelete }) => {
           </Button>
           <Button
             danger
+            style={{
+              padding: "8px 16px",
+              fontSize: "14px",
+              width: "auto",
+              minWidth: "80px",
+              "@media (maxWidth: 768px)": {
+                padding: "6px 12px",
+                fontSize: "12px",
+                minWidth: "60px",
+              },
+            }}
             onClick={() =>
               handleRejectCleaner(selectedJobId, record.cleanerId, customerId)
             }
-            disabled={!record.cleanerId || isProcessing}
+            disabled={!record.cleanerId || isProcessing} // Vô hiệu hóa khi đang xử lý
           >
             Từ chối
           </Button>
@@ -550,6 +592,7 @@ export const ActivityCard = ({ data, onDelete }) => {
     },
   ];
 
+  // Calculate pagination
   const indexOfLastActivity = currentPage * pageSize;
   const indexOfFirstActivity = indexOfLastActivity - pageSize;
   const currentActivities = activities.slice(
@@ -562,11 +605,13 @@ export const ActivityCard = ({ data, onDelete }) => {
     setCurrentPage(page);
   };
 
+  // Progress bar status icons
   const ProgressIcon = ({ active, step }) => {
     const iconStyle = {
       fontSize: "20px",
       color: active ? "#fff" : "#ccc",
     };
+
     switch (step) {
       case 1:
         return <FaHourglassHalf style={iconStyle} />;
@@ -589,7 +634,97 @@ export const ActivityCard = ({ data, onDelete }) => {
 
           return (
             <div key={index} className={styles.card}>
+              {/* Progress Status Bar */}
+              <div className={styles.progressContainer}>
+                <h3 className={styles.progressTitle}>Trạng thái triển khai</h3>
+                <div className={styles.progressBar}>
+                  {/* Step 1: Waiting for Cleaner */}
+                  <div
+                    className={`${styles.progressStep} ${
+                      progressStep >= 1 ? styles.active : ""
+                    }`}
+                  >
+                    <div className={styles.progressIcon}>
+                      <ProgressIcon active={progressStep >= 1} step={1} />
+                    </div>
+                    <div className={styles.progressLabel}>
+                      <div>Tiếp nhận</div>
+                      {/* <div className={styles.progressDate}>
+                        {new Date(activity.scheduledTime).toLocaleDateString(
+                          "vi-VN"
+                        )}
+                      </div> */}
+                    </div>
+                  </div>
+
+                  {/* Connector line */}
+                  <div
+                    className={`${styles.progressConnector} ${
+                      progressStep >= 2 ? styles.active : ""
+                    }`}
+                  ></div>
+
+                  {/* Step 2: Cleaner Arriving */}
+                  <div
+                    className={`${styles.progressStep} ${
+                      progressStep >= 2 ? styles.active : ""
+                    }`}
+                  >
+                    <div className={styles.progressIcon}>
+                      <ProgressIcon active={progressStep >= 2} step={2} />
+                    </div>
+                    <div className={styles.progressLabel}>Cử nhân viên</div>
+                  </div>
+
+                  {/* Connector line */}
+                  <div
+                    className={`${styles.progressConnector} ${
+                      progressStep >= 3 ? styles.active : ""
+                    }`}
+                  ></div>
+
+                  {/* Step 3: Cleaner Completed */}
+                  <div
+                    className={`${styles.progressStep} ${
+                      progressStep >= 3 ? styles.active : ""
+                    }`}
+                  >
+                    <div className={styles.progressIcon}>
+                      <ProgressIcon active={progressStep >= 3} step={3} />
+                    </div>
+                    <div className={styles.progressLabel}>Đến nơi</div>
+                  </div>
+
+                  {/* Connector line */}
+                  <div
+                    className={`${styles.progressConnector} ${
+                      progressStep >= 4 ? styles.active : ""
+                    }`}
+                  ></div>
+
+                  {/* Step 4: Job Completed */}
+                  <div
+                    className={`${styles.progressStep} ${
+                      progressStep >= 4 ? styles.active : ""
+                    }`}
+                  >
+                    <div className={styles.progressIcon}>
+                      <ProgressIcon active={progressStep >= 4} step={4} />
+                    </div>
+                    <div className={styles.progressLabel}>Hoàn tất</div>
+                  </div>
+                </div>
+              </div>
+
               <div className={styles.cardContent}>
+                {/* <div className={styles.header}>
+                  {activity.services &&
+                    activity.services.map((service, idx) => (
+                      <div key={idx} className={styles.serviceItem}>
+                        <h3>{service.serviceName}</h3>
+                      </div>
+                    ))}
+                </div> */}
                 <div className={styles.orderCode}>
                   <strong>Mã đơn hàng:</strong> {activity.orderCode}
                 </div>
@@ -602,99 +737,62 @@ export const ActivityCard = ({ data, onDelete }) => {
                       )}
                     </span>
                   </div>
+
                   <div className={styles.infoItem}>
                     <MdAccessTime className={styles.icon} />
                     <span>
                       {new Date(activity.scheduledTime).toLocaleTimeString(
                         "vi-VN",
-                        { hour: "2-digit", minute: "2-digit" }
+                        {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        }
                       )}
                     </span>
                   </div>
+
                   <div className={styles.infoItem}>
                     <MdLocationOn className={styles.icon} />
                     <span>{activity.customerAddress}</span>
                   </div>
                 </div>
+
                 <div className={styles.services}>
-                  {activity.subJobs &&
-                    activity.subJobs.map((subJob, idx) => (
-                      <div key={idx}>
-                        {subJob.services &&
-                          subJob.services.map((service, serviceIdx) => (
-                            <div
-                              key={serviceIdx}
-                              className={styles.serviceDetails}
-                            >
-                              <div className={styles.serviceTitle}>
-                                {service.serviceName} -{" "}
-                                {new Date(subJob.scheduledTime).toLocaleString(
-                                  "vi-VN",
-                                  {
-                                    day: "2-digit",
-                                    month: "2-digit",
-                                    year: "numeric",
-                                    hour: "2-digit",
-                                    minute: "2-digit",
-                                  }
-                                )}
-                              </div>
-                              <div
-                                style={{
-                                  display: "flex",
-                                  alignItems: "center",
-                                  gap: "10px",
-                                }}
-                              >
-                                <div
-                                  className={styles.statusBadge}
-                                  style={{
-                                    backgroundColor: getStatusColor(
-                                      subJob.status
-                                    ),
-                                  }}
-                                >
-                                  {getStatusText(subJob.status)}
-                                </div>
-                                <div className={styles.serviceArea}>
-                                  {service.serviceDetailAreaRange}
-                                </div>
-                              </div>
-                            </div>
-                          ))}
+                  {activity.services &&
+                    activity.services.map((service, idx) => (
+                      <div key={idx} className={styles.serviceDetails}>
+                        <div className={styles.serviceTitle}>
+                          {service.serviceName}
+                        </div>
+                        <div className={styles.serviceArea}>
+                          {service.serviceDetailAreaRange}
+                        </div>
                       </div>
                     ))}
                 </div>
-                <div
-                  className={styles.statusAndPrice}
-                  style={{ justifyContent: "end" }}
-                >
-                  {/* <div
+
+                <div className={styles.statusAndPrice}>
+                  <div
                     className={styles.statusBadge}
                     style={{ backgroundColor: getStatusColor(activity.status) }}
                   >
                     {getStatusText(activity.status)}
-                  </div> */}
+                  </div>
+
                   <div className={styles.price}>
                     <b>{activity.totalPrice.toLocaleString("vi-VN")} VNĐ</b>
                   </div>
                 </div>
               </div>
+
               <div className={styles.divider}></div>
+
               <div className={styles.footer}>
                 <div className={styles.actionButtons}>
-                  <Button
-                    type="default"
-                    onClick={() => fetchJobDetail(activity.jobId)}
-                    disabled={jobDetailLoading}
-                  >
-                    Xem chi tiết dịch vụ
-                  </Button>
                   {(activity.status === "OPEN" ||
                     activity.status === "BOOKED" ||
                     activity.status === "IN_PROGRESS" ||
-                    activity.status === "ARRIVED" ||
-                    activity.status === "DOING") && (
+                    activity.status === "ARRIVED") && (
                     <Button
                       danger
                       className={styles.cancelButton}
@@ -708,24 +806,7 @@ export const ActivityCard = ({ data, onDelete }) => {
                     activity.status === "IN_PROGRESS" ||
                     activity.status === "CANCELLED" ||
                     activity.status === "COMPLETED") && (
-                    <Button
-                      className={styles.reportButton}
-                      onClick={() => openReportModal(activity.jobId)}
-                      danger
-                      icon={<FaFlag />}
-                    >
-                      Báo cáo
-                    </Button>
-                  )}
-                  {activity.status === "DONE" && (
                     <div className={styles.buttonGroup}>
-                      <Button
-                        className={styles.reviewButton}
-                        onClick={() => openFeedbackModal(activity.jobId)}
-                        icon={<FaRegCommentAlt />}
-                      >
-                        Đánh giá
-                      </Button>
                       <Button
                         className={styles.reportButton}
                         onClick={() => openReportModal(activity.jobId)}
@@ -736,10 +817,48 @@ export const ActivityCard = ({ data, onDelete }) => {
                       </Button>
                     </div>
                   )}
+                  {activity.status === "DONE" && (
+                    <div className={styles.buttonGroup}>
+                      <Button
+                        className={styles.reviewButton}
+                        onClick={() => openFeedbackModal(activity.jobId)}
+                        icon={<FaRegCommentAlt />}
+                      >
+                        Đánh giá
+                      </Button>
+
+                      <Button
+                        className={styles.reportButton}
+                        onClick={() => openReportModal(activity.jobId)}
+                        danger
+                        icon={<FaFlag />}
+                      >
+                        Báo cáo
+                      </Button>
+                    </div>
+                  )}
+
+                  {activity.status === "OPEN" &&
+                    applicationsCount[activity.jobId] > 0 && (
+                      <div className={styles.buttonProfile}>
+                        <Badge
+                          count={applicationsCount[activity.jobId]}
+                          size="small"
+                        >
+                          <Button
+                            type="primary"
+                            className={styles.statusButton}
+                            onClick={() => openModal(activity.jobId)}
+                          >
+                            Người dọn dẹp đã ứng tuyển
+                          </Button>
+                        </Badge>
+                      </div>
+                    )}
+
                   {(activity.status === "DONE" ||
                     activity.status === "COMPLETED" ||
-                    activity.status === "IN_PROGRESS" ||
-                    activity.status === "BOOKED") && (
+                    activity.status === "IN_PROGRESS") && (
                     <Button
                       type="default"
                       onClick={() =>
@@ -776,6 +895,8 @@ export const ActivityCard = ({ data, onDelete }) => {
           );
         })}
       </div>
+
+      {/* Pagination */}
       {totalActivities > pageSize && (
         <div className={styles.paginationContainer}>
           <Pagination
@@ -787,6 +908,8 @@ export const ActivityCard = ({ data, onDelete }) => {
           />
         </div>
       )}
+
+      {/* Cleaner List Modal */}
       <Modal
         title="Danh sách người dọn dẹp"
         open={isModalOpen}
@@ -824,6 +947,7 @@ export const ActivityCard = ({ data, onDelete }) => {
           />
         )}
       </Modal>
+
       <Modal
         title="Chi tiết người dọn dẹp"
         open={isCleanerDetailModalOpen}
@@ -841,6 +965,7 @@ export const ActivityCard = ({ data, onDelete }) => {
                   type="primary"
                   key="reorder"
                   onClick={() => {
+                    // Navigate to the cleaner page when clicked
                     window.location.href = `/cleaner/${selectedCleaner?.cleanerId}`;
                   }}
                 >
@@ -866,36 +991,14 @@ export const ActivityCard = ({ data, onDelete }) => {
           />
         )}
       </Modal>
-      <JobDetailModal
-        isOpen={isJobDetailModalOpen}
-        onClose={() => {
-          setIsJobDetailModalOpen(false);
-          setJobDetail(null);
-        }}
-        jobDetail={jobDetail}
-        loading={jobDetailLoading}
-        handleDeleteJob={handleDeleteJob}
-        openReportModal={openReportModal}
-        openFeedbackModal={openFeedbackModal}
-        openModal={openModal}
-        handleViewCleanerDetail={handleViewCleanerDetail}
-        handleCompleteJob={handleCompleteJob}
-        handleRetryPayment={handleRetryPayment}
-        fetchCleanerApplications={fetchCleanerApplications}
-        fetchCleanerDetail={fetchCleanerDetail}
-        hireCleaner={hireCleaner}
-        startJob={startJob}
-        rejectCleaner={rejectCleaner}
-        applicationsCount={applicationsCount}
-        isProcessing={isProcessing}
-        customerId={customerId}
-      />
+
       <FeedbackModal
         visible={isFeedbackModalOpen}
         jobId={selectedJobIdForFeedback}
         customerId={customerId}
         onClose={closeFeedbackModal}
       />
+
       <ReportModal
         visible={isReportModalOpen}
         jobId={selectedJobIdForReport}

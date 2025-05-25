@@ -12,19 +12,33 @@ import jwt_decode from "jwt-decode";
 
 const { Text, Title } = Typography;
 
-const Notification = () => {
+const Notification = ({
+  onClose,
+  onViewAll,
+  notifications: propNotifications,
+  setNotifications: setParentNotifications,
+}) => {
   const navigate = useNavigate();
-  const [notifications, setNotifications] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [notifications, setNotifications] = useState(propNotifications || []);
+  const [loading, setLoading] = useState(!propNotifications); // Only load if no props provided
   const [error, setError] = useState(null);
   const [clearLoading, setClearLoading] = useState(false);
   const [markReadLoading, setMarkReadLoading] = useState(false);
   const role = sessionStorage.getItem("role");
 
-  // Fetch notifications when component mounts
+  // Fetch notifications only if propNotifications is not provided
   useEffect(() => {
-    fetchNotifications();
+    if (!propNotifications) {
+      fetchNotifications();
+    }
   }, []);
+
+  // Update local state when propNotifications changes
+  useEffect(() => {
+    if (propNotifications) {
+      setNotifications(propNotifications);
+    }
+  }, [propNotifications]);
 
   // Function to fetch notifications
   const fetchNotifications = async () => {
@@ -32,6 +46,9 @@ const Notification = () => {
       setLoading(true);
       const data = await getNotifications();
       setNotifications(data || []);
+      if (setParentNotifications) {
+        setParentNotifications(data || []);
+      }
       setError(null);
     } catch (error) {
       console.error("Error fetching notifications:", error);
@@ -45,16 +62,15 @@ const Notification = () => {
   const handleClearAllNotifications = async () => {
     try {
       setClearLoading(true);
-      // Get role and userId from token
       const token = sessionStorage.getItem("token");
       const decodedToken = jwt_decode(token);
       const { role, id } = decodedToken;
 
-      // Call API to delete all notifications
       await deleteAllNotifications(role, id);
-
-      // Clear notifications in state
       setNotifications([]);
+      if (setParentNotifications) {
+        setParentNotifications([]);
+      }
     } catch (error) {
       console.error("Error clearing notifications:", error);
       setError("Không thể xoá thông báo. Vui lòng thử lại sau.");
@@ -67,22 +83,20 @@ const Notification = () => {
   const handleMarkAllAsRead = async () => {
     try {
       setMarkReadLoading(true);
-      // Get role and userId from token
       const token = sessionStorage.getItem("token");
       const decodedToken = jwt_decode(token);
       const { role, id } = decodedToken;
 
-      // Call API to mark all notifications as read
       await markAllNotificationsAsRead(role, id);
-
-      // Update notifications in state to show as read
-      setNotifications(
-        notifications.map((notification) => ({
-          ...notification,
-          isRead: true,
-          read: true,
-        }))
-      );
+      const updatedNotifications = notifications.map((notification) => ({
+        ...notification,
+        isRead: true,
+        read: true,
+      }));
+      setNotifications(updatedNotifications);
+      if (setParentNotifications) {
+        setParentNotifications(updatedNotifications);
+      }
     } catch (error) {
       console.error("Error marking notifications as read:", error);
       setError("Không thể đánh dấu đã đọc. Vui lòng thử lại sau.");
@@ -94,7 +108,6 @@ const Notification = () => {
   // Format date for display
   const formatDate = (dateString) => {
     if (!dateString) return "";
-
     try {
       const date = new Date(dateString);
       return date.toLocaleString("vi-VN", {
@@ -103,21 +116,11 @@ const Notification = () => {
         year: "numeric",
       });
     } catch (error) {
-      console.error("Error formatting date:", error);
       return dateString;
     }
   };
 
-  // Handle notification click
-  // const handleNotificationClick = async () => {
-  //   if (role === "Customer") {
-  //     navigate("/activitylist");
-  //   } else if (role === "Employee") {
-  //     navigate("/homeclean/activityjob");
-  //   }
-  // };
-
-  // Check if a notification is unread (considering both isRead and read properties)
+  // Check if a notification is unread
   const isNotificationUnread = (notification) => {
     return (
       (notification.isRead === false || notification.isRead === undefined) &&
@@ -161,7 +164,6 @@ const Notification = () => {
                   cursor: "pointer",
                   opacity: clearLoading ? 0.5 : 1,
                 }}
-                // spin={clearLoading}
                 title="Xóa tất cả thông báo"
               />
             )}
@@ -203,8 +205,6 @@ const Notification = () => {
                 className={`${styles.notification_item} ${
                   isNotificationUnread(item) ? styles.unread : ""
                 }`}
-                // onClick={handleNotificationClick}
-                // style={{ cursor: "pointer" }}
               >
                 <List.Item.Meta
                   title={

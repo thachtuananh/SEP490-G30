@@ -4,7 +4,7 @@ import { AuthContext } from "../../context/AuthContext";
 import { message, Typography, Modal, Checkbox } from "antd";
 import styles from "../../assets/CSS/createjob/JobInformation.module.css";
 import dayjs from "dayjs";
-import { createJob } from "../../services/owner/OwnerAPI"; // Import API function
+import { createJob } from "../../services/owner/OwnerAPI";
 import { sendNotification } from "../../services/NotificationService";
 const { Title, Text, Paragraph } = Typography;
 
@@ -23,27 +23,32 @@ const JobInfomation = ({
   const serviceDetailId = state.serviceDetailId;
   const customerAddressId = state.customerAddressId;
   const [termsAccepted, setTermsAccepted] = useState(false);
-
-  // State để kiểm tra thời gian
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isRedirecting, setIsRedirecting] = useState(false); // Thêm state để theo dõi trạng thái đang chuyển hướng
+  const [isRedirecting, setIsRedirecting] = useState(false);
   const [currentTime, setCurrentTime] = useState(dayjs());
-  const [basePrice, setBasePrice] = useState(state.price || 0);
-  const [adjustedPrice, setAdjustedPrice] = useState(state.price || 0);
+  const [basePrice, setBasePrice] = useState(0);
+  const [adjustedPrice, setAdjustedPrice] = useState(0);
 
-  // token
   const { token, customerId } = useContext(AuthContext);
 
-  // Cập nhật thời gian hiện tại mỗi phút
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentTime(dayjs());
-    }, 60000); // Cập nhật mỗi phút
-
+    }, 60000);
     return () => clearInterval(timer);
   }, []);
 
-  // Calculate adjusted price when price adjustment changes
+  useEffect(() => {
+    if (state.serviceDetails && state.serviceDetails.length > 0) {
+      const totalBasePrice = state.serviceDetails.reduce((total, service) => {
+        return total + (service.price || 0);
+      }, 0);
+      setBasePrice(totalBasePrice);
+    } else if (state.price) {
+      setBasePrice(state.price);
+    }
+  }, [state.serviceDetails, state.price]);
+
   useEffect(() => {
     if (priceAdjustment && basePrice) {
       const adjustmentAmount = basePrice * (priceAdjustment.percentage / 100);
@@ -51,23 +56,7 @@ const JobInfomation = ({
     } else {
       setAdjustedPrice(basePrice);
     }
-  }, [priceAdjustment, basePrice]);
-
-  // Set base price when state.price changes
-  useEffect(() => {
-    if (state.price) {
-      setBasePrice(state.price);
-
-      // Initially calculate adjusted price
-      if (priceAdjustment) {
-        const adjustmentAmount =
-          state.price * (priceAdjustment.percentage / 100);
-        setAdjustedPrice(state.price + adjustmentAmount);
-      } else {
-        setAdjustedPrice(state.price);
-      }
-    }
-  }, [state.price]);
+  }, [basePrice, priceAdjustment]);
 
   const validateJobTime = () => {
     if (!selectedDate) {
@@ -75,7 +64,6 @@ const JobInfomation = ({
       return false;
     }
 
-    // Tạo đối tượng dayjs từ thời gian đã chọn
     const selectedDateTime = dayjs(
       new Date(
         selectedDate.getFullYear(),
@@ -86,7 +74,6 @@ const JobInfomation = ({
       )
     );
 
-    // Kiểm tra nếu thời gian đã chọn nằm trong quá khứ
     if (selectedDateTime.isBefore(currentTime)) {
       Modal.warning({
         title: "Thời gian không hợp lệ",
@@ -97,7 +84,6 @@ const JobInfomation = ({
       return false;
     }
 
-    // Kiểm tra nếu thời gian đã chọn quá gần hiện tại (ít hơn 30 phút)
     if (selectedDateTime.diff(currentTime, "minute") < 30) {
       return new Promise((resolve) => {
         Modal.confirm({
@@ -119,7 +105,6 @@ const JobInfomation = ({
   };
 
   const handleCreateJob = async () => {
-    // Kiểm tra nếu đang trong quá trình xử lý hoặc chuyển hướng thì không làm gì
     if (isSubmitting || isRedirecting) {
       return;
     }
@@ -137,7 +122,6 @@ const JobInfomation = ({
     setIsSubmitting(true);
 
     try {
-      // Validate job time
       const isTimeValid = await validateJobTime();
       if (!isTimeValid) {
         setIsSubmitting(false);
@@ -162,13 +146,17 @@ const JobInfomation = ({
         .toString()
         .padStart(2, "0")}:00`;
 
-      // Check if we have multiple services selected
+      // Tạo mảng services dựa trên quantity
       const services = state.serviceDetails
-        ? state.serviceDetails.map((service) => ({
-            serviceId: service.serviceId,
-            serviceDetailId: service.serviceDetailId,
-            imageUrl: "http://example.com/room.jpg",
-          }))
+        ? state.serviceDetails.reduce((acc, service) => {
+            const serviceEntry = {
+              serviceId: service.serviceId,
+              serviceDetailId: service.serviceDetailId,
+              imageUrl: "http://example.com/room.jpg",
+            };
+            // Thêm serviceEntry vào mảng acc quantity lần
+            return [...acc, ...Array(service.quantity).fill(serviceEntry)];
+          }, [])
         : [
             {
               serviceId,
@@ -177,44 +165,24 @@ const JobInfomation = ({
             },
           ];
 
-      // Đảm bảo gửi đúng định dạng của payment method
-      // Chuyển đổi "wallet" thành "Wallet" để khớp với định dạng mong muốn
       const normalizedPaymentMethod =
         paymentMethod === "wallet" ? "Wallet" : paymentMethod;
 
-      // Keep only the required fields as specified
       const jobData = {
         customerAddressId,
         jobTime: formattedJobTime,
-        services: services,
-        paymentMethod: normalizedPaymentMethod, // Sử dụng payment method đã chuẩn hóa
-        reminder: reminder,
+        services,
+        paymentMethod: normalizedPaymentMethod,
+        reminder,
       };
 
-      console.log("Job data being sent:", jobData); // Add this for debugging
+      console.log("Job data being sent:", jobData);
 
       const responseData = await createJob(customerId, jobData);
 
-      // Handle VNPay payment URL if present
       if (normalizedPaymentMethod === "VNPay" && responseData.paymentUrl) {
-        // Đặt trạng thái đang chuyển hướng để chặn các click tiếp theo
         setIsRedirecting(true);
 
-        // Hiển thị thông báo với thanh tiến trình đếm ngược
-        // let countdown = 3;
-        // const countdownInterval = setInterval(() => {
-        //   countdown -= 1;
-        //   if (countdown > 0) {
-        //     message.loading(
-        //       `Đang chuyển đến trang thanh toán VNPay sau ${countdown} giây...`,
-        //       1
-        //     );
-        //   } else {
-        //     clearInterval(countdownInterval);
-        //   }
-        // }, 1000);
-
-        // Show notification that user will be redirected
         let countDown = 3;
         const messageKey = "redirectCountdown";
 
@@ -237,9 +205,7 @@ const JobInfomation = ({
           }
         }, 1000);
 
-        // Set timeout before redirecting to payment gateway
         setTimeout(() => {
-          // Redirect to VNPay payment gateway in the current tab
           window.location.href = responseData.paymentUrl;
         }, 3000);
 
@@ -248,19 +214,6 @@ const JobInfomation = ({
 
       if (responseData.status === "OPEN") {
         message.success("Đăng việc thành công!");
-        // try {
-        //   await sendNotification(
-        //     customerId,
-        //     `Bạn đã đăng việc thành công: ${
-        //       state.serviceName ||
-        //       (state.serviceDetails && state.serviceDetails[0]?.serviceName) ||
-        //       "Dọn dẹp"
-        //     }`,
-        //     "Tạo việc"
-        //   );
-        // } catch (notifError) {
-        //   console.error("Không thể gửi thông báo:", notifError);
-        // }
         navigate("/");
       } else {
         console.error("Lỗi khi tạo job:", responseData);
@@ -276,7 +229,6 @@ const JobInfomation = ({
     }
   };
 
-  // Xác định khi nào nút bị vô hiệu hóa
   const isButtonDisabled = isSubmitting || isRedirecting || !termsAccepted;
   const isProcessing = isSubmitting || isRedirecting;
 
@@ -319,13 +271,12 @@ const JobInfomation = ({
             <Text className={styles.serviceTags}>
               {state?.serviceDetails?.map((service, index) => (
                 <Text key={index} className={styles.serviceTag}>
-                  {service.serviceName}
+                  {service.serviceName} (x{service.quantity})
                 </Text>
               ))}
             </Text>
           )}
         </Paragraph>
-
         <Paragraph className={styles.infoRow}>
           <Text>Địa điểm</Text>
           <Text>{state.address}</Text>
@@ -341,7 +292,7 @@ const JobInfomation = ({
               {state?.serviceDetails?.map((service, index) => (
                 <Text key={index} className={styles.serviceTag}>
                   {service.serviceName} | {service.selectedSize}m² -{" "}
-                  {service.maxSize}m²
+                  {service.maxSize}m² (x{service.quantity})
                 </Text>
               ))}
             </Text>
@@ -355,32 +306,26 @@ const JobInfomation = ({
             {!paymentMethod && "Chưa chọn"}
           </Text>
         </Paragraph>
-
-        {/* {priceAdjustment && (
+        {priceAdjustment && (
           <Paragraph className={styles.infoRow} style={{ color: "#1890ff" }}>
             <Text>Phụ phí</Text>
             <Text style={{ color: "red" }}>
               +{priceAdjustment.percentage}% do {priceAdjustment.reason}
             </Text>
           </Paragraph>
-        )} */}
-
+        )}
         <div className={styles.divider}></div>
-
         <div className={styles.totalContainer}>
-          {/* Base price row */}
-          <div className={styles.priceColumn}>
-            {priceAdjustment && basePrice !== adjustedPrice && (
+          {priceAdjustment && basePrice !== adjustedPrice && (
+            <div className={styles.priceColumn}>
               <div className={styles.priceLabelValue}>
                 <Text className={styles.priceLabel}>Giá cơ bản</Text>
                 <Text className={styles.priceValue}>
                   {basePrice.toLocaleString()} VNĐ
                 </Text>
               </div>
-            )}
-          </div>
-
-          {/* Surcharge row */}
+            </div>
+          )}
           {priceAdjustment && (
             <div className={styles.priceColumn}>
               <div className={styles.priceLabelValue}>
@@ -391,8 +336,6 @@ const JobInfomation = ({
               </div>
             </div>
           )}
-
-          {/* Total payment row */}
           <div className={styles.priceColumn}>
             <div className={styles.priceLabelValue}>
               <Text className={styles.priceLabel}>Tổng thanh toán</Text>
@@ -415,25 +358,20 @@ const JobInfomation = ({
           </Text>
         </Checkbox>
       </div>
-
       <div className={styles.actionButtons}>
         {isProcessing ? (
-          // Render nút Hủy không có link khi đang xử lý
-          <>
-            <Link className={styles.linkReset}>
-              <div
-                className={styles.cancelButton}
-                style={{
-                  opacity: 0.7,
-                  cursor: "not-allowed",
-                }}
-              >
-                Hủy
-              </div>
-            </Link>
-          </>
+          <Link className={styles.linkReset}>
+            <div
+              className={styles.cancelButton}
+              style={{
+                opacity: 0.7,
+                cursor: "not-allowed",
+              }}
+            >
+              Hủy
+            </div>
+          </Link>
         ) : (
-          // Render nút Hủy với link chỉ khi không đang xử lý
           <Link to="/" className={styles.linkReset}>
             <div className={styles.cancelButton}>Hủy</div>
           </Link>
@@ -449,7 +387,7 @@ const JobInfomation = ({
           {isSubmitting
             ? "Đăng việc"
             : isRedirecting
-            ? "Đăng việc"
+            ? "Đang chuyển hướng..."
             : "Đăng việc"}
         </div>
       </div>

@@ -49,6 +49,7 @@ function Navbar() {
   const [messages, setMessages] = useState([]);
   const [selectedConversation, setSelectedConversation] = useState(null);
   //Kết thúc phần khai báo cho Chat
+  const [notifications, setNotifications] = useState([]);
 
   const isActive = (path) => {
     return location.pathname === path;
@@ -157,7 +158,9 @@ function Navbar() {
 
   const toggleNotification = () => {
     setIsPopupNotification(!isPopupNotification);
-    // Close menu when toggling notification on mobile
+    if (!isPopupNotification) {
+      setNotificationCount(0);
+    }
     if (isMobile && isMenuOpen) {
       setIsMenuOpen(false);
     }
@@ -168,12 +171,10 @@ function Navbar() {
     if (cleaner) {
       try {
         setIsLoading(true);
-        if (role && userId) {
-          await markAllNotificationsAsRead("Cleaner", userId);
-        }
+        const updatedNotifications = await getNotifications();
+        setNotifications(updatedNotifications || []);
         const count = await getUnreadNotificationCount();
         setNotificationCount(count);
-        await getNotifications();
       } catch (error) {
         console.error("Failed to refresh notifications:", error);
       } finally {
@@ -222,13 +223,9 @@ function Navbar() {
       <div
         className={styles.notification_icon_wrapper}
         onClick={() => {
-          // On mobile, just toggle the notification popup
           if (isMobile) {
             toggleNotification();
             refreshNotifications();
-            // } else {
-            //   // On desktop, refresh notifications when clicking the icon
-            //   refreshNotifications();
           }
         }}
       >
@@ -237,7 +234,6 @@ function Navbar() {
             notificationCount > 0 ? styles.notification_active : ""
           }`}
           style={{ fontSize: "20px" }}
-          // spin={isLoading}
         />
       </div>
     </Badge>
@@ -258,9 +254,9 @@ function Navbar() {
             onClose={() => setIsPopupNotification(false)}
             onViewAll={() => {
               setIsPopupNotification(false);
-              // Navigate to full notification page if you have one
-              // navigate("/notifications");
             }}
+            notifications={notifications}
+            setNotifications={setNotifications}
           />
         </div>
       </div>
@@ -278,18 +274,35 @@ function Navbar() {
           onClose={() => setIsPopupNotification(false)}
           onViewAll={() => {
             setIsPopupNotification(false);
-            // Navigate to full notification page if you have one
-            // navigate("/notifications");
           }}
+          notifications={notifications}
+          setNotifications={setNotifications}
         />
       }
       trigger="click"
       open={isPopupNotification}
-      onOpenChange={(visible) => {
+      onOpenChange={async (visible) => {
         setIsPopupNotification(visible);
         if (visible) {
-          // Refresh notification count when opening the popover
-          refreshNotifications();
+          await refreshNotifications();
+        } else {
+          try {
+            if (role && userId) {
+              await markAllNotificationsAsRead("Cleaner", userId);
+              setNotificationCount(0);
+              setNotifications(
+                notifications.map((notification) => ({
+                  ...notification,
+                  isRead: true,
+                  read: true,
+                }))
+              );
+            }
+          } catch (error) {
+            // message.error(
+            //   "Không thể đánh dấu thông báo đã đọc. Vui lòng thử lại!"
+            // );
+          }
         }
       }}
       placement="bottomRight"

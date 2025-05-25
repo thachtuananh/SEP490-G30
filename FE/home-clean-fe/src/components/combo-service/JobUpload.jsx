@@ -162,6 +162,16 @@ const JobUpload = () => {
     showServiceModal(true);
   };
 
+  // New handler for combo navigation
+  const handleComboNavigate = () => {
+    navigate("/service-details-combo", {
+      state: {
+        selectedServices: [], // Initially empty, as no services are selected yet
+        allServices,
+      },
+    });
+  };
+
   return (
     <>
       <div className={styles.pageContainer}>
@@ -176,6 +186,7 @@ const JobUpload = () => {
               title={service.serviceName}
               description={service.description}
               onComboSelect={showServiceModal}
+              onComboNavigate={handleComboNavigate} // Pass the new handler
             />
           ))}
         </section>
@@ -189,6 +200,7 @@ const JobUpload = () => {
               title={service.serviceName}
               description={service.description}
               onComboSelect={showServiceModal}
+              onComboNavigate={handleComboNavigate} // Pass the new handler
               // Check for displayId of 7 or 8, or serviceId for string-based IDs
               isDisabled={
                 service.displayId === 7 ||
@@ -201,7 +213,7 @@ const JobUpload = () => {
             />
           ))}
         </section>
-        <section className={styles.servicesGrid}>
+        {/* <section className={styles.servicesGrid}>
           <p>Bạn muốn đặt dịch vụ theo lịch trình hàng tuần, tháng? </p>
           <Button
             type="link"
@@ -210,7 +222,7 @@ const JobUpload = () => {
           >
             Đặt dịch vụ theo lịch trình
           </Button>
-        </section>
+        </section> */}
       </div>
 
       {/* Service Selection Modal - now with filtered services */}
