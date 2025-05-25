@@ -107,7 +107,7 @@ export const ActivityList = () => {
     { value: "CANCELLED", label: "Đã hủy" },
     { value: "DONE", label: "Hoàn tất công việc" },
     { value: "AUTO_CANCELLED", label: "Đã tự động huỷ" },
-    { value: "PAID", label: "Đang chờ thanh toán qua VNPay" },
+    { value: "PAID", label: "Đang chờ thanh toán hoàn tất" },
     { value: "BOOKED", label: "Đã đặt lịch" },
   ];
 

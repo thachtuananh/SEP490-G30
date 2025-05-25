@@ -233,10 +233,9 @@ export async function retryPayment(jobId) {
   }
 }
 
-export async function retryPaymentWallet(jobId) {
+export async function retryPaymentWallet(jobId,customerId) {
     try {
         const token = sessionStorage.getItem("token");
-        const customerId = sessionStorage.getItem("customerId");
         if (!token) {
             throw new Error("No authentication token found");
         }

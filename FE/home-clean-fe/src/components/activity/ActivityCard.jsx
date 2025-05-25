@@ -32,6 +32,7 @@ import {
   deleteJobPosting,
   rejectCleaner,
   retryPayment,
+  retryPaymentWallet,
 } from "../../services/owner/StatusJobAPI";
 import { FeedbackModal } from "../../components/activity/FeedbackModal";
 import { createConversation } from "../../services/ChatService";
@@ -440,9 +441,27 @@ export const ActivityCard = ({ data, onDelete }) => {
       const result = await retryPayment(jobId);
       // Kiểm tra kết quả từ API và hiển thị thông báo thành công
       if (result && result.paymentUrl) {
-        message.info(
-          "Bạn sẽ được chuyển đến cổng thanh toán VNPay trong 3 giây. Vui lòng hoàn tất thanh toán!"
-        );
+        let countDown = 3;
+        const messageKey = "redirectCountdown";
+
+        message.info({
+          content: `Bạn sẽ được chuyển đến cổng thanh toán VNPay trong ${countDown} giây!`,
+          key: messageKey,
+          duration: 3.5,
+        });
+
+        const interval = setInterval(() => {
+          countDown -= 1;
+          message.info({
+            content: `Bạn sẽ được chuyển đến cổng thanh toán VNPay trong ${countDown} giây!`,
+            key: messageKey,
+            duration: 1.5,
+          });
+
+          if (countDown === 0) {
+            clearInterval(interval);
+          }
+        }, 1000);
         setTimeout(() => {
           window.location.href = result.paymentUrl;
         }, 3000);
@@ -452,6 +471,22 @@ export const ActivityCard = ({ data, onDelete }) => {
     } catch (error) {
       console.error("Lỗi khi thử thanh toán lại:", error);
       message.error("Không thể thử thanh toán lại. Vui lòng thử lại sau.");
+    }
+  };
+
+  const handleRetryPaymentWallet = async (jobId, customerId) => {
+    try {
+      const result = await retryPaymentWallet(jobId, customerId);
+      // Kiểm tra kết quả từ API và hiển thị thông báo thành công
+      if (result.status === "OPEN") {
+        message.success("Thanh toán lại qua ví thành công!");
+        updateActivityStatus(jobId, "OPEN");
+      } else {
+        message.error("Không thể thanh toán qua ví.");
+      }
+    } catch (error) {
+      console.error("Lỗi khi thử thanh toán lại:", error);
+      message.error("Không thể thử thanh toán lại.");
     }
   };
 
@@ -485,7 +520,11 @@ export const ActivityCard = ({ data, onDelete }) => {
 
           // Remove deleted job from local state
           setActivities((prevActivities) =>
-            prevActivities.filter((activity) => activity.jobId !== jobId)
+            prevActivities.map((activity) =>
+              activity.jobId === jobId
+                ? { ...activity, status: "CANCELLED" }
+                : activity
+            )
           );
 
           message.success("Huỷ việc thành công");
@@ -892,7 +931,9 @@ export const ActivityCard = ({ data, onDelete }) => {
                       <Button
                         type="primary"
                         className={styles.statusButton}
-                        onClick={() => handleRetryPayment(activity.jobId)}
+                        onClick={() =>
+                          handleRetryPaymentWallet(activity.jobId, customerId)
+                        }
                         disabled={isProcessing}
                       >
                         Thanh toán qua Ví
