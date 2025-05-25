@@ -146,7 +146,7 @@ export const JobDetailModal = ({
       case "OPEN":
         return "Đang chờ người nhận";
       case "PAID":
-        return "Đang chờ thanh toán qua VNPay";
+        return "Đang chờ thanh toán hoàn tất";
       case "PENDING_APPROVAL":
         return "Chờ phê duyệt";
       case "IN_PROGRESS":

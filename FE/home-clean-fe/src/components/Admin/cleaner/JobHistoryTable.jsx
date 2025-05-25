@@ -50,7 +50,7 @@ const JobHistoryTable = ({
       case "OPEN":
         return "Đang chờ người nhận";
       case "PAID":
-        return "Đang chờ thanh toán qua VNPay";
+        return "Đang chờ thanh toán hoàn tất";
       case "PENDING_APPROVAL":
         return "Chờ phê duyệt";
       case "IN_PROGRESS":
@@ -121,7 +121,7 @@ const JobHistoryTable = ({
         },
         filters: [
           { text: "Đang chờ người nhận", value: "OPEN" },
-          { text: "Đang chờ thanh toán qua VNPay", value: "PAID" },
+          { text: "Đang chờ thanh toán hoàn tất", value: "PAID" },
           { text: "Chờ phê duyệt", value: "PENDING_APPROVAL" },
           { text: "Người nhận việc đang tới", value: "IN_PROGRESS" },
           { text: "Người nhận việc đã hoàn thành", value: "COMPLETED" },
