@@ -528,7 +528,7 @@ public class CleanerJobService {
 					app.setStatus("Rejected");
 					jobApplicationRepository.save(app);
 					NotificationDTO cleanerNotification = new NotificationDTO();
-					cleanerNotification.setUserId(job.getCustomer().getId());
+					cleanerNotification.setUserId(job.getCleaner().getId());
 					cleanerNotification.setMessage("[Mã công việc: "+ job.getOrderCode() + "] Chủ nhà: " + customer.getFull_name() + " đã từ chối yêu cầu nhận việc ");
 					cleanerNotification.setType("AUTO_MESSAGE");
 					cleanerNotification.setTimestamp(LocalDate.now(zoneId));
@@ -548,7 +548,7 @@ public class CleanerJobService {
 			notificationService.processNotification(customerNotification, "CUSTOMER", Math.toIntExact(customerId));
 
 			NotificationDTO cleanerNotification = new NotificationDTO();
-			cleanerNotification.setUserId(job.getCustomer().getId());
+			cleanerNotification.setUserId(job.getCleaner().getId());
 			cleanerNotification.setMessage("[Mã công việc: "+ job.getOrderCode() +"] Chủ nhà: " + customer.getFull_name() + " đã đồng ý yêu cầu nhận việc ");
 			cleanerNotification.setType("AUTO_MESSAGE");
 			cleanerNotification.setTimestamp(LocalDate.now(zoneId));

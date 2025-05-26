@@ -28,13 +28,15 @@ public class AdminController {
     private final DashboardService dashboardService;
     private final AdminTransactionHistoryService adminTransactionHistoryService;
     private final JobService jobService;
+    private final ProfitService profitService;
 
-    public AdminController(AdminAuthService adminAuthService, WithdrawalRequestService withdrawalRequestService, DashboardService dashboardService, AdminTransactionHistoryService adminTransactionHistoryService, JobService jobService) {
+    public AdminController(AdminAuthService adminAuthService, WithdrawalRequestService withdrawalRequestService, DashboardService dashboardService, AdminTransactionHistoryService adminTransactionHistoryService, JobService jobService, ProfitService profitService) {
         this.adminAuthService = adminAuthService;
         this.withdrawalRequestService = withdrawalRequestService;
         this.dashboardService = dashboardService;
         this.adminTransactionHistoryService = adminTransactionHistoryService;
         this.jobService = jobService;
+        this.profitService = profitService;
     }
 
     @PostMapping(value = "/login", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -148,6 +150,13 @@ public class AdminController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/get-profit")
+    public ResponseEntity<Map<String, Object>> getListProfit(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        return profitService.getProfile(page, size);
+    }
 
 
 }
