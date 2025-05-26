@@ -57,7 +57,7 @@ public class ScheduleService {
         System.out.println("Check Job and Delete");
 
         ZoneId zoneId = ZoneId.of("Asia/Ho_Chi_Minh");
-        LocalDateTime now = LocalDateTime.now(zoneId).minusMinutes(2);
+        LocalDateTime now = LocalDateTime.now(zoneId).plusMinutes(30);
         System.out.println("Check Job and Delete at: " + now);
 
         // Lấy tất cả job OPEN
@@ -109,7 +109,7 @@ public class ScheduleService {
 //                    );
                     NotificationDTO notification = new NotificationDTO();
                     notification.setUserId(job.getCustomer().getId());
-                    notification.setMessage("Mã công việc: ["+ job.getOrderCode() +"] Công việc bị hủy vì không có người nhận đúng hạn. Tiền sẽ được hoàn vào ví của bạn.");
+                    notification.setMessage("Mã công việc: ["+ job.getOrderCode()+"] Công việc bị hủy vì không có người nhận đúng hạn. Tiền sẽ được hoàn vào ví của bạn.");
                     notification.setType("AUTO_MESSAGE");
                     notification.setTimestamp(LocalDate.now(zoneId));
                     notification.setRead(false); // ✅ set read = false
