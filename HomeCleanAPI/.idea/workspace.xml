@@ -4,7 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="6dd32c25-99a1-4da0-a769-374f6713cd9c" name="Changes" comment="Hot fix JWT author" />
+    <list default="true" id="6dd32c25-99a1-4da0-a769-374f6713cd9c" name="Changes" comment="Hot fix JWT author">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/services/CleanerJobService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/services/CleanerJobService.java" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -65,7 +68,7 @@
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.git.unshallow": "true",
     "Spring Boot.HomeCleanApiApplication.executor": "Run",
-    "git-widget-placeholder": "#190 on manhtt/ver3-fixbug",
+    "git-widget-placeholder": "manhtt/ver3-fixbug",
     "kotlin-language-version-configured": "true",
     "last_opened_file_path": "D:/FPT",
     "node.js.detected.package.eslint": "true",
@@ -147,7 +150,8 @@
       <workItem from="1747837137168" duration="1911000" />
       <workItem from="1747877978844" duration="12394000" />
       <workItem from="1748143579310" duration="11774000" />
-      <workItem from="1748171442437" duration="6423000" />
+      <workItem from="1748171442437" duration="9676000" />
+      <workItem from="1748230889556" duration="1931000" />
     </task>
     <task id="LOCAL-00001" summary="update application">
       <option name="closed" value="true" />
