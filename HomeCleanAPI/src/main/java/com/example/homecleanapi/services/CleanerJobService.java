@@ -801,11 +801,18 @@ public class CleanerJobService {
 		}
 
 		// Sắp xếp danh sách theo updated_at giảm dần
-		appliedJobs.sort((job1, job2) -> {
-			Date updatedAt1 = (Date) job1.get("updatedAt");
-			Date updatedAt2 = (Date) job2.get("updatedAt");
-			return updatedAt2.compareTo(updatedAt1);
-		});
+//		appliedJobs.sort((job1, job2) -> {
+//			Date updatedAt1 = (Date) job1.get("updatedAt");
+//			Date updatedAt2 = (Date) job2.get("updatedAt");
+//			return updatedAt2.compareTo(updatedAt1);
+//		});
+
+		appliedJobs.sort(
+				Comparator.comparing(
+						job -> (Date) job.get("updatedAt"),
+						Comparator.nullsLast(Comparator.reverseOrder())
+				)
+		);
 
 		return appliedJobs;
 	}
