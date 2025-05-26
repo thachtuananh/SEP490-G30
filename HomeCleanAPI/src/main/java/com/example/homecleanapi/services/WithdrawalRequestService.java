@@ -265,7 +265,7 @@ public class WithdrawalRequestService {
 
             // Lưu vào bảng AdminTransactionHistory
             adminTransactionHistoryRepository.save(transactionHistory);
-            if (withdrawalRequest.getCleaner() != null) {
+            if (withdrawalRequest.getCustomer() != null) {
                 NotificationDTO notification = new NotificationDTO();
                 notification.setUserId(withdrawalRequest.getCustomer().getId());
                 notification.setMessage("Yêu cầu rút tiền đã được chấp nhận.");
