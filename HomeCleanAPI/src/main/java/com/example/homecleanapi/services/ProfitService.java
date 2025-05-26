@@ -24,7 +24,7 @@ public class ProfitService {
     public ResponseEntity<Map<String, Object>> getProfile(int page, int size) {
         Map<String, Object> response = new HashMap<>();
         try {
-            Pageable pageable = PageRequest.of(page, size, Sort.by("execution_date").descending());
+            Pageable pageable = PageRequest.of(page, size, Sort.by("executionDate").descending());
             Page<Profit> profitPage = profitRepository.findAll(pageable);
 
             response.put("profits", profitPage.getContent());
