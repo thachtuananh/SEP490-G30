@@ -794,6 +794,14 @@ public class CleanerJobService {
 			}
 		}
 
+		appliedJobs.sort(
+				Comparator.comparing(
+						job -> (Date) job.get("updatedAt"),
+						Comparator.nullsLast(Comparator.reverseOrder())
+				)
+		);
+
+
 		return appliedJobs;
 	}
 
