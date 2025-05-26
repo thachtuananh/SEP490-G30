@@ -748,11 +748,11 @@ public class JobService {
         // Tính toán số tiền sẽ trả cho cleaner (85% tổng giá trị đơn hàng)
         double totalPrice = job.getTotalPrice();
         double cleanerPayment = totalPrice * 0.85;
-        Optional<JobServiceDetail> jobServiceDetail = jobDetailsRepository.findByJob_id(jobId);
-        if (jobServiceDetail.isEmpty()) {
-            response.put("message", "Cleaner payment is incorrect");
-            return response;
-        }
+//        Optional<JobServiceDetail> jobServiceDetail = jobDetailsRepository.findByJob_id(jobId);
+//        if (jobServiceDetail.isEmpty()) {
+//            response.put("message", "Cleaner payment is incorrect");
+//            return response;
+//        }
 //        List<JobServiceDetail> jobServiceDetails = jobDetailsRepository.findByJob_id(jobId);
 //        String serviceNames = jobServiceDetails.size() == 1
 //                ? jobServiceDetails.get(0).getService().getName()
@@ -784,7 +784,7 @@ public class JobService {
         // lưu vào bảng profit
         Profit profit = new Profit();
         profit.setTransactionCode(job.getOrderCode());
-        profit.setServiceType(jobServiceDetail.get().getService().getName());
+//        profit.setServiceType(jobServiceDetail.get().getService().getName());
         profit.setExecutionDate(LocalDate.now());
         profit.setCustomerName(job.getCustomer().getFull_name());
         profit.setCleanerName(cleaner.getName());
