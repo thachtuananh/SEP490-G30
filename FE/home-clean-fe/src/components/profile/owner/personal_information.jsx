@@ -167,7 +167,7 @@ export const PersonaInformation = () => {
             ...user,
             customerName: customerName,
             customerEmail: customerEmail,
-            profile_image: profileImageBase64 || user?.profile_image,
+            customerImg: profileImageBase64 || user?.customerImg,
           },
         });
         message.success("Thông tin cá nhân đã được cập nhật!");

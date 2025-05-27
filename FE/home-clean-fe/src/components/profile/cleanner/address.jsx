@@ -103,11 +103,16 @@ export const Address = () => {
       const city = addressData.find((city) => city.code === selectedCity);
       if (city) {
         setDistricts(city.districts);
-        if (!selectedDistrict) {
-          setSelectedWard(null);
-          setWards([]);
-        }
+        // Reset district and ward when city changes
+        setSelectedDistrict(null);
+        setSelectedWard(null);
+        setWards([]);
       }
+    } else {
+      setDistricts([]);
+      setSelectedDistrict(null);
+      setSelectedWard(null);
+      setWards([]);
     }
   }, [selectedCity, addressData]);
 
@@ -120,8 +125,15 @@ export const Address = () => {
         );
         if (district) {
           setWards(district.wards);
+        } else {
+          setWards([]);
         }
       }
+      // Always reset ward when district changes
+      setSelectedWard(null);
+    } else {
+      setWards([]);
+      setSelectedWard(null);
     }
   }, [selectedDistrict, selectedCity, addressData]);
 
@@ -130,6 +142,8 @@ export const Address = () => {
     setSelectedDistrict(null);
     setSelectedWard(null);
     setStreetAddress("");
+    setDistricts([]);
+    setWards([]);
   };
 
   const showAddModal = () => {
@@ -157,9 +171,9 @@ export const Address = () => {
     };
   };
 
-  const showUpdateModal = (addressId, currentAddress) => {
+  const showUpdateModal = async (addressId, currentAddress) => {
     setCurrentAddressId(addressId);
-    setIsUpdateModalVisible(true);
+    resetAddressForm(); // Reset form first
     try {
       const {
         cityName,
@@ -167,29 +181,45 @@ export const Address = () => {
         wardName,
         streetAddress: parsedStreet,
       } = parseAddress(currentAddress);
+
       setStreetAddress(parsedStreet || currentAddress);
+
+      // Find and set city
       const cityObj = addressData.find((city) =>
         city.name.toLowerCase().includes(cityName?.toLowerCase())
       );
+
       if (cityObj) {
         setSelectedCity(cityObj.code);
-        const districtObj = cityObj.districts.find((district) =>
-          district.name.toLowerCase().includes(districtName?.toLowerCase())
-        );
-        if (districtObj) {
-          setSelectedDistrict(districtObj.code);
-          const wardObj = districtObj.wards.find((ward) =>
-            ward.name.toLowerCase().includes(wardName?.toLowerCase())
+
+        // Wait for districts to be set, then find and set district
+        setTimeout(() => {
+          const districtObj = cityObj.districts.find((district) =>
+            district.name.toLowerCase().includes(districtName?.toLowerCase())
           );
-          if (wardObj) {
-            setSelectedWard(wardObj.code);
+
+          if (districtObj) {
+            setSelectedDistrict(districtObj.code);
+
+            // Wait for wards to be set, then find and set ward
+            setTimeout(() => {
+              const wardObj = districtObj.wards.find((ward) =>
+                ward.name.toLowerCase().includes(wardName?.toLowerCase())
+              );
+
+              if (wardObj) {
+                setSelectedWard(wardObj.code);
+              }
+            }, 100);
           }
-        }
+        }, 100);
       }
     } catch (error) {
       console.error("Error parsing address:", error);
       setStreetAddress(currentAddress);
     }
+
+    setIsUpdateModalVisible(true);
   };
 
   const handleAddCancel = () => {
@@ -201,6 +231,21 @@ export const Address = () => {
     setIsUpdateModalVisible(false);
     resetAddressForm();
     setCurrentAddressId(null);
+  };
+
+  // Custom handlers for select changes to ensure proper reset behavior
+  const handleCityChange = (value) => {
+    setSelectedCity(value);
+    // Districts and wards will be reset by useEffect
+  };
+
+  const handleDistrictChange = (value) => {
+    setSelectedDistrict(value);
+    // Ward will be reset by useEffect
+  };
+
+  const handleWardChange = (value) => {
+    setSelectedWard(value);
   };
 
   const formatFullAddress = () => {
@@ -385,7 +430,7 @@ export const Address = () => {
           placeholder="Chọn Tỉnh/Thành phố"
           style={{ width: "100%", marginTop: 8 }}
           value={selectedCity}
-          onChange={(value) => setSelectedCity(value)}
+          onChange={handleCityChange}
         >
           {addressData.map((city) => (
             <Option key={city.code} value={city.code}>
@@ -400,7 +445,7 @@ export const Address = () => {
           placeholder="Chọn Quận/Huyện"
           style={{ width: "100%", marginTop: 8 }}
           value={selectedDistrict}
-          onChange={(value) => setSelectedDistrict(value)}
+          onChange={handleDistrictChange}
           disabled={!selectedCity}
         >
           {districts.map((district) => (
@@ -416,7 +461,7 @@ export const Address = () => {
           placeholder="Chọn Phường/Xã"
           style={{ width: "100%", marginTop: 8 }}
           value={selectedWard}
-          onChange={(value) => setSelectedWard(value)}
+          onChange={handleWardChange}
           disabled={!selectedDistrict}
         >
           {wards.map((ward) => (

@@ -24,7 +24,6 @@ const Notification = ({
   const [error, setError] = useState(null);
   const [clearLoading, setClearLoading] = useState(false);
   const [markReadLoading, setMarkReadLoading] = useState(false);
-  const role = sessionStorage.getItem("role");
 
   // Fetch notifications only if propNotifications is not provided
   useEffect(() => {
@@ -88,11 +87,13 @@ const Notification = ({
       const { role, id } = decodedToken;
 
       await markAllNotificationsAsRead(role, id);
+
+      // Update notifications state to mark all as read
       const updatedNotifications = notifications.map((notification) => ({
         ...notification,
-        isRead: true,
         read: true,
       }));
+
       setNotifications(updatedNotifications);
       if (setParentNotifications) {
         setParentNotifications(updatedNotifications);
@@ -122,10 +123,7 @@ const Notification = ({
 
   // Check if a notification is unread
   const isNotificationUnread = (notification) => {
-    return (
-      (notification.isRead === false || notification.isRead === undefined) &&
-      (notification.read === false || notification.read === undefined)
-    );
+    return notification.read === false;
   };
 
   // Check if there are any unread notifications
@@ -145,7 +143,7 @@ const Notification = ({
             Thông báo
           </Title>
           <div style={{ display: "flex", gap: "8px" }}>
-            {/* {hasUnreadNotifications && (
+            {hasUnreadNotifications && (
               <CheckOutlined
                 onClick={handleMarkAllAsRead}
                 style={{
@@ -155,7 +153,7 @@ const Notification = ({
                 }}
                 title="Đánh dấu tất cả đã đọc"
               />
-            )} */}
+            )}
             {notifications.length > 0 && (
               <DeleteOutlined
                 onClick={handleClearAllNotifications}
