@@ -30,6 +30,190 @@ const { Title } = Typography;
 const TransactionHistory = ({ visible, onClose }) => {
   const [loading, setLoading] = useState(false);
   const [transactions, setTransactions] = useState([]);
+
+  const fetchTransactionHistory = async () => {
+    try {
+      setLoading(true);
+      const token = sessionStorage.getItem("token");
+      const headers = {
+        accept: "application/json",
+        Authorization: `Bearer ${token}`,
+      };
+
+      const response = await fetch(`${BASE_URL}/admin/transactionHistory`, {
+        headers,
+      });
+      const result = await response.json();
+
+      if (result.status === "OK") {
+        setTransactions(result.data);
+      } else {
+        message.error("Không thể tải lịch sử giao dịch");
+      }
+    } catch (error) {
+      console.error("Error fetching transaction history:", error);
+      message.error("Đã xảy ra lỗi khi tải lịch sử giao dịch");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (visible) {
+      fetchTransactionHistory();
+    }
+  }, [visible]);
+
+  const columns = [
+    // {
+    //   title: "ID",
+    //   dataIndex: "id",
+    //   key: "id",
+    //   width: 60,
+    // },
+    {
+      title: "Loại giao dịch",
+      dataIndex: "transactionType",
+      key: "transactionType",
+      render: (type) => {
+        let color = "blue";
+        let text = type;
+
+        if (type === "WITHDREW") {
+          color = "red";
+          text = "Rút tiền";
+        } else if (type === "DEPOSIT") {
+          color = "green";
+          text = "Nạp tiền";
+        } else if (type === "BOOKED") {
+          color = "green";
+          text = "Đặt dịch vụ";
+        }
+
+        return <Tag color={color}>{text}</Tag>;
+      },
+    },
+    {
+      title: "Số tiền (VNĐ)",
+      dataIndex: "amount",
+      key: "amount",
+      render: (amount, record) => {
+        const isNegative = record.transactionType === "WITHDREW";
+        return (
+          <span
+            style={{ color: isNegative ? "red" : "green", fontWeight: "bold" }}
+          >
+            {isNegative ? "-" : "+"}
+            {amount.toLocaleString()}
+          </span>
+        );
+      },
+    },
+    {
+      title: "Ngày giao dịch",
+      dataIndex: "transactionDate",
+      key: "transactionDate",
+      render: (date) => {
+        if (date) {
+          const formattedDate = new Date(date).toLocaleString("vi-VN", {
+            hour: "2-digit",
+            minute: "2-digit",
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric",
+          });
+
+          return formattedDate;
+        }
+        return " ";
+      },
+    },
+    // {
+    //   title: "Khách hàng ID",
+    //   dataIndex: "customerId",
+    //   key: "customerId",
+    //   render: (id) => id || "-",
+    // },
+    // {
+    //   title: "Người dọn dẹp ID",
+    //   dataIndex: "cleanerId",
+    //   key: "cleanerId",
+    //   render: (id) => id || "-",
+    // },
+    {
+      title: "Phương thức",
+      dataIndex: "paymentMethod",
+      key: "paymentMethod",
+      render: (method) => {
+        let text = method;
+
+        if (method === "Bank Transfer") {
+          text = "Chuyển khoản";
+        } else if (method === "Wallet") {
+          text = "Hoàn tiền vào ví";
+        } else if (method === "VNPay") {
+          text = "VNPay";
+        }
+
+        return text;
+      },
+    },
+    {
+      title: "Trạng thái",
+      dataIndex: "status",
+      key: "status",
+      render: (status) => {
+        let color = "default";
+        if (status === "SUCCESS") color = "green";
+        else if (status === "PENDING") color = "orange";
+        else if (status === "FAILED") color = "red";
+
+        return <Tag color={color}>{status}</Tag>;
+      },
+    },
+    {
+      title: "Mô tả",
+      dataIndex: "description",
+      key: "description",
+    },
+  ];
+
+  return (
+    <Modal
+      title="Lịch sử giao dịch"
+      open={visible}
+      onCancel={onClose}
+      width={1000}
+      footer={[
+        <Button key="close" onClick={onClose}>
+          Đóng
+        </Button>,
+        <Button
+          key="refresh"
+          type="primary"
+          onClick={fetchTransactionHistory}
+          icon={<HistoryOutlined />}
+        >
+          Làm mới
+        </Button>,
+      ]}
+    >
+      <Spin spinning={loading}>
+        <Table
+          columns={columns}
+          dataSource={transactions}
+          rowKey="id"
+          scroll={{ x: 800 }}
+          pagination={{ pageSize: 6 }}
+        />
+      </Spin>
+    </Modal>
+  );
+};
+
+const RevenueHistory = ({ visible, onClose }) => {
+  const [loading, setLoading] = useState(false);
+  const [transactions, setTransactions] = useState([]);
   const [page, setPage] = useState(0); // Page bắt đầu từ 0 theo API
   const [size, setSize] = useState(10); // Kích thước trang
   const [totalItems, setTotalItems] = useState(0); // Tổng số mục
@@ -180,7 +364,7 @@ const TransactionHistory = ({ visible, onClose }) => {
       title="Lịch sử giao dịch"
       open={visible}
       onCancel={onClose}
-      width={"80%"} // Tăng width để phù hợp với nhiều cột hơn
+      width={1000}
       footer={[
         <Button key="close" onClick={onClose}>
           Đóng
@@ -201,7 +385,7 @@ const TransactionHistory = ({ visible, onClose }) => {
           columns={columns}
           dataSource={transactions}
           rowKey="key"
-          scroll={{ x: 1200 }}
+          scroll={{ x: 800 }}
           size="large" // Sử dụng size small để tiết kiệm không gian
           pagination={{
             pageSize: size,
@@ -211,13 +395,13 @@ const TransactionHistory = ({ visible, onClose }) => {
             // showQuickJumper: true,
             // showTotal: (total, range) =>
             //   `${range[0]}-${range[1]} của ${total} mục`,
-            // onChange: (newPage, newPageSize) => {
-            //   setPage(newPage - 1); // Chuyển về index 0-based cho API
-            //   if (newPageSize !== size) {
-            //     setSize(newPageSize);
-            //     setPage(0); // Reset về trang đầu khi thay đổi page size
-            //   }
-            // },
+            onChange: (newPage, newPageSize) => {
+              setPage(newPage - 1); // Chuyển về index 0-based cho API
+              if (newPageSize !== size) {
+                setSize(newPageSize);
+                setPage(0); // Reset về trang đầu khi thay đổi page size
+              }
+            },
           }}
         />
       </Spin>
@@ -238,6 +422,7 @@ const MainDashboard = () => {
 
   // State for transaction history modal
   const [transactionModalVisible, setTransactionModalVisible] = useState(false);
+  const [revenueModalVisible, setRevenueModalVisible] = useState(false);
 
   // Determine responsive settings based on window width
   const isMobile = windowWidth < 768;
@@ -345,6 +530,9 @@ const MainDashboard = () => {
     setTransactionModalVisible(true);
   };
 
+  const showRevenueHistory = () => {
+    setRevenueModalVisible(true);
+  };
   return (
     <Layout style={{ minHeight: "100vh" }}>
       <AppSidebar />
@@ -360,20 +548,36 @@ const MainDashboard = () => {
 
               <Card>
                 <Row
-                  align="middle"
-                  justify="space-between"
                   style={{ marginBottom: 24 }}
+                  gutter={[16, 16]}
+                  justify="space-between" // Ensure content is spaced between
+                  align="middle"
                 >
-                  <Col>
+                  <Col xs={24} xl={18}>
                     <Title level={3}>Tổng quan bảng điều khiển</Title>
                   </Col>
-                  <Col>
+                  <Col
+                    xs={24}
+                    xl={6}
+                    style={{
+                      display: "flex",
+                      justifyContent: "flex-end",
+                      gap: "16px",
+                    }}
+                  >
                     <Button
                       type="primary"
                       icon={<HistoryOutlined />}
                       onClick={showTransactionHistory}
                     >
                       Lịch sử giao dịch
+                    </Button>
+                    <Button
+                      type="primary"
+                      icon={<HistoryOutlined />}
+                      onClick={showRevenueHistory}
+                    >
+                      Lợi nhuận
                     </Button>
                   </Col>
                 </Row>
@@ -410,6 +614,11 @@ const MainDashboard = () => {
       <TransactionHistory
         visible={transactionModalVisible}
         onClose={() => setTransactionModalVisible(false)}
+      />
+
+      <RevenueHistory
+        visible={revenueModalVisible}
+        onClose={() => setRevenueModalVisible(false)}
       />
     </Layout>
   );

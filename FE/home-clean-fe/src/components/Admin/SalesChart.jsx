@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { Card, Button, Dropdown, Spin, Typography, Empty, Flex } from "antd";
+import { Card, Button, Dropdown, Spin, Typography, Empty } from "antd";
 import { AreaChartOutlined, CaretDownOutlined } from "@ant-design/icons";
 import {
-  BarChart,
-  Bar,
+  AreaChart,
+  Area,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -13,14 +13,16 @@ import {
 } from "recharts";
 import { BASE_URL } from "../../utils/config";
 
+const { Text } = Typography;
+
 const SalesChart = ({ revenueData, loading: parentLoading }) => {
   const [loading, setLoading] = useState(false);
   const [chartData, setChartData] = useState(null);
-  const [selectedView, setSelectedView] = useState("monthly"); // "overview" or "monthly"
+  const [selectedView, setSelectedView] = useState("monthly");
 
-  // Format number with commas
+  // Format number with commas and VNĐ suffix
   const formatNumber = (num) => {
-    return num ? num.toLocaleString() : "0";
+    return num ? `${num.toLocaleString("vi-VN")} VNĐ` : "0 VNĐ";
   };
 
   useEffect(() => {
@@ -45,7 +47,6 @@ const SalesChart = ({ revenueData, loading: parentLoading }) => {
       const result = await response.json();
 
       if (result) {
-        // Transform data for chart visualization
         const transformedData = transformRevenueData(result);
         setChartData(transformedData);
       } else {
@@ -61,13 +62,9 @@ const SalesChart = ({ revenueData, loading: parentLoading }) => {
   // Transform the API response data into chart-friendly format
   const transformRevenueData = (data) => {
     const transformedData = [];
-    // Sample data: { "2025": { "Tháng 3": 33000.0, "Tháng 4": 16500.0 }, "2024": { "Tháng 4": 16500.0 } }
-
     if (!data) return [];
 
-    // Sort years in ascending order
     const years = Object.keys(data).sort();
-
     const allMonths = new Set();
     years.forEach((year) => {
       Object.keys(data[year]).forEach((month) => {
@@ -75,22 +72,18 @@ const SalesChart = ({ revenueData, loading: parentLoading }) => {
       });
     });
 
-    // Sort months chronologically
     const sortedMonths = Array.from(allMonths).sort((a, b) => {
       const monthA = parseInt(a.replace("Tháng ", ""));
       const monthB = parseInt(b.replace("Tháng ", ""));
       return monthA - monthB;
     });
 
-    // Create data points for chart
     sortedMonths.forEach((month) => {
       const dataPoint = { name: month };
-
       years.forEach((year) => {
         const value = data[year]?.[month] || 0;
         dataPoint[`${year}`] = value;
       });
-
       transformedData.push(dataPoint);
     });
 
@@ -110,8 +103,63 @@ const SalesChart = ({ revenueData, loading: parentLoading }) => {
     },
   ];
 
-  // Chart colors
-  const chartColors = ["#1890ff", "#13c2c2", "#52c41a", "#faad14"];
+  // Chart colors (vibrant, semi-transparent for stacking)
+  const chartColors = [
+    "rgba(24, 144, 255, 0.6)", // Blue
+    "rgba(19, 194, 194, 0.6)", // Cyan
+    "rgba(82, 196, 26, 0.6)", // Green
+    "rgba(250, 140, 22, 0.6)", // Orange
+  ];
+  const strokeColors = ["#1890ff", "#13c2c2", "#52c41a", "#fa8c16"]; // Solid colors for lines
+
+  // Custom Tooltip for better readability
+  const CustomTooltip = ({ active, payload, label }) => {
+    if (active && payload && payload.length) {
+      return (
+        <div
+          style={{
+            backgroundColor: "#fff",
+            border: "1px solid #e8e8e8",
+            padding: "12px",
+            borderRadius: "6px",
+            boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
+          }}
+        >
+          <Text strong style={{ fontSize: 14 }}>
+            {label}
+          </Text>
+          {payload.map((entry, index) => (
+            <div
+              key={index}
+              style={{
+                color: strokeColors[index % strokeColors.length],
+                marginTop: 6,
+              }}
+            >
+              <Text>
+                {entry.name}: {formatNumber(entry.value)}
+              </Text>
+            </div>
+          ))}
+          <div
+            style={{
+              marginTop: 8,
+              borderTop: "1px solid #e8e8e8",
+              paddingTop: 6,
+            }}
+          >
+            <Text strong>
+              Tổng:{" "}
+              {formatNumber(
+                payload.reduce((sum, entry) => sum + entry.value, 0)
+              )}
+            </Text>
+          </div>
+        </div>
+      );
+    }
+    return null;
+  };
 
   const renderContent = () => {
     if (parentLoading || loading) {
@@ -131,33 +179,32 @@ const SalesChart = ({ revenueData, loading: parentLoading }) => {
 
     if (selectedView === "overview") {
       return (
-        <div style={{ height: 300, display: "flex", justifyContent: "center" }}>
-          <div
+        <div
+          style={{
+            height: 300,
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            flexDirection: "column",
+            gap: "12px",
+            // background: "linear-gradient(135deg, #e6f7ff 0%, #f0f5ff 100%)",
+            // borderRadius: 8,
+            // boxShadow: "inset 0 2px 4px rgba(0, 0, 0, 0.05)",
+          }}
+        >
+          <Text strong style={{ fontSize: 36 }}>
+            {revenueData ? formatNumber(revenueData.totalRevenue) : "0 VNĐ"}
+          </Text>
+          <AreaChartOutlined
             style={{
-              fontSize: 36,
-              textAlign: "center",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              flexDirection: "column",
-              gap: "10px",
+              fontSize: 80,
+              color: "#1890ff",
+              opacity: 0.3,
             }}
-          >
-            {revenueData ? formatNumber(revenueData.totalRevenue) : "0"}đ
-            <AreaChartOutlined
-              style={{
-                fontSize: 80,
-                color: "#e6f7ff",
-                display: "block",
-                margin: "0 auto",
-              }}
-            />
-            <div style={{ textAlign: "center", fontSize: 16 }}>
-              {revenueData
-                ? "Báo cáo tổng lợi nhuận"
-                : "Biểu đồ báo cáo tổng lợi nhuận"}
-            </div>
-          </div>
+          />
+          <Text style={{ fontSize: 16 }}>
+            {revenueData ? "Tổng lợi nhuận" : "Báo cáo tổng lợi nhuận"}
+          </Text>
         </div>
       );
     }
@@ -166,28 +213,47 @@ const SalesChart = ({ revenueData, loading: parentLoading }) => {
       return (
         <div style={{ width: "100%", height: 300 }}>
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart
+            <AreaChart
               data={chartData}
-              margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+              margin={{ top: 20, right: 30, left: 20, bottom: 10 }}
             >
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" />
-              <YAxis tickFormatter={(value) => `${value.toLocaleString()}đ`} />
-              <Tooltip
-                formatter={(value) => [`${value.toLocaleString()} VNĐ`, ``]}
+              <CartesianGrid strokeDasharray="3 3" stroke="#e8e8e8" />
+              <XAxis
+                dataKey="name"
+                tick={{ fontSize: 12, fill: "#595959" }}
+                axisLine={{ stroke: "#d9d9d9" }}
               />
-              <Legend />
+              <YAxis
+                tickFormatter={(value) => `${(value / 1000000).toFixed(1)}M`}
+                tick={{ fontSize: 12, fill: "#595959" }}
+                axisLine={{ stroke: "#d9d9d9" }}
+              />
+              <Tooltip content={<CustomTooltip />} />
+              <Legend
+                wrapperStyle={{
+                  paddingTop: 12,
+                  fontSize: 12,
+                  color: "#595959",
+                }}
+              />
               {Object.keys(chartData[0] || {})
                 .filter((key) => key !== "name")
                 .map((year, index) => (
-                  <Bar
+                  <Area
                     key={year}
+                    type="monotone"
                     dataKey={year}
                     name={`Năm ${year}`}
+                    stackId="1" // Enable stacking
                     fill={chartColors[index % chartColors.length]}
+                    stroke={strokeColors[index % strokeColors.length]}
+                    strokeWidth={2}
+                    fillOpacity={0.6}
+                    animationDuration={1200}
+                    activeDot={{ r: 6 }}
                   />
                 ))}
-            </BarChart>
+            </AreaChart>
           </ResponsiveContainer>
         </div>
       );
@@ -209,16 +275,33 @@ const SalesChart = ({ revenueData, loading: parentLoading }) => {
 
   return (
     <Card
-      title="Chi tiết lợi nhuận"
+      title={
+        <Text strong style={{ fontSize: 18 }}>
+          Chi tiết lợi nhuận
+        </Text>
+      }
       extra={
         <Dropdown menu={{ items: viewOptions }}>
-          <Button>
+          <Button
+            style={{
+              borderRadius: 6,
+              // background: "#f5f5f5",
+              // borderColor: "#d9d9d9",
+              fontWeight: 500,
+            }}
+          >
             {selectedView === "overview" ? "Tổng quan" : "Theo tháng"}
             <CaretDownOutlined />
           </Button>
         </Dropdown>
       }
-      style={{ marginBottom: 24 }}
+      style={{
+        marginBottom: 24,
+        borderRadius: 10,
+        boxShadow: "0 6px 16px rgba(0, 0, 0, 0.08)",
+        background: "#fff",
+      }}
+      bodyStyle={{ padding: 24 }}
     >
       {renderContent()}
     </Card>

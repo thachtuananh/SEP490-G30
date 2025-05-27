@@ -216,24 +216,27 @@ const ServiceDetailsCombo = () => {
   };
 
   const handleServiceSelect = (serviceId) => {
-    console.log("Selected serviceId:", serviceId);
     setSelectedServiceId(serviceId);
     setSelectedServiceDetailId(null);
     if (serviceId) {
       const serviceData = allServices.find((s) => s.serviceId === serviceId);
       if (serviceData?.serviceDetails?.length > 0) {
         const defaultDetail = serviceData.serviceDetails[0];
-        setSelectedServiceDetailId(defaultDetail.serviceDetailId);
+        setSelectedServiceDetailId(defaultDetail.serviceDetailId); // Set default detail
+        form.setFieldsValue({ area: defaultDetail.serviceDetailId }); // Update form field
         setServicePrices((prev) => ({
           ...prev,
           [serviceId]: defaultDetail.price,
         }));
       } else {
+        form.setFieldsValue({ area: null }); // Clear area field if no details
         setServicePrices((prev) => ({
           ...prev,
           [serviceId]: serviceData?.basePrice || 120000,
         }));
       }
+    } else {
+      form.setFieldsValue({ area: null }); // Clear area field if no service selected
     }
   };
 
@@ -255,7 +258,6 @@ const ServiceDetailsCombo = () => {
           ...updated[existingServiceIndex],
           quantity: updated[existingServiceIndex].quantity + 1,
         };
-
         return updated;
       } else {
         // Add new service
@@ -465,13 +467,17 @@ const ServiceDetailsCombo = () => {
       render: (_, __, index) => (
         <div>
           <Button
-            type="link"
+            type="primary"
             onClick={() => handleDuplicateService(index)}
             style={{ marginRight: 8 }}
           >
             Thêm
           </Button>
-          <Button type="link" danger onClick={() => handleRemoveService(index)}>
+          <Button
+            type="primary"
+            danger
+            onClick={() => handleRemoveService(index)}
+          >
             Xóa
           </Button>
         </div>
@@ -495,51 +501,7 @@ const ServiceDetailsCombo = () => {
           layout="vertical"
           initialValues={{ location: selectedAddress?.address || "" }}
         >
-          {/* <Form.Item
-            name="location"
-            label="Chọn địa chỉ"
-            rules={[{ required: true, message: "Vui lòng chọn địa chỉ!" }]}
-          >
-            <div className={styles.locationSelectorContainer}>
-              <div className={styles.locationDisplay}>
-                {form.getFieldValue("location") || "Chưa chọn địa chỉ"}
-              </div>
-              <Button
-                type="primary"
-                onClick={showLocationModal}
-                className={styles.locationButton}
-              >
-                <div className={styles.buttonContent}>
-                  <svg
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M12 13.5C13.933 13.5 15.5 11.933 15.5 10C15.5 8.067 13.933 6.5 12 6.5C10.067 6.5 8.5 8.067 8.5 10C8.5 11.933 10.067 13.5 12 13.5Z"
-                      stroke="currentColor"
-                      strokeWidth="1.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                    <path
-                      d="M12 21C16 17 20 13.4183 20 10C20 6.13401 16.4183 3 12 3C7.58172 3 4 6.13401 4 10C4 13.4183 8 17 12 21Z"
-                      stroke="currentColor"
-                      strokeWidth="1.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                  <span>Chọn địa chỉ</span>
-                </div>
-              </Button>
-            </div>
-          </Form.Item> */}
-
           <div>
-            {/* <div className={styles.serviceHeaderText}>Dịch vụ chọn</div> */}
             <div
               style={{
                 display: "flex",
@@ -589,7 +551,11 @@ const ServiceDetailsCombo = () => {
                 style={{ width: "10%" }}
                 type="primary"
                 onClick={handleAddService}
-                disabled={!selectedServiceDetails?.serviceDetails?.length}
+                disabled={
+                  !selectedServiceId || // No service selected
+                  (selectedServiceDetails?.serviceDetails?.length > 0 &&
+                    !selectedServiceDetailId) // Service has details but no detail selected
+                }
               >
                 Thêm
               </Button>
