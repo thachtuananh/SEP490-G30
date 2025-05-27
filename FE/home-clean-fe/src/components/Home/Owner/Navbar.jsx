@@ -83,7 +83,7 @@ function Navbar() {
     };
 
     fetchNotificationCount();
-    const intervalId = setInterval(fetchNotificationCount, 60000);
+    const intervalId = setInterval(fetchNotificationCount, 2500);
     return () => clearInterval(intervalId);
   }, [user]);
 
@@ -256,7 +256,6 @@ function Navbar() {
               setNotifications(
                 notifications.map((notification) => ({
                   ...notification,
-                  isRead: true,
                   read: true,
                 }))
               );
@@ -277,8 +276,21 @@ function Navbar() {
 
   const userProfile = (
     <Dropdown menu={userMenu} placement="bottomRight">
-      <div style={{ display: "flex", alignItems: "center", cursor: "pointer" }}>
-        {sessionStorage.getItem("profile_image") ? (
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center", // Vertically center content
+          gap: "12px", // Consistent spacing between elements
+          cursor: "pointer",
+          padding: "8px 12px", // Comfortable padding
+          borderRadius: "8px", // Softer, modern rounded corners
+          transition: "background-color 0.2s ease", // Smooth hover effect
+          "&:hover": {
+            backgroundColor: "#f5f5f5", // Subtle hover background
+          },
+        }}
+      >
+        {/* {sessionStorage.getItem("profile_image") ? (
           <Avatar
             src={
               sessionStorage.getItem("profile_image").startsWith("data:")
@@ -287,12 +299,62 @@ function Navbar() {
                     "profile_image"
                   )}`
             }
-            style={{ marginRight: "8px" }}
+            size={40} // Slightly larger avatar for better visibility
+            style={{
+              border: "2px solid #e8e8e8", // Subtle border for depth
+              boxShadow: "0 2px 4px rgba(0,0,0,0.1)", // Soft shadow for polish
+            }}
           />
         ) : (
-          <Avatar icon={<UserOutlined />} style={{ marginRight: "8px" }} />
-        )}
-        <span>{getUserName()}</span>
+          <Avatar
+            icon={<UserOutlined />}
+            size={40}
+            style={{
+              backgroundColor: "#1890ff", // Ant Design primary color for consistency
+              color: "#fff",
+              border: "2px solid #e8e8e8",
+              boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+            }}
+          />
+        )} */}
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "flex-end",
+          }}
+        >
+          <span
+            style={{
+              backgroundColor: "#28a745",
+              color: "#fff",
+              padding: "4px 10px",
+              borderRadius: "12px",
+              fontSize: "14px",
+              fontWeight: "500",
+              lineHeight: "1.5",
+              boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+            }}
+          >
+            {getUserName()}
+          </span>
+          <span
+            style={{
+              backgroundColor: "#28a745",
+              color: "#fff",
+              padding: "4px 10px",
+              // padding: "3px 8px",
+              borderRadius: "10px",
+              fontSize: "14px",
+              fontWeight: "500",
+              marginTop: "4px",
+              lineHeight: "1.5",
+              boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+            }}
+          >
+            Chủ nhà
+          </span>
+        </div>
       </div>
     </Dropdown>
   );

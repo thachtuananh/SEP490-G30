@@ -518,17 +518,36 @@ export const WalletBalance = () => {
         return " ";
       },
     },
+    // {
+    //   title: "Lý do từ chối",
+    //   dataIndex: "rejectionReason",
+    //   key: "rejectionReason",
+    //   render: (reason) => reason || " ",
+    // },
+    // {
+    //   title: "Mã giao dịch",
+    //   dataIndex: "transactionCode",
+    //   key: "transactionCode",
+    //   render: (code) => code || " ",
+    // },
     {
-      title: "Lý do từ chối",
-      dataIndex: "rejectionReason",
-      key: "rejectionReason",
-      render: (reason) => reason || " ",
-    },
-    {
-      title: "Mã giao dịch",
-      dataIndex: "transactionCode",
-      key: "transactionCode",
-      render: (code) => code || " ",
+      title: "Lý do từ chối/Mã giao dịch",
+      key: "additionalInfo",
+      render: (_, record) => {
+        const rejectionReason = record.rejectionReason || " ";
+        const transactionCode = record.transactionCode || " ";
+        return (
+          <div>
+            {rejectionReason !== " " && (
+              <div>Lý do từ chối: {rejectionReason}</div>
+            )}
+            {transactionCode !== " " && (
+              <div>Mã giao dịch: {transactionCode}</div>
+            )}
+            {rejectionReason === " " && transactionCode === " " && " "}
+          </div>
+        );
+      },
     },
   ];
 

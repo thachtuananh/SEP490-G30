@@ -39,21 +39,17 @@ export const sendNotification = async (userId, message, type, role) => {
     }
 };
 
-// Track if notifications have been read locally
-let notificationsReadLocally = false;
-
 export const getNotifications = async () => {
     try {
         // Get token from sessionStorage
         const token = sessionStorage.getItem('token');
-        // const role = sessionStorage.getItem('role');
         if (!token) {
             throw new Error('Authentication token not found');
         }
 
         // Decode the JWT token to get user information
         const decodedToken = jwt_decode(token);
-        const { role, id } = decodedToken; // Ép kiểu id thành userId
+        const { role, id } = decodedToken;
         if (!role || !id) {
             throw new Error('User information not found in token');
         }
@@ -63,19 +59,11 @@ export const getNotifications = async () => {
             'Authorization': `Bearer ${token}`
         };
 
-        // Make the API call based on the role (converting role to lowercase)
+        // Make the API call based on the role
         const response = await axios.get(
             `${BASE_URL}/notification/${role}/${id}`,
             { headers }
         );
-
-        // If notifications have been marked as read locally, modify the response
-        if (notificationsReadLocally) {
-            return response.data.map(notification => ({
-                ...notification,
-                isRead: true
-            }));
-        }
 
         return response.data;
     } catch (error) {
@@ -109,9 +97,6 @@ export const deleteAllNotifications = async (role, userId) => {
             `${BASE_URL}/notification/${role}/${userId}`,
             { headers }
         );
-
-        // Reset the local read state when deleting all notifications
-        notificationsReadLocally = false;
         
         return response.data;
     } catch (error) {
@@ -122,16 +107,10 @@ export const deleteAllNotifications = async (role, userId) => {
 
 export const getUnreadNotificationCount = async () => {
     try {
-        // If notifications have been marked as read locally, return 0
-        if (notificationsReadLocally) {
-            return 0;
-        }
-        
         const notifications = await getNotifications();
-        // Count notifications that have isRead = false or read = false
+        // Count notifications that have read = false
         return notifications.filter(notification => 
-            (notification.isRead === false || notification.isRead === undefined) && 
-            (notification.read === false || notification.read === undefined)
+            notification.read === false
         ).length;
     } catch (error) {
         console.error('Error getting unread notification count:', error);
@@ -165,9 +144,6 @@ export const markAllNotificationsAsRead = async (role, userId) => {
             {},
             { headers }
         );
-
-        // Update local read state when marking all as read
-        notificationsReadLocally = true;
         
         return response.data;
     } catch (error) {

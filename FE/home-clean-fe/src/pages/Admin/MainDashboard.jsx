@@ -30,6 +30,9 @@ const { Title } = Typography;
 const TransactionHistory = ({ visible, onClose }) => {
   const [loading, setLoading] = useState(false);
   const [transactions, setTransactions] = useState([]);
+  const [page, setPage] = useState(0); // Page bắt đầu từ 0 theo API
+  const [size, setSize] = useState(10); // Kích thước trang
+  const [totalItems, setTotalItems] = useState(0); // Tổng số mục
 
   const fetchTransactionHistory = async () => {
     try {
@@ -40,15 +43,54 @@ const TransactionHistory = ({ visible, onClose }) => {
         Authorization: `Bearer ${token}`,
       };
 
-      const response = await fetch(`${BASE_URL}/admin/transactionHistory`, {
-        headers,
-      });
+      const response = await fetch(
+        `${BASE_URL}/admin/get-profit?page=${page}&size=${size}`,
+        {
+          headers,
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
       const result = await response.json();
 
-      if (result.status === "OK") {
-        setTransactions(result.data);
+      // Debug: Log toàn bộ response để kiểm tra
+      console.log("API Response:", result);
+      console.log("Response status:", result.status);
+
+      // Kiểm tra nhiều điều kiện có thể
+      const isSuccess =
+        result.status === 200 || (!result.status && result.profits); // Trường hợp không có status field
+
+      if (isSuccess && result.profits && Array.isArray(result.profits)) {
+        // Ánh xạ dữ liệu từ API để phù hợp với cấu trúc bảng
+        const mappedTransactions = result.profits.map((item, index) => ({
+          key: item.id, // Sử dụng id làm key
+          stt: index + 1 + page * size, // Tính STT dựa trên page và index
+          transactionCode: item.transactionCode,
+          serviceType: item.serviceType, // Thêm serviceType từ API
+          executionDate: item.executionDate,
+          customerName: item.customerName,
+          cleanerName: item.cleanerName,
+          amount: item.amount,
+          profitReceived: item.profitReceived,
+        }));
+        setTransactions(mappedTransactions);
+        setTotalItems(result.totalItems || result.profits.length); // Fallback nếu không có totalItems
       } else {
-        message.error("Không thể tải lịch sử giao dịch");
+        console.error("API Response Error:", {
+          status: result.status,
+          hasProfit: !!result.profits,
+          profitsType: typeof result.profits,
+          isArray: Array.isArray(result.profits),
+        });
+        message.error(
+          `Không thể tải lịch sử giao dịch. Status: ${
+            result.status || "undefined"
+          }`
+        );
       }
     } catch (error) {
       console.error("Error fetching transaction history:", error);
@@ -62,149 +104,121 @@ const TransactionHistory = ({ visible, onClose }) => {
     if (visible) {
       fetchTransactionHistory();
     }
-  }, [visible]);
+  }, [visible, page, size]);
 
   const columns = [
-    // {
-    //   title: "ID",
-    //   dataIndex: "id",
-    //   key: "id",
-    //   width: 60,
-    // },
     {
-      title: "Loại giao dịch",
-      dataIndex: "transactionType",
-      key: "transactionType",
-      render: (type) => {
-        let color = "blue";
-        let text = type;
-
-        if (type === "WITHDREW") {
-          color = "red";
-          text = "Rút tiền";
-        } else if (type === "DEPOSIT") {
-          color = "green";
-          text = "Nạp tiền";
-        } else if (type === "BOOKED") {
-          color = "green";
-          text = "Đặt dịch vụ";
-        }
-
-        return <Tag color={color}>{text}</Tag>;
-      },
+      title: "STT",
+      dataIndex: "stt",
+      key: "stt",
+      align: "center",
     },
     {
-      title: "Số tiền (VNĐ)",
-      dataIndex: "amount",
-      key: "amount",
-      render: (amount, record) => {
-        const isNegative = record.transactionType === "WITHDREW";
-        return (
-          <span
-            style={{ color: isNegative ? "red" : "green", fontWeight: "bold" }}
-          >
-            {isNegative ? "-" : "+"}
-            {amount.toLocaleString()}
-          </span>
-        );
-      },
+      title: "Mã giao dịch",
+      dataIndex: "transactionCode",
+      key: "transactionCode",
     },
+
     {
-      title: "Ngày giao dịch",
-      dataIndex: "transactionDate",
-      key: "transactionDate",
+      title: "Ngày thực hiện",
+      dataIndex: "executionDate",
+      key: "executionDate",
       render: (date) => {
         if (date) {
-          const formattedDate = new Date(date).toLocaleString("vi-VN", {
-            hour: "2-digit",
-            minute: "2-digit",
+          // Xử lý date string từ API (format: "2025-05-26")
+          const dateObj = new Date(date + "T00:00:00");
+          return dateObj.toLocaleDateString("vi-VN", {
             day: "2-digit",
             month: "2-digit",
             year: "numeric",
           });
-
-          return formattedDate;
         }
-        return " ";
-      },
-    },
-    // {
-    //   title: "Khách hàng ID",
-    //   dataIndex: "customerId",
-    //   key: "customerId",
-    //   render: (id) => id || "-",
-    // },
-    // {
-    //   title: "Người dọn dẹp ID",
-    //   dataIndex: "cleanerId",
-    //   key: "cleanerId",
-    //   render: (id) => id || "-",
-    // },
-    {
-      title: "Phương thức",
-      dataIndex: "paymentMethod",
-      key: "paymentMethod",
-      render: (method) => {
-        let text = method;
-
-        if (method === "Bank Transfer") {
-          text = "Chuyển khoản";
-        } else if (method === "Wallet") {
-          text = "Hoàn tiền vào ví";
-        } else if (method === "VNPay") {
-          text = "VNPay";
-        }
-
-        return text;
+        return "N/A";
       },
     },
     {
-      title: "Trạng thái",
-      dataIndex: "status",
-      key: "status",
-      render: (status) => {
-        let color = "default";
-        if (status === "SUCCESS") color = "green";
-        else if (status === "PENDING") color = "orange";
-        else if (status === "FAILED") color = "red";
-
-        return <Tag color={color}>{status}</Tag>;
-      },
+      title: "Tên chủ nhà",
+      dataIndex: "customerName",
+      key: "customerName",
     },
     {
-      title: "Mô tả",
-      dataIndex: "description",
-      key: "description",
+      title: "Tên người dọn dẹp",
+      dataIndex: "cleanerName",
+      key: "cleanerName",
+    },
+    {
+      title: "Số tiền",
+      dataIndex: "amount",
+      key: "amount",
+      render: (amount) => (
+        <span style={{ color: "#1890ff", fontWeight: "bold" }}>
+          {amount?.toLocaleString("vi-VN") || "0"}
+        </span>
+      ),
+    },
+    {
+      title: "Lợi nhuận nhận được",
+      dataIndex: "profitReceived",
+      key: "profitReceived",
+      render: (profit) => (
+        <span style={{ color: "#52c41a", fontWeight: "bold" }}>
+          +{profit?.toLocaleString("vi-VN") || "0"}
+        </span>
+      ),
     },
   ];
+
+  // Reset page về 0 khi modal được mở lại
+  useEffect(() => {
+    if (visible && page !== 0) {
+      setPage(0);
+    }
+  }, [visible]);
 
   return (
     <Modal
       title="Lịch sử giao dịch"
       open={visible}
       onCancel={onClose}
-      width={1000}
+      width={"80%"} // Tăng width để phù hợp với nhiều cột hơn
       footer={[
         <Button key="close" onClick={onClose}>
           Đóng
         </Button>,
-        <Button
-          key="refresh"
-          type="primary"
-          onClick={fetchTransactionHistory}
-          icon={<HistoryOutlined />}
-        >
-          Làm mới
-        </Button>,
+        // <Button
+        //   key="refresh"
+        //   type="primary"
+        //   onClick={fetchTransactionHistory}
+        //   icon={<HistoryOutlined />}
+        //   loading={loading}
+        // >
+        //   Làm mới
+        // </Button>,
       ]}
     >
       <Spin spinning={loading}>
         <Table
           columns={columns}
           dataSource={transactions}
-          rowKey="id"
-          scroll={{ x: 800 }}
-          pagination={{ pageSize: 6 }}
+          rowKey="key"
+          scroll={{ x: 1200 }}
+          size="large" // Sử dụng size small để tiết kiệm không gian
+          pagination={{
+            pageSize: size,
+            current: page + 1, // API dùng page từ 0, nhưng Table của Ant Design dùng từ 1
+            total: totalItems,
+            // showSizeChanger: true,
+            // showQuickJumper: true,
+            // showTotal: (total, range) =>
+            //   `${range[0]}-${range[1]} của ${total} mục`,
+            // onChange: (newPage, newPageSize) => {
+            //   setPage(newPage - 1); // Chuyển về index 0-based cho API
+            //   if (newPageSize !== size) {
+            //     setSize(newPageSize);
+            //     setPage(0); // Reset về trang đầu khi thay đổi page size
+            //   }
+            // },
+          }}
         />
       </Spin>
     </Modal>
