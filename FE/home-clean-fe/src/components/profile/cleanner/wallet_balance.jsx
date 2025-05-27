@@ -757,9 +757,9 @@ export const WalletBalance = () => {
             rules={[
               { required: true, message: "Vui lòng nhập số tài khoản" },
               {
-                pattern: /^[a-zA-Z0-9]{16}$/,
+                pattern: /^[a-zA-Z0-9]{2,16}$/,
                 message:
-                  "Số tài khoản phải gồm đúng 16 ký tự chữ và số, không chứa ký tự đặc biệt",
+                  "Số tài khoản phải có từ 2 đến 16 ký tự, chỉ được chứa chữ cái và số",
               },
             ]}
           >

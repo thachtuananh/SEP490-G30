@@ -831,7 +831,8 @@ export const ActivityCard = ({ data, onDelete }) => {
                   {(activity.status === "OPEN" ||
                     activity.status === "BOOKED" ||
                     activity.status === "IN_PROGRESS" ||
-                    activity.status === "ARRIVED") && (
+                    activity.status === "ARRIVED" ||
+                    activity.status === "PAID") && (
                     <Button
                       danger
                       className={styles.cancelButton}
@@ -899,7 +900,8 @@ export const ActivityCard = ({ data, onDelete }) => {
                     activity.status === "COMPLETED" ||
                     activity.status === "IN_PROGRESS" ||
                     activity.status === "ARRIVED" ||
-                    activity.status === "BOOKED") && (
+                    activity.status === "BOOKED" ||
+                    activity.status === "PAID") && (
                     <Button
                       type="default"
                       onClick={() =>

@@ -218,24 +218,27 @@ const ServiceDetailsCombo = () => {
   };
 
   const handleServiceSelect = (serviceId) => {
-    console.log("Selected serviceId:", serviceId);
     setSelectedServiceId(serviceId);
     setSelectedServiceDetailId(null);
     if (serviceId) {
       const serviceData = allServices.find((s) => s.serviceId === serviceId);
       if (serviceData?.serviceDetails?.length > 0) {
         const defaultDetail = serviceData.serviceDetails[0];
-        setSelectedServiceDetailId(defaultDetail.serviceDetailId);
+        setSelectedServiceDetailId(defaultDetail.serviceDetailId); // Set default detail
+        form.setFieldsValue({ area: defaultDetail.serviceDetailId }); // Update form field
         setServicePrices((prev) => ({
           ...prev,
           [serviceId]: defaultDetail.price,
         }));
       } else {
+        form.setFieldsValue({ area: null }); // Clear area field if no details
         setServicePrices((prev) => ({
           ...prev,
           [serviceId]: serviceData?.basePrice || 120000,
         }));
       }
+    } else {
+      form.setFieldsValue({ area: null }); // Clear area field if no service selected
     }
   };
 
@@ -469,13 +472,17 @@ const ServiceDetailsCombo = () => {
       render: (_, __, index) => (
         <div>
           <Button
-            type="link"
+            type="primary"
             onClick={() => handleDuplicateService(index)}
             style={{ marginRight: 8 }}
           >
             Thêm
           </Button>
-          <Button type="link" danger onClick={() => handleRemoveService(index)}>
+          <Button
+            type="primary"
+            danger
+            onClick={() => handleRemoveService(index)}
+          >
             Xóa
           </Button>
         </div>
@@ -593,7 +600,11 @@ const ServiceDetailsCombo = () => {
                 style={{ width: "10%" }}
                 type="primary"
                 onClick={handleAddService}
-                disabled={!selectedServiceDetails?.serviceDetails?.length}
+                disabled={
+                  !selectedServiceId || // No service selected
+                  (selectedServiceDetails?.serviceDetails?.length > 0 &&
+                    !selectedServiceDetailId) // Service has details but no detail selected
+                }
               >
                 Thêm
               </Button>

@@ -229,11 +229,11 @@ const Time = ({
     }
 
     const isToday = selectedDateTime.isSame(dayjs(), "day");
-    if (isToday && selectedDateTime.isBefore(currentTime.add(15, "minute"))) {
+    if (isToday && selectedDateTime.isBefore(currentTime.add(30, "minute"))) {
       const defaultTime = currentTime.add(30, "minute").second(0);
       setNewDateTime(defaultTime);
       showErrorModal(
-        "Thời gian đã chọn quá gần hoặc trong quá khứ. Đã tự động điều chỉnh thành thời gian hiện tại + 15 phút."
+        "Thời gian đã chọn quá gần hoặc trong quá khứ. Đã tự động điều chỉnh thành thời gian hiện tại + 30 phút."
       );
     } else {
       setNewDateTime(selectedDateTime.second(0));

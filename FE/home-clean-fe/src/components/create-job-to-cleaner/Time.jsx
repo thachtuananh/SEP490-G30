@@ -34,8 +34,7 @@ const Time = ({ onTimeChange }) => {
   const [form] = Form.useForm();
   const { user } = useContext(AuthContext);
   const [selectedDateTime, setSelectedDateTime] = useState(() => {
-    // Khởi tạo với thời gian hiện tại + 15 phút
-    return dayjs().add(15, "minute");
+    return dayjs().add(30, "minute");
   });
   const [currentTime, setCurrentTime] = useState(dayjs());
   const [priceAdjustment, setPriceAdjustment] = useState(null);
@@ -184,19 +183,19 @@ const Time = ({ onTimeChange }) => {
     let finalDateTime = dateTime;
 
     // Kiểm tra nếu thời gian được chọn là quá khứ
-    if (dateTime.isBefore(now)) {
-      finalDateTime = now.add(30, "minute");
-      message.warning(
-        "Không thể chọn thời gian trong quá khứ. Đã tự động chọn thời gian hiện tại + 15 phút."
-      );
-    }
-    // Nếu chọn ngày hôm nay nhưng giờ quá gần hiện tại (< 15 phút)
-    else if (dateTime.isSame(now, "day") && dateTime.diff(now, "minute") < 30) {
-      finalDateTime = now.add(30, "minute");
-      message.warning(
-        "Thời gian chọn quá gần hiện tại. Đã tự động điều chỉnh thành hiện tại + 15 phút."
-      );
-    }
+    // if (dateTime.isBefore(now)) {
+    //   finalDateTime = now.add(30, "minute");
+    //   message.warning(
+    //     "Không thể chọn thời gian trong quá khứ. Đã tự động chọn thời gian hiện tại + 30 phút."
+    //   );
+    // }
+    // // Nếu chọn ngày hôm nay nhưng giờ quá gần hiện tại (< 15 phút)
+    // else if (dateTime.isSame(now, "day") && dateTime.diff(now, "minute") < 30) {
+    //   finalDateTime = now.add(30, "minute");
+    //   message.warning(
+    //     "Thời gian chọn quá gần hiện tại. Đã tự động điều chỉnh thành hiện tại + 30 phút."
+    //   );
+    // }
 
     setSelectedDateTime(finalDateTime);
 
