@@ -60,7 +60,6 @@ public class ScheduleService {
         LocalDateTime now = LocalDateTime.now(zoneId).plusMinutes(30);
         System.out.println("Check Job and Delete at: " + now);
 
-        // Lấy tất cả job OPEN
         List<Job> jobs = jobRepository.findAllByStatusIn(Arrays.asList(JobStatus.OPEN, JobStatus.BOOKED));
         System.out.println("Tổng số job OPEN và BOOKED: " + jobs.size());
 
@@ -68,79 +67,54 @@ public class ScheduleService {
         List<JobApplication> applicationsToUpdate = new ArrayList<>();
 
         for (Job job : jobs) {
-            // Kiểm tra nếu đã quá thời gian
             if (job.getScheduledTime().isBefore(now)) {
                 if (job.getStatus() != JobStatus.AUTO_CANCELLED) {
-                    // Đổi trạng thái Job
                     job.setStatus(JobStatus.AUTO_CANCELLED);
                     updatedJobs.add(job);
                     jobRepository.save(job);
 
-                    // Hoàn tiền cho customer vào ví
                     Optional<CustomerWallet> walletOpt = customerWalletRepository.findByCustomerId(Long.valueOf(job.getCustomer().getId()));
                     if (walletOpt.isPresent()) {
                         CustomerWallet wallet = walletOpt.get();
-                        // Cộng lại số tiền vào ví
                         wallet.setBalance(wallet.getBalance() + job.getTotalPrice());
-                        customerWalletRepository.save(wallet);  // Lưu ví cập nhật
-                        System.out.println("Đã hoàn tiền cho customer " + job.getCustomer().getId());
+                        customerWalletRepository.save(wallet);
 
                         TransactionHistory transactionHistory = new TransactionHistory();
-                        transactionHistory.setCustomer(wallet.getCustomer());  // Gán thông tin customer
-                        transactionHistory.setAmount(job.getTotalPrice());  // Số tiền hoàn lại
-                        transactionHistory.setTransactionType("Refund");  // Loại giao dịch là hoàn tiền
-                        transactionHistory.setTransactionDate(LocalDateTime.now(zoneId));  // Ngày giờ giao dịch
-                        transactionHistory.setPaymentMethod(job.getPaymentMethod());  // Phương thức thanh toán là ví
-                        transactionHistory.setStatus("SUCCESS");  // Trạng thái giao dịch là hoàn tất
-
-                        // Lưu thông tin vào bảng transaction_history
+                        transactionHistory.setCustomer(wallet.getCustomer());
+                        transactionHistory.setAmount(job.getTotalPrice());
+                        transactionHistory.setTransactionType("Refund");
+                        transactionHistory.setTransactionDate(LocalDateTime.now(zoneId));
+                        transactionHistory.setPaymentMethod(job.getPaymentMethod());
+                        transactionHistory.setStatus("SUCCESS");
                         transactionHistoryRepository.save(transactionHistory);
 
                         System.out.println("Đã hoàn tiền cho customer " + job.getCustomer().getId());
                     }
 
-                    // Gửi thông báo đến Customer
-//                    NotificationDTO notification = new NotificationDTO(
-//                            job.getCustomer().getId(),
-//                            "Đơn hàng của bạn đã bị hủy do không có người nhận việc",
-//                            "AUTO_MESSAGE",
-//                            LocalDate.now(zoneId),
-//                            false,
-//                    );
                     NotificationDTO notification = new NotificationDTO();
                     notification.setUserId(job.getCustomer().getId());
-                    notification.setMessage("Mã công việc: ["+ job.getOrderCode()+"] Công việc bị hủy vì không có người nhận đúng hạn. Tiền sẽ được hoàn vào ví của bạn.");
+                    notification.setMessage("Mã công việc: [" + job.getOrderCode() + "] Công việc bị hủy vì không có người nhận đúng hạn. Tiền sẽ được hoàn vào ví của bạn.");
                     notification.setType("AUTO_MESSAGE");
                     notification.setTimestamp(LocalDate.now(zoneId));
-                    notification.setRead(false); // ✅ set read = false
-
+                    notification.setRead(false);
                     notificationService.processNotification(notification, "CUSTOMER", job.getCustomer().getId());
 
                     System.out.println("Đã tự động hủy Job " + job.getId());
                 }
 
-                // Lấy tất cả JobApplication liên quan đến Job
                 List<JobApplication> jobApplications = jobApplicationRepository.findJobApplicationById(job.getId());
                 for (JobApplication application : jobApplications) {
                     String status = application.getStatus();
                     if (!"Rejected".equals(status) && !"Accepted".equals(status)) {
-                        application.setStatus("Rejected");
+                        application.setStatus("Cancelled");
                         applicationsToUpdate.add(application);
 
-                        // Gửi thông báo đến Cleaner
-//                        NotificationDTO cleanerNotification = new NotificationDTO(
-//                                job.getCustomer().getId(),
-//                                "Công việc của bạn đã bị hủy do người thuê chưa xác nhận thuê",
-//                                "AUTO_MESSAGE",
-//                                LocalDate.now(zoneId),
-//                                false,
-//                        );
                         NotificationDTO cleanerNotification = new NotificationDTO();
-                        cleanerNotification.setUserId(job.getCleaner().getId());
-                        cleanerNotification.setMessage("Mã công việc: ["+ job.getOrderCode() +"] Công việc của bạn đã bị hủy do chủ nhà chưa xác nhận thuê");
+                        cleanerNotification.setUserId(application.getCleaner().getId());
+                        cleanerNotification.setMessage("Mã công việc: [" + job.getOrderCode() + "] Công việc của bạn đã bị hủy do chủ nhà chưa xác nhận thuê");
                         cleanerNotification.setType("AUTO_MESSAGE");
                         cleanerNotification.setTimestamp(LocalDate.now(zoneId));
-                        cleanerNotification.setRead(false); // ✅ set read = false
+                        cleanerNotification.setRead(false);
                         notificationService.processNotification(cleanerNotification, "CLEANER", application.getCleaner().getId());
                     }
                 }
@@ -149,7 +123,6 @@ public class ScheduleService {
             }
         }
 
-        // Lưu các thay đổi nếu có
         if (!updatedJobs.isEmpty()) {
             jobRepository.saveAll(updatedJobs);
             System.out.println("Đã cập nhật trạng thái cho " + updatedJobs.size() + " công việc.");
@@ -160,6 +133,7 @@ public class ScheduleService {
             System.out.println("Đã cập nhật trạng thái cho " + applicationsToUpdate.size() + " ứng tuyển.");
         }
     }
+
 
 
     @Scheduled(cron = "0 * * * * *")
