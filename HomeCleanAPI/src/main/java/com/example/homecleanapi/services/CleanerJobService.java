@@ -244,26 +244,22 @@ public class CleanerJobService {
 		}
 
 		// Kiểm tra các công việc trước đó của cleaner
-		List<JobApplication> existingApplications = jobApplicationRepository.findByCleanerAndStatusIn(cleaner, Arrays.asList("Pending", "Accepted"));
+		//List<JobApplication> existingApplications = jobApplicationRepository.findByCleanerAndStatusIn(cleaner, Arrays.asList("Pending", "Accepted"));
 		LocalDateTime jobScheduledTime = job.getScheduledTime();
 
 		// Kiểm tra xem cleaner có công việc nào đã apply và trong vòng 2 giờ so với công việc này không
-		for (JobApplication existingApplication : existingApplications) {
-			Job existingJob = existingApplication.getJob();
-			LocalDateTime existingJobTime = existingJob.getScheduledTime();
-
-			// Kiểm tra trạng thái của job cũ
-			if (existingJob.getStatus().equals(JobStatus.DONE) || existingJob.getStatus().equals(JobStatus.CANCELLED) || existingJob.getStatus().equals(JobStatus.AUTO_CANCELLED)) {
-				// Nếu job đã hoàn thành, bị hủy hoặc tự động hủy, cho phép apply vào job khác
+		List<Job> cleanerJobs = jobRepository.findByCleanerId(cleaner.getId().longValue());
+		for (Job existingJob : cleanerJobs) {
+			JobStatus status = existingJob.getStatus();
+			if (status == JobStatus.DONE || status == JobStatus.CANCELLED || status == JobStatus.AUTO_CANCELLED) {
 				continue;
 			}
 
-			// Tính sự khác biệt giữa thời gian công việc hiện tại và công việc đã có, tính theo phút
+			LocalDateTime existingJobTime = existingJob.getScheduledTime();
 			long differenceInMinutes = Math.abs(ChronoUnit.MINUTES.between(existingJobTime, jobScheduledTime));
 
-			// Kiểm tra nếu sự khác biệt giữa hai công việc nhỏ hơn 120 phút (2 giờ)
 			if (differenceInMinutes < 120) {
-				response.put("message", "Bạn đang ứng tuyển hoặc đã có lịch làm việc trong một công việc cách công việc này nhỏ hơn 2 giờ");
+				response.put("message", "Bạn đã có một công việc khác cách công việc này chưa tới 2 giờ.");
 				return response;
 			}
 		}
@@ -277,13 +273,13 @@ public class CleanerJobService {
 
 		jobApplicationRepository.save(jobApplication);
 
-//		NotificationDTO customerNotification = new NotificationDTO();
-//		customerNotification.setUserId(job.getCustomer().getId());
-//		customerNotification.setMessage("[Mã công việc: "+ job.getOrderCode() + "] Người dọn dẹp: " + cleaner.getName() + " vừa ứng tuyển vào công việc ");
-//		customerNotification.setType("AUTO_MESSAGE");
-//		customerNotification.setTimestamp(LocalDate.now());
-//		customerNotification.setRead(false);
-//		notificationService.processNotification(customerNotification, "CUSTOMER", job.getCustomer().getId());
+		NotificationDTO customerNotification = new NotificationDTO();
+		customerNotification.setUserId(job.getCustomer().getId());
+		customerNotification.setMessage("[Mã công việc: "+ job.getOrderCode() + "] Người dọn dẹp: " + cleaner.getName() + " vừa ứng tuyển vào công việc ");
+		customerNotification.setType("AUTO_MESSAGE");
+		customerNotification.setTimestamp(LocalDate.now());
+		customerNotification.setRead(false);
+		notificationService.processNotification(customerNotification, "CUSTOMER", job.getCustomer().getId());
 
 		// Thêm thông báo thành công khi không có lỗi
 		response.put("message", "Cleaner has successfully applied for the job");
