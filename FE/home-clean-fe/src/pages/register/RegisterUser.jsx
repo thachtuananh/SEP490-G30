@@ -1,5 +1,13 @@
 import React, { useState, useEffect } from "react";
-import { message, Input, Form, Button, Modal } from "antd";
+import {
+  message,
+  Input,
+  Form,
+  Button,
+  Modal,
+  Typography,
+  Checkbox,
+} from "antd";
 import logo from "../../assets/HouseClean_logo.png";
 import { Link, useNavigate } from "react-router-dom";
 import ImgLeft from "../../assets/image-left.png";
@@ -12,8 +20,11 @@ import {
   validateConfirmPassword,
   validateEmail,
 } from "../../utils/validate";
+import TermsModalContent from "../../components/TermContent/TermsModalContent"; // Import the new component
+const { Text } = Typography;
 
 function RegisterUser() {
+  const [termsAccepted, setTermsAccepted] = useState(false);
   const [formData, setFormData] = useState({
     phone: "",
     name: "",
@@ -23,6 +34,7 @@ function RegisterUser() {
   });
   const [registrationData, setRegistrationData] = useState(null);
   const [otpModalVisible, setOtpModalVisible] = useState(false);
+  const [termsModalVisible, setTermsModalVisible] = useState(false);
   const [otpCode, setOtpCode] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
@@ -48,6 +60,10 @@ function RegisterUser() {
 
   // Step 1: Submit registration info and send OTP
   const handleSubmit = async () => {
+    if (!termsAccepted) {
+      message.error("Vui lòng đồng ý với Điều khoản và dịch vụ!");
+      return;
+    }
     const { phone, name, email, password, confirmPassword } = formData;
 
     // Kiểm tra trường rỗng
@@ -160,7 +176,6 @@ function RegisterUser() {
       const result = await response.json();
 
       if (response.ok) {
-        // message.success("Xác thực OTP thành công!");
         await registerUser();
       } else {
         message.error(
@@ -191,7 +206,7 @@ function RegisterUser() {
       if (response.ok) {
         message.success(result.message || "Đăng ký thành công!");
         setOtpModalVisible(false);
-        navigate("/login/user"); // Điều hướng đến trang đăng nhập
+        navigate("/login/user");
       } else {
         message.error(result.message || "Đăng ký thất bại!");
       }
@@ -379,7 +394,35 @@ function RegisterUser() {
                   name="confirmPassword"
                 />
               </Form.Item>
-
+              <div style={{ margin: "16px 0px" }}>
+                <Checkbox
+                  checked={termsAccepted}
+                  onChange={(e) => setTermsAccepted(e.target.checked)}
+                  disabled={
+                    !formData.phone ||
+                    !formData.name ||
+                    !formData.email ||
+                    !formData.password ||
+                    !formData.confirmPassword
+                  }
+                >
+                  <Text style={{ fontSize: "14px" }}>
+                    Tôi đồng ý với{" "}
+                    <Text
+                      strong
+                      style={{
+                        cursor: "pointer",
+                        color: "#039855",
+                        fontWeight: "bold",
+                      }}
+                      onClick={() => setTermsModalVisible(true)}
+                    >
+                      Điều khoản và dịch vụ
+                    </Text>{" "}
+                    của HouseClean
+                  </Text>
+                </Checkbox>
+              </div>
               <Button
                 type="primary"
                 htmlType="submit"
@@ -419,9 +462,7 @@ function RegisterUser() {
           <Button
             key="resend"
             onClick={() => {
-              // Reset input OTP ngay trong Modal khi click nút gửi lại
               setOtpCode("");
-              // Sau đó gọi hàm xử lý gửi lại OTP
               handleResendOtp();
             }}
             disabled={isLoading}
@@ -446,6 +487,21 @@ function RegisterUser() {
           onChange={(e) => setOtpCode(e.target.value)}
           style={{ marginTop: "10px" }}
         />
+      </Modal>
+
+      {/* Terms and Services Modal */}
+      <Modal
+        title="Điều khoản và Dịch vụ"
+        visible={termsModalVisible}
+        onCancel={() => setTermsModalVisible(false)}
+        footer={[
+          <Button key="close" onClick={() => setTermsModalVisible(false)}>
+            Đóng
+          </Button>,
+        ]}
+        width={800}
+      >
+        <TermsModalContent />
       </Modal>
     </div>
   );
