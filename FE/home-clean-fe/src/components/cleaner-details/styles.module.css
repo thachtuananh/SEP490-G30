@@ -40,12 +40,12 @@
 }
 
 .mainImage {
-  border-radius: 5px;
   width: 100%;
-  height: 80%;
+  height: 380px;
 }
 
 .mainImage img {
+  border-radius: 8px;
   width: 100%;
   height: 100%;
 }

@@ -92,7 +92,7 @@ export const ActivityCard = ({ data, onDelete, onHireCleaner }) => {
 
   useEffect(() => {
     applyFilters(activities, statusFilter, searchOrderCode);
-  }, [statusFilter, searchOrderCode]);
+  }, [statusFilter, searchOrderCode, activities]);
 
   const applyFilters = (data, status, orderCode) => {
     let result = [...data];
@@ -110,7 +110,9 @@ export const ActivityCard = ({ data, onDelete, onHireCleaner }) => {
     }
 
     setFilteredActivities(result);
-    setCurrentPage(1);
+    if (result.length <= (currentPage - 1) * pageSize) {
+      setCurrentPage(1);
+    }
   };
 
   const getStatusColor = (status) => {
