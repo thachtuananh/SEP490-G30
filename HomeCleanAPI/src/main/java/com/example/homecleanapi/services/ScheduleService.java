@@ -316,27 +316,6 @@ public class ScheduleService {
                     job.setStatus(JobStatus.AUTO_CANCELLED);
                     updatedJobs.add(job);
 
-                    // Hoàn tiền cho customer vào ví
-                    Optional<CustomerWallet> walletOpt = customerWalletRepository.findByCustomerId(Long.valueOf(job.getCustomer().getId()));
-                    if (walletOpt.isPresent()) {
-                        CustomerWallet wallet = walletOpt.get();
-                        // Cộng lại số tiền vào ví
-                        wallet.setBalance(wallet.getBalance() + job.getTotalPrice());
-                        customerWalletRepository.save(wallet);  // Lưu ví cập nhật
-
-                        TransactionHistory transactionHistory = new TransactionHistory();
-                        transactionHistory.setCustomer(wallet.getCustomer());  // Gán thông tin customer
-                        transactionHistory.setAmount(job.getTotalPrice());  // Số tiền hoàn lại
-                        transactionHistory.setTransactionType("Refund");  // Loại giao dịch là hoàn tiền
-                        transactionHistory.setTransactionDate(LocalDateTime.now(zoneId));  // Ngày giờ giao dịch
-                        transactionHistory.setPaymentMethod(job.getPaymentMethod());  // Phương thức thanh toán là ví
-                        transactionHistory.setStatus("SUCCESS");  // Trạng thái giao dịch là hoàn tất
-
-                        // Lưu thông tin vào bảng transaction_history
-                        transactionHistoryRepository.save(transactionHistory);
-
-                        System.out.println("Đã hoàn tiền cho customer " + job.getCustomer().getId());
-                    }
 
                     // Gửi thông báo cho customer
 //                    NotificationDTO customerNotification = new NotificationDTO(

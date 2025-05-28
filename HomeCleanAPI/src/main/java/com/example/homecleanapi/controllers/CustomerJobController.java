@@ -138,6 +138,14 @@ public class CustomerJobController {
         return ResponseEntity.ok(bookedJobs);
     }
 
+	// chỉ lấy ra status
+	@GetMapping("/{customerId}/job-statuses")
+	public ResponseEntity<List<Map<String, Object>>> getJobStatuses(@PathVariable("customerId") Long customerId) {
+		List<Map<String, Object>> statuses = jobService.getJobStatuses(customerId);
+		return ResponseEntity.ok(statuses);
+	}
+
+
 	// xem chi tiết job
 	@GetMapping("/{jobIdOrGroupCode}")
 	public ResponseEntity<?> getJobDetail(@PathVariable String jobIdOrGroupCode) {
