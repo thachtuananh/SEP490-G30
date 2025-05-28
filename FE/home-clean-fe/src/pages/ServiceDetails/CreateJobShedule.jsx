@@ -56,11 +56,11 @@ const CreateJobSchedule = () => {
             ? serviceIdsFromParams
             : location.state?.selectedServices || [];
 
-        if (serviceIds.length === 0) {
-          message.warning("Không có dịch vụ nào được chọn!");
-          navigate("/");
-          return;
-        }
+        // if (serviceIds.length === 0) {
+        //   message.warning("Không có dịch vụ nào được chọn!");
+        //   navigate("/");
+        //   return;
+        // }
 
         setSelectedServiceIds(serviceIds);
 
