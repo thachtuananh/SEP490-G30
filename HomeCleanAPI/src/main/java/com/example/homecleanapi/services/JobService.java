@@ -953,6 +953,27 @@ public class JobService {
         return new ArrayList<>(jobGroupMap.values());
     }
 
+
+    public List<Map<String, Object>> getJobStatuses(Long customerId) {
+        List<Job> jobs = jobRepository.findByCustomerId(customerId);
+
+        jobs.sort((job1, job2) -> {
+            int cmp = job2.getUpdatedAt().compareTo(job1.getUpdatedAt());
+            return (cmp != 0) ? cmp : job2.getScheduledTime().compareTo(job1.getScheduledTime());
+        });
+
+        return jobs.stream()
+                .map(job -> {
+                    Map<String, Object> jobStatus = new HashMap<>();
+                    jobStatus.put("jobId", job.getId());
+                    jobStatus.put("status", job.getStatus());
+                    return jobStatus;
+                })
+                .collect(Collectors.toList());
+    }
+
+
+
 //    public List<Map<String, Object>> getBookedJobsForCustomer(Long customerId) {
 //        List<Map<String, Object>> bookedJobs = new ArrayList<Map<String,Object>>();
 //
