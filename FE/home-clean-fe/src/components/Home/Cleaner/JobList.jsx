@@ -291,13 +291,13 @@ function JobList() {
           <Title level={2}>Danh sách công việc gần bạn</Title>
         </Col>
         <Col>
-          {/* <Button
+          <Button
             type="primary"
             icon={<FilterOutlined />}
             onClick={() => setFilterVisible(!filterVisible)}
           >
             Bộ lọc
-          </Button> */}
+          </Button>
         </Col>
       </Row>
 
