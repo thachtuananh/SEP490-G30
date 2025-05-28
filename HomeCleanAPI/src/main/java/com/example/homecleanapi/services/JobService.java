@@ -801,7 +801,7 @@ public class JobService {
 
         response.put("message", "Cập nhật job sang DONE thành công");
 
-        String message = "Mã công việc [" + job.getOrderCode() + "] Chủ nhà " + job.getCustomer().getFull_name() + " đã xác nhận bạn hoàn thành công việc. Vui lòng kiểm tra ví.";
+        String message = "Mã công việc [" + job.getOrderCode() + "] Chủ nhà " + job.getCustomer().getFull_name() + " đã xác nhận bạn hoàn thành công việc. Vui lòng kiểm tra ví. " + formattedDateTime;
         NotificationDTO customerNotification = new NotificationDTO();
         customerNotification.setUserId(cleaner.getId());
         customerNotification.setMessage(message);
