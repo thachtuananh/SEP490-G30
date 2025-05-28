@@ -82,6 +82,10 @@ public class JobService {
     @Autowired
     private ProfitRepository profitRepository;
 
+    LocalDateTime now = LocalDateTime.now();
+    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
+    String formattedDateTime = now.format(formatter);
+
     public List<JobDTO> getAllJobs() {
         List<Job> jobs = jobRepository.findAll();  // Lấy tất cả các job
 
@@ -286,7 +290,7 @@ public class JobService {
 
         NotificationDTO customerNotification = new NotificationDTO();
         customerNotification.setUserId(job.getCustomer().getId());
-        customerNotification.setMessage("Công việc đã được tạo thành công");
+        customerNotification.setMessage("Công việc đã được tạo thành công tại thời gian" + formattedDateTime);
         customerNotification.setType("AUTO_MESSAGE");
         customerNotification.setTimestamp(LocalDate.now());
         customerNotification.setRead(false);
