@@ -48,6 +48,8 @@ public interface JobApplicationRepository extends JpaRepository<JobApplication, 
 
 	boolean existsByJobIdAndCleanerId(Long jobId, Long cleanerId);
 
+	int countByCleanerAndStatusIn(Employee cleaner, List<String> statuses);
+
 
 
 
