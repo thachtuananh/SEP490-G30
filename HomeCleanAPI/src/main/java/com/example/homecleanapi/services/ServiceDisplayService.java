@@ -8,6 +8,7 @@ import com.example.homecleanapi.repositories.ServiceRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -36,17 +37,21 @@ public class ServiceDisplayService {
         ServiceDTO serviceDTO = new ServiceDTO();
         serviceDTO.setServiceId(service.getId());
         serviceDTO.setServiceName(service.getName());
-        serviceDTO.setDescription(service.getDescription());  // Thêm description
+        serviceDTO.setDescription(service.getDescription());
         serviceDTO.setBasePrice(service.getBasePrice());
-        
-        // Lấy danh sách ServiceDetails cho dịch vụ này
+
         List<ServiceDTO.ServiceDetailDTO> serviceDetailDTOs = service.getServiceDetails().stream()
                 .map(this::convertToServiceDetailDTO)
+                .sorted(Comparator.comparingInt(
+                        dto -> dto.getMinRoomSize() != null ? dto.getMinRoomSize() : Integer.MAX_VALUE
+                ))
                 .collect(Collectors.toList());
-        serviceDTO.setServiceDetails(serviceDetailDTOs);  // Đính kèm danh sách service details vào ServiceDTO
+
+        serviceDTO.setServiceDetails(serviceDetailDTOs);
 
         return serviceDTO;
     }
+
 
 
 
