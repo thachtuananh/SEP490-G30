@@ -1,200 +1,202 @@
 .container {
-    padding: 15px;
-    border: 1px solid rgb(225, 225, 225);
-    border-radius: 5px;
-    margin-top: 15px;
+  padding: 15px;
+  border: 1px solid rgb(225, 225, 225);
+  border-radius: 5px;
+  margin-top: 15px;
 }
 
 .card {
-    width: 100%;
-    /* margin: 20px auto; */
-    border-radius: 10px;
+  width: 100%;
+  /* margin: 20px auto; */
+  border-radius: 10px;
 }
 
 .weekNavigation {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 10px;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
 }
 
 .navButton {
-    white-space: nowrap;
+  white-space: nowrap;
 }
 
 .selectedDate {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    /* margin-bottom: 15px; */
-    flex-wrap: wrap;
-    gap: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  /* margin-bottom: 15px; */
+  flex-wrap: wrap;
+  gap: 10px;
 }
 
 .dateDisplay {
-    text-align: right;
+  text-align: right;
 }
 
 .dayList {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-    justify-content: center;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
 }
 
 .dayButton {
-    width: calc(14.28% - 10px);
-    min-width: 60px;
-    height: 60px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    font-weight: bold;
-    background-color: white;
-    color: black;
-    border-radius: 5px;
-    border: 2px solid #D4D4D4;
-    padding: 5px;
+  width: calc(14.28% - 10px);
+  min-width: 60px;
+  height: 60px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  font-weight: bold;
+  background-color: white;
+  color: black;
+  border-radius: 5px;
+  border: 2px solid #d4d4d4;
+  padding: 5px;
 }
 
 .dayButton.selected {
-    background-color: green;
-    color: white;
-    border-color: green;
+  background-color: green;
+  color: white;
+  border-color: green;
 }
 
 .timeSelection {
-    padding-top: 20px;
-    /* padding-bottom: 20px; */
-    position: relative;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
+  padding-top: 20px;
+  /* padding-bottom: 20px; */
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
 }
 
 .timeHeader {
-    margin-bottom: 10px;
+  margin-bottom: 10px;
 }
 
 .timeInputGroup {
-    display: flex;
-    align-items: center;
-    gap: 5px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
 }
 
 .timeInput {
-    position: relative;
-    display: flex;
-    align-items: center;
+  position: relative;
+  display: flex;
+  align-items: center;
 }
 
 .timeInput input {
-    width: 60px;
-    height: 35px;
-    text-align: center;
-    font-weight: bold;
-    border-radius: 5px;
-    border: 2px solid #D4D4D4;
+  width: 60px;
+  height: 35px;
+  text-align: center;
+  font-weight: bold;
+  border-radius: 5px;
+  border: 2px solid #d4d4d4;
 }
 
 .timeInput span {
-    position: absolute;
-    right: 1rem;
-    font-weight: bold;
-    font-size: 14px;
-
+  position: absolute;
+  right: 1rem;
+  font-weight: bold;
+  font-size: 14px;
 }
 
 .timeSeparator {
-    font-weight: bold;
+  font-weight: bold;
 }
 
 .phoneSection {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    /* margin-top: 20px; */
-    flex-wrap: wrap;
-    gap: 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  /* margin-top: 20px; */
+  flex-wrap: wrap;
+  gap: 15px;
 }
 
 .phoneInfo {
-    flex: 1;
-    min-width: 200px;
+  flex: 1;
+  min-width: 200px;
 }
 
 .phoneContainer {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-    height: 40px;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  height: 40px;
 }
 
 .phonePrefix {
-    color: rgb(58, 173, 226);
+  color: rgb(58, 173, 226);
 }
 
 .phoneNumber {
-    color: #000;
+  color: #000;
 }
 
 .changeButton {
-    height: 30px;
-    padding: 0 10px;
-    background: #0A8B03;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 14px;
-    min-width: 80px;
+  height: 30px;
+  padding: 0 10px;
+  background: #0a8b03;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  min-width: 80px;
 }
 
 /* Responsive styles */
 @media (max-width: 768px) {
-    .dayButton {
-        width: calc(25% - 10px);
-        margin-bottom: 10px;
-    }
+  .dayButton {
+    width: calc(25% - 10px);
+    margin-bottom: 10px;
+  }
 
-    .timeSelection {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-
-    .timeInputGroup {
-        margin-top: 10px;
-    }
+  .timeInputGroup {
+    margin-bottom: 10px;
+  }
 }
 
+@media (max-width: 520px) {
+  .timeSelection,
+  .selectedDate,
+  .phoneSection {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
 @media (max-width: 480px) {
-    .container {
-        padding: 10px;
-    }
+  .container {
+    padding: 10px;
+  }
 
-    .dayButton {
-        width: calc(33.33% - 10px);
-        height: 50px;
-        font-size: 0.9rem;
-    }
+  .dayButton {
+    width: calc(33.33% - 10px);
+    height: 50px;
+    font-size: 0.9rem;
+  }
 
-    .selectedDate {
-        flex-direction: column;
-        align-items: flex-start;
-    }
+  .selectedDate {
+    flex-direction: column;
+    align-items: flex-start;
+  }
 
-    .dateDisplay {
-        text-align: left;
-    }
+  .dateDisplay {
+    text-align: left;
+  }
 
-    .phoneSection {
-        flex-direction: column;
-        align-items: flex-start;
-    }
+  .phoneSection {
+    flex-direction: column;
+    align-items: flex-start;
+  }
 
-    .phoneContainer {
-        width: 100%;
-        justify-content: space-between;
-    }
+  .phoneContainer {
+    width: 100%;
+    justify-content: space-between;
+  }
 }

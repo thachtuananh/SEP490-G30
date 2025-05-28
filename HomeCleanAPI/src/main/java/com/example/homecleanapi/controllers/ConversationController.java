@@ -1,7 +1,7 @@
 package com.example.homecleanapi.controllers;
 
-import com.example.homecleanapi.models.Conversation;
 import com.example.homecleanapi.services.ConversationService;
+import com.example.homecleanapi.models.Conversation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -23,7 +23,7 @@ public class ConversationController {
     }
 
     @PostMapping(name = "/createConversation")
-    public Conversation createConversation(@RequestParam @Valid Integer customerId, @RequestParam @Valid Integer cleanerId) {
+    public Conversation createConversation(@RequestParam @Valid Long customerId, @RequestParam @Valid Integer cleanerId) {
         return conversationService.getOrCreateConversation(customerId, cleanerId);
     }
 

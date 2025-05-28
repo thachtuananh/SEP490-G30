@@ -1,77 +1,161 @@
+.overlay {
+  width: 100%;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.6);
+  position: fixed;
+  top: 0;
+  left: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  backdrop-filter: blur(3px);
+}
+
 .modalContainer {
-    background-color: white;
-    padding: 15px 20px;
-    border-radius: 7px;
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-    width: 30%;
+  background-color: white;
+  padding: 24px;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 90%;
+  max-width: 500px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+.modalTitle {
+  font-size: 20px;
+  font-weight: 600;
+  margin: 0 0 8px 0;
+  color: #111827;
+}
+
+.select {
+  padding: 12px;
+  border: 1px solid #d4d4d4;
+  border-radius: 6px;
+  font-size: 14px;
+  width: 100%;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.select:focus {
+  border-color: #039855;
+  outline: none;
+}
+
+.textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #d4d4d4;
+  border-radius: 6px;
+  resize: none;
+  font-size: 14px;
+  min-height: 120px;
+  transition: border-color 0.2s;
+  font-family: inherit;
+}
+
+.textarea:focus {
+  border-color: #039855;
+  outline: none;
+}
+
+.addressTypeContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.addressTypeLabel {
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+}
+
+.addressTypeOptions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.addressTypeItem {
+  border: 1px solid #d4d4d4;
+  padding: 8px 16px;
+  color: #6b7280;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.addressTypeItem.active {
+  border-color: #039855;
+  color: #039855;
+  background-color: #ecfdf3;
+  font-weight: 500;
+}
+
+.buttonGroup {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+
+.cancelButton {
+  padding: 10px 18px;
+  color: #4b5563;
+  background-color: white;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-weight: 500;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.cancelButton:hover {
+  background-color: #f9fafb;
+}
+
+.confirmButton {
+  padding: 10px 18px;
+  color: white;
+  background-color: #039855;
+  border: none;
+  border-radius: 6px;
+  font-weight: 500;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.confirmButton:hover {
+  background-color: #027a44;
+}
+
+.confirmButton:disabled,
+.cancelButton:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+@media (max-width: 768px) {
+  .modalContainer {
+    width: 95%;
+    padding: 16px;
   }
-  
-  .select {
-    padding: 8px;
-    border: 2px solid #d4d4d4;
-    border-radius: 5px;
-    cursor: pointer;
-  }
-  
-  .textarea {
-    width: 100%;
-    padding: 8px;
-    border: 2px solid #d4d4d4;
-    border-radius: 5px;
-    resize: none;
-    font-size: 14px;
-    min-height: 100px;
-  }
-  
-  .addressTypeContainer {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-  }
-  
-  .addressTypeOptions {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-  }
-  
-  .addressTypeItem {
-    border: 2px solid #d4d4d4;
-    padding: 4px 8px;
-    color: #d4d4d4;
-    border-radius: 8px;
-    font-size: 15px;
-    cursor: pointer;
-  }
-  
-  .addressTypeItem.active {
-    border-color: #039855;
-    color: #039855;
-  }
-  
+
   .buttonGroup {
-    display: flex;
-    gap: 8px;
-    justify-content: end;
+    flex-direction: column-reverse;
   }
-  
+
+  .confirmButton,
   .cancelButton {
-    padding: 9px;
-    color: black;
-    background-color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
+    width: 100%;
+    text-align: center;
   }
-  
-  .confirmButton {
-    padding: 9px;
-    color: white;
-    background-color: #039855;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-  }
-  
+}

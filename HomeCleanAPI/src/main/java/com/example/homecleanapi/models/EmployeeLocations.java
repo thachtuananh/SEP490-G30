@@ -20,6 +20,7 @@ public class EmployeeLocations {
     private LocalDateTime created_at;
     private LocalDateTime updated_at;
 
+
     public EmployeeLocations() {
     }
 

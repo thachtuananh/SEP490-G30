@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { fetchCleanerDetails } from "../../components/api/CleanerDetail";
+import { fetchCleanerDetails } from "../../services/owner/OwnerAPI";
 import { ImageGallery } from "../../components/cleaner-details/ImageGallery";
 import { ServiceInfo } from "../../components/cleaner-details/ServiceInfo";
-import { PriceSection } from "../../components/cleaner-details/PriceSection";
+import PriceSection from "../../components/cleaner-details/PriceSection";
 import { TabsSection } from "../../components/cleaner-details/TabsSection";
 import styles from "../../components/cleaner-details/styles.module.css";
 
@@ -34,10 +34,18 @@ export const CleanerDetails = () => {
           <ServiceInfo
             cleanerName={cleaner?.cleanerName}
             averageRating={cleaner?.averageRating}
+            phoneNumber={cleaner?.phoneNumber}
+            email={cleaner?.email}
+            experience={cleaner?.experience}
+            age={cleaner?.age}
+            status={cleaner?.status}
+            isVerified={cleaner?.isVerified}
+            identityNumber={cleaner?.identityNumber}
           />
           <PriceSection
-            cleanerId={cleanerId}  // Pass cleanerId here
-            cleanerName={cleaner?.cleanerName}  // Pass cleanerName here
+            cleanerId={cleanerId} // Pass cleanerId here
+            cleanerName={cleaner?.cleanerName} // Pass cleanerName here
+            phoneNumber={cleaner?.phoneNumber}
           />
         </div>
       </div>

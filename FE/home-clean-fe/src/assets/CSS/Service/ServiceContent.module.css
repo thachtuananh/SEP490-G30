@@ -1,9 +1,388 @@
-.btn_Next:hover {
-    transform: scale(1.05);
-    transition-duration: 0.5s;
+/* ServiceContent.module.css */
+.serviceContentWrapper {
+  display: flex;
+  gap: 30px;
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+  /* background: linear-gradient(135deg, #f5f7fa 0%, #ffffff 100%); */
+  /* border-radius: 12px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08); */
 }
 
-.link_Next {
-    text-decoration: none;
-    color: white;
+/* Gallery Section */
+.serviceGallery {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.thumbnailContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 400px;
+  overflow-y: auto;
+  padding: 5px;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(3, 152, 85, 0.1);
+}
+
+.thumbnailWrapper {
+  width: 80px;
+  height: 80px;
+  cursor: pointer;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.thumbnailWrapper:hover {
+  border-color: #039855;
+  transform: scale(1.05);
+}
+
+.activeThumbnail {
+  border-color: #039855;
+  box-shadow: 0 0 8px rgba(3, 152, 85, 0.3);
+}
+
+.thumbnail {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 6px;
+}
+
+.mainImageContainer {
+  width: 100%;
+  box-shadow: 0 4px 15px rgba(3, 152, 85, 0.1);
+}
+
+.mainImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 20px;
+  transition: transform 0.3s ease;
+}
+
+/* .mainImage:hover {
+  transform: scale(1.02);
+} */
+
+/* Service Details Section */
+.serviceDetails {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.serviceTitle {
+  font-size: 30px;
+  font-weight: 700;
+  /* color: #039855; */
+  margin: 0;
+  /* text-transform: uppercase;
+  letter-spacing: 0.5px; */
+}
+
+/* Location Section */
+.locationSection {
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(3, 152, 85, 0.1);
+}
+
+.sectionTitle {
+  font-size: 18px;
+  font-weight: 600;
+  color: #039855;
+  margin-bottom: 12px;
+}
+
+.locationContainer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap; /* Allow items to wrap on smaller screens */
+}
+
+.changeLocationButton {
+  display: flex;
+  align-items: center;
+  justify-content: center; /* Center the content */
+
+  gap: 8px;
+  padding: 10px 18px;
+  background-color: #039855;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  min-width: 130px; /* Ensure minimum width */
+  white-space: nowrap;
+}
+
+.changeLocationButton:hover {
+  background-color: #027a43;
+  transform: translateY(-2px);
+}
+
+.addressText {
+  font-size: 14px;
+  color: #555;
+  margin: 0;
+  word-break: break-word; /* Allow address text to break to prevent overflow */
+}
+
+/* Size Section */
+.sizeSection {
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(3, 152, 85, 0.1);
+}
+
+.sizeOptions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.sizeOption {
+  padding: 10px 18px;
+  background-color: #f5f7fa;
+  border: 2px solid #e0e0e0;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  color: #333;
+  transition: all 0.3s ease;
+}
+
+.sizeOption:hover {
+  border-color: #039855;
+}
+
+.sizeOptionSelected {
+  background-color: #039855;
+  color: #fff;
+  border-color: #039855;
+  font-weight: 600;
+}
+
+.noServices {
+  font-size: 14px;
+  color: #999;
+  margin: 0;
+}
+
+/* Price Section */
+.priceSection {
+  display: flex;
+  align-items: center;
+  background: #fff;
+  padding: 15px 20px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(3, 152, 85, 0.1);
+}
+
+.price {
+  font-size: 26px;
+  font-weight: 700;
+  color: #039855;
+  margin: 0;
+}
+
+/* Action Section */
+.actionSection {
+  margin-top: 20px;
+}
+
+.nextButton {
+  display: inline-block;
+  padding: 14px 35px;
+  background-color: #039855;
+  color: #fff;
+  text-decoration: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  text-align: center;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(3, 152, 85, 0.2);
+}
+
+.nextButton:hover {
+  background-color: #027a43;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(3, 152, 85, 0.3);
+}
+
+/* Loading and Error States */
+.loadingContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 300px;
+}
+
+.errorContainer {
+  text-align: center;
+  padding: 20px;
+  color: #ff4d4f;
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(3, 152, 85, 0.1);
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .serviceContentWrapper {
+    flex-direction: column;
+    gap: 20px;
+    padding: 15px;
+  }
+
+  .serviceGallery {
+    flex-direction: row;
+    gap: 10px;
+  }
+
+  .thumbnailContainer {
+    flex-direction: row;
+    max-height: none;
+    overflow-x: auto;
+    overflow-y: hidden;
+    width: 30%;
+  }
+
+  .thumbnailWrapper {
+    width: 60px;
+    height: 60px;
+  }
+
+  .mainImageContainer {
+    width: 70%;
+    height: 300px;
+  }
+
+  .serviceTitle {
+    font-size: 26px;
+  }
+
+  .price {
+    font-size: 22px;
+  }
+}
+
+@media (max-width: 768px) {
+  .serviceGallery {
+    flex-direction: column;
+  }
+
+  .thumbnailContainer {
+    flex-direction: row;
+    width: 100%;
+    justify-content: center;
+  }
+
+  .thumbnailWrapper {
+    width: 50px;
+    height: 50px;
+  }
+
+  .mainImageContainer {
+    width: 100%;
+    height: 250px;
+  }
+
+  .serviceTitle {
+    font-size: 22px;
+  }
+
+  .sectionTitle {
+    font-size: 16px;
+  }
+
+  .sizeOption {
+    padding: 8px 14px;
+    font-size: 12px;
+  }
+
+  .price {
+    font-size: 20px;
+  }
+
+  .nextButton {
+    padding: 12px 25px;
+    font-size: 14px;
+    width: 100%;
+  }
+  .changeLocationButton {
+    width: auto; /* Don't stretch button full width */
+  }
+  .addressText {
+    margin-top: 8px;
+    width: 100%; /* Full width for address text */
+  }
+}
+
+@media (max-width: 480px) {
+  .serviceContentWrapper {
+    padding: 10px;
+  }
+
+  .thumbnailContainer {
+    gap: 5px;
+  }
+
+  .thumbnailWrapper {
+    width: 40px;
+    height: 40px;
+  }
+
+  .mainImageContainer {
+    height: 200px;
+  }
+
+  .serviceTitle {
+    font-size: 18px;
+  }
+
+  .sectionTitle {
+    font-size: 14px;
+  }
+
+  .changeLocationButton {
+    padding: 8px 12px;
+    font-size: 12px;
+    min-width: 110px; /* Slightly smaller minimum width for very small screens */
+  }
+
+  .addressText {
+    font-size: 12px;
+  }
+
+  .sizeOption {
+    padding: 6px 10px;
+    font-size: 11px;
+  }
+
+  .price {
+    font-size: 18px;
+  }
+
+  .nextButton {
+    padding: 10px 20px;
+    font-size: 12px;
+  }
 }

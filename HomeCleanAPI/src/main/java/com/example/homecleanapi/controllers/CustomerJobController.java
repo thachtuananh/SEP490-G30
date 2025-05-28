@@ -1,20 +1,25 @@
 package com.example.homecleanapi.controllers;
 
-import com.example.homecleanapi.dtos.BookJobRequest;
+import com.example.homecleanapi.dtos.BookMultiJobRequest;
 import com.example.homecleanapi.models.CustomerAddresses;
-import com.example.homecleanapi.services.CleanerJobService;
 import com.example.homecleanapi.services.JobService;
+import com.example.homecleanapi.dtos.BookJobRequest;
+import com.example.homecleanapi.services.CleanerJobService;
+
 
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 
 @RestController
 @Tag(name = "Customer Job API")
@@ -31,26 +36,41 @@ public class CustomerJobController {
 	// API cho customer tạo job
 	@PostMapping(value = "/{customerId}/createjob")
 	public ResponseEntity<Map<String, Object>> createJob(@RequestBody BookJobRequest request,
-			@PathVariable Long customerId) {
-		Map<String, Object> response = jobService.bookJob(customerId, request);
+			@PathVariable Long customerId, HttpServletRequest requestIp) {
+		Map<String, Object> response = jobService.bookJob(customerId, request, requestIp);
 		return ResponseEntity.status(HttpStatus.CREATED).body(response);
+	}
+
+	// api tạo job gồm nhiều dịch uuj và nhiều thời điểm khác nhau
+	@PostMapping("/book-multi/{customerId}")
+	public ResponseEntity<?> bookMultiJob(@PathVariable Long customerId,@RequestBody BookMultiJobRequest request,HttpServletRequest requestIp) {
+		try {
+			Map<String, Object> response = jobService.bookMultiJob(customerId, request, requestIp);
+			return ResponseEntity.ok(response);
+		} catch (Exception e) {
+			return ResponseEntity
+					.status(HttpStatus.INTERNAL_SERVER_ERROR)
+					.body(Collections.singletonMap("error", e.getMessage()));
+		}
 	}
 
 	// Xem danh sách cleaner đã apply cho job
 	@GetMapping(value = "/applications/{customerId}/{jobId}")
 	public ResponseEntity<List<Map<String, Object>>> getJobApplications(
-	    @PathVariable Long customerId, 
-	    @PathVariable Long jobId) {
-	    
-	    // Truyền customerId và jobId vào phương thức để xác thực
-	    List<Map<String, Object>> jobApplications = cleanerJobService.getApplicationsForJob(jobId, customerId);
-	    
-	    if (jobApplications.isEmpty()) {
-	        return ResponseEntity.status(404).body(List.of(Map.of("message", "No applications found")));
-	    }
-	    
-	    return ResponseEntity.ok(jobApplications);
+			@PathVariable Long customerId,
+			@PathVariable Long jobId) {
+
+		// Truyền customerId và jobId vào phương thức để xác thực
+		List<Map<String, Object>> jobApplications = cleanerJobService.getApplicationsForJob(jobId, customerId);
+
+		if (jobApplications.isEmpty()) {
+			return ResponseEntity.status(404).body(List.of(Map.of("message", "No applications found")));
+		}
+
+		return ResponseEntity.ok(jobApplications);
 	}
+
+
 
 
 
@@ -117,6 +137,19 @@ public class CustomerJobController {
         }
         return ResponseEntity.ok(bookedJobs);
     }
+
+	// xem chi tiết job
+	@GetMapping("/{jobIdOrGroupCode}")
+	public ResponseEntity<?> getJobDetail(@PathVariable String jobIdOrGroupCode) {
+		try {
+			Map<String, Object> jobDetail = jobService.getJobDetails(jobIdOrGroupCode);
+			return ResponseEntity.ok(jobDetail);
+		} catch (NoSuchElementException e) {
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Job not found");
+		} catch (Exception e) {
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error: " + e.getMessage());
+		}
+	}
 	
 	@GetMapping("/viewdetailcleaner/{cleanerId}")
 	public ResponseEntity<Map<String, Object>> getCleanerDetailnonedk(@PathVariable Long cleanerId) {
@@ -138,6 +171,8 @@ public class CustomerJobController {
         return ResponseEntity.ok(response);
     }
 	
+	
+	
 	// LUỒNG CODE 2 
 	
 //	@GetMapping("/cleaners/online")
@@ -150,17 +185,9 @@ public class CustomerJobController {
 //
 //        return ResponseEntity.ok(onlineCleaners);
 //    }
-	@GetMapping("/cleaners/online")
-	public ResponseEntity<List<Map<String, Object>>> getOnlineCleaners() {
-	    // Lấy thông tin các cleaner đang online từ WebSocket handler
-	    List<Map<String, Object>> onlineCleaners = cleanerJobService.getOnlineCleaners();
+	
 
-	    if (onlineCleaners.isEmpty()) {
-	        return ResponseEntity.status(404).body(List.of(Map.of("message", "No online cleaners found")));
-	    }
 
-	    return ResponseEntity.ok(onlineCleaners);
-	}
 
 	
 	@GetMapping("/viewdetailcleaneron/{cleanerId}")
@@ -178,9 +205,10 @@ public class CustomerJobController {
     public ResponseEntity<Map<String, Object>> bookJobForCleaner(
     		@PathVariable Long customerId, 
             @PathVariable Long cleanerId, 
-            @RequestBody BookJobRequest request) {
+            @RequestBody BookJobRequest request,
+			HttpServletRequest requestIp) {
 
-        Map<String, Object> response = cleanerJobService.bookJobForCleaner(customerId, cleanerId, request);
+        Map<String, Object> response = cleanerJobService.bookJobForCleaner(customerId, cleanerId, request, requestIp);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 	

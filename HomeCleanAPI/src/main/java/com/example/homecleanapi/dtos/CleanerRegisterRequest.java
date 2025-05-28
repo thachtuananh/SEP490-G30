@@ -1,5 +1,10 @@
 package com.example.homecleanapi.dtos;
 
+import lombok.Getter;
+import lombok.Setter;
+
+@Setter
+@Getter
 public class CleanerRegisterRequest {
     private String password;
     private String name;
@@ -9,6 +14,7 @@ public class CleanerRegisterRequest {
     private String address;
     private String identity_number;
     private String experience;
+    private String profileImageBase64;
 
     public CleanerRegisterRequest() {
     }
@@ -75,5 +81,13 @@ public class CleanerRegisterRequest {
 
     public void setExperience(String experience) {
         this.experience = experience;
+    }
+
+    public String getProfileImageBase64() {
+        return profileImageBase64;
+    }
+
+    public void setProfileImageBase64(String profileImageBase64) {
+        this.profileImageBase64 = profileImageBase64;
     }
 }

@@ -24,11 +24,17 @@
   flex-direction: column;
   gap: 16px;
   display: flex;
-  width: 50%;
+  width: 30%;
+}
+.rightSection {
+  width: 70%;
 }
 
 @media (width<=991px) {
   .imageSection {
+    width: 100%;
+  }
+  .rightSection {
     width: 100%;
   }
 }
@@ -81,7 +87,12 @@
 }
 
 /* Service Info Styles */
+.details {
+  font-size: 16px;
+  font-weight: 500;
 
+  line-height: 24px;
+}
 
 .header {
   justify-content: space-between;
@@ -246,7 +257,7 @@
 }
 
 .tag.active {
-  background-color: #B0FFDC;
+  background-color: #b0ffdc;
   border: 2px solid #039855;
 }
 
@@ -262,7 +273,6 @@
 }
 
 /* Price Section Styles */
-
 
 .price {
   color: #101828;
@@ -329,7 +339,6 @@
 /* Tabs Section Styles */
 .tabsSection {
   width: 100%;
-
 }
 
 .tabs {
@@ -393,14 +402,13 @@
   align-items: center;
   margin-bottom: 15px;
 }
-
 .ratingLabel {
   font-weight: bold;
   margin-right: 10px;
   font-size: 16px;
 }
 
-@media (width<=991px) {
+@media (width<=800px) {
   .mainContainer {
     flex-direction: column;
   }

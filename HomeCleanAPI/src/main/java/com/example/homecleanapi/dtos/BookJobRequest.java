@@ -4,25 +4,36 @@ import java.util.List;
 
 public class BookJobRequest {
 
-    private Integer customerAddressId;
-    private String jobTime;
+    private Integer customerAddressId;  
+    private String jobTime;  
     private List<ServiceRequest> services;
     private String paymentMethod;
+    private String reminder;
 
     // Getter và Setter cho customerAddressId
+
+
     public Integer getCustomerAddressId() {
         return customerAddressId;
     }
 
-    public String getPaymentMethod() {
-        return paymentMethod;
-    }
+    public String getReminder() {
+		return reminder;
+	}
 
-    public void setPaymentMethod(String paymentMethod) {
-        this.paymentMethod = paymentMethod;
-    }
+	public void setReminder(String reminder) {
+		this.reminder = reminder;
+	}
 
-    public void setCustomerAddressId(Integer customerAddressId) {
+	public String getPaymentMethod() {
+		return paymentMethod;
+	}
+
+	public void setPaymentMethod(String paymentMethod) {
+		this.paymentMethod = paymentMethod;
+	}
+
+	public void setCustomerAddressId(Integer customerAddressId) {
         this.customerAddressId = customerAddressId;
     }
 

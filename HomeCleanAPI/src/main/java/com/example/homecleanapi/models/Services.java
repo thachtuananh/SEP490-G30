@@ -27,7 +27,7 @@ public class Services {
     private List<ServiceDetail> serviceDetails;
     
     @OneToMany(mappedBy = "service", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<JobServiceDetail> jobServiceDetails; 
+    private List<JobServiceDetail> jobServiceDetails;
 
     // Getters and Setters
     

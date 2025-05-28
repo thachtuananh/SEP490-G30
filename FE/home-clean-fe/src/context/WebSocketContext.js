@@ -26,20 +26,36 @@ export const WebSocketProvider = ({ children }) => {
             reconnectDelay: 5000,
             heartbeatIncoming: 4000,
             heartbeatOutgoing: 4000,
+
             onConnect: () => {
                 console.log("✅ WebSocket connected (global)");
                 setStompClient(client);
 
-                // 👉 Gửi cleanerId duy nhất
-                const cleanerData = JSON.parse(localStorage.getItem("cleaner"));
+                // Send cleaner online status
+                const cleanerData = JSON.parse(sessionStorage.getItem("cleaner"));
                 if (cleanerData?.cleanerId) {
                     client.publish({
                         destination: "/app/cleaner-online",
                         body: JSON.stringify({
-                            cleanerId: cleanerData.cleanerId, // chỉ gửi cleanerId
+                            cleanerId: cleanerData.cleanerId,
+                            status: "online" // Add status field
                         }),
                     });
-                    // console.log("📡 Sent cleaner-online message");
+                }
+            },
+            
+            beforeDisconnect: () => {
+                // Send offline status before disconnection
+                const cleanerData = JSON.parse(sessionStorage.getItem("cleaner"));
+                if (cleanerData?.cleanerId && client.connected) {
+                    client.publish({
+                        destination: "/app/cleaner-offline",
+                        body: JSON.stringify({
+                            cleanerId: cleanerData.cleanerId,
+                            status: "offline"
+                        }),
+                    });
+                    console.log("📡 Sent cleaner-offline message");
                 }
             },
 
@@ -51,7 +67,25 @@ export const WebSocketProvider = ({ children }) => {
         client.activate();
         clientRef.current = client;
 
+        // Thêm xử lý sự kiện beforeunload ở đây
+        const handleBeforeUnload = () => {
+            const cleanerData = JSON.parse(sessionStorage.getItem("cleaner"));
+            if (cleanerData?.cleanerId && client.connected) {
+                client.publish({
+                    destination: "/app/cleaner-offline",
+                    body: JSON.stringify({
+                        cleanerId: cleanerData.cleanerId,
+                        status: "offline"
+                    }),
+                });
+                console.log("📡 Sent cleaner-offline message from beforeunload");
+            }
+        };
+
+        window.addEventListener('beforeunload', handleBeforeUnload);
+
         return () => {
+            window.removeEventListener('beforeunload', handleBeforeUnload);
             client.deactivate();
             console.log("🛑 WebSocket disconnected (global)");
         };

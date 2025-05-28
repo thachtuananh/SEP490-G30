@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import com.example.homecleanapi.enums.JobStatus;
+import org.hibernate.annotations.UpdateTimestamp;
 
 @Entity
 @Table(name = "jobs")
@@ -21,9 +22,9 @@ public class Job {
     @JoinColumn(name = "customer_id", nullable = false)
     private Customers customer;
 
-//    @ManyToOne
-//    @JoinColumn(name = "service_id")
-//    private Services service;
+
+    @OneToMany(mappedBy = "job", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Feedback> feedback;
     
     @OneToOne(mappedBy = "job", fetch = FetchType.LAZY)
     private JobDetails jobDetails;
@@ -39,27 +40,124 @@ public class Job {
     
     @ManyToOne
     @JoinColumn(name = "customer_address_id", referencedColumnName = "id")
-    private CustomerAddresses customerAddress; // Mối quan hệ với CustomerAddress
+    private CustomerAddresses customerAddress;
 
     @Column(name = "scheduled_time")
-    private LocalDateTime scheduledTime; 
+    private LocalDateTime scheduledTime;
 
-    @Column(name = "created_at")
-    private LocalDateTime createdAt;
+
+    @Column(name = "updated_at")
+    @UpdateTimestamp
+    private LocalDateTime updatedAt;
+
 
     private Double totalPrice;
+    
+    @Column(name = "payment_method", nullable = false)
+    private String paymentMethod;
 
     @Enumerated(EnumType.STRING)
-    private JobStatus status;  // Import JobStatus ở đây 
+    private JobStatus status;
+    
+    @Column(name = "txn_ref")
+    private String txnRef;
+    
+    @Column(name = "reminder")
+    private String reminder;
+
+    @Column(name = "order_code")
+    private String orderCode;
+
+    @Column(name = "booking_type")
+    private String bookingType;
+
+    @Column(name = "job_type")
+    private String jobType;
+
+    @Column(name = "job_group_code")
+    private String jobGroupCode;
+
 
     // Getters and Setters
-    
-    
+
+
+    public String getJobGroupCode() {
+        return jobGroupCode;
+    }
+
+    public void setJobGroupCode(String jobGroupCode) {
+        this.jobGroupCode = jobGroupCode;
+    }
+
+    public String getJobType() {
+        return jobType;
+    }
+
+    public void setJobType(String jobType) {
+        this.jobType = jobType;
+    }
+
+    public String getBookingType() {
+        return bookingType;
+    }
+
+    public void setBookingType(String bookingType) {
+        this.bookingType = bookingType;
+    }
+
+    public String getOrderCode() {
+        return orderCode;
+    }
+
+    public void setOrderCode(String orderCode) {
+        this.orderCode = orderCode;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
+    }
+
+    public List<Feedback> getFeedback() {
+        return feedback;
+    }
+
+    public void setFeedback(List<Feedback> feedback) {
+        this.feedback = feedback;
+    }
+
     public Long getId() {
         return id;
     }
 
-    public List<JobServiceDetail> getJobServiceDetails() {
+    public String getReminder() {
+		return reminder;
+	}
+
+	public void setReminder(String reminder) {
+		this.reminder = reminder;
+	}
+
+	public String getTxnRef() {
+		return txnRef;
+	}
+
+	public void setTxnRef(String txnRef) {
+		this.txnRef = txnRef;
+	}
+
+	public String getPaymentMethod() {
+		return paymentMethod;
+	}
+
+	public void setPaymentMethod(String paymentMethod) {
+		this.paymentMethod = paymentMethod;
+	}
+
+	public List<JobServiceDetail> getJobServiceDetails() {
 		return jobServiceDetails;
 	}
 
@@ -67,13 +165,6 @@ public class Job {
 		this.jobServiceDetails = jobServiceDetails;
 	}
 
-	public LocalDateTime getCreatedAt() {
-		return createdAt;
-	}
-
-	public void setCreatedAt(LocalDateTime createdAt) {
-		this.createdAt = createdAt;
-	}
 
 	public void setId(Long id) {
         this.id = id;

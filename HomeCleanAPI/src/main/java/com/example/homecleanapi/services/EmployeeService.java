@@ -1,24 +1,22 @@
 package com.example.homecleanapi.services;
 
-import com.example.homecleanapi.dtos.EmployeeLocationsDTO;
 import com.example.homecleanapi.models.Employee;
+import com.example.homecleanapi.dtos.EmployeeLocationsDTO;
+import com.example.homecleanapi.repositories.EmployeeRepository;
+import com.example.homecleanapi.dtos.CleanerUpdateProfile;
 import com.example.homecleanapi.models.EmployeeLocations;
 import com.example.homecleanapi.repositories.EmployeeAddressRepository;
-import com.example.homecleanapi.repositories.EmployeeRepository;
 import com.example.homecleanapi.utils.ConvertAddressToLatLong;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.PathVariable;
 
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -36,7 +34,7 @@ public class EmployeeService {
         this.convertAddressToLatLong = convertAddressToLatLong;
     }
 
-    public ResponseEntity<Map<String, Object>> employeeCreateAddress(EmployeeLocationsDTO request, @PathVariable int employeeId) throws IOException {
+    public ResponseEntity<Map<String, Object>> employeeCreateAddress(EmployeeLocationsDTO request, Integer employeeId) throws IOException {
         Map<String, Object> response = new HashMap<>();
 
         Employee employee = employeeRepository.findById(employeeId).orElseThrow(() -> new RuntimeException("Employee not found"));
@@ -75,8 +73,8 @@ public class EmployeeService {
 
     public ResponseEntity<Map<String, Object>> updateEmployeeAddress(
             EmployeeLocationsDTO request,
-            @PathVariable int employeeId,
-            @PathVariable int addressId) throws IOException {
+            Integer employeeId,
+            Integer addressId) throws IOException {
 
         Map<String, Object> response = new HashMap<>();
 
@@ -114,7 +112,7 @@ public class EmployeeService {
         }
 
         // Đánh dấu địa chỉ này là hiện tại
-        existingLocation.setIs_current(false);
+//        existingLocation.setIs_current(false);
 
         // Lưu địa chỉ đã được cập nhật
         employeeAddressRepository.save(existingLocation);
@@ -126,7 +124,7 @@ public class EmployeeService {
 
 
     // Xóa địa chỉ của employee theo locationId
-    public ResponseEntity<Map<String, Object>> deleteEmployeeAddress(int locationId) {
+    public ResponseEntity<Map<String, Object>> deleteEmployeeAddress(Integer locationId) {
         Map<String, Object> response = new HashMap<>();
 
         // Kiểm tra xem địa chỉ có tồn tại không
@@ -149,7 +147,7 @@ public class EmployeeService {
     }
 
     // Lấy tất cả địa chỉ của employee theo employeeId
-    public ResponseEntity<Map<String, Object>> getAllEmployeeAddresses(@PathVariable int employeeId) {
+    public ResponseEntity<Map<String, Object>> getAllEmployeeAddresses(Integer employeeId) {
         Map<String, Object> response = new HashMap<>();
 
         // Kiểm tra xem employee có tồn tại không
@@ -163,6 +161,7 @@ public class EmployeeService {
                 .stream()
                 .map(location -> {
                     Map<String, Object> addressMap = new HashMap<>();
+                    addressMap.put("id", location.getId());
                     addressMap.put("address", location.getAddress());
                     addressMap.put("is_current", location.isIs_current());
                     return addressMap;
@@ -174,7 +173,7 @@ public class EmployeeService {
     }
 
     // Lấy profile của employee employeeID
-    public ResponseEntity<Map<String, Object>> getEmployeeInformation(@PathVariable int employeeId) {
+    public ResponseEntity<Map<String, Object>> getEmployeeInformation(Integer employeeId) {
         Map<String, Object> response = new HashMap<>();
 
         // Tìm employee theo ID
@@ -190,10 +189,47 @@ public class EmployeeService {
     }
 
     // Update Employee Profile
-//    public ResponseEntity<Map<String, Object>> updateEmployeeInfomation(@RequestBody ) {
-//        Map<String, Object> response = new HashMap<>();
-//
-//
-//        return ResponseEntity.status(HttpStatus.OK).body(response);
-//    }
+    public ResponseEntity<Map<String, Object>> updateEmployeeInformation(CleanerUpdateProfile request, Integer employeeId) {
+        Map<String, Object> response = new HashMap<>();
+        Employee employee = employeeRepository.findById(employeeId)
+                .orElseThrow(() -> new RuntimeException("Employee not found"));
+
+        // Kiểm tra nếu email thay đổi thì phải kiểm tra trùng
+        String newEmail = request.getEmail();
+        if (newEmail != null && !newEmail.equalsIgnoreCase(employee.getEmail())) {
+            Optional<Employee> existingEmail = employeeRepository.findEmployeeByEmail(newEmail);
+            if (existingEmail.isPresent()) {
+                response.put("message", "Email đã được sử dụng bởi nhân viên khác!");
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+            }
+            employee.setEmail(newEmail);
+        }
+
+        // Kiểm tra và xử lý ảnh đại diện nếu có
+        String base64 = request.getProfile_image();
+        if (base64 != null && !base64.isEmpty()) {
+            try {
+                byte[] decoded = Base64.getDecoder().decode(base64.getBytes(StandardCharsets.UTF_8));
+                employee.setProfile_image(decoded);
+            } catch (IllegalArgumentException e) {
+                response.put("message", "Ảnh không hợp lệ (base64 decode thất bại)!");
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+            }
+        }
+        employee.updateProfile(request);
+        employeeRepository.save(employee);
+
+        return ResponseEntity.ok(Collections.singletonMap("status", "Update success"));
+    }
+
+    // Delete Employee
+    public ResponseEntity<Map<String, Object>> deleteEmployeeAccount(Integer employeeId) {
+        Employee employee = employeeRepository.findById(employeeId)
+                .orElseThrow(() -> new RuntimeException("Employee not found"));
+
+        employee.setStatus(true);
+        employeeRepository.save(employee);
+
+        return ResponseEntity.ok(Collections.singletonMap("status", "Delete success"));
+    }
 }

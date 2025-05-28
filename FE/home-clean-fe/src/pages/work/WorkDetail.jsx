@@ -7,21 +7,21 @@ import styles from "../../assets/CSS/work/WorkDetails.module.css";
 import Navbar from "../../components/Home/Cleaner/Navbar";
 import Footer from "../../components/Home/Cleaner/Footer";
 const WorkDetail = () => {
-    return (
-        <>
-            <Navbar />
-            <div className={styles.container}>
-                <div className={styles.containerbody}>
-                    {/* <div className={styles.backButton}>
+  return (
+    <>
+      <Navbar />
+      <div className={styles.container}>
+        <div className={styles.containerbody}>
+          {/* <div className={styles.backButton}>
                         <Link to="/homeclean" className={styles.backLink}>
                             <FaArrowLeft />
                             <span>Quay lại trang chủ</span>
                         </Link>
                     </div> */}
 
-                    <WorkDetailsDesCription />
+          <WorkDetailsDesCription />
 
-                    {/* <div className={styles.similarServices}>
+          {/* <div className={styles.similarServices}>
                         <h2 className={styles.sectionTitle}>Dịch vụ tương tự</h2>
                         <div className={styles.serviceList}>
                             {Array(5)
@@ -31,11 +31,11 @@ const WorkDetail = () => {
                                 ))}
                         </div>
                     </div> */}
-                </div>
-            </div>
-            <Footer />
-        </>
-    );
+        </div>
+      </div>
+      <Footer />
+    </>
+  );
 };
 
 export default WorkDetail;

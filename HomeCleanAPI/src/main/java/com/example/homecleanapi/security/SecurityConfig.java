@@ -1,7 +1,9 @@
 package com.example.homecleanapi.security;
 
+import com.example.homecleanapi.repositories.AdministratorRepository;
 import com.example.homecleanapi.repositories.CustomerRepository;
 import com.example.homecleanapi.repositories.EmployeeRepository;
+import com.example.homecleanapi.services.CustomAdminUserDetailsService;
 import com.example.homecleanapi.services.CustomCustomerUserDetailsService;
 import com.example.homecleanapi.services.CustomEmployeeUserDetailsService;
 import com.example.homecleanapi.utils.JwtUtils;
@@ -29,12 +31,18 @@ public class SecurityConfig {
     private final JwtUtils jwtUtils;
     private CustomerRepository customerRepository; // Inject CustomerRepository
     private EmployeeRepository employeeRepository; // Inject EmployeeRepository
+    private final AdministratorRepository administratorRepository;
 
-    public SecurityConfig(JwtUtils jwtUtils, CustomerRepository customerRepository, EmployeeRepository employeeRepository) {
+    public SecurityConfig(JwtUtils jwtUtils,
+                          CustomerRepository customerRepository,
+                          EmployeeRepository employeeRepository,
+                          AdministratorRepository administratorRepository) {
         this.jwtUtils = jwtUtils;
         this.customerRepository = customerRepository;
         this.employeeRepository = employeeRepository;
+        this.administratorRepository = administratorRepository;
     }
+
 
     @Bean
     public UserDetailsService customerUserDetailsService() {
@@ -51,7 +59,7 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
-                .cors(cors -> cors.configurationSource(corsConfigurationSource())) // 🔥 Sửa lỗi cú pháp CORS
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/customer/login").permitAll()
                         .requestMatchers("/api/customer/register").permitAll()
@@ -60,16 +68,22 @@ public class SecurityConfig {
                         .requestMatchers("/api/employee/register").permitAll()
                         .requestMatchers("/api/employee/forgot-password").permitAll()
                         .requestMatchers("/api/services/**").permitAll()
-                        .requestMatchers("/**").permitAll()
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
                         .requestMatchers("/api-docs").permitAll()
+                        .requestMatchers("/api/admin/customers/**").hasAnyRole("Admin", "Manager")
+                        .requestMatchers("/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(customerAuthenticationProvider())
                 .authenticationProvider(employeeAuthenticationProvider())
-                .addFilterBefore(new JwtAuthenticationFilter(jwtUtils, customerUserDetailsService(), employeeUserDetailsService()),
-                        UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(new JwtAuthenticationFilter(
+                        jwtUtils,
+                        customerUserDetailsService(),
+                        employeeUserDetailsService(),
+                        adminUserDetailsService()
+                ), UsernamePasswordAuthenticationFilter.class);
+
         return http.build();
     }
 
@@ -89,18 +103,28 @@ public class SecurityConfig {
     }
 
     @Bean
+    public UserDetailsService adminUserDetailsService() {
+        return new CustomAdminUserDetailsService(administratorRepository);
+    }
+
+
+    @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOriginPatterns(Arrays.asList("http://localhost:8080",
+        configuration.setAllowedOrigins(Arrays.asList(
+                "http://localhost:8080",
                 "http://localhost:3000",
-                "http://34.121.192.129:8080",
-                "http://34.136.232.226:8080",
                 "https://house-clean-platform.web.app",
                 "https://house-clean-platform.firebaseapp.com",
                 "https://costume-lithuania-parameter-bathrooms.trycloudflare.com",
-                "https://pike-armor-ms-hampton.trycloudflare.com"));
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type"));
+                "https://grass-finding-presentation-competitions.trycloudflare.com",
+                "https://turkish-content-correction-literally.trycloudflare.com",
+                "https://mail-considers-dis-exotic.trycloudflare.com",
+                "https://api.homeclean.site",
+                "https://sandbox.vnpayment.vn",
+                "http://localhost:6333"));
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "PATCH"));
+        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "Accept", "Origin", "X-Requested-With"));
         configuration.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

@@ -1,94 +1,94 @@
 .infomation-container {
-    max-width: 1300px;
-    width: 100%;
-    margin: 0 auto;
-    display: flex;
-    box-sizing: border-box;
-    padding: 50px;
-    gap: 1rem;
-    justify-content: center;
+  max-width: 1300px;
+  width: 100%;
+  margin: 0 auto;
+  display: flex;
+  box-sizing: border-box;
+  padding: 50px;
+  gap: 1rem;
+  justify-content: center;
 }
 
 .menu-container {
-    width: 20%;
-    box-sizing: border-box;
+  /* width: 20%; */
+  box-sizing: border-box;
 }
 
 .content-container {
-    width: 80%;
-    border: 1px solid gray;
-    padding: 10px;
-    border-radius: 5px;
-    box-sizing: border-box;
+  width: 80%;
+  border: 1px solid gray;
+  padding: 10px;
+  border-radius: 5px;
+  box-sizing: border-box;
 }
 
 @media (max-width: 1024px) {
-    .infomation-container {
-        padding: 30px;
-    }
+  .infomation-container {
+    padding: 30px;
+  }
 
-    .content-container {
-        width: 100%;
-        /* Giúp phần nội dung chiếm toàn bộ chiều rộng */
-    }
+  .content-container {
+    width: 100%;
+    /* Giúp phần nội dung chiếm toàn bộ chiều rộng */
+  }
 }
 
 @media (max-width: 768px) {
-    .infomation-container {
-        flex-direction: column;
-        /* Xếp chồng các phần tử trên màn hình nhỏ */
-        align-items: center;
-        padding: 20px;
-    }
+  .infomation-container {
+    flex-direction: column;
+    /* Xếp chồng các phần tử trên màn hình nhỏ */
+    align-items: center;
+    padding: 20px;
+  }
 
-    .menu-container {
-        width: 100%;
-        /* Đảm bảo menu hiển thị toàn bộ chiều rộng */
-    }
+  .menu-container {
+    width: 100%;
+    /* Đảm bảo menu hiển thị toàn bộ chiều rộng */
+  }
 
-    .content-container {
-        width: 100%;
-    }
+  .content-container {
+    width: 100%;
+  }
 }
 
 @media (max-width: 480px) {
-    .infomation-container {
-        padding: 10px;
-    }
+  .infomation-container {
+    padding: 10px;
+  }
 
-    .content-container {
-        padding: 8px;
-        border-radius: 3px;
-    }
+  .content-container {
+    padding: 8px;
+    border-radius: 3px;
+  }
 }
 
 .user-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
 }
 
 .logout-btn {
-    padding: 5px 10px;
-    background-color: #f44336;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
+  padding: 5px 10px;
+  background-color: #f44336;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
 }
 
 .logout-btn:hover {
-    background-color: #d32f2f;
+  background-color: #d32f2f;
 }
 
 .user-name {
-    font-size: 16px;
-    font-weight: 600;
-    text-decoration: none;
-    color: #29322E;
-    border: 1px solid #29322E;
-    padding: 10px 30px 10px 30px;
-    border-radius: 30px;
-    text-align: center;
+  font-size: 16px;
+  font-weight: 600;
+  text-decoration: none;
+  color: #29322e;
+  border: 1px solid #29322e;
+  padding: 10px 30px 10px 30px;
+  border-radius: 30px;
+  text-align: center;
 }

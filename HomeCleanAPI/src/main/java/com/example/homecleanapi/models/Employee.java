@@ -1,7 +1,10 @@
 package com.example.homecleanapi.models;
 
-
+import com.example.homecleanapi.dtos.CleanerUpdateProfile;
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -12,62 +15,73 @@ import java.util.stream.Collectors;
 
 @Entity
 @Table(name="cleaners")
+@Getter
+@Setter
 public class Employee {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
+
     @Column(name = "password_hash")
     private String password;
+
     @Column(name = "full_name")
     private String name;
+
     @Column(name = "phone_number")
     private String phone;
-    
+
     private String email;
     private Integer age;
     private String address;
-    
-    private String identity_number;
-    
+
+    @Column(name = "identity_number")
+    private String identityNumber;
+
     @Column(name = "identity_verified")
     private Boolean is_verified;
+
+
+
     private String experience;
+
     private LocalDateTime created_at;
     private LocalDateTime updated_at;
+
     @Column(name = "profile_image", columnDefinition = "BYTEA")
     private byte[] profile_image;
 
     @Column(name = "status")
     private Boolean status;
 
+    @Column(name = "is_deleted")
+    private Boolean isDeleted;
+
     @PrePersist
     protected void onCreate() {
         this.is_verified = Boolean.FALSE;
         this.created_at = LocalDateTime.now();
         this.updated_at = LocalDateTime.now();
-//        byte[] image = getRandomProfileImage();
-//
-//        if (image == null || image.length == 0) {
-//            System.out.println("Không có ảnh, gán null cho profile_image");
-//            this.profile_image = null;
-//        } else {
-//            System.out.println("Lưu ảnh có kích thước: " + image.length + " bytes");
-//            this.profile_image = image;
-//        }
+        this.status = Boolean.FALSE;
     }
 
-    
+    public Boolean getIsDeleted() {  // Thay đổi tên getter
+        return isDeleted;
+    }
+
+    public void setIsDeleted(Boolean isDeleted) {  // Thay đổi tên setter
+        this.isDeleted = isDeleted;
+    }
+
     public Boolean getStatus() {
-		return status;
-	}
+        return status;
+    }
 
+    public void setStatus(Boolean status) {
+        this.status = status;
+    }
 
-	public void setStatus(Boolean status) {
-		this.status = status;
-	}
-
-
-	public Integer getAge() {
+    public Integer getAge() {
         return age;
     }
 
@@ -91,13 +105,6 @@ public class Employee {
         this.profile_image = profile_image;
     }
 
-    public String getIdentity_number() {
-        return identity_number;
-    }
-
-    public void setIdentity_number(String identity_number) {
-        this.identity_number = identity_number;
-    }
 
     public Boolean getIs_verified() {
         return is_verified;
@@ -140,6 +147,15 @@ public class Employee {
     }
 
     public Employee() {
+    }
+
+    public void updateProfile(CleanerUpdateProfile request) {
+        this.setName(request.getName());
+        this.setEmail(request.getEmail());
+        this.setPhone(request.getPhone());
+        this.setAge(request.getAge());
+        this.setIdentityNumber(request.getIdentity_number());
+        this.setExperience(request.getExperience());
     }
 
     public Integer getId() {

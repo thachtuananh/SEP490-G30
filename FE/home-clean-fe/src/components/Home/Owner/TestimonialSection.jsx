@@ -1,40 +1,51 @@
-import React from 'react';
+import React from "react";
+import { Space } from "antd";
 
 function TestimonialSection() {
   const testimonials = [
     {
       id: 1,
       rating: 4,
-      content: "Dịch vụ hoàn thành nhanh chóng, nhân viên tư vấn, hỗ trợ rất nhiệt tình.",
+      content:
+        "Dịch vụ hoàn thành nhanh chóng, nhân viên tư vấn, hỗ trợ rất nhiệt tình.",
       author: "Chị Trần Thị A",
-      avatar: "https://i.pravatar.cc/100?img=1"
+      avatar: "https://i.pravatar.cc/100?img=1",
     },
     {
       id: 2,
       rating: 5,
-      content: "Tôi rất hài lòng với chất lượng dịch vụ mà đơn vị Houseclean đang cung cấp.",
+      content:
+        "Tôi rất hài lòng với chất lượng dịch vụ mà đơn vị Houseclean đang cung cấp.",
       author: "Chị Trần Thị B",
-      avatar: "https://i.pravatar.cc/100?img=2"
+      avatar: "https://i.pravatar.cc/100?img=2",
     },
     {
       id: 3,
       rating: 5,
       content: "Thông tin về từng dịch vụ được mô tả rõ ràng và chi tiết.",
       author: "Anh Nguyễn Văn C",
-      avatar: "https://i.pravatar.cc/100?img=3"
+      avatar: "https://i.pravatar.cc/100?img=3",
     },
     {
       id: 4,
       rating: 5,
       content: "Thông tin về từng dịch vụ được mô tả rõ ràng và chi tiết.",
       author: "Anh Nguyễn Văn C",
-      avatar: "https://i.pravatar.cc/100?img=4"
-    }
+      avatar: "https://i.pravatar.cc/100?img=4",
+    },
   ];
 
   return (
     <section className="testimonial-section">
-      <h2 className="section-title">Khách hàng nói gì về chúng tôi</h2>
+      <div
+        style={{
+          marginBottom: "20px",
+        }}
+      >
+        <Space>
+          <h2 className="section-title">Khách hàng nói gì về chúng tôi</h2>
+        </Space>
+      </div>
       <div className="testimonial-grid">
         {testimonials.map((testimonial) => (
           <div key={testimonial.id} className="testimonial-card">
@@ -42,7 +53,9 @@ function TestimonialSection() {
               {[...Array(5)].map((_, index) => (
                 <span
                   key={index}
-                  className={`star ${index < testimonial.rating ? 'filled' : ''}`}
+                  className={`star ${
+                    index < testimonial.rating ? "filled" : ""
+                  }`}
                 >
                   ★
                 </span>

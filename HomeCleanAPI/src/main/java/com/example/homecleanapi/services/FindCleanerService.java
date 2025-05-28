@@ -1,13 +1,17 @@
 package com.example.homecleanapi.services;
 
 import com.example.homecleanapi.dtos.EmployeeDTO;
+import com.example.homecleanapi.dtos.JobSummaryDTO;
+import com.example.homecleanapi.models.EmployeeLocations;
+import com.example.homecleanapi.repositories.EmployeeAddressRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.Query;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.sql.Timestamp;
+import java.util.*;
 
 @Service
 public class FindCleanerService {
@@ -15,6 +19,11 @@ public class FindCleanerService {
     @PersistenceContext
     private EntityManager entityManager;
 
+    @Autowired
+    private EmployeeAddressRepository employeeAddressRepository;
+
+
+    // Lấy list cleaner gần customer nhất
     private List<EmployeeDTO> executeNearbyQuery(double latitude, double longitude, double radiusInMeters, int limit) {
         String query = "SELECT c.id, c.full_name, c.email, c.experience, c.phone_number, c.profile_image, " +
                 "       ca.latitude, ca.longitude, " +
@@ -24,7 +33,7 @@ public class FindCleanerService {
                 "       ) AS distance_m " +
                 "FROM cleaners c " +
                 "JOIN cleaner_addresses ca ON c.id = ca.cleaner_id " +
-                "WHERE ca.is_current = true " +
+                "WHERE ca.is_current = true AND c.identity_verified = true AND c.is_deleted = false " +
                 "AND ST_DWithin(" +
                 "        ca.geom, " +
                 "        ST_Transform(ST_SetSRID(ST_MakePoint(:longitude, :latitude), 4326), 3857), " +
@@ -51,7 +60,7 @@ public class FindCleanerService {
             dto.setProfileImage((byte[]) row[5]);  // profile_image
             dto.setLatitude((Double) row[6]);  // latitude
             dto.setLongitude((Double) row[7]);  // longitude
-            dto.setDistance((Double) row[8]);  // distance_m
+            dto.setDistance(((Number) row[8]).doubleValue() / 1000);
 
             employees.add(dto);
         }
@@ -59,7 +68,7 @@ public class FindCleanerService {
         return employees;
     }
 
-    public List<EmployeeDTO> findNearbyEmployees(double latitude, double longitude, double radiusInMeters, int limit) {
+    public List<EmployeeDTO> findNearbyEmployees(double latitude, double longitude, int limit) {
         double[] radiusLevels = {15000, 30000, 60000}; // Các mức bán kính
         List<EmployeeDTO> employees = new ArrayList<>();
 
@@ -67,10 +76,196 @@ public class FindCleanerService {
             employees = executeNearbyQuery(latitude, longitude, radius, limit);
 
             if (employees.size() >= limit) {
-                break; // Nếu đã đủ số lượng nhân viên, dừng lại
+                break;
+            }
+        }
+        System.out.println(employees);
+        return employees;
+    }
+
+
+    // -----------------------------------------------------------
+    // phần lấy job đang open và gần nhất
+
+    public List<JobSummaryDTO> getNearbyOpenJobs(Long cleanerId, int limit) {
+        // Lấy thông tin địa chỉ của cleaner từ bảng cleaner_addresses
+        EmployeeLocations cleanerAddress = employeeAddressRepository.findByEmployee_IdAndIs_currentTrue(cleanerId);
+        if (cleanerAddress == null) {
+            throw new RuntimeException("Cleaner address not found.");
+        }
+
+        // Lấy tọa độ của cleaner từ cleanerAddress
+        double cleanerLatitude = cleanerAddress.getLatitude();
+        double cleanerLongitude = cleanerAddress.getLongitude();
+
+        // Các mức bán kính cần tìm kiếm (bạn có thể điều chỉnh bán kính này)
+        double[] radiusLevels = {15000, 30000, 60000};
+
+        // Sử dụng Map để đảm bảo không có trùng lặp jobId
+        Map<Long, JobSummaryDTO> jobSummaryMap = new HashMap<>();
+
+        // Lặp qua các mức bán kính để tìm kiếm job
+        for (double radius : radiusLevels) {
+            // Thực hiện truy vấn tìm các job gần cleaner
+            List<Object[]> results = executeNearbyJobQuery(cleanerId, cleanerLatitude, cleanerLongitude, radius, limit);
+
+            // Duyệt qua kết quả truy vấn
+            for (Object[] row : results) {
+                JobSummaryDTO dto = new JobSummaryDTO();
+                dto.setJobId(((Number) row[0]).longValue());  // jobId
+                dto.setServiceName((String) row[1]);  // serviceName
+                dto.setPrice((Double) row[2]);  // total_price
+                dto.setScheduledTime(((Timestamp) row[3]).toLocalDateTime());  // scheduled_time
+                dto.setDistance((Double) row[4]);  // distance_km (khoảng cách tính bằng km)
+
+                // Chỉ thêm job nếu chưa có trong Map (dựa trên jobId)
+                jobSummaryMap.putIfAbsent(dto.getJobId(), dto);
+            }
+
+            // Nếu đã đủ số lượng job, thoát khỏi vòng lặp
+            if (jobSummaryMap.size() >= limit) {
+                break;
             }
         }
 
-        return employees; // Trả về danh sách nhân viên gần nhất
+        // Chuyển Map thành List trước khi trả về
+        return new ArrayList<>(jobSummaryMap.values());
     }
+
+
+
+
+
+    private List<Object[]> executeNearbyJobQuery(Long cleanerId, double latitude, double longitude, double radiusInMeters, int limit) {
+        String query = "SELECT j.id, " +
+                "       (SELECT string_agg(s.name, ', ') FROM job_service_detail jsd " +
+                "           JOIN services s ON jsd.service_id = s.id WHERE jsd.job_id = j.id) AS service_name, " +
+                "       j.total_price, j.scheduled_time, " +
+                "       ST_Distance(" +
+                "               ST_Transform(ca.geom, 3857), " +
+                "               ST_Transform(ST_SetSRID(ST_MakePoint(:longitude, :latitude), 4326), 3857)" +
+                "       ) / 1000 AS distance_km " +
+                "FROM jobs j " +
+                "JOIN customer_addresses ca ON j.customer_address_id = ca.id " +
+                "WHERE j.status = 'OPEN' " +
+                "AND ST_DWithin(" +
+                "        ca.geom, " +
+                "        ST_Transform(ST_SetSRID(ST_MakePoint(:longitude, :latitude), 4326), 3857), " +
+                "        :radius) " +
+                "AND j.id NOT IN (" +
+                "    SELECT job_id FROM job_application WHERE cleaner_id = :cleanerId" +
+                ") " +
+                "ORDER BY distance_km ASC " +
+                "LIMIT :limit";
+
+
+        // Cập nhật cách gọi tham số
+        Query nativeQuery = entityManager.createNativeQuery(query)
+                .setParameter("latitude", latitude)
+                .setParameter("longitude", longitude)
+                .setParameter("radius", radiusInMeters)
+                .setParameter("limit", limit)
+                .setParameter("cleanerId", cleanerId);
+
+        return nativeQuery.getResultList();
+    }
+
+
+
+
+//    *******************************************************************
+
+    // lấy job lịch dài
+    public List<JobSummaryDTO> getNearbyMultiDayJobs(Long cleanerId, int limit) {
+        // Lấy thông tin địa chỉ hiện tại của cleaner
+        EmployeeLocations cleanerAddress = employeeAddressRepository.findByEmployee_IdAndIs_currentTrue(cleanerId);
+        if (cleanerAddress == null) {
+            throw new RuntimeException("Cleaner address not found.");
+        }
+
+        double cleanerLatitude = cleanerAddress.getLatitude();
+        double cleanerLongitude = cleanerAddress.getLongitude();
+
+        double[] radiusLevels = {15000, 30000, 60000};
+        Map<String, JobSummaryDTO> jobSummaryMap = new LinkedHashMap<>();
+
+        for (double radius : radiusLevels) {
+            List<Object[]> results = executeNearbyMultiDayJobQuery(cleanerId, cleanerLatitude, cleanerLongitude, radius, limit);
+
+            for (Object[] row : results) {
+                String jobGroupCode = (String) row[0];
+
+                if (!jobSummaryMap.containsKey(jobGroupCode)) {
+                    JobSummaryDTO dto = new JobSummaryDTO();
+                    dto.setJobGroupCode(jobGroupCode); // Bạn cần có trường này trong DTO
+                    dto.setServiceName((String) row[1]);
+                    dto.setPrice((Double) row[2]);
+                    dto.setScheduledTime(((Timestamp) row[3]).toLocalDateTime());
+                    dto.setDistance((Double) row[4]);
+
+                    jobSummaryMap.put(jobGroupCode, dto);
+                }
+            }
+
+            if (jobSummaryMap.size() >= limit) {
+                break;
+            }
+        }
+
+        return new ArrayList<>(jobSummaryMap.values());
+    }
+
+
+    private List<Object[]> executeNearbyMultiDayJobQuery(Long cleanerId, double latitude, double longitude, double radiusInMeters, int limit) {
+        String query = "SELECT j.job_group_code, " +
+                "       string_agg(DISTINCT s.name, ', ') AS service_name, " +
+                "       CAST(SUM(j.total_price) AS DOUBLE PRECISION) AS total_price, " +
+                "       MIN(j.scheduled_time) AS first_scheduled_time, " +
+                "       CAST(MIN(ST_Distance(" +
+                "           ST_Transform(ca.geom, 3857), " +
+                "           ST_Transform(ST_SetSRID(ST_MakePoint(:longitude, :latitude), 4326), 3857)" +
+                "       )) / 1000 AS DOUBLE PRECISION) AS distance_km " +
+                "FROM jobs j " +
+                "JOIN customer_addresses ca ON j.customer_address_id = ca.id " +
+                "JOIN job_service_detail jsd ON jsd.job_id = j.id " +
+                "JOIN services s ON s.id = jsd.service_id " +
+                "WHERE j.status = 'OPEN' " +
+                "AND j.job_group_code IS NOT NULL " +
+                "AND ST_DWithin(" +
+                "        ST_Transform(ca.geom, 3857), " +
+                "        ST_Transform(ST_SetSRID(ST_MakePoint(:longitude, :latitude), 4326), 3857), " +
+                "        :radius) " +
+                "AND j.job_group_code NOT IN ( " +
+                "    SELECT DISTINCT j2.job_group_code " +
+                "    FROM jobs j2 " +
+                "    JOIN job_application ja ON ja.job_id = j2.id " +
+                "    WHERE ja.cleaner_id = :cleanerId " +
+                ") " +
+                // Nếu bạn có trường type hoặc duration để lọc job nhiều ngày, thêm điều kiện tại đây:
+                // "AND j.type = 'MULTI_DAY' " +
+                "GROUP BY j.job_group_code " +
+                "ORDER BY distance_km ASC " +
+                "LIMIT :limit";
+
+        Query nativeQuery = entityManager.createNativeQuery(query)
+                .setParameter("latitude", latitude)
+                .setParameter("longitude", longitude)
+                .setParameter("radius", radiusInMeters)
+                .setParameter("limit", limit)
+                .setParameter("cleanerId", cleanerId);
+
+        return nativeQuery.getResultList();
+    }
+
+
+
+
+
+
+
+
+
+
+
+
 }

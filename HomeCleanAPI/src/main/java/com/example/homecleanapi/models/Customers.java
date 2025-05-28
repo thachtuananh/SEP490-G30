@@ -1,68 +1,32 @@
 package com.example.homecleanapi.models;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 
-import java.time.LocalDateTime;
-
+import java.time.LocalDate;
 
 @Entity
 @Table(name = "customers")
+@Getter
+@Setter
 public class Customers {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
+
     private String password_hash;
     private String full_name;
+
     @Column(name = "phone_number")
     private String phone;
+
     @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime created_at;
+    private LocalDate created_at;
 
-    public Customers() {
-    }
-
-    @PrePersist
-    protected void onCreate() {
-        this.created_at = LocalDateTime.now();
-    }
-
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
-    }
-
-    public String getPassword_hash() {
-        return password_hash;
-    }
-
-    public void setPassword_hash(String password_hash) {
-        this.password_hash = password_hash;
-    }
-
-    public String getFull_name() {
-        return full_name;
-    }
-
-    public void setFull_name(String full_name) {
-        this.full_name = full_name;
-    }
-
-    public String getPhone() {
-        return phone;
-    }
-
-    public void setPhone(String phone) {
-        this.phone = phone;
-    }
-
-    public LocalDateTime getCreated_at() {
-        return created_at;
-    }
-
-    public void setCreated_at(LocalDateTime created_at) {
-        this.created_at = created_at;
-    }
+    @Column(name = "is_deleted")
+    private boolean isDeleted;
+    private String email;
+    @Column(name = "profile_image", columnDefinition = "BYTEA")
+    private byte[] profile_image;
 }

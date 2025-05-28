@@ -1,6 +1,9 @@
 package com.example.homecleanapi.models;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.UpdateTimestamp;
+
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "feedback")
@@ -14,10 +17,35 @@ public class Feedback {
     @JoinColumn(name = "job_id", nullable = false)
     private Job job; // Liên kết với bảng job
 
-    private Integer rating; // Đánh giá (1-5)
+    private Double rating; // Đánh giá (1-5)
     private String comment;
 
+    @Column(name = "created_at")
+    @UpdateTimestamp
+    private LocalDateTime createdAt;
+
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
     // Getters and Setters
+
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
     public Long getId() {
         return id;
     }
@@ -34,11 +62,11 @@ public class Feedback {
         this.job = job;
     }
 
-    public Integer getRating() {
+    public Double getRating() {
         return rating;
     }
 
-    public void setRating(Integer rating) {
+    public void setRating(Double rating) {
         this.rating = rating;
     }
 
