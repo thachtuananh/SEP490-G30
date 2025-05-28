@@ -1,3 +1,4 @@
+import axios from "axios";
 import { BASE_URL } from "../../utils/config";
 
 // Fetch cleaner applications for a job
@@ -260,3 +261,17 @@ export async function retryPaymentWallet(jobId,customerId) {
     throw error;
   }
 }
+
+export const fetchJobStatuses = async (customerId) => {
+    try {
+      const response = await axios.get(`${BASE_URL}/customer/${customerId}/job-statuses`, {
+        headers: {
+          'Accept': 'application/json',
+        },
+      });
+      return response.data; // Trả về danh sách trạng thái công việc
+    } catch (error) {
+      console.error('Lỗi khi lấy trạng thái công việc:', error);
+      throw error; // Ném lỗi để xử lý ở nơi gọi hàm
+    }
+  };

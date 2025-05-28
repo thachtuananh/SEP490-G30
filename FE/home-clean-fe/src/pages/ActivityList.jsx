@@ -164,7 +164,11 @@ export const ActivityList = () => {
             <p>Không tìm thấy hoạt động phù hợp với bộ lọc</p>
           </div>
         ) : (
-          <ActivityCard data={filteredData} loading={loading} />
+          <ActivityCard
+            data={filteredData}
+            loading={loading}
+            onHireCleaner={fetchData}
+          />
         )}
       </div>
     </div>

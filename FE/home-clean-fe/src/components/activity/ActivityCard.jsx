@@ -1,20 +1,10 @@
 import React, { useEffect, useState, useContext } from "react";
-import {
-  Modal,
-  List,
-  Button,
-  Table,
-  message,
-  Empty,
-  Badge,
-  Pagination,
-} from "antd";
+import { Modal, Button, Table, message, Empty, Badge, Pagination } from "antd";
 import { InfoCleanerCard } from "../activity/InfoCleanerCard";
 import { InfoCleanerCardDetail } from "../activity/InfoCleanerCardDetail";
 import styles from "../activity/ActivityCard.module.css";
 import {
   FaRegCommentAlt,
-  FaRulerHorizontal,
   FaFlag,
   FaCheck,
   FaHourglassHalf,
@@ -33,6 +23,7 @@ import {
   rejectCleaner,
   retryPayment,
   retryPaymentWallet,
+  fetchJobStatuses,
 } from "../../services/owner/StatusJobAPI";
 import { FeedbackModal } from "../../components/activity/FeedbackModal";
 import { createConversation } from "../../services/ChatService";
@@ -40,7 +31,7 @@ import { sendNotification } from "../../services/NotificationService";
 import { ReportModal } from "../../components/activity/ReportModal";
 import { sendSms } from "../../services/SMSService";
 
-export const ActivityCard = ({ data, onDelete }) => {
+export const ActivityCard = ({ data, onDelete, onHireCleaner }) => {
   const [activities, setActivities] = useState([]);
   const [filteredActivities, setFilteredActivities] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -77,18 +68,39 @@ export const ActivityCard = ({ data, onDelete }) => {
   }, [data]);
 
   useEffect(() => {
+    const interval = setInterval(async () => {
+      try {
+        const updatedStatuses = await fetchJobStatuses(customerId);
+        setActivities((prevActivities) =>
+          prevActivities.map((activity) => {
+            const updatedJob = updatedStatuses.find(
+              (job) => job.jobId === activity.jobId
+            );
+            return updatedJob
+              ? { ...activity, status: updatedJob.status }
+              : activity;
+          })
+        );
+        applyFilters(activities, statusFilter, searchOrderCode);
+      } catch (error) {
+        console.error("Lỗi khi fetch trạng thái công việc:", error);
+      }
+    }, 2500);
+
+    return () => clearInterval(interval);
+  }, [activities, customerId, statusFilter, searchOrderCode]);
+
+  useEffect(() => {
     applyFilters(activities, statusFilter, searchOrderCode);
   }, [statusFilter, searchOrderCode]);
 
   const applyFilters = (data, status, orderCode) => {
     let result = [...data];
 
-    // Filter by status
     if (status !== "ALL") {
       result = result.filter((activity) => activity.status === status);
     }
 
-    // Filter by orderCode
     if (orderCode && orderCode.trim() !== "") {
       result = result.filter(
         (activity) =>
@@ -98,7 +110,6 @@ export const ActivityCard = ({ data, onDelete }) => {
     }
 
     setFilteredActivities(result);
-    // Reset to first page when filters change
     setCurrentPage(1);
   };
 
@@ -156,7 +167,6 @@ export const ActivityCard = ({ data, onDelete }) => {
     }
   };
 
-  // Get current progress step based on status
   const getProgressStep = (status) => {
     switch (status) {
       case "OPEN":
@@ -174,7 +184,6 @@ export const ActivityCard = ({ data, onDelete }) => {
     }
   };
 
-  // Fetch cleaner applications
   const fetchCleaners = async (jobId) => {
     setLoading(true);
     try {
@@ -195,7 +204,6 @@ export const ActivityCard = ({ data, onDelete }) => {
     setLoading(false);
   };
 
-  // Fetch application counts for all OPEN jobs on component mount
   useEffect(() => {
     if (activities && activities.length > 0) {
       activities.forEach(async (activity) => {
@@ -222,22 +230,20 @@ export const ActivityCard = ({ data, onDelete }) => {
   }, [activities, customerId]);
 
   const handleViewCleanerDetail = async (cleanerId) => {
-    if (isProcessing) return; // Ngăn chặn click liên tục
+    if (isProcessing) return;
     setIsProcessing(true);
-
     try {
       const data = await fetchCleanerDetail(cleanerId);
       setSelectedCleaner(data);
-      setIsCleanerDetailModalOpen(true); // Mở modal hiển thị chi tiết
+      setIsCleanerDetailModalOpen(true);
     } catch (error) {
       message.error("Không thể tải thông tin người dọn dẹp");
       setSelectedCleaner(null);
     } finally {
-      setIsProcessing(false); // Đặt lại trạng thái sau khi hoàn tất
+      setIsProcessing(false);
     }
   };
 
-  // Fetch cleaner details
   const handleFetchCleanerDetail = async (cleanerId) => {
     setLoading(true);
     try {
@@ -250,38 +256,32 @@ export const ActivityCard = ({ data, onDelete }) => {
     setLoading(false);
   };
 
-  // Open cleaner modal
   const openModal = (jobId) => {
     setIsModalOpen(true);
     fetchCleaners(jobId);
     setSelectedJobId(jobId);
   };
 
-  // Open feedback modal
   const openFeedbackModal = (jobId) => {
     setSelectedJobIdForFeedback(jobId);
     setIsFeedbackModalOpen(true);
   };
 
-  // Open report modal
   const openReportModal = (jobId) => {
     setSelectedJobIdForReport(jobId);
     setIsReportModalOpen(true);
   };
 
-  // Close feedback modal
   const closeFeedbackModal = () => {
     setIsFeedbackModalOpen(false);
     setSelectedJobIdForFeedback(null);
   };
 
-  //close report modal
   const closeReportModal = () => {
     setIsReportModalOpen(false);
     setSelectedJobIdForReport(null);
   };
 
-  // Update activity status locally
   const updateActivityStatus = (jobId, newStatus) => {
     setActivities((prevActivities) =>
       prevActivities.map((activity) =>
@@ -290,33 +290,23 @@ export const ActivityCard = ({ data, onDelete }) => {
     );
   };
 
-  // Handle hire cleaner
   const handleHireCleaner = async (jobId, cleanerId, customerId) => {
     if (!jobId) {
       console.error("Không tìm thấy jobId!");
       return;
     }
-    if (isProcessing) return; // Ngăn chặn click liên tục
+    if (isProcessing) return;
     setIsProcessing(true);
     try {
-      // First, hire the cleaner
       await hireCleaner(jobId, cleanerId, customerId);
-
-      // Then create a conversation
-      // await createConversation(customerId, cleanerId);
-
-      // Find the specific activity/job data using jobId
       const jobData = activities.find((activity) => activity.jobId === jobId);
-
-      // Find the cleaner in the cleanerList to get the phone number
       const selectedCleanerData = cleanerList.find(
         (cleaner) => cleaner.cleanerId === cleanerId
       );
-      const cleanerPhone = selectedCleanerData?.phoneNumber; // Fallback to default if not found
+      const cleanerPhone = selectedCleanerData?.phoneNumber;
 
       message.success("Thuê cleaner thành công!");
 
-      // Create SMS message using the specific job data
       let serviceInfoText = "";
       if (jobData.services) {
         if (Array.isArray(jobData.services)) {
@@ -335,7 +325,6 @@ export const ActivityCard = ({ data, onDelete }) => {
         serviceInfoText = "Không xác định";
       }
 
-      // Format date for the specific job
       const formattedDate = new Date(jobData.scheduledTime).toLocaleString(
         "vi-VN",
         {
@@ -353,9 +342,7 @@ export const ActivityCard = ({ data, onDelete }) => {
       Promise.all([
         // sendNotification(
         //   cleanerId,
-        //   `Chúc mừng, Chủ nhà ${sessionStorage.getItem(
-        //     "name"
-        //   )} đã chấp nhận công việc`,
+        //   `Chúc mừng, Chủ nhà ${sessionStorage.getItem("name")} đã chấp nhận công việc`,
         //   "BOOKED",
         //   "Cleaner"
         // ),
@@ -364,15 +351,15 @@ export const ActivityCard = ({ data, onDelete }) => {
 
       updateActivityStatus(jobId, "IN_PROGRESS");
       setIsModalOpen(false);
+      onHireCleaner(); // Gọi callback để fetch lại danh sách công việc
     } catch (error) {
       console.error("Lỗi khi thuê cleaner:", error);
       message.error("Lỗi khi thuê cleaner");
     } finally {
-      setIsProcessing(false); // Đặt lại trạng thái sau khi hoàn tất
+      setIsProcessing(false);
     }
   };
 
-  // Handle reject cleaner
   const handleRejectCleaner = async (jobId, cleanerId, customerId) => {
     try {
       await rejectCleaner(jobId, cleanerId, customerId);
@@ -381,18 +368,14 @@ export const ActivityCard = ({ data, onDelete }) => {
         cleanerId,
         customerId,
       });
-      // Find the specific activity/job data using jobId
       const jobData = activities.find((activity) => activity.jobId === jobId);
-
-      // Find the cleaner in the cleanerList to get the phone number
       const selectedCleanerData = cleanerList.find(
         (cleaner) => cleaner.cleanerId === cleanerId
       );
-      const cleanerPhone = selectedCleanerData?.phoneNumber; // Fallback to default if not found
+      const cleanerPhone = selectedCleanerData?.phoneNumber;
 
       message.success("Từ chối cleaner thành công!");
 
-      // Format date for the specific job
       const formattedDate = new Date(jobData.scheduledTime).toLocaleString(
         "vi-VN",
         {
@@ -407,15 +390,12 @@ export const ActivityCard = ({ data, onDelete }) => {
       Promise.all([
         // sendNotification(
         //   cleanerId,
-        //   `Rất tiếc, chủ nhà ${sessionStorage.getItem(
-        //     "name"
-        //   )} từ chối công việc`,
+        //   `Rất tiếc, chủ nhà ${sessionStorage.getItem("name")} từ chối công việc`,
         //   "BOOKED",
         //   "Cleaner"
         // ),
         // sendSms(cleanerPhone, smsMessageReject),
       ]);
-      // Refresh cleaner list
       fetchCleaners(jobId);
     } catch (error) {
       console.error("Lỗi khi từ chối cleaner:", error);
@@ -423,7 +403,6 @@ export const ActivityCard = ({ data, onDelete }) => {
     }
   };
 
-  // Start a job
   const handleStartJob = async (jobId) => {
     try {
       await startJob(jobId, customerId);
@@ -435,11 +414,9 @@ export const ActivityCard = ({ data, onDelete }) => {
     }
   };
 
-  // Thêm hàm handleRetryPayment vào component ActivityCard
   const handleRetryPayment = async (jobId) => {
     try {
       const result = await retryPayment(jobId);
-      // Kiểm tra kết quả từ API và hiển thị thông báo thành công
       if (result && result.paymentUrl) {
         let countDown = 3;
         const messageKey = "redirectCountdown";
@@ -477,7 +454,6 @@ export const ActivityCard = ({ data, onDelete }) => {
   const handleRetryPaymentWallet = async (jobId, customerId) => {
     try {
       const result = await retryPaymentWallet(jobId, customerId);
-      // Kiểm tra kết quả từ API và hiển thị thông báo thành công
       if (result.status === "OPEN") {
         message.success("Thanh toán lại qua ví thành công!");
         updateActivityStatus(jobId, "OPEN");
@@ -490,7 +466,6 @@ export const ActivityCard = ({ data, onDelete }) => {
     }
   };
 
-  // Complete a job
   const handleCompleteJob = async (jobId) => {
     if (isProcessing) return;
     setIsProcessing(true);
@@ -502,11 +477,10 @@ export const ActivityCard = ({ data, onDelete }) => {
       console.error("Lỗi khi hoàn thành công việc:", error);
       message.error("Không thể hoàn thành công việc.");
     } finally {
-      setIsProcessing(false); // Đặt lại trạng thái sau khi hoàn tất
+      setIsProcessing(false);
     }
   };
 
-  // Handle delete job posting with local state update
   const handleDeleteJob = (jobId) => {
     Modal.confirm({
       title: "Xác nhận huỷ việc",
@@ -515,10 +489,7 @@ export const ActivityCard = ({ data, onDelete }) => {
       cancelText: "Huỷ bỏ",
       onOk: async () => {
         try {
-          // Use the deleteJobPosting function imported at the top
           await deleteJobPosting(jobId, customerId);
-
-          // Remove deleted job from local state
           setActivities((prevActivities) =>
             prevActivities.map((activity) =>
               activity.jobId === jobId
@@ -526,10 +497,7 @@ export const ActivityCard = ({ data, onDelete }) => {
                 : activity
             )
           );
-
           message.success("Huỷ việc thành công");
-
-          // Send notification if needed (assuming you have the cleaner ID)
           const activity = activities.find((a) => a.jobId === jobId);
           if (activity && activity.cleanerId) {
             Promise.all([
@@ -622,7 +590,7 @@ export const ActivityCard = ({ data, onDelete }) => {
             onClick={() =>
               handleRejectCleaner(selectedJobId, record.cleanerId, customerId)
             }
-            disabled={!record.cleanerId || isProcessing} // Vô hiệu hóa khi đang xử lý
+            disabled={!record.cleanerId || isProcessing}
           >
             Từ chối
           </Button>
@@ -631,7 +599,6 @@ export const ActivityCard = ({ data, onDelete }) => {
     },
   ];
 
-  // Calculate pagination
   const indexOfLastActivity = currentPage * pageSize;
   const indexOfFirstActivity = indexOfLastActivity - pageSize;
   const currentActivities = activities.slice(
@@ -644,7 +611,6 @@ export const ActivityCard = ({ data, onDelete }) => {
     setCurrentPage(page);
   };
 
-  // Progress bar status icons
   const ProgressIcon = ({ active, step }) => {
     const iconStyle = {
       fontSize: "20px",
@@ -673,11 +639,9 @@ export const ActivityCard = ({ data, onDelete }) => {
 
           return (
             <div key={index} className={styles.card}>
-              {/* Progress Status Bar */}
               <div className={styles.progressContainer}>
                 <h3 className={styles.progressTitle}>Trạng thái triển khai</h3>
                 <div className={styles.progressBar}>
-                  {/* Step 1: Waiting for Cleaner */}
                   <div
                     className={`${styles.progressStep} ${
                       progressStep >= 1 ? styles.active : ""
@@ -688,22 +652,13 @@ export const ActivityCard = ({ data, onDelete }) => {
                     </div>
                     <div className={styles.progressLabel}>
                       <div>Tiếp nhận</div>
-                      {/* <div className={styles.progressDate}>
-                        {new Date(activity.scheduledTime).toLocaleDateString(
-                          "vi-VN"
-                        )}
-                      </div> */}
                     </div>
                   </div>
-
-                  {/* Connector line */}
                   <div
                     className={`${styles.progressConnector} ${
                       progressStep >= 2 ? styles.active : ""
                     }`}
                   ></div>
-
-                  {/* Step 2: Cleaner Arriving */}
                   <div
                     className={`${styles.progressStep} ${
                       progressStep >= 2 ? styles.active : ""
@@ -714,15 +669,11 @@ export const ActivityCard = ({ data, onDelete }) => {
                     </div>
                     <div className={styles.progressLabel}>Cử nhân viên</div>
                   </div>
-
-                  {/* Connector line */}
                   <div
                     className={`${styles.progressConnector} ${
                       progressStep >= 3 ? styles.active : ""
                     }`}
                   ></div>
-
-                  {/* Step 3: Cleaner Completed */}
                   <div
                     className={`${styles.progressStep} ${
                       progressStep >= 3 ? styles.active : ""
@@ -733,15 +684,11 @@ export const ActivityCard = ({ data, onDelete }) => {
                     </div>
                     <div className={styles.progressLabel}>Đến nơi</div>
                   </div>
-
-                  {/* Connector line */}
                   <div
                     className={`${styles.progressConnector} ${
                       progressStep >= 4 ? styles.active : ""
                     }`}
                   ></div>
-
-                  {/* Step 4: Job Completed */}
                   <div
                     className={`${styles.progressStep} ${
                       progressStep >= 4 ? styles.active : ""
@@ -756,14 +703,6 @@ export const ActivityCard = ({ data, onDelete }) => {
               </div>
 
               <div className={styles.cardContent}>
-                {/* <div className={styles.header}>
-                  {activity.services &&
-                    activity.services.map((service, idx) => (
-                      <div key={idx} className={styles.serviceItem}>
-                        <h3>{service.serviceName}</h3>
-                      </div>
-                    ))}
-                </div> */}
                 <div className={styles.orderCode}>
                   <strong>Mã đơn hàng:</strong> {activity.orderCode}
                 </div>
@@ -776,7 +715,6 @@ export const ActivityCard = ({ data, onDelete }) => {
                       )}
                     </span>
                   </div>
-
                   <div className={styles.infoItem}>
                     <MdAccessTime className={styles.icon} />
                     <span>
@@ -789,13 +727,11 @@ export const ActivityCard = ({ data, onDelete }) => {
                       )}
                     </span>
                   </div>
-
                   <div className={styles.infoItem}>
                     <MdLocationOn className={styles.icon} />
                     <span>{activity.customerAddress}</span>
                   </div>
                 </div>
-
                 <div className={styles.services}>
                   {activity.services &&
                     activity.services.map((service, idx) => (
@@ -809,7 +745,6 @@ export const ActivityCard = ({ data, onDelete }) => {
                       </div>
                     ))}
                 </div>
-
                 <div className={styles.statusAndPrice}>
                   <div
                     className={styles.statusBadge}
@@ -817,7 +752,6 @@ export const ActivityCard = ({ data, onDelete }) => {
                   >
                     {getStatusText(activity.status)}
                   </div>
-
                   <div className={styles.price}>
                     <b>{activity.totalPrice.toLocaleString("vi-VN")} VNĐ</b>
                   </div>
@@ -866,7 +800,6 @@ export const ActivityCard = ({ data, onDelete }) => {
                       >
                         Đánh giá
                       </Button>
-
                       <Button
                         className={styles.reportButton}
                         onClick={() => openReportModal(activity.jobId)}
@@ -877,7 +810,6 @@ export const ActivityCard = ({ data, onDelete }) => {
                       </Button>
                     </div>
                   )}
-
                   {activity.status === "OPEN" &&
                     applicationsCount[activity.jobId] > 0 && (
                       <div className={styles.buttonProfile}>
@@ -895,7 +827,6 @@ export const ActivityCard = ({ data, onDelete }) => {
                         </Badge>
                       </div>
                     )}
-
                   {(activity.status === "DONE" ||
                     activity.status === "COMPLETED" ||
                     activity.status === "IN_PROGRESS" ||
@@ -951,7 +882,6 @@ export const ActivityCard = ({ data, onDelete }) => {
         })}
       </div>
 
-      {/* Pagination */}
       {totalActivities > pageSize && (
         <div className={styles.paginationContainer}>
           <Pagination
@@ -964,7 +894,6 @@ export const ActivityCard = ({ data, onDelete }) => {
         </div>
       )}
 
-      {/* Cleaner List Modal */}
       <Modal
         title="Danh sách người dọn dẹp"
         open={isModalOpen}
@@ -1020,7 +949,6 @@ export const ActivityCard = ({ data, onDelete }) => {
                   type="primary"
                   key="reorder"
                   onClick={() => {
-                    // Navigate to the cleaner page when clicked
                     window.location.href = `/cleaner/${selectedCleaner?.cleanerId}`;
                   }}
                 >
