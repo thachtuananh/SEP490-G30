@@ -316,7 +316,6 @@ public class ScheduleService {
                     job.setStatus(JobStatus.AUTO_CANCELLED);
                     updatedJobs.add(job);
 
-
                     // Gửi thông báo cho customer
 //                    NotificationDTO customerNotification = new NotificationDTO(
 //                            job.getCustomer().getId(),
