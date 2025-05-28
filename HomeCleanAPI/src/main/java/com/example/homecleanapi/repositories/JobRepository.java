@@ -2,6 +2,7 @@ package com.example.homecleanapi.repositories;
 
 
 import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -82,6 +83,20 @@ public interface JobRepository extends JpaRepository<Job, Long> {
     List<Job> findByJobGroupCode(String jobGroupCode);
 
     List<Job> findAllByTxnRef(String txnRef);
+
+
+    @Query("SELECT j FROM Job j WHERE j.cleaner.id = :cleanerId " +
+            "AND j.scheduledTime BETWEEN :start AND :end " +
+            "AND j.status NOT IN :excludedStatuses " +
+            "AND j.id <> :excludeJobId")
+    List<Job> findByCleanerIdAndScheduledTimeBetweenAndStatusNotInAndIdNot(
+            @Param("cleanerId") Long cleanerId,
+            @Param("start") LocalDateTime start,
+            @Param("end") LocalDateTime end,
+            @Param("excludedStatuses") List<JobStatus> excludedStatuses,
+            @Param("excludeJobId") Long excludeJobId
+    );
+
 
 
 

@@ -243,9 +243,24 @@ public class CleanerJobService {
 			return response;
 		}
 
-		// Kiểm tra các công việc trước đó của cleaner
-		//List<JobApplication> existingApplications = jobApplicationRepository.findByCleanerAndStatusIn(cleaner, Arrays.asList("Pending", "Accepted"));
+
 		LocalDateTime jobScheduledTime = job.getScheduledTime();
+		LocalDate jobScheduledDate = jobScheduledTime.toLocalDate();
+
+		// Giới hạn apply tối đa 10 job trong cùng một ngày
+		List<String> activeStatuses = Arrays.asList("Pending", "Accepted");
+		List<JobApplication> activeApplications = jobApplicationRepository.findByCleanerAndStatusIn(cleaner, activeStatuses);
+
+		long applicationsOnSameDay = activeApplications.stream()
+				.map(JobApplication::getJob)
+				.filter(existingJob -> existingJob.getScheduledTime().toLocalDate().equals(jobScheduledDate))
+				.count();
+
+		if (applicationsOnSameDay >= 10) {
+			response.put("message", "Bạn chỉ được ứng tuyển tối đa 10 công việc trong cùng một ngày.");
+			return response;
+		}
+
 
 		// Kiểm tra xem cleaner có công việc nào đã apply và trong vòng 2 giờ so với công việc này không
 		List<Job> cleanerJobs = jobRepository.findByCleanerId(cleaner.getId().longValue());
@@ -459,100 +474,124 @@ public class CleanerJobService {
 		ZoneId zoneId = ZoneId.of("Asia/Ho_Chi_Minh");
 		Map<String, Object> response = new HashMap<>();
 
-		// Tìm customer theo customerId để xác thực quyền của customer
 		Optional<Customers> customerOpt = customerRepo.findById(customerId);
 		if (!customerOpt.isPresent()) {
 			response.put("message", "Customer not found with customerId: " + customerId);
 			return response;
 		}
-
 		Customers customer = customerOpt.get();
 
-		// Tìm công việc theo jobId
 		Optional<Job> jobOpt = jobRepository.findByIdWithLock(jobId);
 		if (jobOpt.isEmpty()) {
 			response.put("message", "Job not found");
 			return response;
 		}
-
 		Job job = jobOpt.get();
 
-		System.out.println(job.getCustomer().getId());
-		System.out.println(job.getCustomer().getId());
-		if (job.getCustomer().getId().longValue() != customer.getId().longValue()) {
+		if (!job.getCustomer().getId().equals(customer.getId())) {
 			response.put("message", "You are not authorized to accept or reject this job");
 			return response;
 		}
 
-		// Tìm cleaner theo cleanerId
 		Optional<Employee> cleanerOpt = cleanerRepository.findById(cleanerId);
 		if (!cleanerOpt.isPresent()) {
 			response.put("message", "Cleaner not found with ID: " + cleanerId);
 			return response;
 		}
-
 		Employee cleaner = cleanerOpt.get();
 
-		// Tìm job application của cleaner cho job này
 		Optional<JobApplication> jobApplicationOpt = jobApplicationRepository.findByJobAndCleaner(job, cleaner);
 		if (!jobApplicationOpt.isPresent()) {
 			response.put("message", "Application not found for this job and cleaner");
 			return response;
 		}
-
 		JobApplication jobApplication = jobApplicationOpt.get();
 
-//		List<JobServiceDetail> jobServiceDetails = jobDetailsRepository.findByJob_id(jobId);
-//		String serviceNames = jobServiceDetails.size() == 1
-//				? jobServiceDetails.get(0).getService().getName()
-//				: jobServiceDetails.stream()
-//				.map(detail -> detail.getService().getName())
-//				.collect(Collectors.joining(","));
-
-
-		// Xử lý accept hoặc reject
 		if ("accept".equalsIgnoreCase(action)) {
 			if (job.getStatus() == JobStatus.IN_PROGRESS) {
 				response.put("message", "This job has already been accepted by another cleaner");
 				return response;
 			}
 
-			// Nếu chọn accept, từ chối tất cả các ứng viên khác
+			// === Kiểm tra xung trùng lịch ===
+			LocalDateTime scheduledTime = job.getScheduledTime();
+			LocalDateTime startWindow = scheduledTime.minusHours(2);
+			LocalDateTime endWindow = scheduledTime.plusHours(2);
+
+
+			List<JobStatus> excludedStatuses = Arrays.asList(JobStatus.DONE, JobStatus.CANCELLED, JobStatus.AUTO_CANCELLED);
+			List<Job> conflictingJobs = jobRepository.findByCleanerIdAndScheduledTimeBetweenAndStatusNotInAndIdNot(
+					cleanerId, startWindow, endWindow, excludedStatuses, jobId
+			);
+
+			if (!conflictingJobs.isEmpty()) {
+				response.put("message", "Cleaner has another job scheduled within ±2 hours. Cannot accept this job.");
+				return response;
+			}
+
+			// === Xử lý Accept ===
 			List<JobApplication> otherApplications = jobApplicationRepository.findByJob(job);
 			for (JobApplication app : otherApplications) {
 				if (!app.getCleaner().getId().equals(cleaner.getId())) {
 					app.setStatus("Rejected");
 					jobApplicationRepository.save(app);
+
 					NotificationDTO cleanerNotification = new NotificationDTO();
-					cleanerNotification.setUserId(job.getCleaner().getId());
-					cleanerNotification.setMessage("[Mã công việc: "+ job.getOrderCode() + "] Chủ nhà: " + customer.getFull_name() + " đã từ chối yêu cầu nhận việc ");
+					cleanerNotification.setUserId(app.getCleaner().getId());
+					cleanerNotification.setMessage("[Mã công việc: " + job.getOrderCode() + "] Chủ nhà: " + customer.getFull_name() + " đã từ chối yêu cầu nhận việc ");
 					cleanerNotification.setType("AUTO_MESSAGE");
 					cleanerNotification.setTimestamp(LocalDate.now(zoneId));
-					cleanerNotification.setRead(false); // ✅ set read = false
-					notificationService.processNotification(cleanerNotification, "CLEANER", Math.toIntExact(cleanerId));
+					cleanerNotification.setRead(false);
+					notificationService.processNotification(cleanerNotification, "CLEANER", Math.toIntExact(app.getCleaner().getId()));
 				}
 			}
 
 			jobApplication.setStatus("Accepted");
 			job.setStatus(JobStatus.IN_PROGRESS);
+
+
+			// hủy ứng tuyển của cleaner khi trùng lịch
+			LocalDateTime acceptedTime = job.getScheduledTime();
+			LocalDateTime acceptedEndTime = acceptedTime.plusHours(2);
+
+			List<JobApplication> pendingApps = jobApplicationRepository.findByCleanerIdAndStatus(Long.valueOf(cleaner.getId()), "Pending");
+			for (JobApplication pendingApp : pendingApps) {
+				Job otherJob = pendingApp.getJob();
+				LocalDateTime otherTime = otherJob.getScheduledTime();
+				LocalDateTime otherEndTime = otherTime.plusHours(2);
+
+				boolean isTimeConflict = !otherJob.getId().equals(job.getId()) &&
+						otherTime.isBefore(acceptedEndTime) &&
+						otherEndTime.isAfter(acceptedTime);
+
+				if (isTimeConflict) {
+					pendingApp.setStatus("Cancelled");
+					jobApplicationRepository.save(pendingApp);
+
+
+				}
+			}
+
+
 			NotificationDTO customerNotification = new NotificationDTO();
 			customerNotification.setUserId(job.getCustomer().getId());
-			customerNotification.setMessage("[Mã công việc: "+ job.getOrderCode() + "] Người dọn dẹp: " + cleaner.getName() + " đã nhận được việc ");
+			customerNotification.setMessage("[Mã công việc: " + job.getOrderCode() + "] Người dọn dẹp: " + cleaner.getName() + " đã nhận được việc ");
 			customerNotification.setType("AUTO_MESSAGE");
 			customerNotification.setTimestamp(LocalDate.now(zoneId));
-			customerNotification.setRead(false); // ✅ set read = false
+			customerNotification.setRead(false);
 			notificationService.processNotification(customerNotification, "CUSTOMER", Math.toIntExact(customerId));
 
 			NotificationDTO cleanerNotification = new NotificationDTO();
-			cleanerNotification.setUserId(job.getCleaner().getId());
-			cleanerNotification.setMessage("[Mã công việc: "+ job.getOrderCode() +"] Chủ nhà: " + customer.getFull_name() + " đã đồng ý yêu cầu nhận việc ");
+			cleanerNotification.setUserId(cleaner.getId());
+			cleanerNotification.setMessage("[Mã công việc: " + job.getOrderCode() + "] Chủ nhà: " + customer.getFull_name() + " đã đồng ý yêu cầu nhận việc ");
 			cleanerNotification.setType("AUTO_MESSAGE");
 			cleanerNotification.setTimestamp(LocalDate.now(zoneId));
-			cleanerNotification.setRead(false); // ✅ set read = false
-			notificationService.processNotification(cleanerNotification, "CLEANER", Math.toIntExact(customerId));
+			cleanerNotification.setRead(false);
+			notificationService.processNotification(cleanerNotification, "CLEANER", Math.toIntExact(cleanerId));
 
 			conversationService.getOrCreateConversation(customerId, Math.toIntExact(cleanerId));
 			response.put("message", "Cleaner has been accepted for the job");
+
 		} else if ("reject".equalsIgnoreCase(action)) {
 			jobApplication.setStatus("Rejected");
 			response.put("message", "Cleaner has been rejected for the job");
@@ -561,7 +600,6 @@ public class CleanerJobService {
 			return response;
 		}
 
-		// Lưu các thay đổi vào cơ sở dữ liệu
 		jobApplicationRepository.save(jobApplication);
 		jobRepository.save(job);
 
@@ -571,6 +609,11 @@ public class CleanerJobService {
 
 		return response;
 	}
+
+
+
+
+
 
 	// Cập nhật trạng thái công việc sang "ARRIVED"
 	public Map<String, Object> updateJobStatusToArrived(Long jobId) {
@@ -736,7 +779,12 @@ public class CleanerJobService {
 				jobInfo.put("totalPrice", job.getTotalPrice());
 
 				// Thêm thông tin về status của JobApplication
-				jobInfo.put("jobApplicationStatus", jobApplication.getStatus());  // Thêm trạng thái của jobApplication
+				jobInfo.put("jobApplicationStatus", jobApplication.getStatus());
+
+				// Thêm reminder, orderCode và updatedAt
+				jobInfo.put("reminder", job.getReminder());
+				jobInfo.put("orderCode", job.getOrderCode());
+				jobInfo.put("updatedAt", job.getUpdatedAt()); // <-- thêm dòng này
 
 				// Thêm thông tin về customer đã book job
 				Customers customer = job.getCustomer();
@@ -767,7 +815,7 @@ public class CleanerJobService {
 						Services service = jobServiceDetail.getService();
 						if (service != null) {
 							Map<String, Object> serviceInfo = new HashMap<>();
-							serviceInfo.put("serviceName", service.getName()); // Lấy tên dịch vụ
+							serviceInfo.put("serviceName", service.getName());
 							serviceInfo.put("serviceDescription", service.getDescription());
 
 							// Lấy các chi tiết dịch vụ
@@ -786,23 +834,16 @@ public class CleanerJobService {
 						}
 					}
 
-					// Thêm thông tin dịch vụ vào jobInfo
 					jobInfo.put("services", serviceList);
 				} else {
 					jobInfo.put("services", "No services found for this job");
 				}
 
-				appliedJobs.add(jobInfo); // Thêm công việc vào danh sách
+				appliedJobs.add(jobInfo);
 			}
 		}
 
-		// Sắp xếp danh sách theo updated_at giảm dần
-//		appliedJobs.sort((job1, job2) -> {
-//			Date updatedAt1 = (Date) job1.get("updatedAt");
-//			Date updatedAt2 = (Date) job2.get("updatedAt");
-//			return updatedAt2.compareTo(updatedAt1);
-//		});
-
+		// Sắp xếp theo updatedAt giảm dần
 		appliedJobs.sort(
 				Comparator.comparing(
 						job -> (Date) job.get("updatedAt"),
@@ -812,6 +853,7 @@ public class CleanerJobService {
 
 		return appliedJobs;
 	}
+
 
 
 
@@ -836,6 +878,7 @@ public class CleanerJobService {
 				jobInfo.put("totalPrice", job.getTotalPrice());
 				jobInfo.put("updatedAt", job.getUpdatedAt());
 
+				jobInfo.put("reminder", job.getReminder());
 				if (job.getOrderCode() != null) {
 					jobInfo.put("orderCode", job.getOrderCode());
 				}
@@ -926,6 +969,7 @@ public class CleanerJobService {
 				jobInfo.put("status", job.getStatus());
 				jobInfo.put("totalPrice", job.getTotalPrice());
 
+				jobInfo.put("reminder", job.getReminder());
 				// Thêm thông tin thời gian cập nhật để sắp xếp
 				jobInfo.put("updatedAt", job.getUpdatedAt());
 
@@ -1030,6 +1074,7 @@ public class CleanerJobService {
 	        jobInfo.put("scheduledTime", job.getScheduledTime());
 	        jobInfo.put("totalPrice", job.getTotalPrice());
 			jobInfo.put("order_code", job.getOrderCode());
+			jobInfo.put("reminder", job.getReminder());
 
 
 
