@@ -16,6 +16,21 @@ function Hero() {
     serviceName: "Dọn dẹp theo Combo",
     description: "Chọn nhiều dịch vụ cùng 1 lúc",
   };
+  const displayOnlyServices = [
+    {
+      serviceId: "office",
+      displayId: 7, // For icon mapping purposes
+      serviceName: "Dọn dẹp văn phòng, khu làm việc",
+      description:
+        "Vệ sinh văn phòng, lau bàn ghế, hút bụi, dọn dẹp không gian làm việc",
+    },
+    {
+      serviceId: "periodic",
+      displayId: 8, // For icon mapping purposes
+      serviceName: "Dọn dẹp ký túc xá, nhà trọ",
+      description: "Vệ sinh nhà cửa, dọn dẹp khu vực sinh hoạt chung",
+    },
+  ];
   // Fetch services from API
   useEffect(() => {
     const fetchServices = async () => {
@@ -33,7 +48,7 @@ function Hero() {
         // );
 
         // Set all services including our hardcoded combo service
-        setAllServices([...data, comboService]);
+        setAllServices([...data, comboService, ...displayOnlyServices]);
         setLoading(false);
       } catch (error) {
         console.error("Error fetching services:", error);
@@ -66,7 +81,14 @@ function Hero() {
       message.error("Vui lòng chọn ít nhất một dịch vụ!");
     }
   };
-
+  const handleComboNavigate = () => {
+    navigate("/service-details-combo", {
+      state: {
+        selectedServices: [], // Initially empty, as no services are selected yet
+        allServices,
+      },
+    });
+  };
   const onServiceChange = (serviceId) => {
     setSelectedServices((prev) => {
       if (prev.includes(serviceId)) {
@@ -77,6 +99,10 @@ function Hero() {
     });
   };
 
+  const modalServices = allServices.filter(
+    (service) =>
+      !displayOnlyServices.some((dos) => dos.serviceId === service.serviceId)
+  );
   return (
     <>
       <div className={style.hero}>
@@ -99,7 +125,7 @@ function Hero() {
             </div>
           </div>
           <div className={style.herohireBtn}>
-            <button className={style.hireBtn} onClick={showServiceModal}>
+            <button className={style.hireBtn} onClick={handleComboNavigate}>
               Thuê ngay
             </button>
           </div>
@@ -112,7 +138,7 @@ function Hero() {
         onOk={handleServiceOk}
         selectedServices={selectedServices}
         onServiceChange={onServiceChange}
-        allServices={allServices}
+        allServices={modalServices} // Use the filtered services list
       />
     </>
   );

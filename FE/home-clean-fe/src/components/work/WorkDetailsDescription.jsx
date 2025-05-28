@@ -100,9 +100,7 @@ const WorkDetailsDescription = () => {
       navigate("/homeclean");
       setIsModalOpen(false);
     } catch (error) {
-      message.error(
-        "Bạn đang ứng tuyển hoặc đã có lịch làm việc trong một công việc cách công việc này nhỏ hơn 2 giờ"
-      );
+      message.error("Bạn đã có lịch hẹn vào thời gian này rồi");
     } finally {
       setTimeout(() => {
         setIsSubmitting(false);

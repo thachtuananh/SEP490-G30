@@ -1,10 +1,11 @@
 import React, { useContext, useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { AuthContext } from "../../context/AuthContext";
-import { message, Typography, Modal, Checkbox, List } from "antd";
+import { message, Typography, Modal, Checkbox, List, Button } from "antd";
 import styles from "../../assets/CSS/createjob/JobInformation.module.css";
 import dayjs from "dayjs";
 import { createJobShedule } from "../../services/owner/OwnerAPI";
+import TermsModalContent from "../TermContent/TermsModalContent";
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -26,6 +27,7 @@ const JobInformation = ({
   const [serviceNames, setServiceNames] = useState({});
 
   const { token, customerId } = useContext(AuthContext);
+  const [termsModalVisible, setTermsModalVisible] = useState(false);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -364,8 +366,19 @@ const JobInformation = ({
           disabled={isSubmitting || isRedirecting}
         >
           <Text style={{ fontSize: "14px" }}>
-            Tôi đồng ý với <Text strong>Điều khoản và dịch vụ</Text> của
-            HouseClean
+            Tôi đồng ý với{" "}
+            <Text
+              strong
+              style={{
+                cursor: "pointer",
+                color: "#039855",
+                fontWeight: "bold",
+              }}
+              onClick={() => setTermsModalVisible(true)}
+            >
+              Điều khoản và dịch vụ
+            </Text>{" "}
+            của HouseClean
           </Text>
         </Checkbox>
       </div>
@@ -396,6 +409,20 @@ const JobInformation = ({
           {isSubmitting || isRedirecting ? "Đang xử lý..." : "Đăng việc"}
         </div>
       </div>
+
+      <Modal
+        title="Điều khoản và Dịch vụ"
+        visible={termsModalVisible}
+        onCancel={() => setTermsModalVisible(false)}
+        footer={[
+          <Button key="close" onClick={() => setTermsModalVisible(false)}>
+            Đóng
+          </Button>,
+        ]}
+        width={800}
+      >
+        <TermsModalContent />
+      </Modal>
     </div>
   );
 };

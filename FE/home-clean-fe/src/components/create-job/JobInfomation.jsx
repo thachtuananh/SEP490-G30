@@ -1,11 +1,12 @@
 import React, { useContext, useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { AuthContext } from "../../context/AuthContext";
-import { message, Typography, Modal, Checkbox } from "antd";
+import { message, Typography, Modal, Checkbox, Button } from "antd";
 import styles from "../../assets/CSS/createjob/JobInformation.module.css";
 import dayjs from "dayjs";
 import { createJob } from "../../services/owner/OwnerAPI";
 import { sendNotification } from "../../services/NotificationService";
+import TermsModalContent from "../TermContent/TermsModalContent";
 const { Title, Text, Paragraph } = Typography;
 
 const JobInfomation = ({
@@ -30,6 +31,7 @@ const JobInfomation = ({
   const [adjustedPrice, setAdjustedPrice] = useState(0);
 
   const { token, customerId } = useContext(AuthContext);
+  const [termsModalVisible, setTermsModalVisible] = useState(false);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -339,12 +341,22 @@ const JobInfomation = ({
           checked={termsAccepted}
           onChange={(e) => setTermsAccepted(e.target.checked)}
           disabled={isSubmitting || isRedirecting}
-        >
-          <Text style={{ fontSize: "14px" }}>
-            Tôi đồng ý với <Text strong>Điều khoản và dịch vụ</Text> của
-            HouseClean
-          </Text>
-        </Checkbox>
+        ></Checkbox>{" "}
+        <Text style={{ fontSize: "14px" }}>
+          Tôi đồng ý với{" "}
+          <Text
+            strong
+            style={{
+              cursor: "pointer",
+              color: "#039855",
+              fontWeight: "bold",
+            }}
+            onClick={() => setTermsModalVisible(true)}
+          >
+            Điều khoản và dịch vụ
+          </Text>{" "}
+          của HouseClean
+        </Text>
       </div>
       <div className={styles.actionButtons}>
         {isProcessing ? (
@@ -378,6 +390,19 @@ const JobInfomation = ({
             ? "Đang chuyển hướng..."
             : "Đăng việc"}
         </div>
+        <Modal
+          title="Điều khoản và Dịch vụ"
+          visible={termsModalVisible}
+          onCancel={() => setTermsModalVisible(false)}
+          footer={[
+            <Button key="close" onClick={() => setTermsModalVisible(false)}>
+              Đóng
+            </Button>,
+          ]}
+          width={800}
+        >
+          <TermsModalContent />
+        </Modal>
       </div>
     </>
   );
