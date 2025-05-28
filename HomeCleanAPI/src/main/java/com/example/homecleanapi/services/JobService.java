@@ -953,6 +953,27 @@ public class JobService {
         return new ArrayList<>(jobGroupMap.values());
     }
 
+
+    public List<Map<String, Object>> getJobStatuses(Long customerId) {
+        List<Job> jobs = jobRepository.findByCustomerId(customerId);
+
+        jobs.sort((job1, job2) -> {
+            int cmp = job2.getUpdatedAt().compareTo(job1.getUpdatedAt());
+            return (cmp != 0) ? cmp : job2.getScheduledTime().compareTo(job1.getScheduledTime());
+        });
+
+        return jobs.stream()
+                .map(job -> {
+                    Map<String, Object> jobStatus = new HashMap<>();
+                    jobStatus.put("jobId", job.getId());
+                    jobStatus.put("status", job.getStatus());
+                    return jobStatus;
+                })
+                .collect(Collectors.toList());
+    }
+
+
+
 //    public List<Map<String, Object>> getBookedJobsForCustomer(Long customerId) {
 //        List<Map<String, Object>> bookedJobs = new ArrayList<Map<String,Object>>();
 //
@@ -1232,43 +1253,43 @@ public class JobService {
             return response;
         }
 
-
-        // Tính toán số tiền hoàn lại
-        double totalPrice = job.getTotalPrice();
-        double refundAmount = totalPrice;
-
-        // Lấy ví của customer
-        Optional<CustomerWallet> walletOpt = customerWalletRepository.findByCustomerId(customerId);
-        if (!walletOpt.isPresent()) {
-            response.put("message", "Customer wallet not found");
-            return response;
+        boolean shouldRefund = true;
+        if (job.getStatus().equals(JobStatus.PAID)) {
+            shouldRefund = false;
         }
-        CustomerWallet wallet = walletOpt.get();
 
-        // Cộng tiền vào ví của customer
-        wallet.setBalance(wallet.getBalance() + refundAmount);
-        customerWalletRepository.save(wallet);  // Lưu cập nhật vào ví của customer
+        if (shouldRefund) {
+            // Tính toán số tiền hoàn lại
+            double totalPrice = job.getTotalPrice();
+            double refundAmount = totalPrice;
 
-        // Lưu giao dịch hoàn tiền vào bảng transaction_history
-        TransactionHistory transactionHistory = new TransactionHistory();
-        transactionHistory.setCustomer(customer);
-        transactionHistory.setCleaner(null);
-        transactionHistory.setAmount(refundAmount);
-        transactionHistory.setTransactionType("Refund");
-        transactionHistory.setStatus("SUCCESS");
-        transactionHistory.setPaymentMethod("Wallet");
+            // Lấy ví của customer
+            Optional<CustomerWallet> walletOpt = customerWalletRepository.findByCustomerId(customerId);
+            if (!walletOpt.isPresent()) {
+                response.put("message", "Customer wallet not found");
+                return response;
+            }
+            CustomerWallet wallet = walletOpt.get();
 
+            // Cộng tiền vào ví của customer
+            wallet.setBalance(wallet.getBalance() + refundAmount);
+            customerWalletRepository.save(wallet);  // Lưu cập nhật vào ví của customer
 
-        // Lưu vào bảng transaction_history
-        transactionHistoryRepository.save(transactionHistory);
+            // Lưu giao dịch hoàn tiền vào bảng transaction_history
+            TransactionHistory transactionHistory = new TransactionHistory();
+            transactionHistory.setCustomer(customer);
+            transactionHistory.setCleaner(null);
+            transactionHistory.setAmount(refundAmount);
+            transactionHistory.setTransactionType("Refund");
+            transactionHistory.setStatus("SUCCESS");
+            transactionHistory.setPaymentMethod("Wallet");
 
-        // Thêm thông báo hoàn tiền
-        response.put("message", "đã hủy job thành công");
+            transactionHistoryRepository.save(transactionHistory);
+        }
 
         // Cập nhật trạng thái công việc thành "CANCELLED"
         job.setStatus(JobStatus.CANCELLED);
         jobRepository.save(job);
-
 
         try {
             Integer cleanerId = job.getCleaner() != null ? job.getCleaner().getId() : null;
@@ -1279,7 +1300,7 @@ public class JobService {
                 NotificationDTO notification = createNotification(cleanerId, message);
                 notificationService.processNotification(notification, "CLEANER", cleanerId);
             } else {
-                System.out.println("❗ Không có cleaner nào được gán trực tiếp cho công việc này.");
+                System.out.println("Không có cleaner nào được gán trực tiếp cho công việc này.");
 
                 List<JobApplication> jobApplications = jobApplicationRepository.findJobApplicationById(jobId);
                 if (jobApplications != null && !jobApplications.isEmpty()) {
