@@ -113,6 +113,10 @@ function RegisterCleaner() {
 
   // Step 1: Submit registration info and send OTP
   const handleSubmit = async (e) => {
+    if (!termsAccepted) {
+      message.error("Vui lòng đồng ý với Điều khoản và dịch vụ!");
+      return;
+    }
     if (e) e.preventDefault();
 
     const {
