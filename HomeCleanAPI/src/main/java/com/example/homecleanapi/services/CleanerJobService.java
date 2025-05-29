@@ -234,7 +234,6 @@ public class CleanerJobService {
 			response.put("message", "Job not found");
 			return response;
 		}
-
 		Job job = jobOpt.get();
 
 		// Kiểm tra trạng thái công việc
@@ -242,7 +241,6 @@ public class CleanerJobService {
 			response.put("message", "Job is no longer open or has been taken");
 			return response;
 		}
-
 
 		LocalDateTime jobScheduledTime = job.getScheduledTime();
 		LocalDate jobScheduledDate = jobScheduledTime.toLocalDate();
@@ -261,12 +259,11 @@ public class CleanerJobService {
 			return response;
 		}
 
-
 		// Kiểm tra xem cleaner có công việc nào đã apply và trong vòng 2 giờ so với công việc này không
 		List<Job> cleanerJobs = jobRepository.findByCleanerId(cleaner.getId().longValue());
 		for (Job existingJob : cleanerJobs) {
 			JobStatus status = existingJob.getStatus();
-			if (status == JobStatus.DONE || status == JobStatus.CANCELLED || status == JobStatus.AUTO_CANCELLED) {
+			if (status == JobStatus.DONE || status == JobStatus.CANCELLED || status == JobStatus.AUTO_CANCELLED || status == JobStatus.BOOKED) {
 				continue;
 			}
 
@@ -279,7 +276,6 @@ public class CleanerJobService {
 			}
 		}
 
-
 		// Tạo job application và lưu vào database
 		JobApplication jobApplication = new JobApplication();
 		jobApplication.setJob(job);
@@ -288,13 +284,13 @@ public class CleanerJobService {
 
 		jobApplicationRepository.save(jobApplication);
 
-		NotificationDTO customerNotification = new NotificationDTO();
-		customerNotification.setUserId(job.getCustomer().getId());
-		customerNotification.setMessage("[Mã công việc: "+ job.getOrderCode() + "] Người dọn dẹp: " + cleaner.getName() + " vừa ứng tuyển vào công việc ");
-		customerNotification.setType("AUTO_MESSAGE");
-		customerNotification.setTimestamp(LocalDate.now());
-		customerNotification.setRead(false);
-		notificationService.processNotification(customerNotification, "CUSTOMER", job.getCustomer().getId());
+//		NotificationDTO customerNotification = new NotificationDTO();
+//		customerNotification.setUserId(job.getCustomer().getId());
+//		customerNotification.setMessage("[Mã công việc: "+ job.getOrderCode() + "] Người dọn dẹp: " + cleaner.getName() + " vừa ứng tuyển vào công việc ");
+//		customerNotification.setType("AUTO_MESSAGE");
+//		customerNotification.setTimestamp(LocalDate.now());
+//		customerNotification.setRead(false);
+//		notificationService.processNotification(customerNotification, "CUSTOMER", job.getCustomer().getId());
 
 		// Thêm thông báo thành công khi không có lỗi
 		response.put("message", "Cleaner has successfully applied for the job");
@@ -574,21 +570,21 @@ public class CleanerJobService {
 			}
 
 
-			NotificationDTO customerNotification = new NotificationDTO();
-			customerNotification.setUserId(job.getCustomer().getId());
-			customerNotification.setMessage("[Mã công việc: " + job.getOrderCode() + "] Người dọn dẹp: " + cleaner.getName() + " đã nhận được việc ");
-			customerNotification.setType("AUTO_MESSAGE");
-			customerNotification.setTimestamp(LocalDate.now(zoneId));
-			customerNotification.setRead(false);
-			notificationService.processNotification(customerNotification, "CUSTOMER", Math.toIntExact(customerId));
-
-			NotificationDTO cleanerNotification = new NotificationDTO();
-			cleanerNotification.setUserId(Math.toIntExact(cleanerId));
-			cleanerNotification.setMessage("[Mã công việc: "+ job.getOrderCode() +"] Chủ nhà: " + customer.getFull_name() + " đã đồng ý yêu cầu nhận việc ");
-			cleanerNotification.setType("AUTO_MESSAGE");
-			cleanerNotification.setTimestamp(LocalDate.now(zoneId));
-			cleanerNotification.setRead(false);
-			notificationService.processNotification(cleanerNotification, "CLEANER", Math.toIntExact(cleanerId));
+//			NotificationDTO customerNotification = new NotificationDTO();
+//			customerNotification.setUserId(job.getCustomer().getId());
+//			customerNotification.setMessage("[Mã công việc: " + job.getOrderCode() + "] Người dọn dẹp: " + cleaner.getName() + " đã nhận được việc ");
+//			customerNotification.setType("AUTO_MESSAGE");
+//			customerNotification.setTimestamp(LocalDate.now(zoneId));
+//			customerNotification.setRead(false);
+//			notificationService.processNotification(customerNotification, "CUSTOMER", Math.toIntExact(customerId));
+//
+//			NotificationDTO cleanerNotification = new NotificationDTO();
+//			cleanerNotification.setUserId(Math.toIntExact(cleanerId));
+//			cleanerNotification.setMessage("[Mã công việc: "+ job.getOrderCode() +"] Chủ nhà: " + customer.getFull_name() + " đã đồng ý yêu cầu nhận việc ");
+//			cleanerNotification.setType("AUTO_MESSAGE");
+//			cleanerNotification.setTimestamp(LocalDate.now(zoneId));
+//			cleanerNotification.setRead(false);
+//			notificationService.processNotification(cleanerNotification, "CLEANER", Math.toIntExact(cleanerId));
 
 			conversationService.getOrCreateConversation(customerId, Math.toIntExact(cleanerId));
 			response.put("message", "Cleaner has been accepted for the job");
@@ -1627,7 +1623,8 @@ public class CleanerJobService {
 				// Kiểm tra trạng thái công việc
 				if (existingJob.getStatus() != JobStatus.DONE &&
 						existingJob.getStatus() != JobStatus.CANCELLED &&
-						existingJob.getStatus() != JobStatus.AUTO_CANCELLED) {
+						existingJob.getStatus() != JobStatus.AUTO_CANCELLED &&
+						existingJob.getStatus() != JobStatus.BOOKED) {
 					// Nếu trạng thái không phải là DONE, CANCELLED, AUTO_CANCELLED, thì thông báo trùng lịch
 					response.put("message", "Người dọn này đã có lịch trùng với thời gian bạn chọn");
 					return response;
@@ -2007,7 +2004,7 @@ public class CleanerJobService {
 	        response.put("message", "Job has been accepted");
 		} else if ("reject".equalsIgnoreCase(action)) {
 			jobApplication.setStatus("Rejected");
-			job.setStatus(JobStatus.CANCELLED); // Đặt trạng thái công việc là CANCELLED
+			job.setStatus(JobStatus.CANCELLED);
 
 			// Lấy thông tin customer và ví
 			Customers customer = job.getCustomer();
