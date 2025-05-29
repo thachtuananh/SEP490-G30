@@ -39,8 +39,9 @@ public class ScheduleService {
     private final WorkHistoryRepository workHistoryRepository;
     private final JobDetailsRepository jobDetailsRepository;
     private final ProfitRepository profitRepository;
+    private final JobApp jobApp;
 
-    public ScheduleService(JobRepository jobRepository, NotificationService notificationService, JobApplicationRepository jobApplicationRepository, CustomerWalletRepository customerWalletRepository, TransactionHistoryRepository transactionHistoryRepository, WalletRepository walletRepository, WorkHistoryRepository workHistoryRepository, JobDetailsRepository jobDetailsRepository, ProfitRepository profitRepository) {
+    public ScheduleService(JobRepository jobRepository, NotificationService notificationService, JobApplicationRepository jobApplicationRepository, CustomerWalletRepository customerWalletRepository, TransactionHistoryRepository transactionHistoryRepository, WalletRepository walletRepository, WorkHistoryRepository workHistoryRepository, JobDetailsRepository jobDetailsRepository, ProfitRepository profitRepository, JobApp jobApp) {
         this.jobRepository = jobRepository;
         this.notificationService = notificationService;
         this.jobApplicationRepository = jobApplicationRepository;
@@ -50,6 +51,7 @@ public class ScheduleService {
         this.workHistoryRepository = workHistoryRepository;
         this.jobDetailsRepository = jobDetailsRepository;
         this.profitRepository = profitRepository;
+        this.jobApp = jobApp;
     }
 
     @Scheduled(cron = "0 * * * * *")
@@ -100,24 +102,26 @@ public class ScheduleService {
                     notificationService.processNotification(notification, "CUSTOMER", job.getCustomer().getId());
 
                     System.out.println("Đã tự động hủy Job " + job.getId());
+
+
                 }
 
-                List<JobApplication> jobApplications = jobApplicationRepository.findJobApplicationById(job.getId());
+                List<JobApplication> jobApplications = jobApp.findByJobId(job.getId());
                 for (JobApplication application : jobApplications) {
                     String status = application.getStatus();
-                    if (!"Rejected".equals(status) && !"Accepted".equals(status)) {
-                        application.setStatus("Cancelled");
-                        applicationsToUpdate.add(application);
+                    application.setStatus("Cancelled");
+                    applicationsToUpdate.add(application);
 
-                        NotificationDTO cleanerNotification = new NotificationDTO();
-                        cleanerNotification.setUserId(application.getCleaner().getId());
-                        cleanerNotification.setMessage("Mã công việc: [" + job.getOrderCode() + "] Công việc của bạn đã bị hủy do chủ nhà chưa xác nhận thuê");
-                        cleanerNotification.setType("AUTO_MESSAGE");
-                        cleanerNotification.setTimestamp(LocalDate.now(zoneId));
-                        cleanerNotification.setRead(false);
-                        notificationService.processNotification(cleanerNotification, "CLEANER", application.getCleaner().getId());
-                    }
+                    NotificationDTO cleanerNotification = new NotificationDTO();
+                    cleanerNotification.setUserId(application.getCleaner().getId());
+                    cleanerNotification.setMessage("Mã công việc: [" + job.getOrderCode() + "] Công việc của bạn đã bị hủy do chủ nhà chưa xác nhận thuê");
+                    cleanerNotification.setType("AUTO_MESSAGE");
+                    cleanerNotification.setTimestamp(LocalDate.now(zoneId));
+                    cleanerNotification.setRead(false);
+                    notificationService.processNotification(cleanerNotification, "CLEANER", application.getCleaner().getId());
+
                 }
+
             } else {
                 System.out.println("Job " + job.getId() + " vẫn còn thời gian hợp lệ.");
             }
@@ -133,6 +137,7 @@ public class ScheduleService {
             System.out.println("Đã cập nhật trạng thái cho " + applicationsToUpdate.size() + " ứng tuyển.");
         }
     }
+
 
 
 
