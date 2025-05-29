@@ -235,34 +235,7 @@ public class CleanerJobController {
          @PathVariable("jobId") Long jobId,
          @RequestParam("action") String action) {
 
-     Map<String, Object> response = new HashMap<>();
-     CountDownLatch latch = new CountDownLatch(1);
-
-     // Lấy cleaner từ SecurityContext
-     String phoneNumber = SecurityContextHolder.getContext().getAuthentication().getName();
-     Optional<Employee> cleanerOpt = cleanerRepository.findByPhone(phoneNumber);
-
-     if (!cleanerOpt.isPresent()) {
-         response.put("message", "Cleaner not found");
-         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
-     }
-
-     Long cleanerId = Long.valueOf(cleanerOpt.get().getId());
-     cleanerQueueService.enqueue(cleanerId, () -> {
-         try {
-             Map<String, Object> result = cleanerJobService.acceptOrRejectJob(jobId, action);
-             response.putAll(result);
-         } finally {
-             latch.countDown();
-         }
-     });
-     try {
-         latch.await();
-     } catch (InterruptedException e) {
-         Thread.currentThread().interrupt();
-         response.put("message", "Request interrupted");
-         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
-     }
+     Map<String, Object> response = cleanerJobService.acceptOrRejectJob(jobId, action);
 
      return ResponseEntity.ok(response);
  }
