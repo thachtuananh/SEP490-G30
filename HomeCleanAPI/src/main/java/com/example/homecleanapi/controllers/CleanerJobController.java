@@ -74,15 +74,9 @@ public class CleanerJobController {
     // Cleaner apply vào job
     @PostMapping(value = "/apply-job/{jobId}")
     public ResponseEntity<Map<String, Object>> applyForJob(@PathVariable("jobId") Long jobId) {
-        Map<String, Object> response = cleanerJobService.applyForJob(jobId);
-
-
-        if (response.get("message").equals("Bạn đang ứng tuyển hoặc đã có lịch làm việc trong một công việc cách công việc này nhỏ hơn 2 giờ")) {
-            return ResponseEntity.badRequest().body(response);
-        }
-
-        return ResponseEntity.ok(response);
+        return cleanerJobService.applyForJob(jobId);
     }
+
 
     // hủy job mà cleaner đã apply
     @PostMapping(value = "/cancel-application/{jobId}")
