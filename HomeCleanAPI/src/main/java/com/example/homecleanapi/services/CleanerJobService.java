@@ -537,8 +537,9 @@ public class CleanerJobService {
 					jobApplicationRepository.save(app);
 
 					NotificationDTO cleanerNotification = new NotificationDTO();
-					cleanerNotification.setUserId(app.getCleaner().getId());
-					cleanerNotification.setMessage("[Mã công việc: " + job.getOrderCode() + "] Chủ nhà: " + customer.getFull_name() + " đã từ chối yêu cầu nhận việc ");
+
+					cleanerNotification.setUserId(Math.toIntExact(cleanerId));
+					cleanerNotification.setMessage("[Mã công việc: "+ job.getOrderCode() + "] Chủ nhà: " + customer.getFull_name() + " đã từ chối yêu cầu nhận việc ");
 					cleanerNotification.setType("AUTO_MESSAGE");
 					cleanerNotification.setTimestamp(LocalDate.now(zoneId));
 					cleanerNotification.setRead(false);
@@ -582,8 +583,8 @@ public class CleanerJobService {
 			notificationService.processNotification(customerNotification, "CUSTOMER", Math.toIntExact(customerId));
 
 			NotificationDTO cleanerNotification = new NotificationDTO();
-			cleanerNotification.setUserId(cleaner.getId());
-			cleanerNotification.setMessage("[Mã công việc: " + job.getOrderCode() + "] Chủ nhà: " + customer.getFull_name() + " đã đồng ý yêu cầu nhận việc ");
+			cleanerNotification.setUserId(Math.toIntExact(cleanerId));
+			cleanerNotification.setMessage("[Mã công việc: "+ job.getOrderCode() +"] Chủ nhà: " + customer.getFull_name() + " đã đồng ý yêu cầu nhận việc ");
 			cleanerNotification.setType("AUTO_MESSAGE");
 			cleanerNotification.setTimestamp(LocalDate.now(zoneId));
 			cleanerNotification.setRead(false);

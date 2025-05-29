@@ -24,7 +24,7 @@ public class ProfitService {
     public ResponseEntity<Map<String, Object>> getProfile(int page, int size) {
         Map<String, Object> response = new HashMap<>();
         try {
-            Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+            Pageable pageable = PageRequest.of(page, size, Sort.by("executionDate").descending());
             Page<Profit> profitPage = profitRepository.findAll(pageable);
 
             response.put("profits", profitPage.getContent());
@@ -34,7 +34,7 @@ public class ProfitService {
 
             return new ResponseEntity<>(response, HttpStatus.OK);
         } catch (Exception e) {
-            response.put("message", "Lỗi khi lấy dữ liệu profile");
+            response.put("message", "Lỗi khi lấy dữ liệu profits");
             response.put("error", e.getMessage());
             return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
         }

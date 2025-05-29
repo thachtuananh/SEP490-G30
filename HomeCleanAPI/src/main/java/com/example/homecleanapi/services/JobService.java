@@ -82,6 +82,10 @@ public class JobService {
     @Autowired
     private ProfitRepository profitRepository;
 
+    LocalDateTime now = LocalDateTime.now();
+    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
+    String formattedDateTime = now.format(formatter);
+
     public List<JobDTO> getAllJobs() {
         List<Job> jobs = jobRepository.findAll();  // Lấy tất cả các job
 
@@ -286,7 +290,7 @@ public class JobService {
 
         NotificationDTO customerNotification = new NotificationDTO();
         customerNotification.setUserId(job.getCustomer().getId());
-        customerNotification.setMessage("Công việc đã được tạo thành công");
+        customerNotification.setMessage("Công việc đã được tạo thành công tại thời gian" + formattedDateTime);
         customerNotification.setType("AUTO_MESSAGE");
         customerNotification.setTimestamp(LocalDate.now());
         customerNotification.setRead(false);
@@ -748,11 +752,11 @@ public class JobService {
         // Tính toán số tiền sẽ trả cho cleaner (85% tổng giá trị đơn hàng)
         double totalPrice = job.getTotalPrice();
         double cleanerPayment = totalPrice * 0.85;
-        Optional<JobServiceDetail> jobServiceDetail = jobDetailsRepository.findByJob_id(jobId);
-        if (jobServiceDetail.isEmpty()) {
-            response.put("message", "Cleaner payment is incorrect");
-            return response;
-        }
+//        Optional<JobServiceDetail> jobServiceDetail = jobDetailsRepository.findByJob_id(jobId);
+//        if (jobServiceDetail.isEmpty()) {
+//            response.put("message", "Cleaner payment is incorrect");
+//            return response;
+//        }
 //        List<JobServiceDetail> jobServiceDetails = jobDetailsRepository.findByJob_id(jobId);
 //        String serviceNames = jobServiceDetails.size() == 1
 //                ? jobServiceDetails.get(0).getService().getName()
@@ -784,7 +788,7 @@ public class JobService {
         // lưu vào bảng profit
         Profit profit = new Profit();
         profit.setTransactionCode(job.getOrderCode());
-        profit.setServiceType(jobServiceDetail.get().getService().getName());
+//        profit.setServiceType(jobServiceDetail.get().getService().getName());
         profit.setExecutionDate(LocalDate.now());
         profit.setCustomerName(job.getCustomer().getFull_name());
         profit.setCleanerName(cleaner.getName());
@@ -797,7 +801,7 @@ public class JobService {
 
         response.put("message", "Cập nhật job sang DONE thành công");
 
-        String message = "Mã công việc [" + job.getOrderCode() + "] Chủ nhà " + job.getCustomer().getFull_name() + " đã xác nhận bạn hoàn thành công việc. Vui lòng kiểm tra ví.";
+        String message = "Mã công việc [" + job.getOrderCode() + "] Chủ nhà " + job.getCustomer().getFull_name() + " đã xác nhận bạn hoàn thành công việc. Vui lòng kiểm tra ví. " + formattedDateTime;
         NotificationDTO customerNotification = new NotificationDTO();
         customerNotification.setUserId(cleaner.getId());
         customerNotification.setMessage(message);
