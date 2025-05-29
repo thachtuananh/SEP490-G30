@@ -1385,13 +1385,13 @@ public class JobService {
         }
         else {
             for (JobApplication application : jobApplications) {
-                NotificationDTO customerNotification = new NotificationDTO();
-                customerNotification.setUserId(application.getCleaner().getId());
-                customerNotification.setMessage("Mã công việc [" + job.getOrderCode() + "] Chủ nhà đã huỷ công việc " + serviceName.toLowerCase() + " " + job.getScheduledTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")));
-                customerNotification.setType("AUTO_MESSAGE");
-                customerNotification.setTimestamp(now);
-                customerNotification.setRead(false); // ✅ set read = false
-                notificationService.processNotification(customerNotification, "CLEANER", Math.toIntExact(customerId));
+                NotificationDTO cleanerNotification = new NotificationDTO();
+                cleanerNotification.setUserId(application.getCleaner().getId());
+                cleanerNotification.setMessage("Mã công việc [" + job.getOrderCode() + "] Chủ nhà đã huỷ công việc " + serviceName.toLowerCase() + " " + job.getScheduledTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")));
+                cleanerNotification.setType("AUTO_MESSAGE");
+                cleanerNotification.setTimestamp(now);
+                cleanerNotification.setRead(false); // ✅ set read = false
+                notificationService.processNotification(cleanerNotification, "CLEANER", application.getCleaner().getId());
             }
         }
         response.put("message", "Job has been cancelled successfully");
