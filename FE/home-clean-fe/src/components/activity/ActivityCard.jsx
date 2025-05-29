@@ -943,9 +943,12 @@ export const ActivityCard = ({ data, onDelete, onHireCleaner }) => {
         }}
         width={1050}
         footer={[
-          ...(activities.find(
-            (activity) => activity.cleanerId === selectedCleaner?.cleanerId
-          )?.status === "DONE"
+          ...(selectedCleaner &&
+          activities.find(
+            (activity) =>
+              activity.cleanerId === selectedCleaner.cleanerId &&
+              ["DONE"].includes(activity.status)
+          )
             ? [
                 <Button
                   type="primary"
