@@ -845,12 +845,17 @@ public class CleanerJobService {
 		}
 
 		// Sắp xếp theo updatedAt giảm dần
-		appliedJobs.sort(
-				Comparator.comparing(
-						job -> (Date) job.get("updatedAt"),
-						Comparator.nullsLast(Comparator.reverseOrder())
-				)
-		);
+		appliedJobs.sort((job1, job2) -> {
+			LocalDateTime dt1 = (LocalDateTime) job1.get("updatedAt");
+			LocalDateTime dt2 = (LocalDateTime) job2.get("updatedAt");
+
+			if (dt1 == null && dt2 == null) return 0;
+			if (dt1 == null) return 1; // nulls last
+			if (dt2 == null) return -1;
+
+			return dt2.compareTo(dt1);
+		});
+
 
 		return appliedJobs;
 	}

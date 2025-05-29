@@ -1,6 +1,9 @@
 package com.example.homecleanapi.controllers;
 
+import com.example.homecleanapi.models.Employee;
+import com.example.homecleanapi.repositories.CleanerRepository;
 import com.example.homecleanapi.services.CleanerJobService;
+import com.example.homecleanapi.services.CleanerQueueService;
 import com.example.homecleanapi.services.FindCleanerService;
 import com.example.homecleanapi.dtos.JobSummaryDTO;
 
@@ -10,10 +13,14 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.CountDownLatch;
 
 @Tag(name = "Cleaner Job API")
 @RestController
@@ -26,7 +33,10 @@ public class CleanerJobController {
 
     @Autowired
     private FindCleanerService findCleanerService;
-
+    @Autowired
+    private CleanerRepository cleanerRepository;
+    @Autowired
+    private CleanerQueueService cleanerQueueService;
 
 
     // Xem danh sách các công việc "Open"
@@ -220,15 +230,43 @@ public class CleanerJobController {
     }
 
  // Cleaner chấp nhận hoặc từ chối công việc mà customer đã đặt cho mình
-    @PutMapping("/job/{jobId}/accept-reject")
-    public ResponseEntity<Map<String, Object>> acceptOrRejectJob(
-            @PathVariable("jobId") Long jobId,
-            @RequestParam("action") String action) {
+ @PutMapping("/job/{jobId}/accept-reject")
+ public ResponseEntity<Map<String, Object>> acceptOrRejectJob(
+         @PathVariable("jobId") Long jobId,
+         @RequestParam("action") String action) {
 
-        Map<String, Object> response = cleanerJobService.acceptOrRejectJob(jobId, action);
+     Map<String, Object> response = new HashMap<>();
+     CountDownLatch latch = new CountDownLatch(1);
 
-        return ResponseEntity.ok(response);
-    }
+     // Lấy cleaner từ SecurityContext
+     String phoneNumber = SecurityContextHolder.getContext().getAuthentication().getName();
+     Optional<Employee> cleanerOpt = cleanerRepository.findByPhone(phoneNumber);
+
+     if (!cleanerOpt.isPresent()) {
+         response.put("message", "Cleaner not found");
+         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+     }
+
+     Long cleanerId = Long.valueOf(cleanerOpt.get().getId());
+     cleanerQueueService.enqueue(cleanerId, () -> {
+         try {
+             Map<String, Object> result = cleanerJobService.acceptOrRejectJob(jobId, action);
+             response.putAll(result);
+         } finally {
+             latch.countDown();
+         }
+     });
+     try {
+         latch.await();
+     } catch (InterruptedException e) {
+         Thread.currentThread().interrupt();
+         response.put("message", "Request interrupted");
+         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+     }
+
+     return ResponseEntity.ok(response);
+ }
+
 
     @GetMapping("/{cleanerId}/viewcustomer/{customerId}")
     public ResponseEntity<Map<String, Object>> getCustomerDetails(@PathVariable Long cleanerId, @PathVariable Long customerId) {
