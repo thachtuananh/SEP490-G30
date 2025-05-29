@@ -107,17 +107,43 @@ const Notification = ({
   };
 
   // Format date for display
+  // const formatDate = (dateString) => {
+  //   if (!dateString) return "";
+  //   try {
+  //     const date = new Date(dateString);
+  //     return date.toLocaleString("vi-VN", {
+  //       hour: "2-digit",
+  //       minute: "2-digit",
+  //       day: "2-digit",
+  //       month: "2-digit",
+  //       year: "numeric",
+  //     });
+  //   } catch (error) {
+  //     return dateString;
+  //   }
+  // };
+
+  // Format date for display
+  // Format date for display
   const formatDate = (dateString) => {
     if (!dateString) return "";
     try {
       const date = new Date(dateString);
-      return date.toLocaleString("vi-VN", {
-        hour: "2-digit",
-        minute: "2-digit",
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric",
-      });
+      const now = new Date();
+      const diffInMs = now - date; // Difference in milliseconds
+      const diffInMinutes = Math.floor(diffInMs / (1000 * 60)); // Convert to minutes
+      const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60)); // Convert to hours
+      const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24)); // Convert to days
+
+      if (diffInMinutes < 1) {
+        return "Vừa xong";
+      } else if (diffInMinutes < 60) {
+        return `${diffInMinutes} phút trước`;
+      } else if (diffInHours < 24) {
+        return `${diffInHours} giờ trước`;
+      } else {
+        return `${diffInDays} ngày trước`;
+      }
     } catch (error) {
       return dateString;
     }
@@ -229,8 +255,21 @@ const Notification = ({
                       >
                         {item.message}
                       </div>
-                      <div
+                      {/* <div
                         className={styles.notification_time}
+                        style={{
+                          fontWeight: isNotificationUnread(item)
+                            ? "bold"
+                            : "normal",
+                          color: isNotificationUnread(item)
+                            ? "#313134"
+                            : "normal",
+                        }}
+                      >
+                        {formatDate(item.timestamp)}
+                      </div> */}
+                      <div
+                        className={`${styles.notification_time} ${styles.relative}`}
                         style={{
                           fontWeight: isNotificationUnread(item)
                             ? "bold"
