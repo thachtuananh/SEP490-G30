@@ -215,6 +215,10 @@ const Time = ({ onTimeChange }) => {
     }
   };
 
+  const handleAddressAdded = async () => {
+    await refetchAddresses();
+  };
+
   // Hàm xử lý khi chọn ngày (không cần nhấn OK)
   const handleDateSelect = (date) => {
     if (!date) return;
@@ -359,6 +363,7 @@ const Time = ({ onTimeChange }) => {
             loading={addressLoading}
             onSetDefaultAddress={handleSetDefaultAddress}
             currentLocation={location.pathname}
+            onAddressAdded={handleAddressAdded}
           />
         </Form>
       </div>
