@@ -58,6 +58,8 @@ export const ActivityCard = ({ data, onDelete, onHireCleaner }) => {
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(4);
+  const [currentJobForCleanerDetail, setCurrentJobForCleanerDetail] =
+    useState(null);
 
   // Initialize activities from props
   useEffect(() => {
@@ -231,12 +233,13 @@ export const ActivityCard = ({ data, onDelete, onHireCleaner }) => {
     }
   }, [activities, customerId]);
 
-  const handleViewCleanerDetail = async (cleanerId) => {
+  const handleViewCleanerDetail = async (cleanerId, jobData) => {
     if (isProcessing) return;
     setIsProcessing(true);
     try {
       const data = await fetchCleanerDetail(cleanerId);
       setSelectedCleaner(data);
+      setCurrentJobForCleanerDetail(jobData); // Lưu toàn bộ thông tin job
       setIsCleanerDetailModalOpen(true);
     } catch (error) {
       message.error("Không thể tải thông tin người dọn dẹp");
@@ -837,8 +840,9 @@ export const ActivityCard = ({ data, onDelete, onHireCleaner }) => {
                     activity.status === "PAID") && (
                     <Button
                       type="default"
-                      onClick={() =>
-                        handleViewCleanerDetail(activity.cleanerId)
+                      onClick={
+                        () =>
+                          handleViewCleanerDetail(activity.cleanerId, activity) // Truyền cả activity
                       }
                       disabled={!activity.cleanerId || isProcessing}
                     >
@@ -943,12 +947,15 @@ export const ActivityCard = ({ data, onDelete, onHireCleaner }) => {
         }}
         width={1050}
         footer={[
+          // ...(selectedCleaner &&
+          // activities.find(
+          //   (activity) =>
+          //     activity.cleanerId === selectedCleaner.cleanerId &&
+          //     ["DONE"].includes(activity.status)
+          // )
           ...(selectedCleaner &&
-          activities.find(
-            (activity) =>
-              activity.cleanerId === selectedCleaner.cleanerId &&
-              ["DONE"].includes(activity.status)
-          )
+          currentJobForCleanerDetail &&
+          currentJobForCleanerDetail.status === "DONE"
             ? [
                 <Button
                   type="primary"
