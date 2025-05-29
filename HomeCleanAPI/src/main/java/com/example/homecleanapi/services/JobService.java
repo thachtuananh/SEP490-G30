@@ -763,23 +763,30 @@ public class JobService {
 //                : jobServiceDetails.stream()
 //                .map(detail -> detail.getService().getName())
 //                .collect(Collectors.joining(","));
-        String serviceName = "";
-        List<JobServiceDetail> jobServiceDetails = jobServiceDetailRepository.findByJobId(jobId);
-        if (jobServiceDetails.size() > 1) {
-            serviceName = "Dịch vụ combo";
-        }
-        else
-        {
-            try {
-                JobServiceDetail jobServiceDetail = jobServiceDetailRepository.findJobServiceDetailByJobId(jobId);
-                ServiceDetail serviceDetail = serviceDetailRepository.findServiceDetailByServiceId(jobServiceDetail.getService().getId());
-                serviceName = serviceDetail.getService().getName();
-            }
-            catch (Exception e) {
-                response.put("message", e.getMessage());
-            }
 
+        String serviceName = "Chưa xác định";
+        List<JobServiceDetail> jobServiceDetails = jobServiceDetailRepository.findByJobId(jobId);
+
+        if (jobServiceDetails != null && !jobServiceDetails.isEmpty()) {
+            if (jobServiceDetails.size() > 1) {
+                serviceName = "Dịch vụ combo";
+            } else {
+                try {
+                    JobServiceDetail jobServiceDetail = jobServiceDetails.get(0); // dùng lại list đã có
+                    ServiceDetail serviceDetail = serviceDetailRepository.findServiceDetailByServiceId(
+                            jobServiceDetail.getService().getId()
+                    );
+                    serviceName = serviceDetail.getService().getName();
+                } catch (Exception e) {
+                    response.put("message", "Lỗi lấy tên dịch vụ: " + e.getMessage());
+                    serviceName = "Không xác định";
+                }
+            }
+        } else {
+            response.put("message", "Không tìm thấy dịch vụ nào cho công việc này");
+            serviceName = "Không có dịch vụ";
         }
+
 
 
         // Lấy ví của cleaner
@@ -819,7 +826,7 @@ public class JobService {
 
         response.put("message", "Cập nhật job sang DONE thành công");
 
-        String message = "Mã công việc [" + job.getOrderCode() + "] Chủ nhà " + job.getCustomer().getFull_name() + " đã xác nhận bạn hoàn thành công việc " + serviceName.toLowerCase() + " Vui lòng kiểm tra ví.";
+        String message = "Mã công việc [" + job.getOrderCode() + "] Công việc " + serviceName.toLowerCase() + " đã được xác nhận hoàn thành. Thanh toán sẽ được xử lý.";
         NotificationDTO notification = createNotification(cleaner.getId(), message);
 
 //        NotificationDTO customerNotification = new NotificationDTO();
@@ -1265,6 +1272,29 @@ public class JobService {
         }
         Job job = jobOpt.get();
 
+        String serviceName = "Chưa xác định";
+        List<JobServiceDetail> jobServiceDetails = jobServiceDetailRepository.findByJobId(jobId);
+
+        if (jobServiceDetails != null && !jobServiceDetails.isEmpty()) {
+            if (jobServiceDetails.size() > 1) {
+                serviceName = "Dịch vụ combo";
+            } else {
+                try {
+                    JobServiceDetail jobServiceDetail = jobServiceDetails.get(0); // dùng lại list đã có
+                    ServiceDetail serviceDetail = serviceDetailRepository.findServiceDetailByServiceId(
+                            jobServiceDetail.getService().getId()
+                    );
+                    serviceName = serviceDetail.getService().getName();
+                } catch (Exception e) {
+                    response.put("message", "Lỗi lấy tên dịch vụ: " + e.getMessage());
+                    serviceName = "Không xác định";
+                }
+            }
+        } else {
+            response.put("message", "Không tìm thấy dịch vụ nào cho công việc này");
+            serviceName = "Không có dịch vụ";
+        }
+
         // Kiểm tra xem customer có phải là người tạo job này không
         if (job.getCustomer().getId().longValue() != customerId) {
             response.put("message", "You are not authorized to cancel this job");
@@ -1343,22 +1373,31 @@ public class JobService {
             e.printStackTrace();
         }
 
-
-
-
-        NotificationDTO customerNotification = new NotificationDTO();
-        customerNotification.setUserId(job.getCustomer().getId());
-        customerNotification.setMessage("Mã công việc [" + job.getOrderCode() + "] Bạn đã huỷ công việc thành công");
-        customerNotification.setType("AUTO_MESSAGE");
-        customerNotification.setTimestamp(now);
-        customerNotification.setRead(false); // ✅ set read = false
-        notificationService.processNotification(customerNotification, "CUSTOMER", Math.toIntExact(customerId));
+        List<JobApplication> jobApplications = jobApplicationRepository.findJobApplicationById(jobId);
+        if (jobApplications.isEmpty()) {
+            NotificationDTO customerNotification = new NotificationDTO();
+            customerNotification.setUserId(job.getCustomer().getId());
+            customerNotification.setMessage("Mã công việc [" + job.getOrderCode() + "] Bạn đã huỷ công việc thành công");
+            customerNotification.setType("AUTO_MESSAGE");
+            customerNotification.setTimestamp(now);
+            customerNotification.setRead(false); // ✅ set read = false
+            notificationService.processNotification(customerNotification, "CUSTOMER", Math.toIntExact(customerId));
+        }
+        else {
+            for (JobApplication application : jobApplications) {
+                NotificationDTO cleanerNotification = new NotificationDTO();
+                cleanerNotification.setUserId(application.getCleaner().getId());
+                cleanerNotification.setMessage("Mã công việc [" + job.getOrderCode() + "] Chủ nhà đã huỷ công việc " + serviceName.toLowerCase() + " " + job.getScheduledTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")));
+                cleanerNotification.setType("AUTO_MESSAGE");
+                cleanerNotification.setTimestamp(now);
+                cleanerNotification.setRead(false); // ✅ set read = false
+                notificationService.processNotification(cleanerNotification, "CLEANER", application.getCleaner().getId());
+            }
+        }
         response.put("message", "Job has been cancelled successfully");
         response.put("jobId", jobId);
         response.put("status", job.getStatus());
         return response;
-
-
     }
 
 
