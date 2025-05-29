@@ -349,7 +349,7 @@ public class CleanerJobService {
 			customerNotification.setUserId(job.getCustomer().getId());
 			customerNotification.setMessage("[Mã công việc: "+ job.getOrderCode() + "] Người dọn dẹp: " + jobApplication.getCleaner().getName() + " vừa huỷ ứng tuyển vào công việc ");
 			customerNotification.setType("AUTO_MESSAGE");
-			customerNotification.setTimestamp(LocalDate.now());
+			customerNotification.setTimestamp(LocalDateTime.now());
 			customerNotification.setRead(false); // ✅ set read = false
 			notificationService.processNotification(customerNotification, "CUSTOMER", job.getCustomer().getId());
 
@@ -391,7 +391,7 @@ public class CleanerJobService {
 				customerNotification.setUserId(job.getCustomer().getId());
 				customerNotification.setMessage("[Mã công việc: "+ job.getOrderCode() + "] Người dọn dẹp: " + jobApplication.getCleaner().getName() + " vừa huỷ công việc " );
 				customerNotification.setType("AUTO_MESSAGE");
-				customerNotification.setTimestamp(LocalDate.now());
+				customerNotification.setTimestamp(LocalDateTime.now());
 				customerNotification.setRead(false); // ✅ set read = false
 				notificationService.processNotification(customerNotification, "CUSTOMER", job.getCustomer().getId());
 
@@ -537,7 +537,7 @@ public class CleanerJobService {
 					cleanerNotification.setUserId(Math.toIntExact(cleanerId));
 					cleanerNotification.setMessage("[Mã công việc: "+ job.getOrderCode() + "] Chủ nhà: " + customer.getFull_name() + " đã từ chối yêu cầu nhận việc ");
 					cleanerNotification.setType("AUTO_MESSAGE");
-					cleanerNotification.setTimestamp(LocalDate.now(zoneId));
+					cleanerNotification.setTimestamp(LocalDateTime.now(zoneId));
 					cleanerNotification.setRead(false);
 					notificationService.processNotification(cleanerNotification, "CLEANER", Math.toIntExact(app.getCleaner().getId()));
 				}
@@ -675,7 +675,7 @@ public class CleanerJobService {
 		customerNotification.setUserId(job.getCustomer().getId());
 		customerNotification.setMessage(message);
 		customerNotification.setType("AUTO_MESSAGE");
-		customerNotification.setTimestamp(LocalDate.now());
+		customerNotification.setTimestamp(LocalDateTime.now());
 		customerNotification.setRead(false); // ✅ set read = false
 		notificationService.processNotification(customerNotification, "CUSTOMER", Math.toIntExact(job.getCustomer().getId()));
 
@@ -684,7 +684,7 @@ public class CleanerJobService {
 		cleanerNotification.setUserId(cleaner.getId());
 		cleanerNotification.setMessage(message_cleaner);
 		cleanerNotification.setType("AUTO_MESSAGE");
-		cleanerNotification.setTimestamp(LocalDate.now());
+		cleanerNotification.setTimestamp(LocalDateTime.now());
 		cleanerNotification.setRead(false); // ✅ set read = false
 		notificationService.processNotification(cleanerNotification, "CLEANER", cleaner.getId());
 
@@ -749,7 +749,7 @@ public class CleanerJobService {
 		customerNotification.setUserId(job.getCustomer().getId());
 		customerNotification.setMessage(message);
 		customerNotification.setType("AUTO_MESSAGE");
-		customerNotification.setTimestamp(LocalDate.now());
+		customerNotification.setTimestamp(LocalDateTime.now());
 		customerNotification.setRead(false);
 		notificationService.processNotification(customerNotification, "CUSTOMER", Math.toIntExact(job.getCustomer().getId()));
 		response.put("message", "Job status updated to COMPLETED");
@@ -1811,7 +1811,7 @@ public class CleanerJobService {
 		customerNotification.setUserId(job.getCustomer().getId());
 		customerNotification.setMessage(message_customer);
 		customerNotification.setType("AUTO_MESSAGE");
-		customerNotification.setTimestamp(LocalDate.now());
+		customerNotification.setTimestamp(LocalDateTime.now());
 		customerNotification.setRead(false); // ✅ set read = false
 		notificationService.processNotification(customerNotification, "CUSTOMER", Math.toIntExact(customerId));
 		String message_cleaner = "Chủ nhà " + customer.getFull_name() + " đã đặt lịch dọn dẹp với bạn.";
@@ -1819,7 +1819,7 @@ public class CleanerJobService {
 		cleanerNotification.setUserId(Math.toIntExact(cleanerId));
 		cleanerNotification.setMessage(message_cleaner);
 		cleanerNotification.setType("AUTO_MESSAGE");
-		cleanerNotification.setTimestamp(LocalDate.now());
+		cleanerNotification.setTimestamp(LocalDateTime.now());
 		cleanerNotification.setRead(false); // ✅ set read = false
 		notificationService.processNotification(cleanerNotification, "CLEANER", Math.toIntExact(cleanerId));
 
@@ -1997,7 +1997,7 @@ public class CleanerJobService {
 			customerNotification.setUserId(job.getCustomer().getId());
 			customerNotification.setMessage("Mã đơn hàng: ["+ job.getOrderCode() +"] Người dọn dẹp: " + cleaner.getName() + " đã đồng ý nhận công việc bạn đặt lịch.");
 			customerNotification.setType("AUTO_MESSAGE");
-			customerNotification.setTimestamp(LocalDate.now());
+			customerNotification.setTimestamp(LocalDateTime.now());
 			customerNotification.setRead(false); // ✅ set read = false
 			notificationService.processNotification(customerNotification, "CUSTOMER", Math.toIntExact(job.getCustomer().getId()));
 			conversationService.getOrCreateConversation(Long.valueOf(job.getCustomer().getId()), cleaner.getId());
@@ -2038,7 +2038,7 @@ public class CleanerJobService {
 			customerNotification.setUserId(job.getCustomer().getId());
 			customerNotification.setMessage("Mã đơn hàng: ["+job.getOrderCode()+"] Người dọn dẹp: " + cleaner.getName() + " đã từ chối công việc bạn đã đặt lịch");
 			customerNotification.setType("AUTO_MESSAGE");
-			customerNotification.setTimestamp(LocalDate.now());
+			customerNotification.setTimestamp(LocalDateTime.now());
 			customerNotification.setRead(false); // ✅ set read = false
 			notificationService.processNotification(customerNotification, "CUSTOMER", Math.toIntExact(job.getCustomer().getId()));
 

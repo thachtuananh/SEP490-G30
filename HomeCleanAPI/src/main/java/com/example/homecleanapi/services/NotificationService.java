@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -101,7 +102,7 @@ public class NotificationService {
             userNotification.setUserId(userId);
             userNotification.setMessage(notifications.getMessage());
             userNotification.setType(notifications.getType());
-            userNotification.setTimestamp(LocalDate.now());
+            userNotification.setTimestamp(LocalDateTime.now());
             userNotification.setRead(false); // Chắc chắn chưa đọc
 
             processNotification(userNotification, role, userId);
