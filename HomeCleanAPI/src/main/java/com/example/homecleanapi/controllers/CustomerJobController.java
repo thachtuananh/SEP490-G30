@@ -2,6 +2,7 @@ package com.example.homecleanapi.controllers;
 
 import com.example.homecleanapi.dtos.BookMultiJobRequest;
 import com.example.homecleanapi.models.CustomerAddresses;
+import com.example.homecleanapi.services.CleanerQueueService;
 import com.example.homecleanapi.services.JobService;
 import com.example.homecleanapi.dtos.BookJobRequest;
 import com.example.homecleanapi.services.CleanerJobService;
@@ -16,10 +17,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
+import java.util.*;
+import java.util.concurrent.CountDownLatch;
 
 @RestController
 @Tag(name = "Customer Job API")
@@ -32,6 +31,8 @@ public class CustomerJobController {
 
 	@Autowired
 	private CleanerJobService cleanerJobService;
+    @Autowired
+    private CleanerQueueService cleanerQueueService;
 
 	// API cho customer tạo job
 	@PostMapping(value = "/{customerId}/createjob")
@@ -75,22 +76,65 @@ public class CustomerJobController {
 
 
 	@PostMapping(value = "/accept-job/{jobId}/cleaner/{cleanerId}/customer/{customerId}")
-	public ResponseEntity<Map<String, Object>> acceptCleanerForJob(@PathVariable Long jobId,
-			@PathVariable Long cleanerId, @PathVariable Long customerId) {
-		// Gọi service để accept cleaner cho job
-		Map<String, Object> response = cleanerJobService.acceptOrRejectApplication(jobId, cleanerId, customerId,
-				"accept");
+	public ResponseEntity<Map<String, Object>> acceptCleanerForJob(
+			@PathVariable Long jobId,
+			@PathVariable Long cleanerId,
+			@PathVariable Long customerId) {
+
+		Map<String, Object> response = new HashMap<>();
+		CountDownLatch latch = new CountDownLatch(1);
+
+		cleanerQueueService.enqueue(cleanerId, () -> {
+			try {
+				Map<String, Object> result = cleanerJobService.acceptOrRejectApplication(jobId, cleanerId, customerId, "accept");
+				response.putAll(result);
+			} finally {
+				latch.countDown();
+			}
+		});
+
+		try {
+			latch.await();
+		} catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
+			response.put("message", "Request interrupted");
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+		}
+
 		return ResponseEntity.ok(response);
 	}
 
 	@PostMapping(value = "/reject-job/{jobId}/cleaner/{cleanerId}/customer/{customerId}")
-	public ResponseEntity<Map<String, Object>> rejectCleanerForJob(@PathVariable Long jobId,
-			@PathVariable Long cleanerId, @PathVariable Long customerId) {
-		// Gọi service để reject cleaner cho job
-		Map<String, Object> response = cleanerJobService.acceptOrRejectApplication(jobId, cleanerId, customerId,
-				"reject");
+	public ResponseEntity<Map<String, Object>> rejectCleanerForJob(
+			@PathVariable Long jobId,
+			@PathVariable Long cleanerId,
+			@PathVariable Long customerId) {
+
+		Map<String, Object> response = new HashMap<>();
+		CountDownLatch latch = new CountDownLatch(1);
+
+		cleanerQueueService.enqueue(cleanerId, () -> {
+			try {
+				Map<String, Object> result = cleanerJobService.acceptOrRejectApplication(
+						jobId, cleanerId, customerId, "reject"
+				);
+				response.putAll(result);
+			} finally {
+				latch.countDown();
+			}
+		});
+
+		try {
+			latch.await();
+		} catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
+			response.put("message", "Request interrupted");
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+		}
+
 		return ResponseEntity.ok(response);
 	}
+
 
 	// Chuyển trạng thái job sang STARTED
 	@PostMapping(value = "/job/start/{jobId}/{customerId}")
