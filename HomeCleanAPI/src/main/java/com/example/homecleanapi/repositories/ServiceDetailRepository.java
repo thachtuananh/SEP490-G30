@@ -10,5 +10,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ServiceDetailRepository extends JpaRepository<ServiceDetail, Long> {
     List<ServiceDetail> findByServiceId(Long serviceId);
+    ServiceDetail findServiceDetailByServiceId(Long serviceId);
 }
 

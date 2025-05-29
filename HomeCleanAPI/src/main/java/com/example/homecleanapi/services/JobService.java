@@ -290,9 +290,9 @@ public class JobService {
 
         NotificationDTO customerNotification = new NotificationDTO();
         customerNotification.setUserId(job.getCustomer().getId());
-        customerNotification.setMessage("Công việc đã được tạo thành công tại thời gian" + formattedDateTime);
+        customerNotification.setMessage("Bạn đã đặt lịch dọn dẹp thành công.");
         customerNotification.setType("AUTO_MESSAGE");
-        customerNotification.setTimestamp(LocalDate.now());
+        customerNotification.setTimestamp(now);
         customerNotification.setRead(false);
         notificationService.processNotification(customerNotification, "CUSTOMER", Math.toIntExact(customerId));
 
@@ -479,9 +479,9 @@ public class JobService {
         // Notification
         NotificationDTO noti = new NotificationDTO();
         noti.setUserId(Math.toIntExact(customerId));
-        noti.setMessage("Đặt nhiều lịch dọn dẹp thành công");
+        noti.setMessage("Bạn đã đặt lịch dọn dẹp thành công");
         noti.setType("AUTO_MESSAGE");
-        noti.setTimestamp(LocalDate.now());
+        noti.setTimestamp(now);
         noti.setRead(false);
         notificationService.processNotification(noti, "CUSTOMER", Math.toIntExact(customerId));
 
@@ -763,6 +763,24 @@ public class JobService {
 //                : jobServiceDetails.stream()
 //                .map(detail -> detail.getService().getName())
 //                .collect(Collectors.joining(","));
+        String serviceName = "";
+        List<JobServiceDetail> jobServiceDetails = jobServiceDetailRepository.findByJobId(jobId);
+        if (jobServiceDetails.size() > 1) {
+            serviceName = "Dịch vụ combo";
+        }
+        else
+        {
+            try {
+                JobServiceDetail jobServiceDetail = jobServiceDetailRepository.findJobServiceDetailByJobId(jobId);
+                ServiceDetail serviceDetail = serviceDetailRepository.findServiceDetailByServiceId(jobServiceDetail.getService().getId());
+                serviceName = serviceDetail.getService().getName();
+            }
+            catch (Exception e) {
+                response.put("message", e.getMessage());
+            }
+
+        }
+
 
         // Lấy ví của cleaner
         Optional<Wallet> walletOpt = walletRepository.findByCleanerId(cleaner.getId());
@@ -801,14 +819,16 @@ public class JobService {
 
         response.put("message", "Cập nhật job sang DONE thành công");
 
-        String message = "Mã công việc [" + job.getOrderCode() + "] Chủ nhà " + job.getCustomer().getFull_name() + " đã xác nhận bạn hoàn thành công việc. Vui lòng kiểm tra ví. " + formattedDateTime;
-        NotificationDTO customerNotification = new NotificationDTO();
-        customerNotification.setUserId(cleaner.getId());
-        customerNotification.setMessage(message);
-        customerNotification.setType("AUTO_MESSAGE");
-        customerNotification.setTimestamp(LocalDate.now());
-        customerNotification.setRead(false); // ✅ set read = false
-        notificationService.processNotification(customerNotification, "CLEANER", cleaner.getId());
+        String message = "Mã công việc [" + job.getOrderCode() + "] Chủ nhà " + job.getCustomer().getFull_name() + " đã xác nhận bạn hoàn thành công việc " + serviceName.toLowerCase() + " Vui lòng kiểm tra ví.";
+        NotificationDTO notification = createNotification(cleaner.getId(), message);
+
+//        NotificationDTO customerNotification = new NotificationDTO();
+//        customerNotification.setUserId(cleaner.getId());
+//        customerNotification.setMessage(message);
+//        customerNotification.setType("AUTO_MESSAGE");
+//        customerNotification.setTimestamp(LocalDate.now());
+//        customerNotification.setRead(false); // ✅ set read = false
+        notificationService.processNotification(notification, "CLEANER", cleaner.getId());
         response.put("message", "Job status updated to DONE, and cleaner's wallet has been credited with 85% of the job value");
         return response;
     }
@@ -1330,7 +1350,7 @@ public class JobService {
         customerNotification.setUserId(job.getCustomer().getId());
         customerNotification.setMessage("Mã công việc [" + job.getOrderCode() + "] Bạn đã huỷ công việc thành công");
         customerNotification.setType("AUTO_MESSAGE");
-        customerNotification.setTimestamp(LocalDate.now());
+        customerNotification.setTimestamp(now);
         customerNotification.setRead(false); // ✅ set read = false
         notificationService.processNotification(customerNotification, "CUSTOMER", Math.toIntExact(customerId));
         response.put("message", "Job has been cancelled successfully");
@@ -1352,7 +1372,7 @@ public class JobService {
         notification.setUserId(userId);
         notification.setMessage(message);
         notification.setType("AUTO_MESSAGE");
-        notification.setTimestamp(LocalDate.now());
+        notification.setTimestamp(now);
         notification.setRead(false);
         return notification;
     }
