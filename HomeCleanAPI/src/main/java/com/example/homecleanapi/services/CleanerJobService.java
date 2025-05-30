@@ -238,10 +238,9 @@ public class CleanerJobService {
 			} else {
 				try {
 					JobServiceDetail jobServiceDetail = jobServiceDetails.get(0); // dùng lại list đã có
-					ServiceDetail serviceDetail = serviceDetailRepository.findServiceDetailByServiceId(
-							jobServiceDetail.getService().getId()
-					);
-					serviceName = serviceDetail.getService().getName();
+					System.out.println(jobServiceDetail.getService().getId());
+					System.out.println("Service name: " + jobServiceDetail.getService().getName());
+					serviceName = jobServiceDetail.getService().getName();
 				} catch (Exception e) {
 					response.put("message", "Lỗi lấy tên dịch vụ: " + e.getMessage());
 					serviceName = "Không xác định";
@@ -528,10 +527,7 @@ public class CleanerJobService {
 			} else {
 				try {
 					JobServiceDetail jobServiceDetail = jobServiceDetails.get(0); // dùng lại list đã có
-					ServiceDetail serviceDetail = serviceDetailRepository.findServiceDetailByServiceId(
-							jobServiceDetail.getService().getId()
-					);
-					serviceName = serviceDetail.getService().getName();
+					serviceName = jobServiceDetail.getService().getName();
 				} catch (Exception e) {
 					response.put("message", "Lỗi lấy tên dịch vụ: " + e.getMessage());
 					serviceName = "Không xác định";
@@ -715,10 +711,7 @@ public class CleanerJobService {
 			} else {
 				try {
 					JobServiceDetail jobServiceDetail = jobServiceDetails.get(0); // dùng lại list đã có
-					ServiceDetail serviceDetail = serviceDetailRepository.findServiceDetailByServiceId(
-							jobServiceDetail.getService().getId()
-					);
-					serviceName = serviceDetail.getService().getName();
+					serviceName = jobServiceDetail.getService().getName();
 				} catch (Exception e) {
 					response.put("message", "Lỗi lấy tên dịch vụ: " + e.getMessage());
 					serviceName = "Không xác định";
@@ -791,10 +784,7 @@ public class CleanerJobService {
 			} else {
 				try {
 					JobServiceDetail jobServiceDetail = jobServiceDetails.get(0); // dùng lại list đã có
-					ServiceDetail serviceDetail = serviceDetailRepository.findServiceDetailByServiceId(
-							jobServiceDetail.getService().getId()
-					);
-					serviceName = serviceDetail.getService().getName();
+					serviceName = jobServiceDetail.getService().getName();
 				} catch (Exception e) {
 					response.put("message", "Lỗi lấy tên dịch vụ: " + e.getMessage());
 					serviceName = "Không xác định";
@@ -1916,10 +1906,7 @@ public class CleanerJobService {
 			} else {
 				try {
 					JobServiceDetail jobServiceDetail = jobServiceDetails1.get(0); // dùng lại list đã có
-					ServiceDetail serviceDetail = serviceDetailRepository.findServiceDetailByServiceId(
-							jobServiceDetail.getService().getId()
-					);
-					serviceName = serviceDetail.getService().getName();
+					serviceName = jobServiceDetail.getService().getName();
 				} catch (Exception e) {
 					response.put("message", "Lỗi lấy tên dịch vụ: " + e.getMessage());
 					serviceName = "Không xác định";
@@ -2113,10 +2100,7 @@ public class CleanerJobService {
 			} else {
 				try {
 					JobServiceDetail jobServiceDetail = jobServiceDetails1.get(0); // dùng lại list đã có
-					ServiceDetail serviceDetail = serviceDetailRepository.findServiceDetailByServiceId(
-							jobServiceDetail.getService().getId()
-					);
-					serviceName = serviceDetail.getService().getName();
+					serviceName = jobServiceDetail.getService().getName();
 				} catch (Exception e) {
 					response.put("message", "Lỗi lấy tên dịch vụ: " + e.getMessage());
 					serviceName = "Không xác định";
