@@ -768,7 +768,6 @@ public class JobService {
 
         String serviceName = "Chưa xác định";
         List<JobServiceDetail> jobServiceDetails = jobServiceDetailRepository.findByJobId(jobId);
-
         if (jobServiceDetails != null && !jobServiceDetails.isEmpty()) {
             if (jobServiceDetails.size() > 1) {
                 serviceName = "Dịch vụ combo";
@@ -778,7 +777,7 @@ public class JobService {
                     ServiceDetail serviceDetail = serviceDetailRepository.findServiceDetailByServiceId(
                             jobServiceDetail.getService().getId()
                     );
-                    serviceName = serviceDetail.getService().getName();
+                    serviceName = serviceDetail.getName();
                 } catch (Exception e) {
                     response.put("message", "Lỗi lấy tên dịch vụ: " + e.getMessage());
                     serviceName = "Không xác định";
@@ -1286,7 +1285,7 @@ public class JobService {
                     ServiceDetail serviceDetail = serviceDetailRepository.findServiceDetailByServiceId(
                             jobServiceDetail.getService().getId()
                     );
-                    serviceName = serviceDetail.getService().getName();
+                    serviceName = serviceDetail.getName();
                 } catch (Exception e) {
                     response.put("message", "Lỗi lấy tên dịch vụ: " + e.getMessage());
                     serviceName = "Không xác định";
