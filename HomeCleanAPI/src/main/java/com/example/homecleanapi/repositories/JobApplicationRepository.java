@@ -40,7 +40,6 @@ public interface JobApplicationRepository extends JpaRepository<JobApplication, 
 
 	List<JobApplication> findByCleanerIdAndJobCustomerId(Long cleanerId, Long customerId);
 
-	List<JobApplication> findJobApplicationById(Long id);
 
 	Optional<JobApplication> findJobApplicationByJob_IdAndStatus(Long jobId, String status);
 
@@ -54,6 +53,10 @@ public interface JobApplicationRepository extends JpaRepository<JobApplication, 
 
 	@Query("SELECT ja FROM JobApplication ja WHERE ja.job.id = :jobId AND ja.status = :status")
 	List<JobApplication> findAllByJobIdAndStatus(@Param("jobId") Long jobId, @Param("status") String status);
+
+	@Query("SELECT ja FROM JobApplication ja WHERE ja.job.id = :jobId")
+	List<JobApplication> findJobApplicationById(@Param("jobId") Long jobId);
+
 
 
 
