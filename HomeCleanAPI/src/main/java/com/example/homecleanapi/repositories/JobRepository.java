@@ -97,6 +97,16 @@ public interface JobRepository extends JpaRepository<Job, Long> {
             @Param("excludeJobId") Long excludeJobId
     );
 
+    @Query("SELECT j FROM Job j WHERE j.cleaner.id = :cleanerId " +
+            "AND j.scheduledTime BETWEEN :startTime AND :endTime " +
+            "AND j.id <> :jobId")
+    List<Job> findByCleanerIdAndScheduledTimeBetweenAndIdNot(
+            @Param("cleanerId") Long cleanerId,
+            @Param("startTime") LocalDateTime startTime,
+            @Param("endTime") LocalDateTime endTime,
+            @Param("jobId") Long jobId
+    );
+
 
 
 
