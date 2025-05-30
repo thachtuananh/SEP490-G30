@@ -1621,8 +1621,8 @@ public class CleanerJobService {
 				if (existingJob.getStatus() != JobStatus.DONE &&
 						existingJob.getStatus() != JobStatus.CANCELLED &&
 						existingJob.getStatus() != JobStatus.AUTO_CANCELLED &&
-						existingJob.getStatus() != JobStatus.BOOKED) {
-					// Nếu trạng thái không phải là DONE, CANCELLED, AUTO_CANCELLED, thì thông báo trùng lịch
+						existingJob.getStatus() != JobStatus.BOOKED ) {
+
 					response.put("message", "Người dọn này đã có lịch trùng với thời gian bạn chọn");
 					return response;
 				}
@@ -1869,7 +1869,7 @@ public class CleanerJobService {
 
 		// Lấy các job có status là BOOKED hoặc OPEN
 		List<Job> jobs = jobRepository.findByCleanerIdAndBookingTypeAndStatusIn(
-				cleanerId, "BOOKED", Arrays.asList(JobStatus.BOOKED, JobStatus.OPEN)
+				cleanerId, "BOOKED", Arrays.asList(JobStatus.BOOKED, JobStatus.OPEN,JobStatus.CANCELLED,JobStatus.AUTO_CANCELLED)
 		);
 
 		// Lấy thêm các job CANCELLED nhưng có JobApplication status = Rejected
