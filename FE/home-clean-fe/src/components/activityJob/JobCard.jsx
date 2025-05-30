@@ -51,6 +51,7 @@ const getStatusColor = (status) => {
       return "#2ecc71";
     case "CANCELLED":
     case "REJECTED":
+    case "AUTO_CANCELLED":
       return "#e74c3c";
     case "DONE":
       return "#27ae60";
@@ -72,6 +73,7 @@ const getStatusLabel = (status) => {
     ARRIVED: "Đã đến",
     COMPLETED: "Đã hoàn thành công việc",
     CANCELLED: "Đã hủy",
+    AUTO_CANCELLED: "Đã hủy do quá thời gian hoặc trùng lịch",
     REJECTED: "Đã từ chối",
     DONE: "Hoàn tất công việc",
     BOOKED: "Đã đặt lịch",
@@ -725,7 +727,7 @@ const JobCard = ({ job, refreshJobs, isAppliedTab }) => {
 
       {/* Customer Details Modal */}
       <Modal
-        title="Thông tin chi tiết khách hàng"
+        title="Thông tin chi tiết chủ nhà"
         open={customerDetailsVisible}
         onCancel={() => setCustomerDetailsVisible(false)}
         footer={[
@@ -745,7 +747,7 @@ const JobCard = ({ job, refreshJobs, isAppliedTab }) => {
             <Typography.Title level={4}>Thông tin cá nhân</Typography.Title>
             {customerDetails ? (
               <div className={styles.customerDetails}>
-                <div className={styles.detailItem}>
+                {/* <div className={styles.detailItem}>
                   <UserOutlined
                     style={{ fontSize: "20px", color: "#039855" }}
                   />
@@ -757,7 +759,7 @@ const JobCard = ({ job, refreshJobs, isAppliedTab }) => {
                         : "Đang hoạt động"}
                     </strong>
                   </div>
-                </div>
+                </div> */}
 
                 <div className={styles.detailItem}>
                   <UserOutlined
