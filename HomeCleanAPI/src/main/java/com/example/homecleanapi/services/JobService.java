@@ -774,10 +774,7 @@ public class JobService {
             } else {
                 try {
                     JobServiceDetail jobServiceDetail = jobServiceDetails.get(0); // dùng lại list đã có
-                    ServiceDetail serviceDetail = serviceDetailRepository.findServiceDetailByServiceId(
-                            jobServiceDetail.getService().getId()
-                    );
-                    serviceName = serviceDetail.getName();
+                    serviceName = jobServiceDetail.getService().getName();
                 } catch (Exception e) {
                     response.put("message", "Lỗi lấy tên dịch vụ: " + e.getMessage());
                     serviceName = "Không xác định";
@@ -1282,10 +1279,7 @@ public class JobService {
             } else {
                 try {
                     JobServiceDetail jobServiceDetail = jobServiceDetails.get(0); // dùng lại list đã có
-                    ServiceDetail serviceDetail = serviceDetailRepository.findServiceDetailByServiceId(
-                            jobServiceDetail.getService().getId()
-                    );
-                    serviceName = serviceDetail.getName();
+                    serviceName = jobServiceDetail.getService().getName();
                 } catch (Exception e) {
                     response.put("message", "Lỗi lấy tên dịch vụ: " + e.getMessage());
                     serviceName = "Không xác định";
