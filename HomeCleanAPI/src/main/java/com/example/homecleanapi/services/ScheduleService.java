@@ -149,7 +149,6 @@ public class ScheduleService {
     }
 
 
-
 //    NotificationDTO cleanerNotification = new NotificationDTO();
 //                    cleanerNotification.setUserId(application.getCleaner().getId());
 //                    cleanerNotification.setMessage("Mã công việc: [" + job.getOrderCode() + "] Công việc của bạn đã bị hủy do chủ nhà chưa xác nhận thuê");
