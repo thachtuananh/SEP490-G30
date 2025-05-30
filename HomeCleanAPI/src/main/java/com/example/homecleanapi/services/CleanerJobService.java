@@ -2083,7 +2083,35 @@ public class CleanerJobService {
 	    }
 	    Job job = jobOpt.get();
 
-	    // Kiểm tra nếu công việc đã được giao cho cleaner
+		if (job.getStatus() != JobStatus.BOOKED) {
+			response.put("message", "Công việc phải ở trạng thái BOOKED");
+			return response;
+		}
+
+		LocalDateTime jobTime = job.getScheduledTime();
+		Long cleanerId = Long.valueOf(cleaner.getId());
+		List<Job> existingJobs = jobRepository.findByCleanerIdAndScheduledTimeBetween(
+				cleanerId,
+				jobTime.minusHours(2),
+				jobTime.plusHours(2)
+		);
+
+		if (!existingJobs.isEmpty()) {
+			for (Job existingJob : existingJobs) {
+				if (!existingJob.getId().equals(job.getId()) &&
+						existingJob.getStatus() != JobStatus.DONE &&
+						existingJob.getStatus() != JobStatus.CANCELLED &&
+						existingJob.getStatus() != JobStatus.AUTO_CANCELLED &&
+						existingJob.getStatus() != JobStatus.BOOKED) {
+
+					response.put("message", "Bạn đã có lịch trong khoảng thời gian này");
+					return response;
+				}
+			}
+		}
+
+
+		// Kiểm tra nếu công việc đã được giao cho cleaner
 	    Optional<JobApplication> jobApplicationOpt = jobApplicationRepository.findByJobAndCleaner(job, cleaner);
 	    if (!jobApplicationOpt.isPresent()) {
 	        response.put("message", "This job has not been assigned to you");
