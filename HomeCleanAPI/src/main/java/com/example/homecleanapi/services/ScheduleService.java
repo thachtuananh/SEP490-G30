@@ -107,8 +107,8 @@ public class ScheduleService {
                     List<JobApplication> jobApplications = jobApplicationRepository.findAllByJobIdAndStatus(job.getId(), "Pending");
 
                   
-                List<JobApplication> jobApplications = jobApp.findByJobId(job.getId());
-                for (JobApplication application : jobApplications) {
+                List<JobApplication> jobApplications1 = jobApp.findByJobId(job.getId());
+                for (JobApplication application : jobApplications1) {
                     String status = application.getStatus();
                     application.setStatus("Cancelled");
                     applicationsToUpdate.add(application);
@@ -120,14 +120,6 @@ public class ScheduleService {
                     cleanerNotification.setTimestamp(LocalDateTime.now(zoneId));
                     cleanerNotification.setRead(false);
                     notificationService.processNotification(cleanerNotification, "CLEANER", application.getCleaner().getId());
-
-                        NotificationDTO cleanerNotification = new NotificationDTO();
-                        cleanerNotification.setUserId(application.getCleaner().getId());
-                        cleanerNotification.setMessage("Mã công việc: [" + job.getOrderCode() + "] Công việc của bạn đã bị hủy do chủ nhà chưa xác nhận thuê");
-                        cleanerNotification.setType("AUTO_MESSAGE");
-                        cleanerNotification.setTimestamp(LocalDate.now(zoneId));
-                        cleanerNotification.setRead(false);
-                        notificationService.processNotification(cleanerNotification, "CLEANER", application.getCleaner().getId());
                     }
                 }
             } else {
