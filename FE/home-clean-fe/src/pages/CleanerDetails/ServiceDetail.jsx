@@ -319,10 +319,8 @@ const ServiceDetailsCombo = () => {
                 serviceAll?.serviceName ||
                 `Dịch vụ ${item.serviceId}`,
               price: servicePrices[item.serviceId] * item.quantity,
-              selectedSize: selectedDetail
-                ? `${selectedDetail.minRoomSize}`
-                : "0",
-              maxSize: selectedDetail ? `${selectedDetail.maxRoomSize}` : "20",
+              selectedSize: selectedDetail.minRoomSize,
+              maxSize: selectedDetail.maxRoomSize,
               quantity: item.quantity,
             };
           }),
@@ -431,7 +429,8 @@ const ServiceDetailsCombo = () => {
               onChange={(value) =>
                 handleSizeChange(record.serviceId, value, index)
               }
-              value={record.serviceDetailId}
+              // value={record.serviceDetailId}
+              value={selectedServiceDetailId}
               disabled={!serviceData?.serviceDetails?.length}
             >
               {serviceData &&

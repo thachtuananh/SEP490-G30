@@ -16,11 +16,14 @@ const CreateJob = () => {
   const [paymentMethod, setPaymentMethod] = useState("VNPay"); // Default payment method
   const [reminder, setReminder] = useState(""); // State for cleaner note/reminder
   const [priceAdjustment, setPriceAdjustment] = useState(null); // State for price adjustment
-  const handleTimeChange = (date, hour, minute, adjustment) => {
+  const [selectedAddress, setSelectedAddress] = useState(null);
+
+  const handleTimeChange = (date, hour, minute, adjustment, address) => {
     setSelectedDate(date);
     setHour(hour);
     setMinute(minute);
     setPriceAdjustment(adjustment);
+    setSelectedAddress(address);
   };
 
   const handlePaymentMethodChange = (method) => {
@@ -52,6 +55,7 @@ const CreateJob = () => {
           hour={hour}
           minute={minute}
           paymentMethod={paymentMethod}
+          address={selectedAddress?.fullAddress}
           reminder={reminder}
           priceAdjustment={priceAdjustment}
         />

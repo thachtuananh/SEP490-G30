@@ -314,10 +314,8 @@ const ServiceDetailsCombo = () => {
                 serviceAll?.serviceName ||
                 `Dịch vụ ${item.serviceId}`,
               price: servicePrices[item.serviceId] * item.quantity,
-              selectedSize: selectedDetail
-                ? `${selectedDetail.minRoomSize}`
-                : "0",
-              maxSize: selectedDetail ? `${selectedDetail.maxRoomSize}` : "20",
+              selectedSize: selectedDetail.minRoomSize,
+              maxSize: selectedDetail.maxRoomSize,
               quantity: item.quantity,
             };
           }),
