@@ -14,6 +14,7 @@ import com.example.homecleanapi.repositories.*;
 import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -40,8 +41,9 @@ public class ScheduleService {
     private final JobDetailsRepository jobDetailsRepository;
     private final ProfitRepository profitRepository;
     private final JobApp jobApp;
+    private final JobServiceDetailRepository jobServiceDetailRepository;
 
-    public ScheduleService(JobRepository jobRepository, NotificationService notificationService, JobApplicationRepository jobApplicationRepository, CustomerWalletRepository customerWalletRepository, TransactionHistoryRepository transactionHistoryRepository, WalletRepository walletRepository, WorkHistoryRepository workHistoryRepository, JobDetailsRepository jobDetailsRepository, ProfitRepository profitRepository, JobApp jobApp) {
+    public ScheduleService(JobRepository jobRepository, NotificationService notificationService, JobApplicationRepository jobApplicationRepository, CustomerWalletRepository customerWalletRepository, TransactionHistoryRepository transactionHistoryRepository, WalletRepository walletRepository, WorkHistoryRepository workHistoryRepository, JobDetailsRepository jobDetailsRepository, ProfitRepository profitRepository, JobApp jobApp, JobServiceDetailRepository jobServiceDetailRepository) {
         this.jobRepository = jobRepository;
         this.notificationService = notificationService;
         this.jobApplicationRepository = jobApplicationRepository;
@@ -52,6 +54,7 @@ public class ScheduleService {
         this.jobDetailsRepository = jobDetailsRepository;
         this.profitRepository = profitRepository;
         this.jobApp = jobApp;
+        this.jobServiceDetailRepository = jobServiceDetailRepository;
     }
 
 
@@ -252,14 +255,43 @@ public class ScheduleService {
 //                            LocalDate.now(zoneId),
 //                            false,
 //                    );
+
+
+                    String serviceName = "Chưa xác định";
+                    List<JobServiceDetail> jobServiceDetails = jobServiceDetailRepository.findByJobId(job.getId());
+
+                    if (jobServiceDetails != null && !jobServiceDetails.isEmpty()) {
+                        if (jobServiceDetails.size() > 1) {
+                            serviceName = "Dịch vụ combo";
+                        } else {
+                            try {
+                                JobServiceDetail jobServiceDetail1 = jobServiceDetails.get(0); // dùng lại list đã có
+                                serviceName = jobServiceDetail1.getService().getName();
+                            } catch (Exception e) {
+                                System.out.println("Lỗi lấy tên dịch vụ: " + e.getMessage());
+                                serviceName = "Không xác định";
+                            }
+                        }
+                    } else {
+                        System.out.println("Không tìm thấy dịch vụ nào cho công việc này");
+                        serviceName = "Không có dịch vụ";
+                    }
+
                     NotificationDTO notification = new NotificationDTO();
                     notification.setUserId(cleanerIdInt);
-                    notification.setMessage("Mã công việc: ["+ job.getOrderCode() +"] Công việc của bạn đã được hoàn thành. Tiền công đã được gửi vào ví của bạn.");
+                    notification.setMessage("Mã công việc: ["+ job.getOrderCode() +"] Công việc " + serviceName.toLowerCase() + " đã được xác nhận là hoàn thành. Thanh toán sẽ được xử lý.");
                     notification.setType("AUTO_MESSAGE");
                     notification.setTimestamp(LocalDateTime.now(zoneId));
                     notification.setRead(false); // ✅ set read = false
-
                     notificationService.processNotification(notification, "CLEANER", cleanerIdInt);
+
+                    NotificationDTO customerNotification = new NotificationDTO();
+                    customerNotification.setUserId(job.getCustomer().getId());
+                    customerNotification.setMessage("Mã công việc: ["+ job.getOrderCode() +"] Công việc " + serviceName.toLowerCase() + " đã được hệ thống tự động xác nhận là hoàn thành.");
+                    customerNotification.setType("AUTO_MESSAGE");
+                    customerNotification.setTimestamp(LocalDateTime.now(zoneId));
+                    customerNotification.setRead(false); // ✅ set read = false
+                    notificationService.processNotification(customerNotification, "CUSTOMER", job.getCustomer().getId());
 
                     System.out.println("Đã tự động cập nhật trạng thái Job " + job.getId() + " thành DONE và thanh toán cho cleaner.");
                 } else {
@@ -315,13 +347,32 @@ public class ScheduleService {
 //                            "AUTO_MESSAGE",
 //                            LocalDate.now(zoneId)
 //                    );
+                    String serviceName = "Chưa xác định";
+                    List<JobServiceDetail> jobServiceDetails = jobServiceDetailRepository.findByJobId(job.getId());
+
+                    if (jobServiceDetails != null && !jobServiceDetails.isEmpty()) {
+                        if (jobServiceDetails.size() > 1) {
+                            serviceName = "Dịch vụ combo";
+                        } else {
+                            try {
+                                JobServiceDetail jobServiceDetail1 = jobServiceDetails.get(0); // dùng lại list đã có
+                                serviceName = jobServiceDetail1.getService().getName();
+                            } catch (Exception e) {
+                                System.out.println("Lỗi lấy tên dịch vụ: " + e.getMessage());
+                                serviceName = "Không xác định";
+                            }
+                        }
+                    } else {
+                        System.out.println("Không tìm thấy dịch vụ nào cho công việc này");
+                        serviceName = "Không có dịch vụ";
+                    }
+
                     NotificationDTO customerNotification = new NotificationDTO();
                     customerNotification.setUserId(job.getCustomer().getId());
-                    customerNotification.setMessage("Mã công việc: ["+ job.getOrderCode() +"] Đơn hàng của bạn đã bị hủy do chưa thanh toán");
+                    customerNotification.setMessage("Mã công việc: ["+ job.getOrderCode() +"] Công việc" + serviceName.toLowerCase() + " của bạn đã bị hủy do chưa thanh toán");
                     customerNotification.setType("AUTO_MESSAGE");
                     customerNotification.setTimestamp(LocalDateTime.now(zoneId));
                     customerNotification.setRead(false); // ✅ set read = false
-
                     notificationService.processNotification(customerNotification, "CUSTOMER", job.getCustomer().getId());
 
                     // Gửi thông báo cho cleaner
@@ -334,7 +385,7 @@ public class ScheduleService {
 //                        );
                         NotificationDTO cleanerNotification = new NotificationDTO();
                         cleanerNotification.setUserId(job.getCleaner().getId());
-                        cleanerNotification.setMessage("Mã công việc: ["+ job.getOrderCode() +"] Công việc của bạn đã bị hủy do chủ nhà chưa thanh toán");
+                        cleanerNotification.setMessage("Mã công việc: ["+ job.getOrderCode() +"] Công việc " + serviceName.toLowerCase() + " của bạn đã bị hủy do chủ nhà chưa thanh toán");
                         cleanerNotification.setType("AUTO_MESSAGE");
                         cleanerNotification.setTimestamp(LocalDateTime.now(zoneId));
                         cleanerNotification.setRead(false); // ✅ set read = false
