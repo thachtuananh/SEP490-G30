@@ -2019,6 +2019,7 @@ public class CleanerJobService {
 			jobInfo.put("status", job.getStatus()); // in status thực tế của job
 			jobInfo.put("scheduledTime", job.getScheduledTime());
 			jobInfo.put("totalPrice", job.getTotalPrice());
+			jobInfo.put("orderCode", job.getOrderCode());
 
 			Customers customer = job.getCustomer();
 			if (customer != null) {
