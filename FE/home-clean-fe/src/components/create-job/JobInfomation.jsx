@@ -15,6 +15,7 @@ const JobInfomation = ({
   minute,
   paymentMethod,
   reminder,
+  address,
   priceAdjustment,
 }) => {
   const location = useLocation();
@@ -276,7 +277,7 @@ const JobInfomation = ({
         </Paragraph> */}
         <Paragraph className={styles.infoRow}>
           <Text>Địa điểm</Text>
-          <Text>{state.address}</Text>
+          <Text>{address || "Chưa chọn địa chỉ"}</Text>
         </Paragraph>
         <Paragraph className={styles.infoRow}>
           <Text>Khối lượng công việc</Text>

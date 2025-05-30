@@ -315,8 +315,8 @@ const WorkDetailsDescription = () => {
                   {item.serviceDetailName || item.name}
                 </Typography.Text>
                 <Typography.Text>
-                  {item.areaRange && `(${item.areaRange})`} (
-                  {item.count > 1 && `x${item.count}`})
+                  {item.areaRange && `(${item.areaRange})`}
+                  {item.count > 1 ? `(x${item.count})` : ""}
                 </Typography.Text>
               </li>
             ))}
@@ -333,8 +333,8 @@ const WorkDetailsDescription = () => {
             {groupedServices.map((item, index) => (
               <li key={index} style={{ border: "none", paddingBottom: "8px" }}>
                 <Typography.Text>
-                  {item.serviceDescription} (
-                  {item.count > 1 && `x${item.count}`})
+                  {item.serviceDescription}
+                  {item.count > 1 ? `(x${item.count})` : ""}
                 </Typography.Text>
               </li>
             ))}

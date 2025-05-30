@@ -65,6 +65,15 @@ const Time = ({ onTimeChange }) => {
         };
         setSelectedAddress(updatedAddress);
         form.setFieldsValue({ location: defaultAddress.address });
+        if (onTimeChange) {
+          onTimeChange(
+            selectedDateTime.toDate(),
+            selectedDateTime.hour(),
+            selectedDateTime.minute(),
+            priceAdjustment,
+            updatedAddress // Gọi onTimeChange với địa chỉ mới
+          );
+        }
         if (!defaultAddress.current && addressesData.length > 0) {
           try {
             await setDefaultAddress(customerId, defaultAddress.id);
@@ -117,7 +126,8 @@ const Time = ({ onTimeChange }) => {
         initialDateTime.toDate(),
         initialDateTime.hour(),
         initialDateTime.minute(),
-        initialAdjustment
+        initialAdjustment,
+        selectedAddress
       );
     }
 
@@ -210,7 +220,8 @@ const Time = ({ onTimeChange }) => {
         finalDateTime.toDate(),
         finalDateTime.hour(),
         finalDateTime.minute(),
-        adjustment
+        adjustment,
+        selectedAddress
       );
     }
   };
