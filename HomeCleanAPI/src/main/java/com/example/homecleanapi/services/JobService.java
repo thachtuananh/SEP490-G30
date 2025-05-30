@@ -133,6 +133,7 @@ public class JobService {
         Optional<Customers> customerOpt = customerRepo.findById(customerId);
         if (!customerOpt.isPresent()) {
             response.put("message", "Customer not found with customerId: " + customerId);
+            response.put("error", true);
             return response;
         }
         Customers customer = customerOpt.get();
@@ -140,7 +141,8 @@ public class JobService {
         // Kiểm tra địa chỉ khách hàng
         Optional<CustomerAddresses> customerAddressOpt = customerAddressRepository.findById(request.getCustomerAddressId());
         if (!customerAddressOpt.isPresent()) {
-            response.put("message", "Customer address not found");
+            response.put("message", "Bạn chưa có địa chỉ");
+            response.put("error", true);
             return response;
         }
         CustomerAddresses customerAddress = customerAddressOpt.get();
@@ -151,6 +153,7 @@ public class JobService {
             jobTime = LocalDateTime.parse(request.getJobTime(), DateTimeFormatter.ISO_LOCAL_DATE_TIME);
         } catch (Exception e) {
             response.put("message", "Invalid job time format");
+            response.put("error", true);
             return response;
         }
 
@@ -171,12 +174,14 @@ public class JobService {
             Optional<Services> serviceOpt = serviceRepository.findById(serviceRequest.getServiceId());
             if (!serviceOpt.isPresent()) {
                 response.put("message", "Service not found with serviceId: " + serviceRequest.getServiceId());
+                response.put("error", true);
                 return response;
             }
 
             Optional<ServiceDetail> serviceDetailOpt = serviceDetailRepository.findById(serviceRequest.getServiceDetailId());
             if (!serviceDetailOpt.isPresent()) {
                 response.put("message", "Service Detail not found with serviceDetailId: " + serviceRequest.getServiceDetailId());
+                response.put("error", true);
                 return response;
             }
 
@@ -224,11 +229,13 @@ public class JobService {
                 Optional<CustomerWallet> walletOpt = customerWalletRepository.findByCustomerId(customerId);
                 if (!walletOpt.isPresent()) {
                     response.put("message", "Customer wallet not found");
+                    response.put("error", true);
                     return response;
                 }
                 CustomerWallet wallet = walletOpt.get();
                 if (wallet.getBalance() < totalPrice) {
                     response.put("message", "Không đủ tiền trong ví, hãy nạp thêm");
+                    response.put("error", true);
                     return response;
                 }
                 wallet.setBalance(wallet.getBalance() - totalPrice);
@@ -248,6 +255,7 @@ public class JobService {
                 break;
             default:
                 response.put("message", "Phương thức thanh toán không hợp lệ");
+                response.put("error", true);
                 return response;
         }
 
