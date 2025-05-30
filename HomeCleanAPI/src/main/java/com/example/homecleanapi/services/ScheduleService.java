@@ -102,6 +102,7 @@ public class ScheduleService {
                             System.out.println("Đã hoàn tiền cho customer " + job.getCustomer().getId());
                         }
 
+                        String serviceName = "Chưa xác định";
                         NotificationDTO notification = new NotificationDTO();
                         notification.setUserId(job.getCustomer().getId());
                         notification.setMessage("Mã công việc: [" + job.getOrderCode() + "] Công việc bị hủy vì không có người nhận đúng hạn. Tiền sẽ được hoàn vào ví của bạn.");
