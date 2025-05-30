@@ -82,6 +82,26 @@ public class ScheduleService {
                         updatedJobs.add(job);
                         jobRepository.save(job);
 
+                        String serviceName = "Chưa xác định";
+                        List<JobServiceDetail> jobServiceDetails = jobServiceDetailRepository.findByJobId(job.getId());
+
+                        if (jobServiceDetails != null && !jobServiceDetails.isEmpty()) {
+                            if (jobServiceDetails.size() > 1) {
+                                serviceName = "Dịch vụ combo";
+                            } else {
+                                try {
+                                    JobServiceDetail jobServiceDetail1 = jobServiceDetails.get(0); // dùng lại list đã có
+                                    serviceName = jobServiceDetail1.getService().getName();
+                                } catch (Exception e) {
+                                    System.out.println("Lỗi lấy tên dịch vụ: " + e.getMessage());
+                                    serviceName = "Không xác định";
+                                }
+                            }
+                        } else {
+                            System.out.println("Không tìm thấy dịch vụ nào cho công việc này");
+                            serviceName = "Không có dịch vụ";
+                        }
+
                         // Hoàn tiền cho customer vào ví
                         Optional<CustomerWallet> walletOpt = customerWalletRepository.findByCustomerId(Long.valueOf(job.getCustomer().getId()));
                         if (walletOpt.isPresent()) {
@@ -102,16 +122,36 @@ public class ScheduleService {
                             System.out.println("Đã hoàn tiền cho customer " + job.getCustomer().getId());
                         }
 
-                        String serviceName = "Chưa xác định";
+
                         NotificationDTO notification = new NotificationDTO();
                         notification.setUserId(job.getCustomer().getId());
-                        notification.setMessage("Mã công việc: [" + job.getOrderCode() + "] Công việc bị hủy vì không có người nhận đúng hạn. Tiền sẽ được hoàn vào ví của bạn.");
+                        notification.setMessage("Mã công việc: [" + job.getOrderCode() + "] Công việc " + serviceName.toLowerCase() + "đã bị huỷ do không có người giúp việc nhận trong thời gian quy định");
                         notification.setType("AUTO_MESSAGE");
                         notification.setTimestamp(LocalDateTime.now(zoneId));
                         notification.setRead(false);
                         notificationService.processNotification(notification, "CUSTOMER", job.getCustomer().getId());
 
                         System.out.println("Đã tự động hủy Job " + job.getId());
+                    }
+
+                    String serviceName = "Chưa xác định";
+                    List<JobServiceDetail> jobServiceDetails = jobServiceDetailRepository.findByJobId(job.getId());
+
+                    if (jobServiceDetails != null && !jobServiceDetails.isEmpty()) {
+                        if (jobServiceDetails.size() > 1) {
+                            serviceName = "Dịch vụ combo";
+                        } else {
+                            try {
+                                JobServiceDetail jobServiceDetail1 = jobServiceDetails.get(0); // dùng lại list đã có
+                                serviceName = jobServiceDetail1.getService().getName();
+                            } catch (Exception e) {
+                                System.out.println("Lỗi lấy tên dịch vụ: " + e.getMessage());
+                                serviceName = "Không xác định";
+                            }
+                        }
+                    } else {
+                        System.out.println("Không tìm thấy dịch vụ nào cho công việc này");
+                        serviceName = "Không có dịch vụ";
                     }
 
                     // Lấy tất cả JobApplication liên quan đến Job
@@ -125,7 +165,7 @@ public class ScheduleService {
 
                             NotificationDTO cleanerNotification = new NotificationDTO();
                             cleanerNotification.setUserId(application.getCleaner().getId());
-                            cleanerNotification.setMessage("Mã công việc: [" + job.getOrderCode() + "] Công việc của bạn đã bị hủy do chủ nhà chưa xác nhận thuê");
+                            cleanerNotification.setMessage("Mã công việc: [" + job.getOrderCode() + "] Công việc " + serviceName.toLowerCase() + " đã bị hủy do chủ nhà chưa xác nhận thuê");
                             cleanerNotification.setType("AUTO_MESSAGE");
                             cleanerNotification.setTimestamp(LocalDateTime.now(zoneId));
                             cleanerNotification.setRead(false);
@@ -332,7 +372,7 @@ public class ScheduleService {
 
         for (Job job : jobs) {
             // Kiểm tra nếu job có trạng thái PAID và đã quá 5 phút kể từ thời gian cập nhật
-            if (job.getUpdatedAt() != null && job.getUpdatedAt().isBefore(now.minusMinutes(5))) {
+            if (job.getUpdatedAt() != null && job.getUpdatedAt().isBefore(now.minusMinutes(2))) {
 
                 // Kiểm tra nếu job vẫn chưa chuyển sang OPEN hoặc BOOKED
                 if (job.getStatus() == JobStatus.PAID) {
