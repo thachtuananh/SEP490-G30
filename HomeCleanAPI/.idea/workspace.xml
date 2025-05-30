@@ -6,7 +6,7 @@
   <component name="ChangeListManager">
     <list default="true" id="6dd32c25-99a1-4da0-a769-374f6713cd9c" name="Changes" comment="Hot fix JWT author">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/controllers/CleanerJobController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/controllers/CleanerJobController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/repositories/JobApp.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/repositories/JobApp.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/repositories/JobApplicationRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/repositories/JobApplicationRepository.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/services/CleanerJobService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/services/CleanerJobService.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/services/ScheduleService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/homecleanapi/services/ScheduleService.java" afterDir="false" />
@@ -150,7 +150,8 @@
       <workItem from="1748356992257" duration="1443000" />
       <workItem from="1748394879199" duration="6149000" />
       <workItem from="1748429935916" duration="12078000" />
-      <workItem from="1748485545503" duration="14017000" />
+      <workItem from="1748485545503" duration="20869000" />
+      <workItem from="1748567305989" duration="7881000" />
     </task>
     <task id="LOCAL-00001" summary="update application">
       <option name="closed" value="true" />

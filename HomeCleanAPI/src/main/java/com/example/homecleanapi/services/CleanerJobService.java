@@ -25,6 +25,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -213,7 +214,7 @@ public class CleanerJobService {
 
 
 	// Apply job
-	public Map<String, Object> applyForJob(Long jobId) {
+	public ResponseEntity<Map<String, Object>> applyForJob(Long jobId) {
 		Map<String, Object> response = new HashMap<>();
 
 		String phoneNumber = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -223,11 +224,10 @@ public class CleanerJobService {
 
 		if (!cleanerOpt.isPresent()) {
 			response.put("message", "Cleaner not found");
-			return response;
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
 		}
 
 		Employee cleaner = cleanerOpt.get();
-
 
 		String serviceName = "Chưa xác định";
 		List<JobServiceDetail> jobServiceDetails = jobServiceDetailRepository.findByJobId(jobId);
@@ -256,20 +256,18 @@ public class CleanerJobService {
 		Optional<Job> jobOpt = jobRepository.findById(jobId);
 		if (!jobOpt.isPresent()) {
 			response.put("message", "Job not found");
-			return response;
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
 		}
 		Job job = jobOpt.get();
 
-		// Kiểm tra trạng thái công việc
 		if (!job.getStatus().equals(JobStatus.OPEN)) {
 			response.put("message", "Job is no longer open or has been taken");
-			return response;
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
 		}
 
 		LocalDateTime jobScheduledTime = job.getScheduledTime();
 		LocalDate jobScheduledDate = jobScheduledTime.toLocalDate();
 
-		// Giới hạn apply tối đa 10 job trong cùng một ngày
 		List<String> activeStatuses = Arrays.asList("Pending", "Accepted");
 		List<JobApplication> activeApplications = jobApplicationRepository.findByCleanerAndStatusIn(cleaner, activeStatuses);
 
@@ -280,10 +278,9 @@ public class CleanerJobService {
 
 		if (applicationsOnSameDay >= 10) {
 			response.put("message", "Bạn chỉ được ứng tuyển tối đa 10 công việc trong cùng một ngày.");
-			return response;
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
 		}
 
-		// Kiểm tra xem cleaner có công việc nào đã apply và trong vòng 2 giờ so với công việc này không
 		List<Job> cleanerJobs = jobRepository.findByCleanerId(cleaner.getId().longValue());
 		for (Job existingJob : cleanerJobs) {
 			JobStatus status = existingJob.getStatus();
@@ -296,11 +293,10 @@ public class CleanerJobService {
 
 			if (differenceInMinutes < 120) {
 				response.put("message", "Bạn đã có một công việc khác cách công việc này chưa tới 2 giờ.");
-				return response;
+				return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
 			}
 		}
 
-		// Tạo job application và lưu vào database
 		JobApplication jobApplication = new JobApplication();
 		jobApplication.setJob(job);
 		jobApplication.setCleaner(cleaner);
@@ -324,14 +320,14 @@ public class CleanerJobService {
 		customerNotification.setRead(false);
 		notificationService.processNotification(cleanerNotification, "CUSTOMER", cleaner.getId());
 
-		// Thêm thông báo thành công khi không có lỗi
 		response.put("message", "Cleaner has successfully applied for the job");
 		response.put("jobId", jobId);
 		response.put("cleanerId", cleaner.getId());
 		response.put("status", "Pending");
 
-		return response;
+		return ResponseEntity.ok(response);
 	}
+
 
 
 
@@ -565,13 +561,13 @@ public class CleanerJobService {
 			LocalDateTime endWindow = scheduledTime.plusHours(2);
 
 
-			List<JobStatus> excludedStatuses = Arrays.asList(JobStatus.DONE, JobStatus.CANCELLED, JobStatus.AUTO_CANCELLED);
+			List<JobStatus> excludedStatuses = Arrays.asList(JobStatus.DONE, JobStatus.CANCELLED, JobStatus.AUTO_CANCELLED, JobStatus.BOOKED);
 			List<Job> conflictingJobs = jobRepository.findByCleanerIdAndScheduledTimeBetweenAndStatusNotInAndIdNot(
 					cleanerId, startWindow, endWindow, excludedStatuses, jobId
 			);
 
 			if (!conflictingJobs.isEmpty()) {
-				response.put("message", "Cleaner has another job scheduled within ±2 hours. Cannot accept this job.");
+				response.put("message", "Người dọn đã có lịch dọn trong thời gian này.");
 				return response;
 			}
 
@@ -622,6 +618,7 @@ public class CleanerJobService {
 
 			NotificationDTO customerNotification = new NotificationDTO();
 			customerNotification.setUserId(job.getCustomer().getId());
+
 			customerNotification.setMessage("[Mã công việc: " + job.getOrderCode() + "] Bạn đã chấp nhận người giúp việc " + cleaner.getName() + " cho công việc " + serviceName.toLowerCase() + " Hẹn giờ bắt đầu: " + job.getScheduledTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")));
 			customerNotification.setType("AUTO_MESSAGE");
 			customerNotification.setTimestamp(LocalDateTime.now(zoneId));
@@ -1730,8 +1727,8 @@ public class CleanerJobService {
 				if (existingJob.getStatus() != JobStatus.DONE &&
 						existingJob.getStatus() != JobStatus.CANCELLED &&
 						existingJob.getStatus() != JobStatus.AUTO_CANCELLED &&
-						existingJob.getStatus() != JobStatus.BOOKED) {
-					// Nếu trạng thái không phải là DONE, CANCELLED, AUTO_CANCELLED, thì thông báo trùng lịch
+						existingJob.getStatus() != JobStatus.BOOKED ) {
+
 					response.put("message", "Người dọn này đã có lịch trùng với thời gian bạn chọn");
 					return response;
 				}
@@ -2002,7 +1999,7 @@ public class CleanerJobService {
 
 		// Lấy các job có status là BOOKED hoặc OPEN
 		List<Job> jobs = jobRepository.findByCleanerIdAndBookingTypeAndStatusIn(
-				cleanerId, "BOOKED", Arrays.asList(JobStatus.BOOKED, JobStatus.OPEN)
+				cleanerId, "BOOKED", Arrays.asList(JobStatus.BOOKED, JobStatus.OPEN,JobStatus.CANCELLED,JobStatus.AUTO_CANCELLED)
 		);
 
 		// Lấy thêm các job CANCELLED nhưng có JobApplication status = Rejected

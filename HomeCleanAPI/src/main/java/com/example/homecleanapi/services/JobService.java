@@ -85,6 +85,8 @@ public class JobService {
     LocalDateTime now = LocalDateTime.now();
     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
     String formattedDateTime = now.format(formatter);
+    @Autowired
+    private JobApp jobApp;
 
     public List<JobDTO> getAllJobs() {
         List<Job> jobs = jobRepository.findAll();  // Lấy tất cả các job
@@ -1345,6 +1347,15 @@ public class JobService {
         job.setStatus(JobStatus.CANCELLED);
         jobRepository.save(job);
 
+        List<JobApplication> jobApplication = jobApp.findByJobId(jobId);
+        if (jobApplication != null && !jobApplication.isEmpty()) {
+            for (JobApplication application : jobApplication) {
+                if (!"Cancelled".equalsIgnoreCase(application.getStatus())) {
+                    application.setStatus("Cancelled");
+                    jobApplicationRepository.save(application);
+                }
+            }
+        }
         try {
             Integer cleanerId = job.getCleaner() != null ? job.getCleaner().getId() : null;
 
@@ -1397,6 +1408,11 @@ public class JobService {
         response.put("message", "Job has been cancelled successfully");
         response.put("jobId", jobId);
         response.put("status", job.getStatus());
+
+        response.put("message", "Hủy công việc thành công");
+        response.put("jobId", jobId);
+        response.put("status", job.getStatus());
+
         return response;
     }
 
