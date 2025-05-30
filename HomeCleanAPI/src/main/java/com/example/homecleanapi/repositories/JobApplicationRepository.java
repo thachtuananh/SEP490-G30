@@ -7,7 +7,9 @@ import java.util.Optional;
 import com.example.homecleanapi.models.Job;
 import com.example.homecleanapi.models.JobApplication;
 import com.example.homecleanapi.models.Employee;
+import io.lettuce.core.dynamic.annotation.Param;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -49,6 +51,16 @@ public interface JobApplicationRepository extends JpaRepository<JobApplication, 
 	boolean existsByJobIdAndCleanerId(Long jobId, Long cleanerId);
 
 	int countByCleanerAndStatusIn(Employee cleaner, List<String> statuses);
+
+	@Query("SELECT ja FROM JobApplication ja WHERE ja.job.id = :jobId AND ja.status = :status")
+	List<JobApplication> findAllByJobIdAndStatus(@Param("jobId") Long jobId, @Param("status") String status);
+
+
+
+
+
+
+
 
 
 
