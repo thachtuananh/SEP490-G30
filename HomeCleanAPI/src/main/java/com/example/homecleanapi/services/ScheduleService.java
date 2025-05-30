@@ -98,7 +98,7 @@ public class ScheduleService {
                     notification.setUserId(job.getCustomer().getId());
                     notification.setMessage("Mã công việc: [" + job.getOrderCode() + "] Công việc bị hủy vì không có người nhận đúng hạn. Tiền sẽ được hoàn vào ví của bạn.");
                     notification.setType("AUTO_MESSAGE");
-                    notification.setTimestamp(LocalDate.now(zoneId));
+                    notification.setTimestamp(LocalDateTime.now(zoneId));
                     notification.setRead(false);
                     notificationService.processNotification(notification, "CUSTOMER", job.getCustomer().getId());
 
@@ -106,9 +106,20 @@ public class ScheduleService {
 
                     List<JobApplication> jobApplications = jobApplicationRepository.findAllByJobIdAndStatus(job.getId(), "Pending");
 
-                    for (JobApplication application : jobApplications) {
-                        application.setStatus("Cancelled");
-                        applicationsToUpdate.add(application);
+                  
+                List<JobApplication> jobApplications = jobApp.findByJobId(job.getId());
+                for (JobApplication application : jobApplications) {
+                    String status = application.getStatus();
+                    application.setStatus("Cancelled");
+                    applicationsToUpdate.add(application);
+
+                    NotificationDTO cleanerNotification = new NotificationDTO();
+                    cleanerNotification.setUserId(application.getCleaner().getId());
+                    cleanerNotification.setMessage("Mã công việc: [" + job.getOrderCode() + "] Công việc của bạn đã bị hủy do chủ nhà chưa xác nhận thuê");
+                    cleanerNotification.setType("AUTO_MESSAGE");
+                    cleanerNotification.setTimestamp(LocalDateTime.now(zoneId));
+                    cleanerNotification.setRead(false);
+                    notificationService.processNotification(cleanerNotification, "CLEANER", application.getCleaner().getId());
 
                         NotificationDTO cleanerNotification = new NotificationDTO();
                         cleanerNotification.setUserId(application.getCleaner().getId());
@@ -253,7 +264,7 @@ public class ScheduleService {
                     notification.setUserId(cleanerIdInt);
                     notification.setMessage("Mã công việc: ["+ job.getOrderCode() +"] Công việc của bạn đã được hoàn thành. Tiền công đã được gửi vào ví của bạn.");
                     notification.setType("AUTO_MESSAGE");
-                    notification.setTimestamp(LocalDate.now(zoneId));
+                    notification.setTimestamp(LocalDateTime.now(zoneId));
                     notification.setRead(false); // ✅ set read = false
 
                     notificationService.processNotification(notification, "CLEANER", cleanerIdInt);
@@ -316,7 +327,7 @@ public class ScheduleService {
                     customerNotification.setUserId(job.getCustomer().getId());
                     customerNotification.setMessage("Mã công việc: ["+ job.getOrderCode() +"] Đơn hàng của bạn đã bị hủy do chưa thanh toán");
                     customerNotification.setType("AUTO_MESSAGE");
-                    customerNotification.setTimestamp(LocalDate.now(zoneId));
+                    customerNotification.setTimestamp(LocalDateTime.now(zoneId));
                     customerNotification.setRead(false); // ✅ set read = false
 
                     notificationService.processNotification(customerNotification, "CUSTOMER", job.getCustomer().getId());
@@ -333,7 +344,7 @@ public class ScheduleService {
                         cleanerNotification.setUserId(job.getCleaner().getId());
                         cleanerNotification.setMessage("Mã công việc: ["+ job.getOrderCode() +"] Công việc của bạn đã bị hủy do chủ nhà chưa thanh toán");
                         cleanerNotification.setType("AUTO_MESSAGE");
-                        cleanerNotification.setTimestamp(LocalDate.now(zoneId));
+                        cleanerNotification.setTimestamp(LocalDateTime.now(zoneId));
                         cleanerNotification.setRead(false); // ✅ set read = false
                         notificationService.processNotification(cleanerNotification, "CLEANER", job.getCleaner().getId());
                     }
