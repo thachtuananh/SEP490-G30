@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Tag(name = "Notifications API")
@@ -30,7 +31,7 @@ public class NotificationController {
         notification.setUserId(userId);
         notification.setMessage(request.getMessage());
         notification.setType(request.getType());
-        notification.setTimestamp(LocalDate.now());
+        notification.setTimestamp(LocalDateTime.now());
         notification.setRead(false);
 
         notificationService.processNotification(notification, role, userId);

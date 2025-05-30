@@ -121,7 +121,7 @@ public class WithdrawalRequestService {
         notification.setUserId(Math.toIntExact(customerId));
         notification.setMessage("Yêu cầu rút tiền đã được tạo thành công, đang chờ quản trị viên chấp thuận");
         notification.setType("AUTO_MESSAGE");
-        notification.setTimestamp(LocalDate.now());
+        notification.setTimestamp(LocalDateTime.now());
         notification.setRead(false); // ✅ set read = false
         notificationService.processNotification(notification, "CUSTOMER", Math.toIntExact(customerId));
 
@@ -270,7 +270,7 @@ public class WithdrawalRequestService {
                 notification.setUserId(withdrawalRequest.getCustomer().getId());
                 notification.setMessage("Yêu cầu rút tiền đã được chấp nhận.");
                 notification.setType("AUTO_MESSAGE");
-                notification.setTimestamp(LocalDate.now());
+                notification.setTimestamp(LocalDateTime.now());
                 notification.setRead(false); // ✅ set read = false
                 notificationService.processNotification(notification, "CUSTOMER", withdrawalRequest.getCustomer().getId());
             }
@@ -280,7 +280,7 @@ public class WithdrawalRequestService {
                 notification.setUserId(withdrawalRequest.getCleaner().getId());
                 notification.setMessage("Yêu cầu rút tiền đã được chấp nhận.");
                 notification.setType("AUTO_MESSAGE");
-                notification.setTimestamp(LocalDate.now());
+                notification.setTimestamp(LocalDateTime.now());
                 notification.setRead(false); // ✅ set read = false
                 notificationService.processNotification(notification, "CLEANER", withdrawalRequest.getCleaner().getId());
             }
@@ -306,7 +306,7 @@ public class WithdrawalRequestService {
                     customerNotification.setUserId(withdrawalRequest.getCustomer().getId());
                     customerNotification.setMessage("Yêu cầu rút tiền đã bị từ chối.");
                     customerNotification.setType("AUTO_MESSAGE");
-                    customerNotification.setTimestamp(LocalDate.now());
+                    customerNotification.setTimestamp(LocalDateTime.now());
                     customerNotification.setRead(false); // ✅ set read = false
                     notificationService.processNotification(customerNotification, "CUSTOMER", withdrawalRequest.getCustomer().getId());
                 }
@@ -321,7 +321,7 @@ public class WithdrawalRequestService {
                     cleanerNotification.setUserId(withdrawalRequest.getCleaner().getId());
                     cleanerNotification.setMessage("Yêu cầu rút tiền đã bị từ chối.");
                     cleanerNotification.setType("AUTO_MESSAGE");
-                    cleanerNotification.setTimestamp(LocalDate.now());
+                    cleanerNotification.setTimestamp(LocalDateTime.now());
                     cleanerNotification.setRead(false); // ✅ set read = false
                     notificationService.processNotification(cleanerNotification, "CLEANER", withdrawalRequest.getCleaner().getId());
                 }

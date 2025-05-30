@@ -258,7 +258,7 @@ public class WalletController {
                 customerNotification.setUserId(Math.toIntExact(customerId));
                 customerNotification.setMessage(message);
                 customerNotification.setType("AUTO_MESSAGE");
-                customerNotification.setTimestamp(LocalDate.now());
+                customerNotification.setTimestamp(LocalDateTime.now());
                 customerNotification.setRead(false); // ✅ set read = false
                 notificationService.processNotification(customerNotification, "CUSTOMER", Math.toIntExact(customerId));
                 return ResponseEntity.ok(response);
