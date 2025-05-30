@@ -58,96 +58,97 @@ public class ScheduleService {
 
     @Scheduled(cron = "0 * * * * *")
     public void checkJobAndDelete() {
-        System.out.println("Check Job and Delete");
 
-        ZoneId zoneId = ZoneId.of("Asia/Ho_Chi_Minh");
-        LocalDateTime now = LocalDateTime.now(zoneId).plusMinutes(30);
-        System.out.println("Check Job and Delete at: " + now);
+        try {
+            System.out.println("Check Job and Delete");
 
-        List<Job> jobs = jobRepository.findAllByStatusIn(Arrays.asList(JobStatus.OPEN, JobStatus.BOOKED));
-        System.out.println("Tổng số job OPEN và BOOKED: " + jobs.size());
+            ZoneId zoneId = ZoneId.of("Asia/Ho_Chi_Minh");
+            LocalDateTime now = LocalDateTime.now(zoneId).minusMinutes(2);
+            System.out.println("Check Job and Delete at: " + now);
 
-        List<Job> updatedJobs = new ArrayList<>();
-        List<JobApplication> applicationsToUpdate = new ArrayList<>();
+            // Lấy tất cả job OPEN
+            List<Job> jobs = jobRepository.findAllByStatusIn(Arrays.asList(JobStatus.OPEN, JobStatus.BOOKED));
+            System.out.println("Tổng số job OPEN và BOOKED: " + jobs.size());
 
-        for (Job job : jobs) {
-            if (job.getScheduledTime().isBefore(now)) {
-                if (job.getStatus() != JobStatus.AUTO_CANCELLED) {
-                    job.setStatus(JobStatus.AUTO_CANCELLED);
-                    updatedJobs.add(job);
+            List<Job> updatedJobs = new ArrayList<>();
 
-                    Optional<CustomerWallet> walletOpt = customerWalletRepository.findByCustomerId(Long.valueOf(job.getCustomer().getId()));
-                    if (walletOpt.isPresent()) {
-                        CustomerWallet wallet = walletOpt.get();
-                        wallet.setBalance(wallet.getBalance() + job.getTotalPrice());
-                        customerWalletRepository.save(wallet);
+            for (Job job : jobs) {
+                if (job.getScheduledTime().isBefore(now)) {
+                    if (job.getStatus() != JobStatus.AUTO_CANCELLED) {
+                        job.setStatus(JobStatus.AUTO_CANCELLED);
+                        updatedJobs.add(job);
+                        jobRepository.save(job);
 
-                        TransactionHistory transactionHistory = new TransactionHistory();
-                        transactionHistory.setCustomer(wallet.getCustomer());
-                        transactionHistory.setAmount(job.getTotalPrice());
-                        transactionHistory.setTransactionType("Refund");
-                        transactionHistory.setTransactionDate(LocalDateTime.now(zoneId));
-                        transactionHistory.setPaymentMethod(job.getPaymentMethod());
-                        transactionHistory.setStatus("SUCCESS");
-                        transactionHistoryRepository.save(transactionHistory);
+                        // Hoàn tiền cho customer vào ví
+                        Optional<CustomerWallet> walletOpt = customerWalletRepository.findByCustomerId(Long.valueOf(job.getCustomer().getId()));
+                        if (walletOpt.isPresent()) {
+                            CustomerWallet wallet = walletOpt.get();
+                            wallet.setBalance(wallet.getBalance() + job.getTotalPrice());
+                            customerWalletRepository.save(wallet);  // Lưu ví cập nhật
+                            System.out.println("Đã hoàn tiền cho customer " + job.getCustomer().getId());
 
-                        System.out.println("Đã hoàn tiền cho customer " + job.getCustomer().getId());
+                            TransactionHistory transactionHistory = new TransactionHistory();
+                            transactionHistory.setCustomer(wallet.getCustomer());
+                            transactionHistory.setAmount(job.getTotalPrice());
+                            transactionHistory.setTransactionType("Refund");
+                            transactionHistory.setTransactionDate(LocalDateTime.now(zoneId));
+                            transactionHistory.setPaymentMethod(job.getPaymentMethod());
+                            transactionHistory.setStatus("SUCCESS");
+                            transactionHistoryRepository.save(transactionHistory);
+
+                            System.out.println("Đã hoàn tiền cho customer " + job.getCustomer().getId());
+                        }
+
+                        NotificationDTO notification = new NotificationDTO();
+                        notification.setUserId(job.getCustomer().getId());
+                        notification.setMessage("Mã công việc: [" + job.getOrderCode() + "] Công việc bị hủy vì không có người nhận đúng hạn. Tiền sẽ được hoàn vào ví của bạn.");
+                        notification.setType("AUTO_MESSAGE");
+                        notification.setTimestamp(LocalDateTime.now(zoneId));
+                        notification.setRead(false);
+                        notificationService.processNotification(notification, "CUSTOMER", job.getCustomer().getId());
+
+                        System.out.println("Đã tự động hủy Job " + job.getId());
                     }
 
-                    NotificationDTO notification = new NotificationDTO();
-                    notification.setUserId(job.getCustomer().getId());
-                    notification.setMessage("Mã công việc: [" + job.getOrderCode() + "] Công việc bị hủy vì không có người nhận đúng hạn. Tiền sẽ được hoàn vào ví của bạn.");
-                    notification.setType("AUTO_MESSAGE");
-                    notification.setTimestamp(LocalDateTime.now(zoneId));
-                    notification.setRead(false);
-                    notificationService.processNotification(notification, "CUSTOMER", job.getCustomer().getId());
+                    // Lấy tất cả JobApplication liên quan đến Job
+                    List<JobApplication> jobApplications = jobApplicationRepository.findJobApplicationById(job.getId());
+                    for (JobApplication application : jobApplications) {
+                        System.out.println("Application " + application.getId() + " trạng thái hiện tại: " + application.getStatus());
+                        if (!"Rejected".equals(application.getStatus()) && !"Accepted".equals(application.getStatus())) {
+                            application.setStatus("Rejected");
+                            jobApplicationRepository.save(application);
+                            System.out.println("Đã cập nhật status Rejected cho application " + application.getId());
 
-                    System.out.println("Đã tự động hủy Job " + job.getId());
-
-                    List<JobApplication> jobApplications = jobApplicationRepository.findAllByJobIdAndStatus(job.getId(), "Pending");
-
-                  
-                List<JobApplication> jobApplications1 = jobApp.findByJobId(job.getId());
-                for (JobApplication application : jobApplications1) {
-                    String status = application.getStatus();
-                    application.setStatus("Cancelled");
-                    applicationsToUpdate.add(application);
-
-                    NotificationDTO cleanerNotification = new NotificationDTO();
-                    cleanerNotification.setUserId(application.getCleaner().getId());
-                    cleanerNotification.setMessage("Mã công việc: [" + job.getOrderCode() + "] Công việc của bạn đã bị hủy do chủ nhà chưa xác nhận thuê");
-                    cleanerNotification.setType("AUTO_MESSAGE");
-                    cleanerNotification.setTimestamp(LocalDateTime.now(zoneId));
-                    cleanerNotification.setRead(false);
-                    notificationService.processNotification(cleanerNotification, "CLEANER", application.getCleaner().getId());
+                            NotificationDTO cleanerNotification = new NotificationDTO();
+                            cleanerNotification.setUserId(application.getCleaner().getId());
+                            cleanerNotification.setMessage("Mã công việc: [" + job.getOrderCode() + "] Công việc của bạn đã bị hủy do chủ nhà chưa xác nhận thuê");
+                            cleanerNotification.setType("AUTO_MESSAGE");
+                            cleanerNotification.setTimestamp(LocalDateTime.now(zoneId));
+                            cleanerNotification.setRead(false);
+                            notificationService.processNotification(cleanerNotification, "CLEANER", application.getCleaner().getId());
+                        }
                     }
+
+
+                } else {
+                    System.out.println("Job " + job.getId() + " vẫn còn thời gian hợp lệ.");
                 }
-            } else {
-                System.out.println("Job " + job.getId() + " vẫn còn thời gian hợp lệ.");
             }
+
+            // Lưu các thay đổi nếu có
+            if (!updatedJobs.isEmpty()) {
+                jobRepository.saveAll(updatedJobs);
+                System.out.println("Đã cập nhật trạng thái cho " + updatedJobs.size() + " công việc.");
+            }
+        } catch (Exception ex) {
+            System.err.println("Lỗi khi chạy checkJobAndDelete: " + ex.getMessage());
+            ex.printStackTrace();
         }
 
-        // Lưu tất cả job đã cập nhật trạng thái
-        if (!updatedJobs.isEmpty()) {
-            jobRepository.saveAll(updatedJobs);
-            System.out.println("Đã cập nhật trạng thái cho " + updatedJobs.size() + " công việc.");
-        }
 
-        // Lưu tất cả ứng dụng đã cập nhật trạng thái
-        if (!applicationsToUpdate.isEmpty()) {
-            jobApplicationRepository.saveAll(applicationsToUpdate);
-            System.out.println("Đã cập nhật trạng thái cho " + applicationsToUpdate.size() + " ứng tuyển.");
-        }
+
     }
 
-
-//    NotificationDTO cleanerNotification = new NotificationDTO();
-//                    cleanerNotification.setUserId(application.getCleaner().getId());
-//                    cleanerNotification.setMessage("Mã công việc: [" + job.getOrderCode() + "] Công việc của bạn đã bị hủy do chủ nhà chưa xác nhận thuê");
-//                    cleanerNotification.setType("AUTO_MESSAGE");
-//                    cleanerNotification.setTimestamp(LocalDate.now(zoneId));
-//                    cleanerNotification.setRead(false);
-//                    notificationService.processNotification(cleanerNotification, "CLEANER", application.getCleaner().getId());
 
 
 
