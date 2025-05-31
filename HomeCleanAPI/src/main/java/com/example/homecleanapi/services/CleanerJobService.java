@@ -2061,22 +2061,22 @@ public class CleanerJobService {
 		// Lưu JobApplication vào cơ sở dữ liệu
 		jobApplicationRepository.save(jobApplication);
 		String message_customer = "Bạn đã gửi yêu cầu làm việc trực tiếp tới người dọn dẹp " + cleaner.getName() + " cho công việc " + serviceName.toLowerCase() + " " + job.getScheduledTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) + "Vui lòng chờ phản hồi";
-//		NotificationDTO customerNotification = new NotificationDTO();
-//		customerNotification.setUserId(job.getCustomer().getId());
-//		customerNotification.setMessage(message_customer);
-//		customerNotification.setType("AUTO_MESSAGE");
-//		customerNotification.setTimestamp(LocalDateTime.now());
-//		customerNotification.setRead(false); // ✅ set read = false
-//		notificationService.processNotification(customerNotification, "CUSTOMER", Math.toIntExact(customerId));
-//
-//		String message_cleaner = "Chủ nhà " + customer.getFull_name() + " đã đặt bạn làm việc cho công việc " + serviceName.toLowerCase() + " " + job.getScheduledTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
-//		NotificationDTO cleanerNotification = new NotificationDTO();
-//		cleanerNotification.setUserId(Math.toIntExact(cleanerId));
-//		cleanerNotification.setMessage(message_cleaner);
-//		cleanerNotification.setType("AUTO_MESSAGE");
-//		cleanerNotification.setTimestamp(LocalDateTime.now());
-//		cleanerNotification.setRead(false); // ✅ set read = false
-//		notificationService.processNotification(cleanerNotification, "CLEANER", Math.toIntExact(cleanerId));
+		NotificationDTO customerNotification = new NotificationDTO();
+		customerNotification.setUserId(job.getCustomer().getId());
+		customerNotification.setMessage(message_customer);
+		customerNotification.setType("AUTO_MESSAGE");
+		customerNotification.setTimestamp(LocalDateTime.now());
+		customerNotification.setRead(false); // ✅ set read = false
+		notificationService.processNotification(customerNotification, "CUSTOMER", Math.toIntExact(customerId));
+
+		String message_cleaner = "Chủ nhà " + customer.getFull_name() + " đã đặt bạn làm việc cho công việc " + serviceName.toLowerCase() + " " + job.getScheduledTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+		NotificationDTO cleanerNotification = new NotificationDTO();
+		cleanerNotification.setUserId(Math.toIntExact(cleanerId));
+		cleanerNotification.setMessage(message_cleaner);
+		cleanerNotification.setType("AUTO_MESSAGE");
+		cleanerNotification.setTimestamp(LocalDateTime.now());
+		cleanerNotification.setRead(false); // ✅ set read = false
+		notificationService.processNotification(cleanerNotification, "CLEANER", Math.toIntExact(cleanerId));
 
 		return ResponseEntity.ok(Map.of(
 				"message", "Tạo công việc thành công",
