@@ -94,6 +94,8 @@ public class CleanerJobService {
 	private NotificationService notificationService;
 	@Autowired
 	private ConversationService conversationService;
+    @Autowired
+    private JobApp jobApp;
 
 
 	public Map<String, Object> getCustomerDetails(Long cleanerId, Long customerId) {
@@ -494,6 +496,8 @@ public class CleanerJobService {
 		Optional<Customers> customerOpt = customerRepo.findById(customerId);
 		if (!customerOpt.isPresent()) {
 			response.put("message", "Customer not found with customerId: " + customerId);
+			response.put("error", true);
+
 			return response;
 		}
 		Customers customer = customerOpt.get();
@@ -501,18 +505,24 @@ public class CleanerJobService {
 		Optional<Job> jobOpt = jobRepository.findByIdWithLock(jobId);
 		if (jobOpt.isEmpty()) {
 			response.put("message", "Job not found");
+			response.put("error", true);
+
 			return response;
 		}
 		Job job = jobOpt.get();
 
 		if (!job.getCustomer().getId().equals(customer.getId())) {
 			response.put("message", "You are not authorized to accept or reject this job");
+			response.put("error", true);
+
 			return response;
 		}
 
 		Optional<Employee> cleanerOpt = cleanerRepository.findById(cleanerId);
 		if (!cleanerOpt.isPresent()) {
 			response.put("message", "Cleaner not found with ID: " + cleanerId);
+			response.put("error", true);
+
 			return response;
 		}
 		Employee cleaner = cleanerOpt.get();
@@ -535,12 +545,16 @@ public class CleanerJobService {
 			}
 		} else {
 			response.put("message", "Không tìm thấy dịch vụ nào cho công việc này");
+			response.put("error", true);
+
 			serviceName = "Không có dịch vụ";
 		}
 
 		Optional<JobApplication> jobApplicationOpt = jobApplicationRepository.findByJobAndCleaner(job, cleaner);
 		if (!jobApplicationOpt.isPresent()) {
 			response.put("message", "Application not found for this job and cleaner");
+			response.put("error", true);
+
 			return response;
 		}
 		JobApplication jobApplication = jobApplicationOpt.get();
@@ -548,6 +562,7 @@ public class CleanerJobService {
 		if ("accept".equalsIgnoreCase(action)) {
 			if (job.getStatus() == JobStatus.IN_PROGRESS) {
 				response.put("message", "This job has already been accepted by another cleaner");
+				response.put("error", true);
 				return response;
 			}
 
@@ -556,7 +571,6 @@ public class CleanerJobService {
 			LocalDateTime startWindow = scheduledTime.minusHours(2);
 			LocalDateTime endWindow = scheduledTime.plusHours(2);
 
-
 			List<JobStatus> excludedStatuses = Arrays.asList(JobStatus.DONE, JobStatus.CANCELLED, JobStatus.AUTO_CANCELLED, JobStatus.BOOKED);
 			List<Job> conflictingJobs = jobRepository.findByCleanerIdAndScheduledTimeBetweenAndStatusNotInAndIdNot(
 					cleanerId, startWindow, endWindow, excludedStatuses, jobId
@@ -564,6 +578,7 @@ public class CleanerJobService {
 
 			if (!conflictingJobs.isEmpty()) {
 				response.put("message", "Người dọn đã có lịch dọn trong thời gian này.");
+				response.put("error", true);
 				return response;
 			}
 
@@ -577,7 +592,7 @@ public class CleanerJobService {
 					NotificationDTO cleanerNotification = new NotificationDTO();
 
 					cleanerNotification.setUserId(Math.toIntExact(cleanerId));
-					cleanerNotification.setMessage("[Mã công việc: "+ job.getOrderCode() + "] Đơn ứng tuyển vào công việc " + serviceName.toLowerCase() + " của bạn đã bị từ chối." );
+					cleanerNotification.setMessage("[Mã công việc: " + job.getOrderCode() + "] Đơn ứng tuyển vào công việc " + serviceName.toLowerCase() + " của bạn đã bị từ chối.");
 					cleanerNotification.setType("AUTO_MESSAGE");
 					cleanerNotification.setTimestamp(LocalDateTime.now(zoneId));
 					cleanerNotification.setRead(false);
@@ -588,29 +603,34 @@ public class CleanerJobService {
 			jobApplication.setStatus("Accepted");
 			job.setStatus(JobStatus.IN_PROGRESS);
 
-
-			// hủy ứng tuyển của cleaner khi trùng lịch
+			// --- Bổ sung xử lý hủy các job trùng lịch ---
 			LocalDateTime acceptedTime = job.getScheduledTime();
 			LocalDateTime acceptedEndTime = acceptedTime.plusHours(2);
 
-			List<JobApplication> pendingApps = jobApplicationRepository.findByCleanerIdAndStatus(Long.valueOf(cleaner.getId()), "Pending");
-			for (JobApplication pendingApp : pendingApps) {
-				Job otherJob = pendingApp.getJob();
-				LocalDateTime otherTime = otherJob.getScheduledTime();
-				LocalDateTime otherEndTime = otherTime.plusHours(2);
+			List<Job> overlappingJobs = jobRepository.findByCleanerIdAndScheduledTimeBetweenAndIdNot(
+					cleanerId,
+					acceptedTime.minusHours(2),
+					acceptedEndTime.plusHours(2),
+					job.getId()
+			);
 
-				boolean isTimeConflict = !otherJob.getId().equals(job.getId()) &&
-						otherTime.isBefore(acceptedEndTime) &&
-						otherEndTime.isAfter(acceptedTime);
+			for (Job overlappingJob : overlappingJobs) {
+				Optional<JobApplication> overlappingJobAppOpt = jobApplicationRepository.findByJobAndCleaner(overlappingJob, cleaner);
+				if (overlappingJobAppOpt.isPresent()) {
+					JobApplication overlappingJobApp = overlappingJobAppOpt.get();
 
-				if (isTimeConflict) {
-					pendingApp.setStatus("Cancelled");
-					jobApplicationRepository.save(pendingApp);
+					if ("BOOKED".equalsIgnoreCase(overlappingJob.getBookingType())) {
+						overlappingJob.setStatus(JobStatus.CANCELLED);
+						overlappingJobApp.setStatus("Rejected");
+						jobRepository.save(overlappingJob);
+						jobApplicationRepository.save(overlappingJobApp);
+					} else if ("CREATE".equalsIgnoreCase(overlappingJob.getBookingType())) {
+						overlappingJobApp.setStatus("Cancelled");
+						jobApplicationRepository.save(overlappingJobApp);
 
-
+					}
 				}
 			}
-
 
 			NotificationDTO customerNotification = new NotificationDTO();
 			customerNotification.setUserId(job.getCustomer().getId());
@@ -623,7 +643,7 @@ public class CleanerJobService {
 
 			NotificationDTO cleanerNotification = new NotificationDTO();
 			cleanerNotification.setUserId(Math.toIntExact(cleanerId));
-			cleanerNotification.setMessage("[Mã công việc: "+ job.getOrderCode() +"] Bạn đã được chọn làm người dọn dẹp cho công việc " + serviceName.toLowerCase() + " Thời gian bắt đầu: " + job.getScheduledTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")));
+			cleanerNotification.setMessage("[Mã công việc: " + job.getOrderCode() + "] Bạn đã được chọn làm người dọn dẹp cho công việc " + serviceName.toLowerCase() + " Thời gian bắt đầu: " + job.getScheduledTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")));
 			cleanerNotification.setType("AUTO_MESSAGE");
 			cleanerNotification.setTimestamp(LocalDateTime.now(zoneId));
 			cleanerNotification.setRead(false);
@@ -631,10 +651,13 @@ public class CleanerJobService {
 
 			conversationService.getOrCreateConversation(customerId, Math.toIntExact(cleanerId));
 			response.put("message", "Cleaner has been accepted for the job");
+		}
 
-		} else if ("reject".equalsIgnoreCase(action)) {
+		else if ("reject".equalsIgnoreCase(action)) {
 			jobApplication.setStatus("Rejected");
-			response.put("message", "Cleaner has been rejected for the job");
+			response.put("message", "Người dọn dẹp đã từ chối ");
+
+
 		} else {
 			response.put("message", "Invalid action. Use 'accept' or 'reject'");
 			return response;
@@ -949,6 +972,50 @@ public class CleanerJobService {
 		return appliedJobs;
 	}
 
+	public List<Map<String, Object>> getAppliedJobStatuses(Long cleanerId) {
+		List<Map<String, Object>> result = new ArrayList<>();
+
+		List<JobApplication> jobApplications = jobApplicationRepository.findByCleanerId(cleanerId);
+
+		for (JobApplication jobApplication : jobApplications) {
+			Job job = jobApplication.getJob();
+
+			if ("CREATE".equals(job.getBookingType())) {
+				Map<String, Object> map = new HashMap<>();
+				map.put("jobId", job.getId());
+				map.put("status", job.getStatus());
+				result.add(map);
+			}
+		}
+
+		result.sort((a, b) -> Long.compare((Long) b.get("jobId"), (Long) a.get("jobId")));
+
+		return result;
+	}
+
+
+	public List<Map<String, Object>> getAppliedJobStatusesForCleaner(Long cleanerId) {
+		List<Map<String, Object>> statusList = new ArrayList<>();
+
+		List<JobApplication> jobApplications = jobApplicationRepository.findByCleanerId(cleanerId);
+
+		for (JobApplication jobApplication : jobApplications) {
+			Job job = jobApplication.getJob();
+
+			// Lọc job theo booking_type nếu cần (giữ logic giống hàm đầy đủ)
+			if ("CREATE".equals(job.getBookingType())) {
+				Map<String, Object> jobStatus = new HashMap<>();
+				jobStatus.put("jobId", job.getId());
+				jobStatus.put("status", job.getStatus());
+				statusList.add(jobStatus);
+			}
+		}
+
+		statusList.sort((a, b) -> Long.compare((Long) b.get("jobId"), (Long) a.get("jobId")));
+
+		return statusList;
+	}
+
 
 
 
@@ -1036,6 +1103,27 @@ public class CleanerJobService {
 		});
 
 		return completedJobs;
+	}
+
+	public List<Map<String, Object>> getCompletedJobStatuses(Long cleanerId) {
+		List<Map<String, Object>> statusList = new ArrayList<>();
+
+		List<JobApplication> jobApplications = jobApplicationRepository.findByCleanerIdAndStatus(cleanerId, "Accepted");
+
+		for (JobApplication jobApplication : jobApplications) {
+			Job job = jobApplication.getJob();
+
+			if (job.getStatus() == JobStatus.DONE) {
+				Map<String, Object> jobStatus = new HashMap<>();
+				jobStatus.put("jobId", job.getId());
+				jobStatus.put("status", job.getStatus());
+				statusList.add(jobStatus);
+			}
+		}
+
+		statusList.sort((a, b) -> Long.compare((Long) b.get("jobId"), (Long) a.get("jobId")));
+
+		return statusList;
 	}
 
 
@@ -1138,6 +1226,31 @@ public class CleanerJobService {
 		});
 
 		return inProgressJobs;
+	}
+
+	public List<Map<String, Object>> getInProgressJobStatuses(Long cleanerId) {
+		List<Map<String, Object>> statusList = new ArrayList<>();
+
+		List<JobApplication> jobApplications = jobApplicationRepository.findByCleanerIdAndStatus(cleanerId, "Accepted");
+
+		for (JobApplication jobApplication : jobApplications) {
+			Job job = jobApplication.getJob();
+
+			if (job.getStatus() == JobStatus.IN_PROGRESS ||
+					job.getStatus() == JobStatus.ARRIVED ||
+					job.getStatus() == JobStatus.COMPLETED ||
+					job.getStatus() == JobStatus.BOOKED) {
+
+				Map<String, Object> statusMap = new HashMap<>();
+				statusMap.put("jobId", job.getId());
+				statusMap.put("status", job.getStatus());
+
+				statusList.add(statusMap);
+			}
+		}
+		statusList.sort((a, b) -> Long.compare((Long) b.get("jobId"), (Long) a.get("jobId")));
+
+		return statusList;
 	}
 
 
@@ -1657,22 +1770,22 @@ public class CleanerJobService {
 	}
 
 	// customer book job cleaner online
-	public Map<String, Object> bookJobForCleaner(Long customerId, Long cleanerId, BookJobRequest request, HttpServletRequest requestIp) {
+	public ResponseEntity<?> bookJobForCleaner(Long customerId, Long cleanerId, BookJobRequest request, HttpServletRequest requestIp) {
 		Map<String, Object> response = new HashMap<>();
 
 		// Lấy thông tin customer
 		Optional<Customers> customerOpt = customerRepo.findById(customerId);
 		if (!customerOpt.isPresent()) {
 			response.put("message", "Customer not found with customerId: " + customerId);
-			return response;
+			return ResponseEntity.badRequest().body(response);
 		}
 		Customers customer = customerOpt.get();
 
 		// Lấy thông tin địa chỉ của customer
 		Optional<CustomerAddresses> customerAddressOpt = customerAddressRepository.findById(request.getCustomerAddressId());
 		if (!customerAddressOpt.isPresent()) {
-			response.put("message", "Customer address not found");
-			return response;
+			response.put("message", "Bạn chưa có địa chỉ");
+			return ResponseEntity.badRequest().body(response);
 		}
 		CustomerAddresses customerAddress = customerAddressOpt.get();
 
@@ -1683,8 +1796,9 @@ public class CleanerJobService {
 			jobTime = LocalDateTime.parse(request.getJobTime(), formatter);
 		} catch (Exception e) {
 			response.put("message", "Invalid job time format");
-			return response;
+			return ResponseEntity.badRequest().body(response);
 		}
+
 
 		// Tạo mới job
 		Job job = new Job();
@@ -1694,15 +1808,12 @@ public class CleanerJobService {
 		job.setStatus(JobStatus.PAID); // Đặt trạng thái job là BOOKED
 		job.setPaymentMethod(request.getPaymentMethod()); // Lưu phương thức thanh toán vào job ngay khi tạo job
 		job.setReminder(request.getReminder());
-
-		// Cập nhật booking_type thành "BOOKED"
 		job.setBookingType("BOOKED");  // Cập nhật loại booking
 
-		// Kiểm tra thông tin cleaner
 		Optional<Employee> cleanerOpt = cleanerRepository.findById(cleanerId);
 		if (!cleanerOpt.isPresent()) {
 			response.put("message", "Cleaner not found with cleanerId: " + cleanerId);
-			return response;
+			return ResponseEntity.badRequest().body(response);
 		}
 		Employee cleaner = cleanerOpt.get();
 		job.setCleaner(cleaner);
@@ -1717,17 +1828,18 @@ public class CleanerJobService {
 				if (existingJob.getStatus() != JobStatus.DONE &&
 						existingJob.getStatus() != JobStatus.CANCELLED &&
 						existingJob.getStatus() != JobStatus.AUTO_CANCELLED &&
-						existingJob.getStatus() != JobStatus.BOOKED ) {
+						existingJob.getStatus() != JobStatus.BOOKED &&
+						existingJob.getStatus() != JobStatus.PAID) {
 
 					response.put("message", "Người dọn này đã có lịch trùng với thời gian bạn chọn");
-					return response;
+					return ResponseEntity.badRequest().body(response);
 				}
 			}
 		}
 
 
 		// Lưu Job vào cơ sở dữ liệu trước khi tạo JobServiceDetail
-		job = jobRepository.save(job);
+
 
 		// Tính tổng giá trị dịch vụ
 		double totalPrice = 0;
@@ -1738,7 +1850,7 @@ public class CleanerJobService {
 			Optional<Services> serviceOpt = serviceRepository.findById(serviceRequest.getServiceId());
 			if (!serviceOpt.isPresent()) {
 				response.put("message", "Service not found with serviceId: " + serviceRequest.getServiceId());
-				return response;
+				return ResponseEntity.badRequest().body(response);
 			}
 			Services service = serviceOpt.get();
 
@@ -1746,7 +1858,7 @@ public class CleanerJobService {
 			Optional<ServiceDetail> serviceDetailOpt = serviceDetailRepository.findById(serviceRequest.getServiceDetailId());
 			if (!serviceDetailOpt.isPresent()) {
 				response.put("message", "Service Detail not found for serviceId: " + serviceRequest.getServiceDetailId());
-				return response;
+				return ResponseEntity.badRequest().body(response);
 			}
 			ServiceDetail serviceDetail = serviceDetailOpt.get();
 
@@ -1808,16 +1920,16 @@ public class CleanerJobService {
 		}
 
 		// Lưu JobServiceDetails vào cơ sở dữ liệu
-		jobServiceDetailRepository.saveAll(jobServiceDetails);
+
 
 		// Cập nhật tổng giá và lưu Job
 		job.setTotalPrice(totalPrice);
-		jobRepository.save(job);  // Lưu lại Job với tổng giá đã cập nhật
+
 
 		// Tạo mã đơn hàng (orderCode) luôn luôn trước khi kiểm tra phương thức thanh toán
 		String orderCode = customerId + LocalDate.now().format(DateTimeFormatter.ofPattern("ddMMyy")) + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
 		job.setOrderCode(orderCode);  // Gán mã đơn hàng cho job
-		jobRepository.save(job);  // Lưu lại Job với orderCode
+
 
 		// Kiểm tra phương thức thanh toán
 		if ("wallet".equalsIgnoreCase(request.getPaymentMethod())) {
@@ -1826,7 +1938,7 @@ public class CleanerJobService {
 			if (!walletOpt.isPresent()) {
 				response.put("message", "Customer wallet not found");
 				response.put("status", HttpStatus.BAD_REQUEST);
-				return response;  // Trả về lỗi và không tiếp tục tạo job
+				return ResponseEntity.badRequest().body(response);
 			}
 
 			CustomerWallet wallet = walletOpt.get();
@@ -1835,7 +1947,7 @@ public class CleanerJobService {
 			if (wallet.getBalance() < totalPrice) {
 				response.put("message", "Số dư ví không đủ");
 				response.put("status", HttpStatus.BAD_REQUEST);
-				return response;  // Trả về lỗi và không tiếp tục tạo job
+				return ResponseEntity.badRequest().body(response);
 			}
 
 			// Cộng tiền vào ví của customer
@@ -1844,7 +1956,7 @@ public class CleanerJobService {
 
 			// Cập nhật trạng thái job sau khi thanh toán thành công
 			job.setStatus(JobStatus.BOOKED);  // Cập nhật trạng thái job thành BOOKED sau khi thanh toán
-			jobRepository.save(job);  // Lưu job vào database
+
 
 			TransactionHistory transaction = new TransactionHistory();
 			transaction.setCustomer(customer);
@@ -1867,7 +1979,8 @@ public class CleanerJobService {
 				// Lưu txnRef vào Job ngay sau khi tạo paymentUrl
 				String txnRef = extractTxnRefFromUrl(paymentUrl);
 				job.setTxnRef(txnRef);  // Lưu txnRef vào Job
-				jobRepository.save(job);  // Lưu cập nhật txnRef vào database
+				job = jobRepository.save(job);
+
 
 				JobApplication jobApplication = new JobApplication();
 				jobApplication.setJob(job);
@@ -1879,16 +1992,18 @@ public class CleanerJobService {
 				jobApplicationRepository.save(jobApplication);
 				// Trả về URL thanh toán cho người dùng
 				response.put("paymentUrl", paymentUrl);
-				return response;
+				return ResponseEntity.badRequest().body(response);
 			} catch (Exception e) {
 				response.put("message", "Failed to create payment link: " + e.getMessage());
-				return response;
+				return ResponseEntity.badRequest().body(response);
 			}
 		} else {
 			response.put("message", "Invalid payment method");
-			return response;
+			return ResponseEntity.badRequest().body(response);
 		}
 
+		job = jobRepository.save(job);
+		jobServiceDetailRepository.saveAll(jobServiceDetails);
 
 		// Tạo JobApplication cho cleaner
 		JobApplication jobApplication = new JobApplication();
@@ -1920,31 +2035,30 @@ public class CleanerJobService {
 		// Lưu JobApplication vào cơ sở dữ liệu
 		jobApplicationRepository.save(jobApplication);
 		String message_customer = "Bạn đã gửi yêu cầu làm việc trực tiếp tới người dọn dẹp " + cleaner.getName() + " cho công việc " + serviceName.toLowerCase() + " " + job.getScheduledTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) + "Vui lòng chờ phản hồi";
-		NotificationDTO customerNotification = new NotificationDTO();
-		customerNotification.setUserId(job.getCustomer().getId());
-		customerNotification.setMessage(message_customer);
-		customerNotification.setType("AUTO_MESSAGE");
-		customerNotification.setTimestamp(LocalDateTime.now());
-		customerNotification.setRead(false); // ✅ set read = false
-		notificationService.processNotification(customerNotification, "CUSTOMER", Math.toIntExact(customerId));
+//		NotificationDTO customerNotification = new NotificationDTO();
+//		customerNotification.setUserId(job.getCustomer().getId());
+//		customerNotification.setMessage(message_customer);
+//		customerNotification.setType("AUTO_MESSAGE");
+//		customerNotification.setTimestamp(LocalDateTime.now());
+//		customerNotification.setRead(false); // ✅ set read = false
+//		notificationService.processNotification(customerNotification, "CUSTOMER", Math.toIntExact(customerId));
+//
+//		String message_cleaner = "Chủ nhà " + customer.getFull_name() + " đã đặt bạn làm việc cho công việc " + serviceName.toLowerCase() + " " + job.getScheduledTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+//		NotificationDTO cleanerNotification = new NotificationDTO();
+//		cleanerNotification.setUserId(Math.toIntExact(cleanerId));
+//		cleanerNotification.setMessage(message_cleaner);
+//		cleanerNotification.setType("AUTO_MESSAGE");
+//		cleanerNotification.setTimestamp(LocalDateTime.now());
+//		cleanerNotification.setRead(false); // ✅ set read = false
+//		notificationService.processNotification(cleanerNotification, "CLEANER", Math.toIntExact(cleanerId));
 
-		String message_cleaner = "Chủ nhà " + customer.getFull_name() + " đã đặt bạn làm việc cho công việc " + serviceName.toLowerCase() + " " + job.getScheduledTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
-		NotificationDTO cleanerNotification = new NotificationDTO();
-		cleanerNotification.setUserId(Math.toIntExact(cleanerId));
-		cleanerNotification.setMessage(message_cleaner);
-		cleanerNotification.setType("AUTO_MESSAGE");
-		cleanerNotification.setTimestamp(LocalDateTime.now());
-		cleanerNotification.setRead(false); // ✅ set read = false
-		notificationService.processNotification(cleanerNotification, "CLEANER", Math.toIntExact(cleanerId));
-
-		// Trả về thông tin công việc đã tạo
-		response.put("message", "Job booked successfully");
-		response.put("jobId", job.getId());
-		response.put("status", job.getStatus());
-		response.put("totalPrice", totalPrice);
-		response.put("paymentMethod", job.getPaymentMethod());  // Trả về phương thức thanh toán
-
-		return response;
+		return ResponseEntity.ok(Map.of(
+				"message", "Tạo công việc thành công",
+				"jobId", job.getId(),
+				"status", job.getStatus(),
+				"totalPrice", totalPrice,
+				"paymentMethod", job.getPaymentMethod()
+		));
 	}
 
 
@@ -1970,6 +2084,43 @@ public class CleanerJobService {
 
 
 
+	public List<Map<String, Object>> getBookedJobStatuses(Long cleanerId) {
+		List<Map<String, Object>> result = new ArrayList<>();
+
+		Optional<Employee> cleanerOpt = cleanerRepository.findById(cleanerId);
+		if (cleanerOpt.isEmpty()) return result;
+
+		// Lấy danh sách job đã book
+		List<Job> bookedJobs = jobRepository.findByCleanerIdAndBookingTypeAndStatusIn(
+				cleanerId, "BOOKED", Arrays.asList(JobStatus.BOOKED, JobStatus.OPEN, JobStatus.CANCELLED, JobStatus.AUTO_CANCELLED)
+		);
+
+		// Lấy thêm các job từ rejectedApplications
+		List<JobApplication> rejectedApplications = jobApplicationRepository.findByCleanerIdAndStatus(cleanerId, "Rejected");
+		for (JobApplication app : rejectedApplications) {
+			Job job = app.getJob();
+			if ("BOOKED".equals(job.getBookingType()) && job.getStatus() == JobStatus.CANCELLED) {
+				bookedJobs.add(job);
+			}
+		}
+
+		bookedJobs.sort((j1, j2) -> {
+			if (j1.getUpdatedAt() == null && j2.getUpdatedAt() == null) return 0;
+			if (j1.getUpdatedAt() == null) return 1;
+			if (j2.getUpdatedAt() == null) return -1;
+			return j2.getUpdatedAt().compareTo(j1.getUpdatedAt());
+		});
+
+		// Chuyển sang map
+		for (Job job : bookedJobs) {
+			Map<String, Object> map = new HashMap<>();
+			map.put("jobId", job.getId());
+			map.put("status", job.getStatus());
+			result.add(map);
+		}
+		return result;
+	}
+
 
 
 	public List<Map<String, Object>> getJobsBookedForCleaner(@PathVariable Long cleanerId) {
@@ -1988,6 +2139,7 @@ public class CleanerJobService {
 		List<Job> jobs = jobRepository.findByCleanerIdAndBookingTypeAndStatusIn(
 				cleanerId, "BOOKED", Arrays.asList(JobStatus.BOOKED, JobStatus.OPEN,JobStatus.CANCELLED,JobStatus.AUTO_CANCELLED)
 		);
+
 
 		// Lấy thêm các job CANCELLED nhưng có JobApplication status = Rejected
 		List<JobApplication> rejectedApplications = jobApplicationRepository.findByCleanerIdAndStatus(cleanerId, "Rejected");
@@ -2056,6 +2208,15 @@ public class CleanerJobService {
 			responseList.add(jobInfo);
 		}
 
+		// Sắp xếp jobs theo updatedAt giảm dần
+		jobs.sort((j1, j2) -> {
+			if (j1.getUpdatedAt() == null && j2.getUpdatedAt() == null) return 0;
+			if (j1.getUpdatedAt() == null) return 1;
+			if (j2.getUpdatedAt() == null) return -1;
+			return j2.getUpdatedAt().compareTo(j1.getUpdatedAt());
+		});
+
+
 		return responseList;
 	}
 
@@ -2071,7 +2232,8 @@ public class CleanerJobService {
 	    Optional<Employee> cleanerOpt = cleanerRepository.findByPhone(phoneNumber);
 	    if (!cleanerOpt.isPresent()) {
 	        response.put("message", "Cleaner not found");
-	        return response;
+			response.put("error", true);
+			return response;
 	    }
 	    Employee cleaner = cleanerOpt.get();
 
@@ -2079,12 +2241,14 @@ public class CleanerJobService {
 	    Optional<Job> jobOpt = jobRepository.findById(jobId);
 	    if (!jobOpt.isPresent()) {
 	        response.put("message", "Job not found");
-	        return response;
+			response.put("error", true);
+			return response;
 	    }
 	    Job job = jobOpt.get();
 
 		if (job.getStatus() != JobStatus.BOOKED) {
 			response.put("message", "Công việc phải ở trạng thái BOOKED");
+			response.put("error", true);
 			return response;
 		}
 
@@ -2105,6 +2269,7 @@ public class CleanerJobService {
 						existingJob.getStatus() != JobStatus.BOOKED) {
 
 					response.put("message", "Bạn đã có lịch trong khoảng thời gian này");
+					response.put("error", true);
 					return response;
 				}
 			}
@@ -2114,8 +2279,9 @@ public class CleanerJobService {
 		// Kiểm tra nếu công việc đã được giao cho cleaner
 	    Optional<JobApplication> jobApplicationOpt = jobApplicationRepository.findByJobAndCleaner(job, cleaner);
 	    if (!jobApplicationOpt.isPresent()) {
-	        response.put("message", "This job has not been assigned to you");
-	        return response;
+	        response.put("message", "công việc không được gán cho bạn");
+			response.put("error", true);
+			return response;
 	    }
 	    JobApplication jobApplication = jobApplicationOpt.get();
 
@@ -2136,32 +2302,71 @@ public class CleanerJobService {
 			}
 		} else {
 			response.put("message", "Không tìm thấy dịch vụ nào cho công việc này");
+			response.put("error", true);
 			serviceName = "Không có dịch vụ";
 		}
 
 	    // Kiểm tra trạng thái của job application trước khi chấp nhận hoặc từ chối
 	    if (jobApplication.getStatus().equals("Accepted") || jobApplication.getStatus().equals("Rejected")) {
 	        response.put("message", "You have already accepted or rejected this job");
-	        return response;
+			response.put("error", true);
+			return response;
 	    }
 
-	    if ("accept".equalsIgnoreCase(action)) {
+		if ("accept".equalsIgnoreCase(action)) {
 
-	        List<JobApplication> otherApplications = jobApplicationRepository.findByJob(job);
-	        for (JobApplication app : otherApplications) {
-	            if (!app.getCleaner().getId().equals(cleaner.getId())) {
-	                app.setStatus("Rejected");
-	                jobApplicationRepository.save(app);
-	            }
-	        }
-	        jobApplication.setStatus("Accepted");
-	        job.setStatus(JobStatus.IN_PROGRESS);  // Đặt trạng thái công việc là IN_PROGRESS
+			List<JobApplication> otherApplications = jobApplicationRepository.findByJob(job);
+			for (JobApplication app : otherApplications) {
+				if (!app.getCleaner().getId().equals(cleaner.getId())) {
+					app.setStatus("Rejected");
+					jobApplicationRepository.save(app);
+				}
+			}
+
+			jobApplication.setStatus("Accepted");
+			job.setStatus(JobStatus.IN_PROGRESS);
+			jobApplicationRepository.save(jobApplication);
+			jobRepository.save(job);
+
+			LocalDateTime acceptedStartTime = job.getScheduledTime();
+			LocalDateTime acceptedEndTime = acceptedStartTime.plusHours(2);
+
+			LocalDateTime windowStart = acceptedStartTime.minusHours(2);
+			LocalDateTime windowEnd = acceptedStartTime.plusHours(2);
+
+			List<Job> overlappingJobs = jobRepository.findByCleanerIdAndScheduledTimeBetween(
+					Long.valueOf(cleaner.getId()), windowStart, windowEnd);
+
+			for (Job otherJob : overlappingJobs) {
+				if (!otherJob.getId().equals(job.getId()) &&
+						otherJob.getStatus() != JobStatus.CANCELLED &&
+						otherJob.getStatus() != JobStatus.DONE &&
+						otherJob.getStatus() != JobStatus.AUTO_CANCELLED) {
+
+					Optional<JobApplication> otherJobAppOpt = jobApplicationRepository.findByJobAndCleaner(otherJob, cleaner);
+					if (otherJobAppOpt.isPresent()) {
+						JobApplication otherJobApp = otherJobAppOpt.get();
+
+						if ("BOOKED".equalsIgnoreCase(otherJob.getBookingType())) {
+							otherJob.setStatus(JobStatus.CANCELLED);
+							otherJobApp.setStatus("Rejected");
+							jobRepository.save(otherJob);
+							jobApplicationRepository.save(otherJobApp);
+						} else if ("CREATE".equalsIgnoreCase(otherJob.getBookingType())) {
+							// Không thay đổi trạng thái job
+							otherJobApp.setStatus("Cancelled");
+							jobApplicationRepository.save(otherJobApp);
+						}
+					}
+				}
+			}
+
 			NotificationDTO customerNotification = new NotificationDTO();
 			customerNotification.setUserId(job.getCustomer().getId());
 			customerNotification.setMessage("Mã đơn hàng: ["+ job.getOrderCode() +"] Người dọn dẹp: " + cleaner.getName() + " đã chấp nhận công việc " + serviceName.toLowerCase() + " bạn đã yêu cầu.");
 			customerNotification.setType("AUTO_MESSAGE");
 			customerNotification.setTimestamp(LocalDateTime.now());
-			customerNotification.setRead(false); // ✅ set read = false
+			customerNotification.setRead(false);
 			notificationService.processNotification(customerNotification, "CUSTOMER", Math.toIntExact(job.getCustomer().getId()));
 
 			NotificationDTO cleanerNotification = new NotificationDTO();
@@ -2169,12 +2374,15 @@ public class CleanerJobService {
 			cleanerNotification.setMessage("Mã đơn hàng: ["+ job.getOrderCode() +"] Công việc " + serviceName.toLowerCase() + " " + job.getScheduledTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")) + " đã được giao cho bạn.");
 			cleanerNotification.setType("AUTO_MESSAGE");
 			cleanerNotification.setTimestamp(LocalDateTime.now());
-			cleanerNotification.setRead(false); // ✅ set read = false
+			cleanerNotification.setRead(false);
 			notificationService.processNotification(cleanerNotification, "CUSTOMER", Math.toIntExact(job.getCustomer().getId()));
 
 			conversationService.getOrCreateConversation(Long.valueOf(job.getCustomer().getId()), cleaner.getId());
-	        response.put("message", "Job has been accepted");
-		} else if ("reject".equalsIgnoreCase(action)) {
+
+			response.put("message", "Job has been accepted");
+		}
+
+		else if ("reject".equalsIgnoreCase(action)) {
 			jobApplication.setStatus("Rejected");
 			job.setStatus(JobStatus.CANCELLED);
 

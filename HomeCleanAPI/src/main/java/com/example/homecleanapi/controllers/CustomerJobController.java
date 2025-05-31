@@ -37,10 +37,15 @@ public class CustomerJobController {
 	// API cho customer tạo job
 	@PostMapping(value = "/{customerId}/createjob")
 	public ResponseEntity<Map<String, Object>> createJob(@RequestBody BookJobRequest request,
-			@PathVariable Long customerId, HttpServletRequest requestIp) {
+														 @PathVariable Long customerId,
+														 HttpServletRequest requestIp) {
 		Map<String, Object> response = jobService.bookJob(customerId, request, requestIp);
+		if (Boolean.TRUE.equals(response.get("error"))) {
+			return ResponseEntity.badRequest().body(response);
+		}
 		return ResponseEntity.status(HttpStatus.CREATED).body(response);
 	}
+
 
 	// api tạo job gồm nhiều dịch uuj và nhiều thời điểm khác nhau
 	@PostMapping("/book-multi/{customerId}")
@@ -101,8 +106,14 @@ public class CustomerJobController {
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
 		}
 
+
+		if (Boolean.TRUE.equals(response.get("error"))) {
+			return ResponseEntity.badRequest().body(response);
+		}
+
 		return ResponseEntity.ok(response);
 	}
+
 
 	@PostMapping(value = "/reject-job/{jobId}/cleaner/{cleanerId}/customer/{customerId}")
 	public ResponseEntity<Map<String, Object>> rejectCleanerForJob(
@@ -132,8 +143,14 @@ public class CustomerJobController {
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
 		}
 
+		// Kiểm tra lỗi trong Map trả về
+		if (Boolean.TRUE.equals(response.get("error"))) {
+			return ResponseEntity.badRequest().body(response);
+		}
+
 		return ResponseEntity.ok(response);
 	}
+
 
 
 	// Chuyển trạng thái job sang STARTED
@@ -252,18 +269,18 @@ public class CustomerJobController {
 
         return ResponseEntity.ok(cleanerDetails);
     }
-	
+
 	@PostMapping(value = "/{customerId}/bookjob/{cleanerId}")
-    public ResponseEntity<Map<String, Object>> bookJobForCleaner(
-    		@PathVariable Long customerId, 
-            @PathVariable Long cleanerId, 
-            @RequestBody BookJobRequest request,
+	public ResponseEntity<?> bookJobForCleaner(
+			@PathVariable Long customerId,
+			@PathVariable Long cleanerId,
+			@RequestBody BookJobRequest request,
 			HttpServletRequest requestIp) {
 
-        Map<String, Object> response = cleanerJobService.bookJobForCleaner(customerId, cleanerId, request, requestIp);
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
-    }
-	
+		return cleanerJobService.bookJobForCleaner(customerId, cleanerId, request, requestIp);
+	}
+
+
 
 
 }
