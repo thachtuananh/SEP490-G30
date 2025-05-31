@@ -143,7 +143,6 @@ public class CustomerJobController {
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
 		}
 
-		// Kiểm tra lỗi trong Map trả về
 		if (Boolean.TRUE.equals(response.get("error"))) {
 			return ResponseEntity.badRequest().body(response);
 		}
