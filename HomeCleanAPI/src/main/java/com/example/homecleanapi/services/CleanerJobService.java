@@ -865,8 +865,9 @@ public class CleanerJobService {
 		// Tìm cleaner theo phone number
 		Optional<Employee> cleanerOpt = cleanerRepository.findByPhone(phoneNumber);
 		if (!cleanerOpt.isPresent()) {
-			response.put("message", "Cleaner not found with phone number: " + phoneNumber);
-			return ResponseEntity.notFound().build();
+			response.put("message", "Không tìm thấy người dọn dẹp");
+			response.put("status", "error");
+			return ResponseEntity.badRequest().body(response);
 		}
 
 		Employee cleaner = cleanerOpt.get();
@@ -894,8 +895,9 @@ public class CleanerJobService {
 		// Tìm công việc theo jobId
 		Optional<Job> jobOpt = jobRepository.findById(jobId);
 		if (!jobOpt.isPresent()) {
-			response.put("message", "Job not found");
-			return ResponseEntity.notFound().build();
+			response.put("message", "Không tìm thấy công việc");
+			response.put("status", "error");
+			return ResponseEntity.badRequest().body(response);
 		}
 
 		Job job = jobOpt.get();
@@ -904,13 +906,15 @@ public class CleanerJobService {
 		Optional<JobApplication> jobApplicationOpt = jobApplicationRepository.findByJobAndCleaner(job, cleaner);
 		if (!jobApplicationOpt.isPresent() || !jobApplicationOpt.get().getStatus().equals("Accepted")) {
 			response.put("message", "Công việc đã bị huỷ");
-			return ResponseEntity.notFound().build();
+			response.put("status", "error");
+			return ResponseEntity.badRequest().body(response);
 		}
 
 		// Kiểm tra trạng thái của công việc
 		if (!job.getStatus().equals(JobStatus.ARRIVED)) {
-			response.put("message", "Job is not in 'IN_PROGRESS' state");
-			return ResponseEntity.notFound().build();
+			response.put("message", "Trạng thái công việc không đúng.");
+			response.put("status", "error");
+			return ResponseEntity.badRequest().body(response);
 		}
 
 //		List<JobServiceDetail> jobServiceDetails = jobDetailsRepository.findByJob_id(jobId);
