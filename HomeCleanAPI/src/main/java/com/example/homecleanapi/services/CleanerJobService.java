@@ -571,7 +571,7 @@ public class CleanerJobService {
 			LocalDateTime startWindow = scheduledTime.minusHours(2);
 			LocalDateTime endWindow = scheduledTime.plusHours(2);
 
-			List<JobStatus> excludedStatuses = Arrays.asList(JobStatus.DONE, JobStatus.CANCELLED, JobStatus.AUTO_CANCELLED, JobStatus.BOOKED);
+			List<JobStatus> excludedStatuses = Arrays.asList(JobStatus.DONE, JobStatus.CANCELLED, JobStatus.AUTO_CANCELLED, JobStatus.BOOKED,JobStatus.PAID);
 			List<Job> conflictingJobs = jobRepository.findByCleanerIdAndScheduledTimeBetweenAndStatusNotInAndIdNot(
 					cleanerId, startWindow, endWindow, excludedStatuses, jobId
 			);
