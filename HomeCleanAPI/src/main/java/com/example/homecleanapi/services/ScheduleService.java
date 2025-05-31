@@ -92,6 +92,7 @@ public class ScheduleService {
                                 try {
                                     JobServiceDetail jobServiceDetail1 = jobServiceDetails.get(0); // dùng lại list đã có
                                     serviceName = jobServiceDetail1.getService().getName();
+                                    System.out.println("serviceName: " + serviceName);
                                 } catch (Exception e) {
                                     System.out.println("Lỗi lấy tên dịch vụ: " + e.getMessage());
                                     serviceName = "Không xác định";
@@ -125,7 +126,7 @@ public class ScheduleService {
 
                         NotificationDTO notification = new NotificationDTO();
                         notification.setUserId(job.getCustomer().getId());
-                        notification.setMessage("Mã công việc: [" + job.getOrderCode() + "] Công việc " + serviceName.toLowerCase() + "đã bị huỷ do không có người giúp việc nhận trong thời gian quy định");
+                        notification.setMessage("Mã công việc: [" + job.getOrderCode() + "] Công việc " + serviceName.toLowerCase() + " đã bị huỷ do không có người giúp việc nhận trong thời gian quy định");
                         notification.setType("AUTO_MESSAGE");
                         notification.setTimestamp(LocalDateTime.now(zoneId));
                         notification.setRead(false);
