@@ -250,11 +250,14 @@ const JobCard = ({ job, refreshJobs, isAppliedTab }) => {
             Authorization: `Bearer ${token}`,
           },
         })
-          .then((response) => {
-            if (!response.ok) {
-              throw new Error(`API responded with status: ${response.status}`);
+          .then(async (response) => {
+            const data = await response.json();
+
+            // Kiểm tra nếu response không thành công hoặc backend trả về error
+            if (!response.ok || data.status === "error") {
+              throw new Error(data.message);
             }
-            return response.json();
+            return data;
           })
           .then((data) => {
             console.log("Status updated:", data);
@@ -297,9 +300,15 @@ const JobCard = ({ job, refreshJobs, isAppliedTab }) => {
           })
           .catch((error) => {
             console.error("Error updating status:", error);
+            // Hiển thị message lỗi cụ thể từ backend
             message.error(
-              "Không thể cập nhật trạng thái. Vui lòng thử lại sau."
+              error.message ||
+                "Không thể cập nhật trạng thái. Vui lòng thử lại sau."
             );
+            // Reload trang sau khi hiển thị message
+            setTimeout(() => {
+              window.location.reload();
+            }, 1000);
           })
           .finally(() => {
             setLoading(false);
@@ -727,7 +736,7 @@ const JobCard = ({ job, refreshJobs, isAppliedTab }) => {
 
       {/* Customer Details Modal */}
       <Modal
-        title="Thông tin chi tiết chủ nhà"
+        title="Thông tin chi tiết khách hàng"
         open={customerDetailsVisible}
         onCancel={() => setCustomerDetailsVisible(false)}
         footer={[
@@ -747,7 +756,7 @@ const JobCard = ({ job, refreshJobs, isAppliedTab }) => {
             <Typography.Title level={4}>Thông tin cá nhân</Typography.Title>
             {customerDetails ? (
               <div className={styles.customerDetails}>
-                {/* <div className={styles.detailItem}>
+                <div className={styles.detailItem}>
                   <UserOutlined
                     style={{ fontSize: "20px", color: "#039855" }}
                   />
@@ -759,7 +768,7 @@ const JobCard = ({ job, refreshJobs, isAppliedTab }) => {
                         : "Đang hoạt động"}
                     </strong>
                   </div>
-                </div> */}
+                </div>
 
                 <div className={styles.detailItem}>
                   <UserOutlined
