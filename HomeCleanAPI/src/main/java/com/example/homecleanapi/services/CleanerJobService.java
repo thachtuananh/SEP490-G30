@@ -2293,7 +2293,8 @@ public class CleanerJobService {
 						existingJob.getStatus() != JobStatus.DONE &&
 						existingJob.getStatus() != JobStatus.CANCELLED &&
 						existingJob.getStatus() != JobStatus.AUTO_CANCELLED &&
-						existingJob.getStatus() != JobStatus.BOOKED) {
+						existingJob.getStatus() != JobStatus.BOOKED &&
+						existingJob.getStatus() != JobStatus.PAID) {
 
 					response.put("message", "Bạn đã có lịch trong khoảng thời gian này");
 					response.put("error", true);
