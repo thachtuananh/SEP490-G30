@@ -285,7 +285,7 @@ public class CleanerJobService {
 		List<Job> cleanerJobs = jobRepository.findByCleanerId(cleaner.getId().longValue());
 		for (Job existingJob : cleanerJobs) {
 			JobStatus status = existingJob.getStatus();
-			if (status == JobStatus.DONE || status == JobStatus.CANCELLED || status == JobStatus.AUTO_CANCELLED || status == JobStatus.BOOKED) {
+			if (status == JobStatus.DONE || status == JobStatus.CANCELLED || status == JobStatus.AUTO_CANCELLED || status == JobStatus.BOOKED || status == JobStatus.PAID) {
 				continue;
 			}
 
@@ -2293,7 +2293,8 @@ public class CleanerJobService {
 						existingJob.getStatus() != JobStatus.DONE &&
 						existingJob.getStatus() != JobStatus.CANCELLED &&
 						existingJob.getStatus() != JobStatus.AUTO_CANCELLED &&
-						existingJob.getStatus() != JobStatus.BOOKED) {
+						existingJob.getStatus() != JobStatus.BOOKED &&
+						existingJob.getStatus() != JobStatus.PAID) {
 
 					response.put("message", "Bạn đã có lịch trong khoảng thời gian này");
 					response.put("error", true);
