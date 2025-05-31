@@ -903,7 +903,7 @@ public class CleanerJobService {
 		// Kiểm tra quyền của cleaner (sử dụng cleanerId từ SecurityContext)
 		Optional<JobApplication> jobApplicationOpt = jobApplicationRepository.findByJobAndCleaner(job, cleaner);
 		if (!jobApplicationOpt.isPresent() || !jobApplicationOpt.get().getStatus().equals("Accepted")) {
-			response.put("message", "You are not authorized to update this job status");
+			response.put("message", "Công việc đã bị huỷ");
 			return ResponseEntity.badRequest().body(response);
 		}
 
