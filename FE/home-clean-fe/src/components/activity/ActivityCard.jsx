@@ -852,17 +852,13 @@ export const ActivityCard = ({ data, onDelete, onHireCleaner }) => {
                     activity.status === "ARRIVED" ||
                     activity.status === "BOOKED" ||
                     activity.status === "PAID") &&
-                    applicationsCount[activity.jobId] > 0 && (
+                    activity.cleanerId && ( // Thêm điều kiện activity.cleanerId
                       <Button
                         type="default"
-                        onClick={
-                          () =>
-                            handleViewCleanerDetail(
-                              activity.cleanerId,
-                              activity
-                            ) // Truyền cả activity
+                        onClick={() =>
+                          handleViewCleanerDetail(activity.cleanerId, activity)
                         }
-                        disabled={!activity.cleanerId || isProcessing}
+                        disabled={isProcessing} // Chỉ giữ isProcessing vì cleanerId đã được kiểm tra ở điều kiện hiển thị
                       >
                         Xem chi tiết người dọn dẹp
                       </Button>

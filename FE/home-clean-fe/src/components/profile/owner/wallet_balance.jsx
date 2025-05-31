@@ -441,26 +441,26 @@ export const WalletBalance = () => {
         return text;
       },
     },
-    {
-      title: "Trạng thái",
-      dataIndex: "status",
-      key: "status",
-      render: (status) => {
-        let color = "default";
-        let text = status;
-        if (status === "SUCCESS") {
-          color = "success";
-          text = "Thành công";
-        } else if (status === "PENDING") {
-          color = "warning";
-          text = "Đang xử lý";
-        } else if (status === "FAILED") {
-          color = "error";
-          text = "Thất bại";
-        }
-        return <Badge status={color} text={text} />;
-      },
-    },
+    // {
+    //   title: "Trạng thái",
+    //   dataIndex: "status",
+    //   key: "status",
+    //   render: (status) => {
+    //     let color = "default";
+    //     let text = status;
+    //     if (status === "SUCCESS") {
+    //       color = "success";
+    //       text = "Thành công";
+    //     } else if (status === "PENDING") {
+    //       color = "warning";
+    //       text = "Đang xử lý";
+    //     } else if (status === "FAILED") {
+    //       color = "error";
+    //       text = "Thất bại";
+    //     }
+    //     return <Badge status={color} text={text} />;
+    //   },
+    // },
   ];
 
   const withdrawalHistoryColumns = [
