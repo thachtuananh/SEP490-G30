@@ -2217,21 +2217,24 @@ public class CleanerJobService {
 
 		Employee cleaner = cleanerOpt.get();
 
-		// Lấy các job có status là BOOKED hoặc OPEN
-		List<Job> jobs = jobRepository.findByCleanerIdAndBookingTypeAndStatusIn(
-				cleanerId, "BOOKED", Arrays.asList(JobStatus.BOOKED, JobStatus.OPEN,JobStatus.CANCELLED,JobStatus.AUTO_CANCELLED)
-		);
-
+		// Dùng Set để tránh trùng lặp
+		Set<Job> jobsSet = new HashSet<>(jobRepository.findByCleanerIdAndBookingTypeAndStatusIn(
+				cleanerId, "BOOKED", Arrays.asList(JobStatus.BOOKED, JobStatus.OPEN, JobStatus.CANCELLED, JobStatus.AUTO_CANCELLED)
+		));
 
 		// Lấy thêm các job CANCELLED nhưng có JobApplication status = Rejected
 		List<JobApplication> rejectedApplications = jobApplicationRepository.findByCleanerIdAndStatus(cleanerId, "Rejected");
 		for (JobApplication app : rejectedApplications) {
 			Job job = app.getJob();
 			if ("BOOKED".equals(job.getBookingType()) && job.getStatus() == JobStatus.CANCELLED) {
-				jobs.add(job);
+				jobsSet.add(job); // Set tự động bỏ trùng
 			}
 		}
 
+		// Chuyển Set sang List để sort
+		List<Job> jobs = new ArrayList<>(jobsSet);
+
+		// Sắp xếp jobs theo updatedAt giảm dần
 		jobs.sort((j1, j2) -> {
 			if (j1.getUpdatedAt() == null && j2.getUpdatedAt() == null) return 0;
 			if (j1.getUpdatedAt() == null) return 1;
@@ -2239,12 +2242,12 @@ public class CleanerJobService {
 			return j2.getUpdatedAt().compareTo(j1.getUpdatedAt());
 		});
 
-		// Duyệt qua tất cả các job đã lọc
+		// Duyệt qua tất cả các job đã lọc và tạo response
 		for (Job job : jobs) {
 			Map<String, Object> jobInfo = new HashMap<>();
 
 			jobInfo.put("jobId", job.getId());
-			jobInfo.put("status", job.getStatus()); // in status thực tế của job
+			jobInfo.put("status", job.getStatus());
 			jobInfo.put("scheduledTime", job.getScheduledTime());
 			jobInfo.put("totalPrice", job.getTotalPrice());
 			jobInfo.put("orderCode", job.getOrderCode());
@@ -2296,9 +2299,6 @@ public class CleanerJobService {
 
 			responseList.add(jobInfo);
 		}
-
-
-
 
 		return responseList;
 	}
