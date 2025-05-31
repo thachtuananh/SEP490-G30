@@ -17,6 +17,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -81,6 +82,8 @@ public class NotificationService {
                 // Bạn có thể dùng logger thay vì System.out nếu cần production-ready
             }
         }
+
+        notifications.sort(Comparator.comparing(NotificationDTO::getTimestamp).reversed());
 
         return notifications;
     }
