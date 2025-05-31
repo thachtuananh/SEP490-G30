@@ -624,6 +624,28 @@ public class CleanerJobService {
 						overlappingJobApp.setStatus("Rejected");
 						jobRepository.save(overlappingJob);
 						jobApplicationRepository.save(overlappingJobApp);
+
+						Customers overlappedCustomer = overlappingJob.getCustomer();
+						double refundAmount = overlappingJob.getTotalPrice();
+
+						Optional<CustomerWallet> walletOpt = customerWalletRepository.findByCustomerId(Long.valueOf(overlappedCustomer.getId()));
+						if (walletOpt.isPresent()) {
+							CustomerWallet wallet = walletOpt.get();
+							wallet.setBalance(wallet.getBalance() + refundAmount);
+							wallet.setUpdatedAt(LocalDateTime.now(zoneId));
+							customerWalletRepository.save(wallet);
+
+							TransactionHistory refundTransaction = new TransactionHistory();
+							refundTransaction.setCustomer(overlappedCustomer);
+							refundTransaction.setCleaner(null);
+							refundTransaction.setAmount(refundAmount);
+							refundTransaction.setTransactionType("REFUND");
+							refundTransaction.setPaymentMethod("WALLET");
+							refundTransaction.setStatus("SUCCESS");
+							refundTransaction.setTransactionDate(LocalDateTime.now(zoneId));
+
+							transactionHistoryRepository.save(refundTransaction);
+						}
 					} else if ("CREATE".equalsIgnoreCase(overlappingJob.getBookingType())) {
 						overlappingJobApp.setStatus("Cancelled");
 						jobApplicationRepository.save(overlappingJobApp);
@@ -672,6 +694,8 @@ public class CleanerJobService {
 
 		return response;
 	}
+
+
 
 
 
@@ -1982,6 +2006,7 @@ public class CleanerJobService {
 				job.setTxnRef(txnRef);  // Lưu txnRef vào Job
 				job = jobRepository.save(job);
 
+				jobServiceDetailRepository.saveAll(jobServiceDetails);
 
 				JobApplication jobApplication = new JobApplication();
 				jobApplication.setJob(job);
@@ -2036,22 +2061,22 @@ public class CleanerJobService {
 		// Lưu JobApplication vào cơ sở dữ liệu
 		jobApplicationRepository.save(jobApplication);
 		String message_customer = "Bạn đã gửi yêu cầu làm việc trực tiếp tới người dọn dẹp " + cleaner.getName() + " cho công việc " + serviceName.toLowerCase() + " " + job.getScheduledTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) + "Vui lòng chờ phản hồi";
-		NotificationDTO customerNotification = new NotificationDTO();
-		customerNotification.setUserId(job.getCustomer().getId());
-		customerNotification.setMessage(message_customer);
-		customerNotification.setType("AUTO_MESSAGE");
-		customerNotification.setTimestamp(LocalDateTime.now());
-		customerNotification.setRead(false); // ✅ set read = false
-		notificationService.processNotification(customerNotification, "CUSTOMER", Math.toIntExact(customerId));
-
-		String message_cleaner = "Chủ nhà " + customer.getFull_name() + " đã đặt bạn làm việc cho công việc " + serviceName.toLowerCase() + " " + job.getScheduledTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
-		NotificationDTO cleanerNotification = new NotificationDTO();
-		cleanerNotification.setUserId(Math.toIntExact(cleanerId));
-		cleanerNotification.setMessage(message_cleaner);
-		cleanerNotification.setType("AUTO_MESSAGE");
-		cleanerNotification.setTimestamp(LocalDateTime.now());
-		cleanerNotification.setRead(false); // ✅ set read = false
-		notificationService.processNotification(cleanerNotification, "CLEANER", Math.toIntExact(cleanerId));
+//		NotificationDTO customerNotification = new NotificationDTO();
+//		customerNotification.setUserId(job.getCustomer().getId());
+//		customerNotification.setMessage(message_customer);
+//		customerNotification.setType("AUTO_MESSAGE");
+//		customerNotification.setTimestamp(LocalDateTime.now());
+//		customerNotification.setRead(false); // ✅ set read = false
+//		notificationService.processNotification(customerNotification, "CUSTOMER", Math.toIntExact(customerId));
+//
+//		String message_cleaner = "Chủ nhà " + customer.getFull_name() + " đã đặt bạn làm việc cho công việc " + serviceName.toLowerCase() + " " + job.getScheduledTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+//		NotificationDTO cleanerNotification = new NotificationDTO();
+//		cleanerNotification.setUserId(Math.toIntExact(cleanerId));
+//		cleanerNotification.setMessage(message_cleaner);
+//		cleanerNotification.setType("AUTO_MESSAGE");
+//		cleanerNotification.setTimestamp(LocalDateTime.now());
+//		cleanerNotification.setRead(false); // ✅ set read = false
+//		notificationService.processNotification(cleanerNotification, "CLEANER", Math.toIntExact(cleanerId));
 
 		return ResponseEntity.ok(Map.of(
 				"message", "Tạo công việc thành công",
@@ -2354,6 +2379,27 @@ public class CleanerJobService {
 							otherJobApp.setStatus("Rejected");
 							jobRepository.save(otherJob);
 							jobApplicationRepository.save(otherJobApp);
+
+							Customers overlappedCustomer = otherJob.getCustomer();
+							Double refundAmount = otherJob.getTotalPrice();
+
+							Optional<CustomerWallet> walletOpt = customerWalletRepository.findByCustomerId(Long.valueOf(overlappedCustomer.getId()));
+							if (walletOpt.isPresent()) {
+								CustomerWallet wallet = walletOpt.get();
+								wallet.setBalance(wallet.getBalance() + refundAmount);
+								wallet.setUpdatedAt(LocalDateTime.now());
+								customerWalletRepository.save(wallet);
+
+								TransactionHistory refundTransaction = new TransactionHistory();
+								refundTransaction.setCustomer(overlappedCustomer);
+								refundTransaction.setAmount(refundAmount);
+								refundTransaction.setTransactionType("REFUND");
+								refundTransaction.setPaymentMethod("WALLET");
+								refundTransaction.setStatus("SUCCESS");
+								refundTransaction.setTransactionDate(LocalDateTime.now());
+
+								transactionHistoryRepository.save(refundTransaction);
+							}
 						} else if ("CREATE".equalsIgnoreCase(otherJob.getBookingType())) {
 							// Không thay đổi trạng thái job
 							otherJobApp.setStatus("Cancelled");
@@ -2382,6 +2428,9 @@ public class CleanerJobService {
 			conversationService.getOrCreateConversation(Long.valueOf(job.getCustomer().getId()), cleaner.getId());
 
 			response.put("message", "Job has been accepted");
+			response.put("error", false);
+
+
 		}
 
 		else if ("reject".equalsIgnoreCase(action)) {
