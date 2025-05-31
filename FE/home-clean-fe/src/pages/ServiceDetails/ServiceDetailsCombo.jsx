@@ -104,7 +104,7 @@ const ServiceDetailsCombo = () => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        await loadCustomerAddresses();
+        // await loadCustomerAddresses();
         const detailsPromises = selectedServices.map((item) =>
           fetchServiceDetails(item.serviceId)
         );
@@ -285,10 +285,10 @@ const ServiceDetailsCombo = () => {
   const handleSubmit = async () => {
     try {
       await form.validateFields();
-      if (!selectedAddress) {
-        message.error("Vui lòng chọn địa chỉ!");
-        return;
-      }
+      // if (!selectedAddress) {
+      //   message.error("Vui lòng chọn địa chỉ!");
+      //   return;
+      // }
       if (selectedServices.length === 0) {
         message.error("Vui lòng chọn ít nhất một dịch vụ!");
         return;
@@ -319,8 +319,8 @@ const ServiceDetailsCombo = () => {
               quantity: item.quantity,
             };
           }),
-          address: selectedAddress.address,
-          customerAddressId: selectedAddress.addressId,
+          // address: selectedAddress.address,
+          // customerAddressId: selectedAddress.addressId,
           price: calculateTotalPrice(),
         },
       });
