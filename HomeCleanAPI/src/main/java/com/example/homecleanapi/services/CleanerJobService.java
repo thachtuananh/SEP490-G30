@@ -495,6 +495,15 @@ public class CleanerJobService {
 		ZoneId zoneId = ZoneId.of("Asia/Ho_Chi_Minh");
 		Map<String, Object> response = new HashMap<>();
 
+		Optional<Employee> cleanerOpt = cleanerRepository.findByIdWithLock(cleanerId);
+		if (!cleanerOpt.isPresent()) {
+			response.put("message", "Cleaner not found with ID: " + cleanerId);
+			response.put("error", true);
+
+			return response;
+		}
+		Employee cleaner = cleanerOpt.get();
+
 		Optional<Customers> customerOpt = customerRepo.findById(customerId);
 		if (!customerOpt.isPresent()) {
 			response.put("message", "Customer not found with customerId: " + customerId);
@@ -520,14 +529,7 @@ public class CleanerJobService {
 			return response;
 		}
 
-		Optional<Employee> cleanerOpt = cleanerRepository.findByIdWithLock(cleanerId);
-		if (!cleanerOpt.isPresent()) {
-			response.put("message", "Cleaner not found with ID: " + cleanerId);
-			response.put("error", true);
 
-			return response;
-		}
-		Employee cleaner = cleanerOpt.get();
 
 
 		String serviceName = "Chưa xác định";
