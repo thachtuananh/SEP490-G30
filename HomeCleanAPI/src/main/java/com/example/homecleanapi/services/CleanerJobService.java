@@ -593,6 +593,9 @@ public class CleanerJobService {
 				return response;
 			}
 
+			jobApplication.setStatus("Accepted");
+			job.setStatus(JobStatus.IN_PROGRESS);
+
 			// === Xử lý Accept ===
 			List<JobApplication> otherApplications = jobApplicationRepository.findByJob(job);
 			for (JobApplication app : otherApplications) {
@@ -611,8 +614,6 @@ public class CleanerJobService {
 				}
 			}
 
-			jobApplication.setStatus("Accepted");
-			job.setStatus(JobStatus.IN_PROGRESS);
 
 			// --- Bổ sung xử lý hủy các job trùng lịch ---
 			LocalDateTime acceptedTime = job.getScheduledTime();
