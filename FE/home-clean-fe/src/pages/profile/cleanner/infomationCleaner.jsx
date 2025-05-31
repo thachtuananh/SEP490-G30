@@ -8,6 +8,7 @@ import { message } from "antd";
 import Navbar from "../../../components/Home/Cleaner/Navbar";
 import Footer from "../../../components/Home/Cleaner/Footer";
 import { WalletBalance } from "../../../components/profile/cleanner/wallet_balance";
+import TermsModalContent from "../../../components/TermContent/TermsModalContent";
 
 const InfomationCleaner = () => {
   const { dispatch } = useContext(AuthContext); // Lấy thông tin user từ AuthContext
@@ -48,6 +49,7 @@ const InfomationCleaner = () => {
     1: <PersonaInformation />,
     2: <Address />,
     3: <WalletBalance />,
+    4: <TermsModalContent />,
   };
 
   return (

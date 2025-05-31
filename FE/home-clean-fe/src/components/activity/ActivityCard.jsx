@@ -462,6 +462,9 @@ export const ActivityCard = ({ data, onDelete, onHireCleaner }) => {
       if (result.status === "OPEN") {
         message.success("Thanh toán lại qua ví thành công!");
         updateActivityStatus(jobId, "OPEN");
+      } else if (result.status === "BOOKED") {
+        message.success("Thanh toán lại qua ví thành công!");
+        updateActivityStatus(jobId, "BOOKED");
       } else {
         message.error("Không thể thanh toán qua ví.");
       }

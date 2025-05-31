@@ -1,6 +1,6 @@
 import styles from "../../assets/CSS/Service/ServiceCard.module.css";
 import serviceImg from "../../assets/imgService/service-suggest.png";
-import avatarRated from "../../assets/imgService/avatar-rated.png";
+import avatarRated from "../../assets/imgService/service.png";
 import StarIcon from "../../components/iconsvg/StarIcon";
 import { Link } from "react-router-dom";
 

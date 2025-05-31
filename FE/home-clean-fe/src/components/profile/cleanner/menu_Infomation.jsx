@@ -48,7 +48,7 @@ const MenuInfomation = ({ selectedMenu, setSelectedMenu }) => {
           { id: "2", label: "Địa chỉ", icon: addressImg },
           { id: "3", label: "Quản lý ví", icon: paymentImg },
           // { id: "4", label: "Ưu đãi của tôi", icon: discountImg },
-          // { id: "5", label: "Trợ giúp", icon: helpImg },
+          { id: "4", label: "Điều khoản", icon: helpImg },
         ].map((item) => (
           <div key={item.id} className="menu-item">
             <Link

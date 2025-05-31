@@ -1,10 +1,24 @@
-import serviceImage from "../../assets/imgService/service.png";
+import phongkhach from "../../assets/imgService/phongkhach.png";
+import phongngu from "../../assets/imgService/phongngu.png";
+import phongvesinh from "../../assets/imgService/vesinh.png";
+import nhamoixay from "../../assets/imgService/moixay.png";
+import phongbep from "../../assets/imgService/phongbep.png";
 import LocationIcon from "../iconsvg/LocationIcon";
 import { useState, useEffect } from "react";
 import { Link, useLocation, useParams } from "react-router-dom";
 import { Spin } from "antd";
 import { fetchServiceDetails } from "../../services/owner/OwnerAPI";
 import style from "../../assets/CSS/Service/ServiceContent.module.css";
+
+// Mapping of service IDs to image sources
+const serviceImages = {
+  1: phongkhach,
+  2: phongbep,
+  3: phongngu,
+  4: phongvesinh,
+  6: nhamoixay,
+  default: phongkhach, // Fallback image
+};
 
 const ServiceContent = ({
   setIsShowLocationModal,
@@ -18,13 +32,16 @@ const ServiceContent = ({
   const [selectedSize, setSelectedSize] = useState(null);
   const [price, setPrice] = useState(0);
   const [selectedServiceDetailId, setSelectedServiceDetailId] = useState(null);
-  const [activeImage, setActiveImage] = useState(serviceImage);
+  const [activeImage, setActiveImage] = useState(serviceImages.default); // Default image
 
   const location = useLocation();
   const state = location.state || {};
 
   useEffect(() => {
     if (!id) return;
+
+    // Set the active image based on the service ID
+    setActiveImage(serviceImages[id] || serviceImages.default);
 
     fetchServiceDetails(id)
       .then((data) => {
@@ -56,7 +73,14 @@ const ServiceContent = ({
     setActiveImage(image);
   };
 
-  const serviceThumbnails = [serviceImage, serviceImage, serviceImage];
+  const serviceThumbnails = [
+    serviceImages[id] || serviceImages.default,
+    phongkhach,
+    phongbep,
+    phongngu,
+    phongvesinh,
+    nhamoixay,
+  ];
 
   if (loading) {
     return (
@@ -78,7 +102,11 @@ const ServiceContent = ({
     <div className={style.serviceContentWrapper}>
       <div className={style.serviceGallery}>
         <div className={style.mainImageContainer}>
-          <img className={style.mainImage} src={activeImage} alt="Service" />
+          <img
+            className={style.mainImage}
+            src={activeImage}
+            alt={`Service ${id}`}
+          />
         </div>
       </div>
 

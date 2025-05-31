@@ -7,6 +7,7 @@ import { BASE_URL } from "../../../utils/config";
 import { message } from "antd";
 import "./infor.css"; // Import CSS riêng
 import WalletBalance from "../../../components/profile/owner/wallet_balance";
+import TermsModalContent from "../../../components/TermContent/TermsModalContent";
 
 const Infomation = () => {
   const { dispatch } = useContext(AuthContext);
@@ -48,6 +49,7 @@ const Infomation = () => {
     1: <PersonaInformation />,
     2: <Address />,
     3: <WalletBalance />,
+    4: <TermsModalContent />,
   };
 
   return (
