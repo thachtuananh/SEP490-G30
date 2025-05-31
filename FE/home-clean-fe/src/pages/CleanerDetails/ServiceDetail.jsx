@@ -324,8 +324,8 @@ const ServiceDetailsCombo = () => {
               quantity: item.quantity,
             };
           }),
-          // address: selectedAddress.address,
-          // customerAddressId: selectedAddress.addressId,
+          address: selectedAddress.address,
+          customerAddressId: selectedAddress.addressId,
           price: calculateTotalPrice(),
         },
       });
