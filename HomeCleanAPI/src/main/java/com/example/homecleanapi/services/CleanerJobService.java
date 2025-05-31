@@ -533,7 +533,9 @@ public class CleanerJobService {
 
 			return response;
 		}
-
+		job.setUpdatedAt(LocalDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh")));  // cập nhật giữ lock
+		jobRepository.save(job);
+		jobRepository.flush();  // bắt buộc flush để chắc chắn cập nhật và giữ lock ngay lập tức
 
 
 
