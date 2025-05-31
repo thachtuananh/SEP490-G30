@@ -511,6 +511,11 @@ public class CleanerJobService {
 
 			return response;
 		}
+
+		// Bắt buộc cập nhật để giữ khóa ghi
+		cleaner.setUpdated_at(LocalDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh")));
+		cleanerRepository.save(cleaner);
+
 		Customers customer = customerOpt.get();
 
 		Optional<Job> jobOpt = jobRepository.findByIdWithLock(jobId);
