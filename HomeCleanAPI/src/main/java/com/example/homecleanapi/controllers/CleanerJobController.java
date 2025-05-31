@@ -93,8 +93,8 @@ public class CleanerJobController {
     // Chuyển trạng thái công việc sang ARRIVED
     @PostMapping(value = "/job/arrived/{jobId}")
     public ResponseEntity<Map<String, Object>> setJobArrived(@PathVariable("jobId") Long jobId) {
-        Map<String, Object> response = cleanerJobService.updateJobStatusToArrived(jobId);
-        return ResponseEntity.ok(response);
+        // Map<String, Object> response = cleanerJobService.updateJobStatusToArrived(jobId);
+        return cleanerJobService.updateJobStatusToArrived(jobId);
     }
 
 
