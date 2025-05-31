@@ -853,8 +853,9 @@ public class CleanerJobService {
 
 
 	// Cập nhật trạng thái công việc sang "COMPLETED"
-	public Map<String, Object> updateJobStatusToCompleted(Long jobId) {
+	public ResponseEntity<Map<String, Object>> updateJobStatusToCompleted(Long jobId) {
 		Map<String, Object> response = new HashMap<>();
+
 
 		// Lấy phone từ JWT hoặc SecurityContext (sử dụng phone_number từ token)
 		String phoneNumber = SecurityContextHolder.getContext().getAuthentication().getName(); // Lấy phone number từ
@@ -865,7 +866,7 @@ public class CleanerJobService {
 		Optional<Employee> cleanerOpt = cleanerRepository.findByPhone(phoneNumber);
 		if (!cleanerOpt.isPresent()) {
 			response.put("message", "Cleaner not found with phone number: " + phoneNumber);
-			return response;
+			return ResponseEntity.notFound().build();
 		}
 
 		Employee cleaner = cleanerOpt.get();
@@ -894,7 +895,7 @@ public class CleanerJobService {
 		Optional<Job> jobOpt = jobRepository.findById(jobId);
 		if (!jobOpt.isPresent()) {
 			response.put("message", "Job not found");
-			return response;
+			return ResponseEntity.notFound().build();
 		}
 
 		Job job = jobOpt.get();
@@ -903,13 +904,13 @@ public class CleanerJobService {
 		Optional<JobApplication> jobApplicationOpt = jobApplicationRepository.findByJobAndCleaner(job, cleaner);
 		if (!jobApplicationOpt.isPresent() || !jobApplicationOpt.get().getStatus().equals("Accepted")) {
 			response.put("message", "You are not authorized to update this job status");
-			return response;
+			return ResponseEntity.badRequest().body(response);
 		}
 
 		// Kiểm tra trạng thái của công việc
 		if (!job.getStatus().equals(JobStatus.ARRIVED)) {
 			response.put("message", "Job is not in 'IN_PROGRESS' state");
-			return response;
+			return ResponseEntity.badRequest().body(response);
 		}
 
 //		List<JobServiceDetail> jobServiceDetails = jobDetailsRepository.findByJob_id(jobId);
@@ -942,7 +943,7 @@ public class CleanerJobService {
 		cleanerNotification.setRead(false);
 		notificationService.processNotification(cleanerNotification, "CLEANER", cleaner.getId());
 		response.put("message", "Job status updated to COMPLETED");
-		return response;
+		return ResponseEntity.ok(response);
 	}
 
 	public List<Map<String, Object>> getAppliedJobsForCleaner(Long cleanerId) {

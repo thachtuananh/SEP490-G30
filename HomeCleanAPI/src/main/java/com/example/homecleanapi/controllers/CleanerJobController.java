@@ -101,8 +101,8 @@ public class CleanerJobController {
     // Chuyển trạng thái công việc sang COMPLETED
     @PostMapping(value = "/job/completed/{jobId}")
     public ResponseEntity<Map<String, Object>> completeJob(@PathVariable("jobId") Long jobId) {
-        Map<String, Object> response = cleanerJobService.updateJobStatusToCompleted(jobId);
-        return ResponseEntity.ok(response);
+        //Map<String, Object> response = cleanerJobService.updateJobStatusToCompleted(jobId);
+        return cleanerJobService.updateJobStatusToCompleted(jobId);
     }
 
     @GetMapping("/{cleanerId}/listjobsapply")
