@@ -285,7 +285,7 @@ public class CleanerJobService {
 		List<Job> cleanerJobs = jobRepository.findByCleanerId(cleaner.getId().longValue());
 		for (Job existingJob : cleanerJobs) {
 			JobStatus status = existingJob.getStatus();
-			if (status == JobStatus.DONE || status == JobStatus.CANCELLED || status == JobStatus.AUTO_CANCELLED || status == JobStatus.BOOKED) {
+			if (status == JobStatus.DONE || status == JobStatus.CANCELLED || status == JobStatus.AUTO_CANCELLED || status == JobStatus.BOOKED || status == JobStatus.PAID) {
 				continue;
 			}
 
