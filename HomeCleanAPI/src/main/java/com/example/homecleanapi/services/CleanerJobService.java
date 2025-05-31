@@ -678,7 +678,22 @@ public class CleanerJobService {
 		else if ("reject".equalsIgnoreCase(action)) {
 			jobApplication.setStatus("Rejected");
 			response.put("message", "Người dọn dẹp đã từ chối ");
+			NotificationDTO customerNotification = new NotificationDTO();
+			customerNotification.setUserId(job.getCustomer().getId());
 
+			customerNotification.setMessage("[Mã công việc: " + job.getOrderCode() + "] Bạn đã từ chối người giúp việc " + cleaner.getName() + " cho công việc " + serviceName.toLowerCase());
+			customerNotification.setType("AUTO_MESSAGE");
+			customerNotification.setTimestamp(LocalDateTime.now(zoneId));
+			customerNotification.setRead(false);
+			notificationService.processNotification(customerNotification, "CUSTOMER", Math.toIntExact(customerId));
+
+			NotificationDTO cleanerNotification = new NotificationDTO();
+			cleanerNotification.setUserId(Math.toIntExact(cleanerId));
+			cleanerNotification.setMessage("[Mã công việc: " + job.getOrderCode() + "] Công việc " + serviceName.toLowerCase() + " bạn ứng tuyển đã bị từ chối bởi chủ nhà.");
+			cleanerNotification.setType("AUTO_MESSAGE");
+			cleanerNotification.setTimestamp(LocalDateTime.now(zoneId));
+			cleanerNotification.setRead(false);
+			notificationService.processNotification(cleanerNotification, "CLEANER", Math.toIntExact(cleanerId));
 
 		} else {
 			response.put("message", "Invalid action. Use 'accept' or 'reject'");
