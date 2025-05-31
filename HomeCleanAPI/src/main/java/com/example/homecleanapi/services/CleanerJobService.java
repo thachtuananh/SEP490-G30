@@ -314,11 +314,11 @@ public class CleanerJobService {
 		notificationService.processNotification(customerNotification, "CUSTOMER", job.getCustomer().getId());
 
 		NotificationDTO cleanerNotification = new NotificationDTO();
-		customerNotification.setUserId(cleaner.getId());
-		customerNotification.setMessage("[Mã công việc: "+ job.getOrderCode() + "] Bạn đã ứng tuyển vào công việc " + serviceName.toLowerCase() + " Vui lòng chờ chủ nhà xác nhận.");
-		customerNotification.setType("AUTO_MESSAGE");
-		customerNotification.setTimestamp(LocalDateTime.now());
-		customerNotification.setRead(false);
+		cleanerNotification.setUserId(cleaner.getId());
+		cleanerNotification.setMessage("[Mã công việc: "+ job.getOrderCode() + "] Bạn đã ứng tuyển vào công việc " + serviceName.toLowerCase() + " Vui lòng chờ chủ nhà xác nhận.");
+		cleanerNotification.setType("AUTO_MESSAGE");
+		cleanerNotification.setTimestamp(LocalDateTime.now());
+		cleanerNotification.setRead(false);
 		notificationService.processNotification(cleanerNotification, "CUSTOMER", cleaner.getId());
 
 		response.put("message", "Cleaner has successfully applied for the job");
