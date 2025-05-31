@@ -92,6 +92,7 @@ public class ScheduleService {
                                 try {
                                     JobServiceDetail jobServiceDetail1 = jobServiceDetails.get(0); // dùng lại list đã có
                                     serviceName = jobServiceDetail1.getService().getName();
+                                    System.out.println("serviceName: " + serviceName);
                                 } catch (Exception e) {
                                     System.out.println("Lỗi lấy tên dịch vụ: " + e.getMessage());
                                     serviceName = "Không xác định";

@@ -1,0 +1,30 @@
+name: Deploy Backend to Azure VM
+
+on:
+  push:
+    branches:
+      - release/cicd-release
+    paths:
+      - 'HomeCleanAPI/**'
+
+jobs:
+  deploy-backend:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: SSH and deploy using password
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.AZURE_VM_HOST }}
+          username: ${{ secrets.AZURE_VM_USER }}
+          password: ${{ secrets.AZURE_VM_PASSWORD }}
+          port: 22
+          script: |
+            echo "=== Deploying Backend at $(date) ==="
+            cd ~/project/SEP490-G30/HomeCleanAPI
+            git pull
+            docker compose -f docker-compose.yml up -d --build
+
