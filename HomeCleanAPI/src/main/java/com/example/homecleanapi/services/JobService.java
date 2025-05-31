@@ -1305,7 +1305,7 @@ public class JobService {
         }
 
         // Kiểm tra trạng thái của job
-        if (job.getStatus().equals(JobStatus.ARRIVED) || job.getStatus().equals(JobStatus.COMPLETED) || job.getStatus().equals(JobStatus.DONE)) {
+        if (job.getStatus().equals(JobStatus.COMPLETED) || job.getStatus().equals(JobStatus.DONE)) {
             response.put("message", "You cannot cancel a job that has already ARRIVED or completed");
             return response;
         }
