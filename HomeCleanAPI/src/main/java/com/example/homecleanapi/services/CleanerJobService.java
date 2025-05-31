@@ -319,7 +319,7 @@ public class CleanerJobService {
 		cleanerNotification.setType("AUTO_MESSAGE");
 		cleanerNotification.setTimestamp(LocalDateTime.now());
 		cleanerNotification.setRead(false);
-		notificationService.processNotification(cleanerNotification, "CUSTOMER", cleaner.getId());
+		notificationService.processNotification(cleanerNotification, "CLEANER", cleaner.getId());
 
 		response.put("message", "Cleaner has successfully applied for the job");
 		response.put("jobId", jobId);
