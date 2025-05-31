@@ -750,7 +750,7 @@ public class CleanerJobService {
 
 
 	// Cập nhật trạng thái công việc sang "ARRIVED"
-	public Map<String, Object> updateJobStatusToArrived(Long jobId) {
+	public ResponseEntity<Map<String, Object>> updateJobStatusToArrived(Long jobId) {
 		Map<String, Object> response = new HashMap<>();
 
 		// Lấy phone từ JWT hoặc SecurityContext (sử dụng phone_number từ token)
@@ -760,8 +760,9 @@ public class CleanerJobService {
 		// Tìm cleaner theo phone number
 		Optional<Employee> cleanerOpt = cleanerRepository.findByPhone(phoneNumber);
 		if (!cleanerOpt.isPresent()) {
-			response.put("message", "Cleaner not found with phone number: " + phoneNumber);
-			return response;
+			response.put("message", "Không tìm thấy người dọn dẹp");
+			response.put("status", "error");
+			return ResponseEntity.badRequest().body(response);
 		}
 
 		Employee cleaner = cleanerOpt.get();
@@ -769,8 +770,9 @@ public class CleanerJobService {
 		// Tìm công việc theo jobId
 		Optional<Job> jobOpt = jobRepository.findById(jobId);
 		if (!jobOpt.isPresent()) {
-			response.put("message", "Job not found");
-			return response;
+			response.put("message", "Không tìm thấy công việc.");
+			response.put("status", "error");
+			return ResponseEntity.badRequest().body(response);
 		}
 
 //		List<JobServiceDetail> jobServiceDetails = jobDetailsRepository.findByJob_id(jobId);
@@ -786,13 +788,15 @@ public class CleanerJobService {
 		// Kiểm tra xem cleaner có quyền cập nhật trạng thái không
 		JobApplication jobApplication = jobApplicationRepository.findByJobIdAndStatus(jobId, "Accepted");
 		if (jobApplication == null || !jobApplication.getCleaner().getId().equals(cleaner.getId())) {
-			response.put("message", "You are not authorized to update this job status");
-			return response;
+			response.put("message", "Công việc đã bị huỷ.");
+			response.put("status", "error");
+			return ResponseEntity.badRequest().body(response);
 		}
 
 		if (!job.getStatus().equals(JobStatus.IN_PROGRESS)) {
-			response.put("message", "Job is not in progress");
-			return response;
+			response.put("message", "Công việc đang sai trạng thái");
+			response.put("status", "error");
+			return ResponseEntity.badRequest().body(response);
 		}
 
 
@@ -847,8 +851,8 @@ public class CleanerJobService {
 		cleanerNotification.setRead(false); // ✅ set read = false
 		notificationService.processNotification(cleanerNotification, "CLEANER", cleaner.getId());
 
-		response.put("message", "Job status updated to ARRIVED, and work history has been recorded");
-		return response;
+		response.put("message", "Đã cập nhật trạng thái công việc là đã đến");
+		return ResponseEntity.ok(response);
 	}
 
 
