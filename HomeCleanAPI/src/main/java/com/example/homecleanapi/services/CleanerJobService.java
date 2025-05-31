@@ -983,7 +983,7 @@ public class CleanerJobService {
 			if ("CREATE".equals(job.getBookingType())) {
 				Map<String, Object> map = new HashMap<>();
 				map.put("jobId", job.getId());
-				map.put("status", job.getStatus());
+				map.put("status", jobApplication.getStatus());
 				result.add(map);
 			}
 		}
@@ -992,6 +992,7 @@ public class CleanerJobService {
 
 		return result;
 	}
+
 
 
 	public List<Map<String, Object>> getAppliedJobStatusesForCleaner(Long cleanerId) {
@@ -2150,6 +2151,13 @@ public class CleanerJobService {
 			}
 		}
 
+		jobs.sort((j1, j2) -> {
+			if (j1.getUpdatedAt() == null && j2.getUpdatedAt() == null) return 0;
+			if (j1.getUpdatedAt() == null) return 1;
+			if (j2.getUpdatedAt() == null) return -1;
+			return j2.getUpdatedAt().compareTo(j1.getUpdatedAt());
+		});
+
 		// Duyệt qua tất cả các job đã lọc
 		for (Job job : jobs) {
 			Map<String, Object> jobInfo = new HashMap<>();
@@ -2208,13 +2216,7 @@ public class CleanerJobService {
 			responseList.add(jobInfo);
 		}
 
-		// Sắp xếp jobs theo updatedAt giảm dần
-		jobs.sort((j1, j2) -> {
-			if (j1.getUpdatedAt() == null && j2.getUpdatedAt() == null) return 0;
-			if (j1.getUpdatedAt() == null) return 1;
-			if (j2.getUpdatedAt() == null) return -1;
-			return j2.getUpdatedAt().compareTo(j1.getUpdatedAt());
-		});
+
 
 
 		return responseList;

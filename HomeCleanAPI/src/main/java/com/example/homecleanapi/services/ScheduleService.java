@@ -154,6 +154,7 @@ public class ScheduleService {
                         serviceName = "Không có dịch vụ";
                     }
 
+
                     // Lấy tất cả JobApplication liên quan đến Job
                     List<JobApplication> jobApplications = jobApplicationRepository.findJobApplicationById(job.getId());
                     for (JobApplication application : jobApplications) {
