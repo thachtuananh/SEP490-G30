@@ -104,7 +104,7 @@ const ServiceDetailsCombo = () => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        // await loadCustomerAddresses();
+        await loadCustomerAddresses();
         const detailsPromises = selectedServices.map((item) =>
           fetchServiceDetails(item.serviceId)
         );
