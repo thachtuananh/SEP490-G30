@@ -66,7 +66,7 @@ public class ScheduleService {
             System.out.println("Check Job and Delete");
 
             ZoneId zoneId = ZoneId.of("Asia/Ho_Chi_Minh");
-            LocalDateTime now = LocalDateTime.now(zoneId).minusMinutes(2);
+            LocalDateTime now = LocalDateTime.now(zoneId).minusMinutes(30);
             System.out.println("Check Job and Delete at: " + now);
 
             // Lấy tất cả job OPEN
