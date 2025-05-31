@@ -903,14 +903,14 @@ public class CleanerJobService {
 		// Kiểm tra quyền của cleaner (sử dụng cleanerId từ SecurityContext)
 		Optional<JobApplication> jobApplicationOpt = jobApplicationRepository.findByJobAndCleaner(job, cleaner);
 		if (!jobApplicationOpt.isPresent() || !jobApplicationOpt.get().getStatus().equals("Accepted")) {
-			response.put("message", "You are not authorized to update this job status");
-			return ResponseEntity.badRequest().body(response);
+			response.put("message", "Công việc đã bị huỷ");
+			return ResponseEntity.notFound().build();
 		}
 
 		// Kiểm tra trạng thái của công việc
 		if (!job.getStatus().equals(JobStatus.ARRIVED)) {
 			response.put("message", "Job is not in 'IN_PROGRESS' state");
-			return ResponseEntity.badRequest().body(response);
+			return ResponseEntity.notFound().build();
 		}
 
 //		List<JobServiceDetail> jobServiceDetails = jobDetailsRepository.findByJob_id(jobId);
