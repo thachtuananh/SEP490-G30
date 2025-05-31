@@ -520,7 +520,7 @@ public class CleanerJobService {
 			return response;
 		}
 
-		Optional<Employee> cleanerOpt = cleanerRepository.findById(cleanerId);
+		Optional<Employee> cleanerOpt = cleanerRepository.findByIdWithLock(cleanerId);
 		if (!cleanerOpt.isPresent()) {
 			response.put("message", "Cleaner not found with ID: " + cleanerId);
 			response.put("error", true);
