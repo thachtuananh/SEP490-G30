@@ -673,7 +673,7 @@ public class CleanerJobService {
 			cleanerNotification.setTimestamp(LocalDateTime.now(zoneId));
 			cleanerNotification.setRead(false);
 			notificationService.processNotification(cleanerNotification, "CLEANER", Math.toIntExact(cleanerId));
-			smsService.sendSms(cleaner.getPhone(), cleanerMessage);
+			// smsService.sendSms(cleaner.getPhone(), cleanerMessage);
 
 			conversationService.getOrCreateConversation(customerId, Math.toIntExact(cleanerId));
 			response.put("message", "Cleaner has been accepted for the job");
@@ -807,7 +807,7 @@ public class CleanerJobService {
 		customerNotification.setTimestamp(LocalDateTime.now());
 		customerNotification.setRead(false); // ✅ set read = false
 		notificationService.processNotification(customerNotification, "CUSTOMER", Math.toIntExact(job.getCustomer().getId()));
-		smsService.sendSms(job.getCustomer().getPhone(), message);
+		// smsService.sendSms(job.getCustomer().getPhone(), message);
 
 		String message_cleaner = "[Mã công việc: "+ job.getOrderCode() +"] Hệ thống đã ghi nhận bạn đã đến địa điểm làm việc cho công việc " + serviceName.toLowerCase();
 		NotificationDTO cleanerNotification = new NotificationDTO();
@@ -902,7 +902,7 @@ public class CleanerJobService {
 		customerNotification.setTimestamp(LocalDateTime.now());
 		customerNotification.setRead(false);
 		notificationService.processNotification(customerNotification, "CUSTOMER", Math.toIntExact(job.getCustomer().getId()));
-		smsService.sendSms(job.getCustomer().getPhone(), message);
+		// smsService.sendSms(job.getCustomer().getPhone(), message);
 
 		String message1 = "[Mã công việc: "+ job.getOrderCode() +"] Yêu cầu xác nhận hoàn thành công việc " + serviceName.toLowerCase() + " Đã được gửi tới chủ nhà.";
 		NotificationDTO cleanerNotification = new NotificationDTO();
@@ -2097,7 +2097,7 @@ public class CleanerJobService {
 		cleanerNotification.setTimestamp(LocalDateTime.now());
 		cleanerNotification.setRead(false); // ✅ set read = false
 		notificationService.processNotification(cleanerNotification, "CLEANER", Math.toIntExact(cleanerId));
-		smsService.sendSms(cleaner.getPhone(), message_cleaner);
+		// smsService.sendSms(cleaner.getPhone(), message_cleaner);
 
 		return ResponseEntity.ok(Map.of(
 				"message", "Tạo công việc thành công",
@@ -2439,7 +2439,7 @@ public class CleanerJobService {
 			customerNotification.setTimestamp(LocalDateTime.now());
 			customerNotification.setRead(false);
 			notificationService.processNotification(customerNotification, "CUSTOMER", Math.toIntExact(job.getCustomer().getId()));
-			smsService.sendSms(job.getCustomer().getPhone(), customerMessage);
+			// smsService.sendSms(job.getCustomer().getPhone(), customerMessage);
 
 			NotificationDTO cleanerNotification = new NotificationDTO();
 			cleanerNotification.setUserId(cleaner.getId());
