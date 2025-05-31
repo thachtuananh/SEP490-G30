@@ -268,7 +268,7 @@ public class WithdrawalRequestService {
             if (withdrawalRequest.getCustomer() != null) {
                 NotificationDTO notification = new NotificationDTO();
                 notification.setUserId(withdrawalRequest.getCustomer().getId());
-                notification.setMessage("Yêu cầu rút tiền đã được chấp nhận.");
+                notification.setMessage("Yêu cầu rút tiền đã được chấp nhận. Mã giao dịch " + transactionCode);
                 notification.setType("AUTO_MESSAGE");
                 notification.setTimestamp(LocalDateTime.now());
                 notification.setRead(false); // ✅ set read = false
@@ -278,7 +278,7 @@ public class WithdrawalRequestService {
             if (withdrawalRequest.getCleaner() != null) {
                 NotificationDTO notification = new NotificationDTO();
                 notification.setUserId(withdrawalRequest.getCleaner().getId());
-                notification.setMessage("Yêu cầu rút tiền đã được chấp nhận.");
+                notification.setMessage("Yêu cầu rút tiền đã được chấp nhận. Mã giao dịch " + transactionCode);
                 notification.setType("AUTO_MESSAGE");
                 notification.setTimestamp(LocalDateTime.now());
                 notification.setRead(false); // ✅ set read = false
@@ -304,7 +304,7 @@ public class WithdrawalRequestService {
                     customerWalletRepository.save(customerWallet);
                     NotificationDTO customerNotification = new NotificationDTO();
                     customerNotification.setUserId(withdrawalRequest.getCustomer().getId());
-                    customerNotification.setMessage("Yêu cầu rút tiền đã bị từ chối.");
+                    customerNotification.setMessage("Yêu cầu rút tiền đã bị từ chối. Lý do " + rejectionReason);
                     customerNotification.setType("AUTO_MESSAGE");
                     customerNotification.setTimestamp(LocalDateTime.now());
                     customerNotification.setRead(false); // ✅ set read = false
@@ -319,7 +319,7 @@ public class WithdrawalRequestService {
                     walletRepository.save(cleanerWallet);
                     NotificationDTO cleanerNotification = new NotificationDTO();
                     cleanerNotification.setUserId(withdrawalRequest.getCleaner().getId());
-                    cleanerNotification.setMessage("Yêu cầu rút tiền đã bị từ chối.");
+                    cleanerNotification.setMessage("Yêu cầu rút tiền đã bị từ chối. Lý do " + rejectionReason);
                     cleanerNotification.setType("AUTO_MESSAGE");
                     cleanerNotification.setTimestamp(LocalDateTime.now());
                     cleanerNotification.setRead(false); // ✅ set read = false

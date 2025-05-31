@@ -84,7 +84,7 @@ public interface JobRepository extends JpaRepository<Job, Long> {
 
     List<Job> findAllByTxnRef(String txnRef);
 
-
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT j FROM Job j WHERE j.cleaner.id = :cleanerId " +
             "AND j.scheduledTime BETWEEN :start AND :end " +
             "AND j.status NOT IN :excludedStatuses " +

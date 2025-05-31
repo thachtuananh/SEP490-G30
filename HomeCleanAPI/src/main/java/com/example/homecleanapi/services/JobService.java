@@ -302,7 +302,7 @@ public class JobService {
         customerNotification.setUserId(job.getCustomer().getId());
         customerNotification.setMessage("Bạn đã đặt lịch dọn dẹp thành công.");
         customerNotification.setType("AUTO_MESSAGE");
-        customerNotification.setTimestamp(now);
+        customerNotification.setTimestamp(LocalDateTime.now());
         customerNotification.setRead(false);
         notificationService.processNotification(customerNotification, "CUSTOMER", Math.toIntExact(customerId));
 
@@ -491,7 +491,7 @@ public class JobService {
         noti.setUserId(Math.toIntExact(customerId));
         noti.setMessage("Bạn đã đặt lịch dọn dẹp thành công");
         noti.setType("AUTO_MESSAGE");
-        noti.setTimestamp(now);
+        noti.setTimestamp(LocalDateTime.now());
         noti.setRead(false);
         notificationService.processNotification(noti, "CUSTOMER", Math.toIntExact(customerId));
 
@@ -1368,18 +1368,18 @@ public class JobService {
             } else {
                 System.out.println("Không có cleaner nào được gán trực tiếp cho công việc này.");
 
-                List<JobApplication> jobApplications = jobApplicationRepository.findJobApplicationById(jobId);
-                if (jobApplications != null && !jobApplications.isEmpty()) {
-                    for (JobApplication application : jobApplications) {
-                        Integer appliedCleanerId = application.getCleaner().getId();
-                        String message = String.format("Mã công việc: [%s] Chủ nhà: %s đã huỷ công việc mà bạn đã ứng tuyển.",
-                                job.getOrderCode(), job.getCustomer().getFull_name());
-                        NotificationDTO notification = createNotification(appliedCleanerId, message);
-                        notificationService.processNotification(notification, "CLEANER", appliedCleanerId);
-                    }
-                } else {
-                    System.out.println("Không có ứng viên nào đã apply công việc này.");
-                }
+//                List<JobApplication> jobApplications = jobApplicationRepository.findJobApplicationById(jobId);
+//                if (jobApplications != null && !jobApplications.isEmpty()) {
+//                    for (JobApplication application : jobApplications) {
+//                        Integer appliedCleanerId = application.getCleaner().getId();
+//                        String message = String.format("Mã công việc: [%s] Chủ nhà: %s đã huỷ công việc mà bạn đã ứng tuyển.",
+//                                job.getOrderCode(), job.getCustomer().getFull_name());
+//                        NotificationDTO notification = createNotification(appliedCleanerId, message);
+//                        notificationService.processNotification(notification, "CLEANER", appliedCleanerId);
+//                    }
+//                } else {
+//                    System.out.println("Không có ứng viên nào đã apply công việc này.");
+//                }
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -1391,7 +1391,7 @@ public class JobService {
             customerNotification.setUserId(job.getCustomer().getId());
             customerNotification.setMessage("Mã công việc [" + job.getOrderCode() + "] Bạn đã huỷ công việc thành công");
             customerNotification.setType("AUTO_MESSAGE");
-            customerNotification.setTimestamp(now);
+            customerNotification.setTimestamp(LocalDateTime.now());
             customerNotification.setRead(false); // ✅ set read = false
             notificationService.processNotification(customerNotification, "CUSTOMER", Math.toIntExact(customerId));
         }
@@ -1401,7 +1401,7 @@ public class JobService {
                 cleanerNotification.setUserId(application.getCleaner().getId());
                 cleanerNotification.setMessage("Mã công việc [" + job.getOrderCode() + "] Chủ nhà đã huỷ công việc " + serviceName.toLowerCase() + " " + job.getScheduledTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")));
                 cleanerNotification.setType("AUTO_MESSAGE");
-                cleanerNotification.setTimestamp(now);
+                cleanerNotification.setTimestamp(LocalDateTime.now());
                 cleanerNotification.setRead(false); // ✅ set read = false
                 notificationService.processNotification(cleanerNotification, "CLEANER", application.getCleaner().getId());
             }
@@ -1428,7 +1428,7 @@ public class JobService {
         notification.setUserId(userId);
         notification.setMessage(message);
         notification.setType("AUTO_MESSAGE");
-        notification.setTimestamp(now);
+        notification.setTimestamp(LocalDateTime.now());
         notification.setRead(false);
         return notification;
     }
