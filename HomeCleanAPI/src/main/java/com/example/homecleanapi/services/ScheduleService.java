@@ -455,7 +455,7 @@ public class ScheduleService {
 
 
     // tự động hủy job hoặc hủy apply nếu trùng lịch
-    @Scheduled(cron = "0/20 * * * * *")
+    @Scheduled(cron = "0/2 * * * * *")
     @Transactional
     public void autoCheckJobAndCleanerSchedule() {
         System.out.println("Checking cleaner schedule for job conflicts...");
