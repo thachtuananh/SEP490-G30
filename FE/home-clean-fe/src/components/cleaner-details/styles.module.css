@@ -31,12 +31,6 @@
 }
 
 @media (width<=991px) {
-  .imageSection {
-    width: 100%;
-  }
-  .rightSection {
-    width: 100%;
-  }
 }
 
 .mainImage {
@@ -409,8 +403,14 @@
   font-size: 16px;
 }
 
-@media (width<=800px) {
+@media (width<=1000px) {
   .mainContainer {
     flex-direction: column;
+  }
+  .imageSection {
+    width: 100%;
+  }
+  .rightSection {
+    width: 100%;
   }
 }

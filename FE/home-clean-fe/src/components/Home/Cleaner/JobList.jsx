@@ -251,11 +251,16 @@ function JobList() {
       return (
         <Result
           status="error"
-          title="Không thể tải danh sách công việc"
+          title="Hãy thêm địa chỉ để hiển thị các công việc gần bạn"
           subTitle={error}
           extra={
-            <Button type="primary" onClick={() => window.location.reload()}>
-              Thử lại
+            <Button
+              type="primary"
+              onClick={() =>
+                (window.location.href = `/homeclean/infomationcleaner`)
+              }
+            >
+              Chuyển đến trang thông tin cá nhân
             </Button>
           }
         />

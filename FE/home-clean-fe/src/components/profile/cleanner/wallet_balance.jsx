@@ -597,7 +597,9 @@ export const WalletBalance = () => {
                 fontWeight: "bold",
                 fontSize: 28,
               }}
-              formatter={(value) => value.toLocaleString() + " VNĐ"}
+              formatter={(value) =>
+                new Intl.NumberFormat("en-US").format(value) + " VNĐ"
+              }
             />
           </Space>
         )}

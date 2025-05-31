@@ -23,7 +23,16 @@ const ActivityJob = () => {
   const [totalJobs, setTotalJobs] = useState(0);
 
   useEffect(() => {
+    // Initial fetch for jobs
     fetchJobs(activeTab);
+
+    // Set up interval for periodic status fetching (every 2.5 seconds)
+    const intervalId = setInterval(() => {
+      fetchJobStatuses(activeTab);
+    }, 2500);
+
+    // Cleanup interval on component unmount or tab change
+    return () => clearInterval(intervalId);
   }, [activeTab]);
 
   const fetchJobs = (tabType) => {
@@ -83,6 +92,88 @@ const ActivityJob = () => {
         console.error("Error fetching jobs:", error);
         setError("Failed to load jobs. Please try again later.");
         setLoading(false);
+      });
+  };
+
+  const fetchJobStatuses = (tabType) => {
+    const cleanerId = sessionStorage.getItem("cleanerId");
+    const token = sessionStorage.getItem("token");
+
+    if (!cleanerId || !token) {
+      console.error("Missing cleanerId or token.");
+      return;
+    }
+
+    // Determine status endpoint based on active tab
+    let statusEndpoint = "";
+    switch (tabType) {
+      case "doing":
+        statusEndpoint = `${BASE_URL}/cleaner/${cleanerId}/jobs/doing-statuses`;
+        break;
+      case "applied":
+        statusEndpoint = `${BASE_URL}/cleaner/${cleanerId}/jobs/applied-statuses`;
+        break;
+      case "booked":
+        statusEndpoint = `${BASE_URL}/cleaner/${cleanerId}/jobs/booked-statuses`;
+        break;
+      default:
+        return; // No status fetching for 'done' tab or other tabs
+    }
+
+    fetch(statusEndpoint, {
+      method: "GET",
+      headers: {
+        Accept: "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`API responded with status: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then((statusData) => {
+        // Update job statuses
+        setJobs((prevJobs) =>
+          prevJobs.map((job) => {
+            const updatedStatus = statusData.find(
+              (status) => status.jobId === job.jobId
+            );
+            if (updatedStatus) {
+              return {
+                ...job,
+                // Update status or jobApplicationStatus based on tab
+                ...(tabType === "applied"
+                  ? { jobApplicationStatus: updatedStatus.status }
+                  : { status: updatedStatus.status }),
+              };
+            }
+            return job;
+          })
+        );
+
+        // Update filteredJobs to reflect status changes
+        setFilteredJobs((prevFilteredJobs) =>
+          prevFilteredJobs.map((job) => {
+            const updatedStatus = statusData.find(
+              (status) => status.jobId === job.jobId
+            );
+            if (updatedStatus) {
+              return {
+                ...job,
+                ...(tabType === "applied"
+                  ? { jobApplicationStatus: updatedStatus.status }
+                  : { status: updatedStatus.status }),
+              };
+            }
+            return job;
+          })
+        );
+      })
+      .catch((error) => {
+        console.error("Error fetching job statuses:", error);
+        // Optionally, you can set an error state or handle silently
       });
   };
 
