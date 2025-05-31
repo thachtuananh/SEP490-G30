@@ -457,21 +457,32 @@ export const ActivityCard = ({ data, onDelete, onHireCleaner }) => {
   };
 
   const handleRetryPaymentWallet = async (jobId, customerId) => {
-    try {
-      const result = await retryPaymentWallet(jobId, customerId);
-      if (result.status === "OPEN") {
-        message.success("Thanh toán lại qua ví thành công!");
-        updateActivityStatus(jobId, "OPEN");
-      } else if (result.status === "BOOKED") {
-        message.success("Thanh toán lại qua ví thành công!");
-        updateActivityStatus(jobId, "BOOKED");
-      } else {
-        message.error("Không thể thanh toán qua ví.");
-      }
-    } catch (error) {
-      console.error("Lỗi khi thử thanh toán lại:", error);
-      message.error("Không thể thử thanh toán lại.");
-    }
+    Modal.confirm({
+      title: "Xác nhận thanh toán",
+      content: "Bạn có chắc chắn muốn thực hiện thanh toán lại qua ví?",
+      okText: "Xác nhận",
+      cancelText: "Hủy",
+      onOk: async () => {
+        try {
+          const result = await retryPaymentWallet(jobId, customerId);
+          if (result.status === "OPEN") {
+            message.success("Thanh toán lại qua ví thành công!");
+            updateActivityStatus(jobId, "OPEN");
+          } else if (result.status === "BOOKED") {
+            message.success("Thanh toán lại qua ví thành công!");
+            updateActivityStatus(jobId, "BOOKED");
+          } else {
+            message.error("Không thể thanh toán qua ví.");
+          }
+        } catch (error) {
+          console.error("Lỗi khi thử thanh toán lại:", error);
+          message.error("Không thể thử thanh toán lại.");
+        }
+      },
+      onCancel: () => {
+        message.info("Đã hủy thanh toán lại.");
+      },
+    });
   };
 
   const handleCompleteJob = async (jobId) => {
@@ -840,18 +851,22 @@ export const ActivityCard = ({ data, onDelete, onHireCleaner }) => {
                     activity.status === "IN_PROGRESS" ||
                     activity.status === "ARRIVED" ||
                     activity.status === "BOOKED" ||
-                    activity.status === "PAID") && (
-                    <Button
-                      type="default"
-                      onClick={
-                        () =>
-                          handleViewCleanerDetail(activity.cleanerId, activity) // Truyền cả activity
-                      }
-                      disabled={!activity.cleanerId || isProcessing}
-                    >
-                      Xem chi tiết người dọn dẹp
-                    </Button>
-                  )}
+                    activity.status === "PAID") &&
+                    applicationsCount[activity.jobId] > 0 && (
+                      <Button
+                        type="default"
+                        onClick={
+                          () =>
+                            handleViewCleanerDetail(
+                              activity.cleanerId,
+                              activity
+                            ) // Truyền cả activity
+                        }
+                        disabled={!activity.cleanerId || isProcessing}
+                      >
+                        Xem chi tiết người dọn dẹp
+                      </Button>
+                    )}
                   {activity.status === "COMPLETED" && (
                     <Button
                       type="primary"
