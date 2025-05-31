@@ -5,8 +5,10 @@ import java.util.Optional;
 
 import com.example.homecleanapi.models.Employee;
 import io.lettuce.core.dynamic.annotation.Param;
+import jakarta.persistence.LockModeType;
 import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -18,6 +20,11 @@ public interface CleanerRepository extends JpaRepository<Employee, Long> {
     Employee findByEmail(String email);
     
     List<Employee> findByStatus(Boolean status);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT e FROM Employee e WHERE e.id = :id")
+    Optional<Employee> findByIdWithLock(@Param("id") Long id);
+
 
     @Query("SELECT e FROM Employee e WHERE e.is_verified = false")
     List<Employee> findUnverifiedCleaners();
