@@ -310,7 +310,7 @@ export const ActivityCard = ({ data, onDelete, onHireCleaner }) => {
       );
       const cleanerPhone = selectedCleanerData?.phoneNumber;
 
-      message.success("Thuê cleaner thành công!");
+      message.success("Thuê người dọn dẹp thành công!");
 
       let serviceInfoText = "";
       if (jobData.services) {
@@ -358,8 +358,7 @@ export const ActivityCard = ({ data, onDelete, onHireCleaner }) => {
       setIsModalOpen(false);
       onHireCleaner(); // Gọi callback để fetch lại danh sách công việc
     } catch (error) {
-      console.error("Lỗi khi thuê cleaner:", error);
-      message.error("Lỗi khi thuê cleaner");
+      message.error("Lỗi khi thuê người dọn dẹp");
     } finally {
       setIsProcessing(false);
     }
@@ -368,7 +367,7 @@ export const ActivityCard = ({ data, onDelete, onHireCleaner }) => {
   const handleRejectCleaner = async (jobId, cleanerId, customerId) => {
     try {
       await rejectCleaner(jobId, cleanerId, customerId);
-      console.log("Từ chối cleaner thành công!", {
+      console.log("Từ chối người dọn dẹp thành công!", {
         jobId,
         cleanerId,
         customerId,
@@ -379,7 +378,7 @@ export const ActivityCard = ({ data, onDelete, onHireCleaner }) => {
       );
       const cleanerPhone = selectedCleanerData?.phoneNumber;
 
-      message.success("Từ chối cleaner thành công!");
+      message.success("Từ chối người dọn dẹp thành công!");
 
       const formattedDate = new Date(jobData.scheduledTime).toLocaleString(
         "vi-VN",

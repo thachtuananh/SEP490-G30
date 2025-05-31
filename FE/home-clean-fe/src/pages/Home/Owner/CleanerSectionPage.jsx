@@ -597,7 +597,7 @@ function CleanersPage() {
           <Empty
             description={
               <span>
-                Không tìm thấy cleaner nào phù hợp với bộ lọc.{" "}
+                Không tìm thấy Người dọn dẹp nào phù hợp với bộ lọc.{" "}
                 <a
                   href="#"
                   onClick={(e) => {
@@ -615,7 +615,7 @@ function CleanersPage() {
         ) : (
           <Result
             status="info"
-            title="Không tìm thấy cleaner nào"
+            title="Không tìm thấy người dọn dẹp nào"
             subTitle="Vui lòng thử lại sau hoặc kiểm tra kết nối mạng của bạn."
             extra={
               <Button type="primary" size="large" onClick={refreshData}>

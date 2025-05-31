@@ -95,7 +95,7 @@ const Time = ({ onTimeChange }) => {
       }
     } catch (error) {
       console.error("Error fetching addresses:", error);
-      message.error("Không thể tải danh sách địa chỉ!");
+      // message.error("Không thể tải danh sách địa chỉ!");
     } finally {
       setAddressLoading(false);
     }
